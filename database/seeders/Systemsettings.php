@@ -19,9 +19,9 @@ class Systemsettings extends Seeder
         if(empty($hrm_setting)){
             DB::table('tbl_hrm_settings')->insert([
                 'company_logo' => "fav-icons.png",
-                'company_name' => "SourceCode",
-                'company_email' => "abc@sourcecode.gmail.com",
-                'company_address' => "Progressive Center, Office no.603 6th Floor Shahrah-e-Faisal, Block 6 PECHS",
+                'company_name' => "Ismail Industries Limited",
+                'company_email' => "saaahmed@ismailindustries.com",
+                'company_address' => "17, Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan.",
                 'company_email_permission' => 0,
                 'push_notification_permission' => 0,
                 'company_favicon' => "fav-icons.png",

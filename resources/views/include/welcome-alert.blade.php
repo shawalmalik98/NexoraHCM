@@ -54,12 +54,12 @@
                                             {{--end:Logo--}}
                                             {{--begin:Media--}}
                                             <div style="margin-bottom: 15px">
-                                                <img alt="Logo" src="{{ url('/portal_assets/images/hcm-logo.png') }}" style="width: 30%;" draggable="false"/>
+                                                <img alt="Logo" src="{{ url('/portal_assets/images/default-img.png') }}" style="width: 30%;" draggable="false"/>
                                             </div>
                                             {{--end:Media--}}
                                             {{--begin:Text--}}
                                             <div style="font-size: 14px; font-weight: 500; margin-bottom: 27px; font-family:Arial,Helvetica,sans-serif;">
-                                                <p style="margin-bottom:9px; color:#181C32; font-size: 22px; font-weight:700">Welcome to SourceCode !</p>
+                                                <p style="margin-bottom:9px; color:#181C32; font-size: 22px; font-weight:700">Welcome to Ismail Industries Limited !</p>
                                                 <p style="margin-bottom:2px; color:#7E8299">Welcome to the team! We are beyond thrilled to have you at our office.<br> We know how much of an asset you will be within our company,<br> and we can’t wait to see all that you accomplish.</p>
                                             </div>
                                             {{--end:Text--}}

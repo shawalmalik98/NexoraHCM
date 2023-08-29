@@ -20,13 +20,13 @@ class EmailConfiguration extends Seeder
         if(empty($email_config)){
             DB::table('tbl_email_configuration')->insert([
                 'email_config_mailer' => "smtp",
-                'email_config_host' => "webhosting2020.is.cc",
-                'email_config_email' => "no-reply@sourcecode.world",
-                'email_config_pass' => "Password321!@#",
-                'email_config_port' => "465",
+                'email_config_host' => "smtp.office365.com",
+                'email_config_email' => "goms@ismailglobal.com",
+                'email_config_pass' => "Fol00229",
+                'email_config_port' => "587",
                 'email_config_encryption'=>"tls",
-                'email_config_from_address'=>"no-reply@sourcecode.world",
-                'email_config_from_name'=>"SourceCode Hcm",
+                'email_config_from_address'=>"goms@ismailglobal.com",
+                'email_config_from_name'=>"IIL - HCM",
                 'email_config_created_at'=>date('d-m-Y H:i:s'),
             ]);
         }

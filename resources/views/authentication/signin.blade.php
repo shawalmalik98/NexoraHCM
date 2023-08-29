@@ -80,13 +80,13 @@
 								
 								
                                 <div class="text-center mb-11">
-									<img alt="Logo" src="{{ url('portal_assets/images/hcm-logo.png') }}" class="theme-light-show" style="width: 60%;" />
+									<img alt="Logo" src="{{ url('portal_assets/images/default-img.png') }}" class="theme-light-show" style="width: 40%;" />
 																	
 								</div>
 
 								<div class="text-center mb-11">
 									
-									{{-- <h1 class="text-dark fw-bolder mb-3">SourceCode - HCM</h1> --}}
+									<h1 class="text-dark fw-bolder mb-3">Ismail Industries Limited - HCM</h1>
 									<div class="text-gray-500 fw-semibold fs-6">Log in to start your session</div>
 									
 								</div>
@@ -128,9 +128,9 @@
 																	
 								</div> --}}
 
-								<div class="d-grid mb-10">
+								{{-- <div class="d-grid mb-10">
 								    <span class="text-center">© {{ date('Y') }} MegaHCM. All Rights Reserved</span>
-								</div>
+								</div> --}}
 								
 						
 							</form>
