@@ -185,7 +185,7 @@
                         <div class="col-md-12 mb-8 mt-3 fv-row">
                             <label class="required fs-6 fw-semibold mb-2">Company Name</label>
                             <div class="position-relative d-flex align-items-center">
-                                <input type="text" class="form-control " placeholder="Enter a Department" name="company_name" id="company_name" required=""/>
+                                <input type="text" class="form-control " placeholder="Enter a Company" name="company_name" id="company_name" required=""/>
                                 <input type="hidden" class="form-control" name="company_id" id="company_id" required=""/>
                             </div>
                         </div>                            

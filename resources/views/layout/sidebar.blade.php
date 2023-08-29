@@ -10,14 +10,14 @@
 
         <div class="app-sidebar-logo px-12" id="kt_app_sidebar_logo">
             <a href="{{url('/')}}">
-                <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" />
+                {{-- <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" /> --}}
 
-                <img alt="Logo" src="{{$companySetting['company_favicon']}}" class="h-20px app-sidebar-logo-minimize" />
+                {{-- <img alt="Logo" src="{{$companySetting['company_favicon']}}" class="h-20px app-sidebar-logo-minimize" /> --}}
                 <span class=" font-weight-bold text-white text-capitalize text-center">
                     @if(!empty($companySetting['company_name']))
                         {{$companySetting['company_name']}}
                     @else
-                        SourceCode - HCM
+                        Ismail Industries Limited
                     @endif
                 </span>
             </a>

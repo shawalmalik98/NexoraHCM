@@ -22,7 +22,7 @@ class SystemModuleSeeder extends Seeder
      
         if(empty($system_module)){
 
-            DB::insert("INSERT INTO `tbl_system_modules` (`module_title`, `module_url`, `module_type`,`module_accessibility`) VALUES
+            DB::insert("INSERT INTO tbl_system_modules (module_title, module_url, module_type,module_accessibility) VALUES
                 ('Dashboard', '/dashboard', '0',1),
                 ('My Attendance', '/my-attendance', '0',1),
                 ('My Attendance Request', '/my-attendance-request', '0',1),

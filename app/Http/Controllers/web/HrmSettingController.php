@@ -65,6 +65,7 @@ class HrmSettingController extends Controller
     }
 
     protected function create(Request $request){
+
         try{
         
             $validator = Validator::make($request->all(), [
@@ -135,7 +136,7 @@ class HrmSettingController extends Controller
                     ]);
                 }
 
-                if(empty($request->input('mailer')) && $request->input('email_permission') == 1 || $request->input('push_notification_permission') == 1 ){
+                if($request->input('mailer') == '' && ($request->input('email_permission') == '1' || $request->input('push_notification_permission') == '1')){
                     return response()->json([
                         'msg' => 'Without email configuration not checked the email or fcm alert check.',
                         'status' => 'FALSE'
