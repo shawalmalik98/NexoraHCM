@@ -1,0 +1,288 @@
+@import url("https://fonts.googleapis.com/css2?family=Crete+Round&display=swap");
+@import url("https://necolas.github.io/normalize.css/8.0.1/normalize.css");
+body {
+    margin: 0px;
+    padding: 0px;
+    font-family: poppins, sans-serif;
+    box-sizing: border-box;
+    background: url(../img/body-bg.png);
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+html,
+body {
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+a {
+    text-decoration: none;
+}
+
+img.logo {
+    text-align: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20% !important;
+}
+
+.sec1 p {
+    font-size: 16px;
+    padding: 0px;
+    margin: 5px;
+    text-align: end;
+}
+
+.sec1 p i {
+    font-size: 16px;
+}
+
+.sec1 p a {
+    font-size: 16px;
+    color: black;
+}
+
+.sec2 h1 {
+    font-size: 30px;
+    text-align: center;
+    font-weight: 700;
+}
+
+table {
+    overflow-x: auto;
+}
+
+*/ #upload {
+    opacity: 0;
+}
+
+label#upload-label {
+    display: none;
+}
+
+.image-area {
+    border: 2px dashed black;
+    position: relative;
+    width: 50%;
+    height: 200px;
+}
+
+.image-area::before {
+    content: 'Uploaded image result';
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    z-index: 1;
+}
+
+.image-area img {
+    z-index: 2;
+    width: 200px;
+    position: relative;
+}
+
+.sec3 input.form-control {
+    border: 0;
+    border-bottom: 1px solid black;
+    border-radius: 0px;
+}
+
+.form-control {
+    background: transparent !important;
+}
+
+.sec3 input#birthday {
+    margin-bottom: 7px;
+    border: 0;
+    border-bottom: 1px solid black;
+    border-radius: 0px;
+    padding: 0.375rem 0.75rem;
+    width: 100%;
+}
+
+input#duration {
+    margin-bottom: 7px;
+    border: 0;
+    border-bottom: 1px solid black;
+    border-radius: 0px;
+    padding: 0.375rem 0.75rem;
+    width: 90%;
+    background: transparent !important;
+}
+
+
+/* FORM */
+
+.table-responsive.mt-3 {
+    border: 1px solid black;
+}
+
+
+
+th .pi {
+    background-color: #0000ff4d;
+}
+
+th {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.dec h3 {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.decc h3 {
+    font-size: 16px;
+    margin-bottom: 0px;
+    line-height: 40px;
+}
+
+.decc p {
+    font-size: 14px;
+}
+
+.end2 p {
+    text-align: end !important;
+}
+
+span.endspan {
+    font-weight: 600;
+}
+/*
+input.form-control {
+    border-color: #00000012;
+}
+*/
+
+input#birthday {
+    margin-bottom: 7px;
+    border: 0;
+    border-radius: 0px;
+    padding: 0.375rem 0.75rem;
+    width: 100%;
+}
+
+input#date {
+    padding: 2px;
+}
+
+input:focus {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.form-select:focus {
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+
+/* Profile CSS Start */
+
+.text-center {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.profile-images-card {
+    margin: auto;
+    display: table;
+    background: #fff;
+    padding: 30px 50px;
+    box-shadow: 0px 0px 5px #ddd;
+    border: 1px solid;
+}
+
+.profile-images {
+    width: 150px;
+    height: 150px;
+    background: #fff;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.profile-images img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.custom-file input[type='file'] {
+    display: none
+}
+
+.custom-file label {
+    cursor: pointer;
+    color: #000;
+    text-align: center;
+    display: table;
+    margin: auto;
+    margin-top: 15px;
+}
+
+label.error {
+    color: red;
+    font-size: 15px;
+    border: 0px solid #008ab5;
+    padding: 5px;
+}
+
+input.form-control:focus {
+    border-color: #b2b2ff !important;
+}
+
+
+/* Profile CSS End */
+
+
+/* ----------------------------------------Mobile Phone----------------------------------------------- */
+
+@media screen and (max-width: 767px) {
+    .row.sec1 {
+        padding-top: 50px;
+    }
+}
+
+
+/*--------------------------------------------------- Ipad-----------------------------------------------  */
+
+@media screen and (min-width: 768px) and (max-width: 991px) {}
+
+
+/* ------------------------------------------Ipad Pro--------------------------------------------------- */
+
+@media only screen and (min-width: 1024px) and (max-height: 1366px) and (orientation: portrait) and (-webkit-min-device-pixel-ratio: 1.5) {}
+
+
+/* -----------------------------------------IphoneX ---------------------------------------------- */
+
+@media(max-width:411px) {
+    .row.sec1 .col-lg-8 {
+        text-align: center;
+        padding-bottom: 10px;
+    }
+    .sec1 p {
+        text-align: center;
+    }
+    .row.mt-3.tt {
+        display: grid;
+    }
+    .row.end {
+        text-align: left;
+    }
+    .end2 p {
+        text-align: left !important;
+    }
+    .row.sec1 {
+        padding-top: 50px;
+    }
+}

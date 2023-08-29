@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500;600;700;800;900&display=swap');
+* {
+    padding: 0;
+    margin: 0;
+}
+
+img {
+    max-width: 100%;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.sc_section1 {
+    background: linear-gradient(0deg, #005794, #00ABBC);
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+}
+
+.sc_section1 .sc_s1_row {
+    align-items: center;
+    height: 100vh;
+}
+
+.sc_section1 .sec1_form h1 {
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 10px;
+    font-size: 36px;
+    font-weight: bold;
+}
+
+.sc_section1 .sec1_form p {
+    font-size: 18px;
+    color: #fff;
+}
+
+.sc_section1 .sec1_form label {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.sc_section1 .sec1_form .form-control {
+    font-size: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+}
+
+.sc_section1 .sec1_form .btn {
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+    font-size: 20px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+}
+
+.sc_section1 .checkin_btn {
+    background: #6BCB77;
+}
+
+.sc_section1 .checkout_btn {
+    background: #FF6B6B;
+}
+
+.sc_section1 .sec1_logo {
+    margin: 0 0 30px;
+    animation: zoom 3s ease-in-out infinite alternate;
+    border-radius: 100%;
+    transition: linear .3s;
+}
+
+.sc_section1 .sec1_logo img {
+    width: 336px;
+    transition: linear .3s;
+}
+
+.sc_section1 .sec1_box {
+    position: relative;
+    z-index: 1;
+}
+
+.sc_section1 .sc_shapes {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    overflow: hidden;
+}
+
+.sc_section1 .sc_shapes .shape {
+    position: absolute;
+}
+
+.sc_section1 .sc_shape1 {
+    bottom: -35%;
+    left: -30%;
+    animation: shape_left 3s linear infinite alternate;
+    transition: linear .3s;
+}
+
+.sc_section1 .sc_shape2 {
+    bottom: 65%;
+    right: -30%;
+    animation: shape_right 3s linear infinite alternate;
+}
+
+.sc_section1 .sec1_form {
+    display: none;
+    transition: linear .3s;
+}
+
+.sc_section1 .sec1_logo {
+    margin: 0;
+}
+
+.sc_section1 .sec1_box {
+    /* height: 100vh; */
+    /* display: flex; */
+    justify-content: center;
+    /* align-items: center; */
+}
+
+@keyframes zoom {
+    from {
+        transform: scale(.5);
+        box-shadow: 0 0 0 0 #95d9e1;
+    }
+    to {
+        transform: scale(1);
+        box-shadow: 0 0 50px 10px #95d9e1;
+    }
+}
+
+.sc_sec_form_show .sec1_box {
+    /* height: auto; */
+    display: block;
+}
+
+.sc_sec_form_show .sec1_logo {
+    animation: none;
+    margin: 0 0 2%;
+}
+
+.sc_sec_form_show .sec1_logo img {
+    width: 200px;
+}
+
+.sc_sec_form_show .sec1_form {
+    display: block;
+}
+
+.sc_sec_form_show .sc_shape1 {
+    bottom: auto;
+    top: 65%;
+    animation: shape_left 5s linear infinite alternate;
+}
+
+.sc_sec_form_show .sc_shape2 {
+    bottom: 65%;
+    animation: shape_right 5s linear infinite alternate;
+}
+
+@keyframes shape_left {
+    from {
+        left: 00%;
+        opacity: 0;
+    }
+    to {
+        left: -30%;
+        opacity: 1;
+    }
+}
+
+@keyframes shape_right {
+    from {
+        right: 0%;
+        opacity: 0;
+    }
+    to {
+        right: -30%;
+        opacity: 1;
+    }
+}
+
+.modal-body h3 {
+    margin: 20px 0 10px;
+    font-size: 50px;
+    font-weight: bold;
+    letter-spacing: 5px;
+    line-height: 38px;
+}
+
+.modal-body p {
+    color: #000;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.checkin_modal_box h3 {
+    color: #6BCB77;
+}
+
+.checkout_modal_box h3 {
+    color: #FF6B6B;
+}
+
+.close_modal_box h3 {
+    color: red;
+}
+
+
+/*responsive*/
+
+@media screen and (max-width:767px) {
+    .sc_sec_form_show .sec1_logo img {
+        width: 100px
+    }
+    .sc_section1 .sec1_form h1 {
+        letter-spacing: 0;
+        font-size: 26px;
+        margin: 20px 0 10px;
+    }
+    .sc_section1 .sec1_form p {
+        font-size: 16px;
+    }
+    .sc_section1 .sec1_form label {
+        font-size: 16px;
+        font-weight: 400;
+    }
+    .sc_section1 .sec1_form .form-control {
+        font-size: 16px;
+        padding: 10px;
+    }
+    .sec1_box {
+        padding: 25% 0;
+    }
+    .sec1_logo {
+        margin: -50px 0 10%;
+    }
+    .sc_shapes {
+        bottom: -5%;
+    }
+    .sc_shape1 {
+        bottom: auto;
+        left: -30%;
+        top: -30%;
+    }
+    .sc_shape2 {
+        bottom: auto;
+        right: -30%;
+        top: -30%;
+    }
+    .sc_section1 .sec1_form .btn {
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 0;
+        font-weight: 500;
+        font-size: 15px;
+        padding: 8px;
+        border: none;
+        border-radius: 10px;
+    }
+}
