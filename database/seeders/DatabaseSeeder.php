@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             SystemModuleSeeder::class,
             LeaveManagement::class,
             EmployeeGroupSeeder::class,
+            EmployeeCompanySeeder::class,
             EmployeeSeeder::class,
             DepartmentSeeder::class,
             DesignationSeeder::class,

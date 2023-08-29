@@ -31,6 +31,7 @@ class EmployeeSeeder extends Seeder
                 'employee_status' => 3,
                 'employee_designation' => 1,
                 'employee_department' => 1,
+                'employee_company' => 1,
                 'employee_group' => 1,
                 'employee_jobtitle' => "Administrator",
                 'employee_offday1' => "Sunday",

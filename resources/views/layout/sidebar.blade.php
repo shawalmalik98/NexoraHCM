@@ -864,7 +864,7 @@
                                             
                     @if(!empty($permission) && ($permission[32]['permission_status'] == 1 || $permission[33]['permission_status'] == 1 || $permission[49]['permission_status'] == 1 || $permission[50]['permission_status'] == 1 || $permission[36]['permission_status'] == 1 ) && ($permission[32]['module_accessibility'] == 1 || $permission[33]['module_accessibility'] == 1 || $permission[49]['module_accessibility'] == 1 || $permission[50]['module_accessibility'] == 1 || $permission[36]['module_accessibility'] == 1 ))
                         
-                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-rooms' || $title == 'manage-locations' || $title == 'system-settings') show @endif">
+                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-rooms' || $title == 'manage-locations' || $title == 'system-settings' || $title == 'manage-companies') show @endif">
 
                             <span class="menu-link">
                                 <span class="menu-icon">
@@ -875,6 +875,15 @@
                             </span>
 
                             <div class="menu-sub menu-sub-accordion menu-active-bg">
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link nav-link @if($title == 'manage-companies') active @endif" href="{{url('companies')}}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+                                        <span class="menu-title">Manage Companies</span>
+                                    </a>
+                                </div>
 
                                 @if(!empty($permission) && $permission[32]['module_accessibility'] == 1 && $permission[32]['permission_status'] == 1)
 

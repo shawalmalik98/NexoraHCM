@@ -11,7 +11,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <a href="{{url()->previous()}}" class="btn btn-sm fw-bold btn-primary"  >Go Back</a>
+                <a href="{{url()->previous()}}" class="btn btn-sm fw-bold btn-primary">Go Back</a>
             </div>
         </div>
     </div>
@@ -119,33 +119,6 @@
                                 <input type="number" class="form-control " placeholder="Enter Employee Grade"
                                 required name="employee_grade" min="1" max="25" value="{{ $employee_detail[0]['employee_grade'] }}" />
                             </div>
-                            
-                            <div class="col-md-6 ">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Department</label>
-                                <select class="form-select" data-control="select2" data-hide-search="false" name="employee_department" required="required" id="department_select">
-                                    @if (!empty($all_departments))
-                                        @foreach ($all_departments as $all_department)
-                                            <option value="{{ $all_department['department_id'] }}" data-depart_id="{{ $all_department['department_id'] }}" @if ($employee_detail[0]['employee_department'] == $all_department['department_id']) selected @endif>{{ $all_department['department_name'] }}</option>
-                                        @endforeach
-                                    @endif                               
-                                </select>
-                            </div>
-                            
-                            
-                            <div class="col-md-6 ">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Designation</label>
-                                <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select Designation" name="employee_designation"
-                                id="designss" pla required>
-                                @if (!empty($employee_designation_detail))
-                                    @foreach ($employee_designation_detail as $designation)
-                                    <option value="{{$designation['designation_id'] }}"
-                                        @if ($employee_detail[0]['employee_designation'] == $designation['designation_id'] ) selected @endif>
-                                        {{ $designation['designation_name'] }}
-                                    </option>
-                                    @endforeach
-                                @endif                                                      
-                                </select>
-                            </div>
 
                             <div class="col-md-6 ">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Group</label>
@@ -161,6 +134,46 @@
                                 </select>
                             </div>
                             
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-4 ">
+                                <label class="required fs-6 fw-semibold mb-2">Employee Company</label>
+                                <select class="form-select" data-control="select2" data-hide-search="false" name="employee_company" required="required">
+                                    @if (!empty($all_companies))
+                                        @foreach ($all_companies as $company)
+                                            <option value="{{ $company['company_id'] }}" @if($employee_detail[0]['employee_company'] == $company['company_id']) selected @endif>{{ $company['company_name'] }}</option>
+                                        @endforeach
+                                    @endif                               
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4 ">
+                                <label class="required fs-6 fw-semibold mb-2">Employee Department</label>
+                                <select class="form-select" data-control="select2" data-hide-search="false" name="employee_department" required="required" id="department_select">
+                                    @if (!empty($all_departments))
+                                        @foreach ($all_departments as $all_department)
+                                            <option value="{{ $all_department['department_id'] }}" data-depart_id="{{ $all_department['department_id'] }}" @if ($employee_detail[0]['employee_department'] == $all_department['department_id']) selected @endif>{{ $all_department['department_name'] }}</option>
+                                        @endforeach
+                                    @endif                               
+                                </select>
+                            </div>
+                            
+                            
+                            <div class="col-md-4 ">
+                                <label class="required fs-6 fw-semibold mb-2">Employee Designation</label>
+                                <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select Designation" name="employee_designation"
+                                id="designss" pla required>
+                                @if (!empty($employee_designation_detail))
+                                    @foreach ($employee_designation_detail as $designation)
+                                    <option value="{{$designation['designation_id'] }}"
+                                        @if ($employee_detail[0]['employee_designation'] == $designation['designation_id'] ) selected @endif>
+                                        {{ $designation['designation_name'] }}
+                                    </option>
+                                    @endforeach
+                                @endif                                                      
+                                </select>
+                            </div>
                         </div>
 
                         <div class="row g-9 mb-8">

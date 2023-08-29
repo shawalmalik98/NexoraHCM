@@ -27,6 +27,7 @@ return new class extends Migration
                 $table->string('employee_status', 255);
                 $table->integer('employee_designation');
                 $table->integer('employee_department');
+                $table->integer('employee_company')->default(1);
                 $table->integer('employee_group')->default(1);
                 $table->string('employee_jobtitle', 255);
                 $table->string('employee_offday1', 255)->nullable();

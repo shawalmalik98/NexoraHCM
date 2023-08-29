@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\File;
 use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
-use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess};
+use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company};
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee, MailTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
@@ -92,6 +92,8 @@ class EmployeeController extends Controller
 
             $all_departments = Department::get()->toArray();
 
+            $all_companies = Company::get()->toArray();
+
             $all_locations = OfficeLocation::get()->toArray();
 
             $all_banks = Bank::get()->toArray();
@@ -114,7 +116,7 @@ class EmployeeController extends Controller
 
             $email_config = EmailConfiguration::get(['email_config_id'])->toArray();
 
-            $send_data = compact('title','login_user','all_departments','all_banks','reporting_managers','get_modules','all_locations','employee_active','no_of_employees','randomPassword','manage_leaves','employment_status','email_config','employee_group');
+            $send_data = compact('title','login_user','all_departments','all_banks','reporting_managers','get_modules','all_locations','employee_active','no_of_employees','randomPassword','manage_leaves','employment_status','email_config','employee_group','all_companies');
             
             if(!empty($no_of_employees && (!empty($employee_active)))){
                 if($no_of_employees[0]['no_of_employees'] != "unlimited" && $no_of_employees[0]['no_of_employees'] <= $employee_active ){
@@ -167,6 +169,7 @@ class EmployeeController extends Controller
                 'employee_grade' => 'required|min:1|max:25|numeric',
                 'employee_designation' => 'required',
                 'employee_department' => 'required',
+                'employee_company' => 'required',
                 'employee_jobtitle' => 'required',
                 'shift_start_timings' => 'required|date_format:H:i',
                 'shift_end_timings' => 'required|date_format:H:i',
@@ -283,6 +286,7 @@ class EmployeeController extends Controller
                 $add_employee->employee_status = $employee_data->input('employee_status');
                 $add_employee->employee_designation = $employee_data->input('employee_designation');
                 $add_employee->employee_department = $employee_data->input('employee_department');
+                $add_employee->employee_company = $employee_data->input('employee_company');
                 $add_employee->employee_jobtitle = $employee_data->input('employee_jobtitle');
                 $add_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
                 $add_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
@@ -448,6 +452,7 @@ class EmployeeController extends Controller
                                 $mark_attendance->att_check_in_time = '00:00:00';
                                 $mark_attendance->att_check_out_time = '00:00:00';
                                 $mark_attendance->att_check_in_status = '0';
+                                $mark_attendance->att_check_out_source = 1;
                                 $mark_attendance->att_check_out_status = 0;
                                 $mark_attendance->att_shift_start_time = $employee_data->input('shift_start_timings').':00';
                                 $mark_attendance->att_shift_end_time = $employee_data->input('shift_end_timings').':00';
@@ -456,8 +461,6 @@ class EmployeeController extends Controller
                                 $mark_attendance->att_for_month = $month;
                                 $mark_attendance->att_for_year = $year;
                                 $mark_attendance->save();
-
-
                             }
                         }
 
@@ -926,6 +929,8 @@ class EmployeeController extends Controller
 
             $employee_designation_detail = Designation::where('department_id', $department_id)->get()->toArray();
 
+            $all_companies = Company::get()->toArray();
+
             $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
 
             $employment_period = EmploymentPeriod::where('employee_id',$employee_id)->orderBy('employement_period_id','DESC')->get(['effective_date'])->toArray();
@@ -970,7 +975,7 @@ class EmployeeController extends Controller
 
             $employee_groups = EmployeeGroup::get()->toArray();
 
-            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups');
+            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies');
 
             return view('employee.edit-employee', $send_data);
         }catch(\Exception $e){
@@ -1028,6 +1033,7 @@ class EmployeeController extends Controller
                 'employee_grade' => 'required|min:1|max:25|numeric',
                 'employee_designation' => 'required',
                 'employee_department' => 'required',
+                'employee_company' => 'required',
                 'employee_jobtitle' => 'required',
                 'employee_password' => 'required',
                 'employee_isactive' => 'required|in:1,0',
@@ -1176,6 +1182,7 @@ class EmployeeController extends Controller
                     $update_employee->employee_status = $employee_data->input('employee_status');
                     $update_employee->employee_designation = $employee_data->input('employee_designation');
                     $update_employee->employee_department = $employee_data->input('employee_department');
+                    $update_employee->employee_company = $employee_data->input('employee_company');
                     $update_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
                     $update_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
                     $update_employee->employee_ra = $employee_data->input('employee_reporting_person');
@@ -3436,13 +3443,11 @@ class EmployeeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Employee information download', $e);
-            $send_data = compact('title');
             return view('errors.500');
 
         }finally{
 
             ActivityTracker::track_activity('Employee information download');
-           
 
         }
     }

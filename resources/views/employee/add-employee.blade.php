@@ -116,8 +116,20 @@
                         </div>  
                     
                         <div class="row g-9 mb-8">
+
+                            <div class="col-md-4 fv-row">
+                                <label class="required fs-6 fw-semibold mb-2">Employee Company</label>
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Company" name="employee_company" required="required">
+                                    <option value="">Select Employee Company</option>
+                                    @if(!empty($all_companies))
+                                        @foreach ($all_companies as $company)
+                                            <option value="{{ $company['company_id'] }}">{{ $company['company_name'] }}</option>
+                                        @endforeach
+                                    @endif                                        
+                                </select>
+                            </div>
                             
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Department</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Department" name="employee_department"
                                 required="required" id="department_select">
@@ -133,7 +145,7 @@
                             </div>
                             
                             
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Designation</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Designation" name="employee_designation"
                                 id="designss" required>

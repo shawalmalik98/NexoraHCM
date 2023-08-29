@@ -53,6 +53,12 @@ return new class extends Migration
                 });
             }
 
+            if (!Schema::hasColumn('tbl_employees', 'employee_company')) {
+                Schema::table('tbl_employees', function (Blueprint $table) {
+                    $table->integer('employee_company')->default(1);
+                });
+            }
+
             Schema::table('tbl_employees', function (Blueprint $table) {
                 $table->string('employee_offday1', 255)->nullable()->change();
             });

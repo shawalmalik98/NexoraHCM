@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController};
+use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController};
 
 //
   Route::middleware(['userAuthentication','userPermission','userStatusChecker'])->group(function (){
@@ -909,6 +909,14 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
   Route::post('/apply-rpl-leave', [RplController::class, 'apply_rpl_leave_request']);
   Route::post('/update-rpl-leave-request', [RplController::class, 'update_rpl_leave_request']);
   Route::post('/delete-rpl-leave-request', [RplController::class, 'delete_rpl_leave_request']);
+
+
+  Route::prefix('/companies')->group(function () {
+    Route::get('/', [CompanyController::class, 'index']);
+    Route::post('/add-company', [CompanyController::class, 'add_company']);
+    Route::post('/update-company', [CompanyController::class, 'update_company']);
+    Route::get('/discard-company/{company_id}', [CompanyController::class, 'delete_company']);
+  });
   
 
   
