@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use App\Models\{Loan, LoanRequest, Employees, EmployeeInformation, LoanInstallment, RequestApproval, OfficeLocation};
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, MailTrait};
 use App\Helpers\{ActivityTracker, CustomHelper};
@@ -24,6 +25,8 @@ class LoanController extends Controller
             $title = Self::MAIN_TITLE;
 
             $login_user = $this->get_login_user_detail();
+
+            $currency = CustomHelper::hcm_system_currency();
 
             $limit_query = '500';
                 
@@ -73,19 +76,19 @@ class LoanController extends Controller
 
 
             $total_loan = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
-            ->whereRaw($where_clause)->sum('loan_given_amount');
+            ->whereRaw($where_clause)->sum(DB::raw('CAST(loan_given_amount AS DECIMAL(18, 2))'));
 
             $loan_return = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
-            ->whereRaw($where_clause)->sum('loan_submitted_amount');
+            ->whereRaw($where_clause)->sum(DB::raw('CAST(loan_submitted_amount AS DECIMAL(18, 2))'));
 
             $loan_reamining = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
-            ->whereRaw($where_clause)->sum('loan_remaining_amount');
+            ->whereRaw($where_clause)->sum(DB::raw('CAST(loan_remaining_amount AS DECIMAL(18, 2))'));
 
             $all_employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            $send_data = compact('title','login_user','all_loans','total_loan','loan_return','loan_reamining','all_employees', 'employee_locations');
+            $send_data = compact('title','login_user','all_loans','total_loan','loan_return','loan_reamining','all_employees', 'employee_locations','currency');
             
             return view('loan.all-loans', $send_data);     
 
@@ -607,6 +610,8 @@ class LoanController extends Controller
       
             $login_user = $this->get_login_user_detail();
 
+            $currency = CustomHelper::hcm_system_currency();
+
             $all_requests = array();
             $employees_data = array();
             $responsed_request = array();
@@ -621,7 +626,7 @@ class LoanController extends Controller
             
             if($login_user[0]['employee_department'] == 3 || $login_user[0]['employee_department'] == 1){
              
-                $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
+                $where_clause = "1=1 AND employee_isactive = '".$status."'";
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_created_date) || !empty($request_data->req_status)){
                     $limit_query = '';
@@ -689,7 +694,7 @@ class LoanController extends Controller
     
             }
           
-           $send_data = compact('title','login_user','all_requests','employees_data','employee_locations','responsed_request');
+           $send_data = compact('title','login_user','all_requests','employees_data','employee_locations','responsed_request','currency');
             
            return view('loan.all-loan-request', $send_data);
 
@@ -720,9 +725,9 @@ class LoanController extends Controller
 
             $responsed_request = RequestApproval::where('request_module_id', 5)->whereIn('request_id', $loans_request_id)->pluck('request_id')->toArray();
 
-            $loan_given_amount = LoanRequest::selectRaw('sum(`loan_request_amount`) as total')->where('request_approved_by_finance', 2)->where('request_employee_id',session('user_session'))->get()->toArray();
+            $loan_given_amount = LoanRequest::selectRaw('sum(loan_request_amount) as total')->where('request_approved_by_finance', 2)->where('request_employee_id',session('user_session'))->get()->toArray();
           
-            $loan_return_amount = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_loan_installments', 'tbl_loan_installments.loan_installment_loan_id', '=', 'tbl_loans.loan_id')->where('employee_id',session('user_session'))->selectRaw('sum(`loan_installment_amount`) as total')->get()->toArray();
+            $loan_return_amount = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_loan_installments', 'tbl_loan_installments.loan_installment_loan_id', '=', 'tbl_loans.loan_id')->where('employee_id',session('user_session'))->selectRaw('sum(loan_installment_amount) as total')->get()->toArray();
             
             $loan_remaining_amount = $loan_given_amount[0]['total'] - $loan_return_amount[0]['total'] ;
             
