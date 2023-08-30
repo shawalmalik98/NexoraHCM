@@ -894,6 +894,13 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::post('/get-source-data', [PayrollController::class, 'get_deduction_source_data']);
         Route::post('/update-deduction-policy', [PayrollController::class, 'update_deduction_policy']);
       });
+
+      Route::prefix('/companies')->group(function () {
+        Route::get('/', [CompanyController::class, 'index']);
+        Route::post('/add-company', [CompanyController::class, 'add_company']);
+        Route::post('/update-company', [CompanyController::class, 'update_company']);
+        Route::get('/discard-company/{company_id}', [CompanyController::class, 'delete_company']);
+      });
     
   });
 
@@ -911,12 +918,7 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
   Route::post('/delete-rpl-leave-request', [RplController::class, 'delete_rpl_leave_request']);
 
 
-  Route::prefix('/companies')->group(function () {
-    Route::get('/', [CompanyController::class, 'index']);
-    Route::post('/add-company', [CompanyController::class, 'add_company']);
-    Route::post('/update-company', [CompanyController::class, 'update_company']);
-    Route::get('/discard-company/{company_id}', [CompanyController::class, 'delete_company']);
-  });
+  
   
 
   

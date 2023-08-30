@@ -176,7 +176,8 @@ class EmployeeSeeder extends Seeder
                 '/attendance-locker',
                 '/employee-group',
                 '/leave-policy',
-                '/deduction-policy'
+                '/deduction-policy',
+                '/companies'
             ];
             foreach($permissionRecords as $permission){
                 DB::table('tbl_employee_permission')->insert([

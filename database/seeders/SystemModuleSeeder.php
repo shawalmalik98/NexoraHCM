@@ -98,7 +98,8 @@ class SystemModuleSeeder extends Seeder
                 ('Attendance Locker', '/attendance-locker', '1',1),
                 ('Employee Group', '/employee-group', '1',1),
                 ('Leave Policy', '/leave-policy', '1',1),
-                ('Attendance Deduction Policy','/deduction-policy', '1',1)
+                ('Attendance Deduction Policy','/deduction-policy', '1',1),
+                ('Companies','/companies', '1',1)
             ");
         }
       

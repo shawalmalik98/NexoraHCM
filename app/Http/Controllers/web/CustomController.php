@@ -12,93 +12,93 @@ class CustomController extends Controller
 {
     use LogGenerateTrait;
 
-    protected function fetch_all_employees_permission(){
+    // protected function fetch_all_employees_permission(){
 
-        $get_all_employees = Employees::get(['employee_id','employee_department','employee_can_ra'])->toArray();
+    //     $get_all_employees = Employees::get(['employee_id','employee_department','employee_can_ra'])->toArray();
 
-        $permissionRecords = [
-            '/attendance-locker',
-            '/employee-group',
-            '/leave-policy',
-            '/deduction-policy'
-        ];
+    //     $permissionRecords = [
+    //         '/attendance-locker',
+    //         '/employee-group',
+    //         '/leave-policy',
+    //         '/deduction-policy'
+    //     ];
 
-        if(!empty($get_all_employees)){
-            $process = '';
-            foreach($get_all_employees as $employees){
-             $employee_permission = Permission::where('employee_id',$employees['employee_id'])->pluck('module_url')->toArray();
-                if($employees['employee_department'] == 2 || $employees['employee_department'] == 1 ){
+    //     if(!empty($get_all_employees)){
+    //         $process = '';
+    //         foreach($get_all_employees as $employees){
+    //          $employee_permission = Permission::where('employee_id',$employees['employee_id'])->pluck('module_url')->toArray();
+    //             if($employees['employee_department'] == 2 || $employees['employee_department'] == 1 ){
 
-                    foreach($permissionRecords as $permissionRecord){
-                        if(!in_array($permissionRecord,$employee_permission)){
-                            $insert_employee_permissions = new Permission();
-                            $insert_employee_permissions->employee_id = $employees['employee_id'];
-                            $insert_employee_permissions->module_url = $permissionRecord;
-                            $insert_employee_permissions->permission_status = 1;
-                            $process = $insert_employee_permissions->save();
-                        }
-                    }
+    //                 foreach($permissionRecords as $permissionRecord){
+    //                     if(!in_array($permissionRecord,$employee_permission)){
+    //                         $insert_employee_permissions = new Permission();
+    //                         $insert_employee_permissions->employee_id = $employees['employee_id'];
+    //                         $insert_employee_permissions->module_url = $permissionRecord;
+    //                         $insert_employee_permissions->permission_status = 1;
+    //                         $process = $insert_employee_permissions->save();
+    //                     }
+    //                 }
 
-                }elseif($employees['employee_department'] !== 2 && $employees['employee_department'] !== 1 && $employees['employee_can_ra'] == 1){
+    //             }elseif($employees['employee_department'] !== 2 && $employees['employee_department'] !== 1 && $employees['employee_can_ra'] == 1){
 
-                    $mypermissions = [];
+    //                 $mypermissions = [];
 
-                        foreach($permissionRecords as $permissionRecord){
-                            if(!in_array($permissionRecord,$employee_permission)){
-                                if(in_array( $permissionRecord,$mypermissions )){
-                                    $insert_employee_permissions = new Permission();
-                                    $insert_employee_permissions->employee_id = $employees['employee_id'];
-                                    $insert_employee_permissions->module_url = $permissionRecord;
-                                    $insert_employee_permissions->permission_status = 1;
-                                    $process = $insert_employee_permissions->save();
-                                }else{
-                                    $insert_employee_permissions = new Permission();
-                                    $insert_employee_permissions->employee_id = $employees['employee_id'];
-                                    $insert_employee_permissions->module_url = $permissionRecord;
-                                    $insert_employee_permissions->permission_status = 0;
-                                    $process = $insert_employee_permissions->save();
-                                }
-                            }
-                        }
-                }else{
+    //                     foreach($permissionRecords as $permissionRecord){
+    //                         if(!in_array($permissionRecord,$employee_permission)){
+    //                             if(in_array( $permissionRecord,$mypermissions )){
+    //                                 $insert_employee_permissions = new Permission();
+    //                                 $insert_employee_permissions->employee_id = $employees['employee_id'];
+    //                                 $insert_employee_permissions->module_url = $permissionRecord;
+    //                                 $insert_employee_permissions->permission_status = 1;
+    //                                 $process = $insert_employee_permissions->save();
+    //                             }else{
+    //                                 $insert_employee_permissions = new Permission();
+    //                                 $insert_employee_permissions->employee_id = $employees['employee_id'];
+    //                                 $insert_employee_permissions->module_url = $permissionRecord;
+    //                                 $insert_employee_permissions->permission_status = 0;
+    //                                 $process = $insert_employee_permissions->save();
+    //                             }
+    //                         }
+    //                     }
+    //             }else{
 
-                    $mypermissions = [];
+    //                 $mypermissions = [];
 
-                    foreach($permissionRecords as $permissionRecord){
-                        if(!in_array($permissionRecord,$employee_permission)){
-                            if(in_array($permissionRecord,$mypermissions)){
-                                $insert_employee_permissions = new Permission();
-                                $insert_employee_permissions->employee_id = $employees['employee_id'];
-                                $insert_employee_permissions->module_url = $permissionRecord;
-                                $insert_employee_permissions->permission_status = 1;
-                                $process = $insert_employee_permissions->save();
-                            }else{
-                                $insert_employee_permissions = new Permission();
-                                $insert_employee_permissions->employee_id = $employees['employee_id'];
-                                $insert_employee_permissions->module_url = $permissionRecord;
-                                $insert_employee_permissions->permission_status = 0;
-                                $process = $insert_employee_permissions->save();
-                            }
-                        }
-                    }
+    //                 foreach($permissionRecords as $permissionRecord){
+    //                     if(!in_array($permissionRecord,$employee_permission)){
+    //                         if(in_array($permissionRecord,$mypermissions)){
+    //                             $insert_employee_permissions = new Permission();
+    //                             $insert_employee_permissions->employee_id = $employees['employee_id'];
+    //                             $insert_employee_permissions->module_url = $permissionRecord;
+    //                             $insert_employee_permissions->permission_status = 1;
+    //                             $process = $insert_employee_permissions->save();
+    //                         }else{
+    //                             $insert_employee_permissions = new Permission();
+    //                             $insert_employee_permissions->employee_id = $employees['employee_id'];
+    //                             $insert_employee_permissions->module_url = $permissionRecord;
+    //                             $insert_employee_permissions->permission_status = 0;
+    //                             $process = $insert_employee_permissions->save();
+    //                         }
+    //                     }
+    //                 }
 
-                }
+    //             }
 
-            }
-            if($process){
+    //         }
+    //         if($process){
 
-                return response()->json([
-                    'status'=> 'TRUE',
-                    'msg' => 'Function executed succesfully'
-                ]);
-            }else{
-                return response()->json([
-                    'status'=> 'FALSE',
-                    'msg' => 'This job is already exceuted'
-                ]);
-            }
-        }
-    }
+    //             return response()->json([
+    //                 'status'=> 'TRUE',
+    //                 'msg' => 'Function executed succesfully'
+    //             ]);
+    //         }else{
+    //             return response()->json([
+    //                 'status'=> 'FALSE',
+    //                 'msg' => 'This job is already exceuted'
+    //             ]);
+    //         }
+    //     }
+    // }
 
     protected function request_manager_status(Request $request_data){
 

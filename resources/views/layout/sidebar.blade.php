@@ -876,14 +876,16 @@
 
                             <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                                <div class="menu-item search-item">
-                                    <a class="menu-link nav-link @if($title == 'manage-companies') active @endif" href="{{url('companies')}}">
-                                        <span class="menu-bullet">
-                                            <i class="far fa-circle nav-icon"></i>
-                                        </span>
-                                        <span class="menu-title">Manage Companies</span>
-                                    </a>
-                                </div>
+                                @if(!empty($permission) && $permission[76]['module_accessibility'] == 1 && $permission[76]['permission_status'] == 1)
+                                    <div class="menu-item search-item">
+                                        <a class="menu-link nav-link @if($title == 'manage-companies') active @endif" href="{{url('companies')}}">
+                                            <span class="menu-bullet">
+                                                <i class="far fa-circle nav-icon"></i>
+                                            </span>
+                                            <span class="menu-title">Manage Companies</span>
+                                        </a>
+                                    </div>
+                                @endif
 
                                 @if(!empty($permission) && $permission[32]['module_accessibility'] == 1 && $permission[32]['permission_status'] == 1)
 
