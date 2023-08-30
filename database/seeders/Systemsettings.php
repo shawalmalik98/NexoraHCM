@@ -18,13 +18,13 @@ class Systemsettings extends Seeder
         $hrm_setting = DB::select('SELECT * FROM tbl_hrm_settings');
         if(empty($hrm_setting)){
             DB::table('tbl_hrm_settings')->insert([
-                'company_logo' => "fav-icons.png",
+                'company_logo' => "default-img.png",
                 'company_name' => "Ismail Industries Limited",
                 'company_email' => "saaahmed@ismailindustries.com",
                 'company_address' => "17, Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan.",
                 'company_email_permission' => 0,
                 'push_notification_permission' => 0,
-                'company_favicon' => "fav-icons.png",
+                'company_favicon' => "default-img.png",
                 'check_in_flexibility_time' => 15,
                 'check_out_flexibility_time' => 15,
                 'no_of_employees' => "unlimited",

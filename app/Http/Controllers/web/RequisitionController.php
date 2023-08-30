@@ -222,7 +222,7 @@ class RequisitionController extends Controller
                 ->groupBy('main_requisition_id');
             })
             ->where('requisition_added_by', $login_user[0]['employee_id'])
-            ->groupBy('requisition_id')
+            ->groupBy('requisition_id','department_name','requisition_job_title','requisition_job_type','requisition_expected_salary','requisition_shift_time','requisition_shift_start_time','requisition_shift_end_time','requisition_date_needed','requisition_additional_info','requisition_added_by','create_at','requisition_status','requisition_status','interview_status_level','no_of_position','office_location')
             ->orderBy("requisition_id","DESC" )
             ->get(['requisition_id','department_name','requisition_job_title','requisition_job_type','requisition_expected_salary','requisition_shift_time','requisition_shift_start_time','requisition_shift_end_time','requisition_date_needed','requisition_additional_info','requisition_added_by','create_at','requisition_status','requisition_status','interview_status_level','no_of_position','office_location'])->toArray();
 

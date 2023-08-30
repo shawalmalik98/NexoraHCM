@@ -71,8 +71,8 @@ class InterviewsController extends Controller
                 }
               
             }else{
-                $where_clause .= ' AND MONTH(interview_date) = MONTH(now())
-                and YEAR(interview_date) = YEAR(now())';
+                $where_clause .= ' AND MONTH(interview_date) = MONTH(GETDATE())
+                and YEAR(interview_date) = YEAR(GETDATE())';
             }
             
             $interviews =  Interview::join('tbl_interview_candidate','tbl_interviews.interview_candidate_id','tbl_interview_candidate.candidate_id')

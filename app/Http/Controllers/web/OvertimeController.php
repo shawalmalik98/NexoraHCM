@@ -30,7 +30,7 @@ class OvertimeController extends Controller
             $where_clause = '1=1';
 
             if(empty($request->is_active)){
-                $where_clause   .= ' AND employee_isactive = "1"';
+                $where_clause   .= " AND employee_isactive = '1'";
             }else{
                 if(!empty($request->is_active) && $request->is_active == 1){
                     $where_clause   .= ' AND employee_isactive = "1"'; 

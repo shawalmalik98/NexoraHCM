@@ -72,8 +72,8 @@
             </div>
             <div class="col-lg-4">
                 <p>{{ $companySetting['company_address']}}</p>
-                <p><a href="tel:021-34540913">Contact: 021-34540913</a></p>
-                <p><a href="https://sourcecode.world//">sourcecode.world</a></p>
+                <p><a href="#">(+92 21) 34311172 - 76</a></p>
+                <p><a href="https://ismailindustries.com.pk/">Ismail Industries Limited</a></p>
             </div>
         </div>
     </div>

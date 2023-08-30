@@ -43,7 +43,7 @@ class RplController extends Controller
 
             if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
                 
-                $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
+                $where_clause = "1=1 AND employee_isactive = '".$status."'";
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_for_date)  || !empty($request_data->request_submited_date) || !empty($request_data->req_status)){
                     

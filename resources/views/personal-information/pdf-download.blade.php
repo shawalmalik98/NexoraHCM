@@ -37,12 +37,9 @@
                 <tr>
                     <td class="small-font" style="width:60%"> Date: <b>{{ date('Y-m-d') }}</b></td>
                     <td class="small-font" style="width:20%;">
-                        Progressive Center, <br> 
-						Office no.603 6th Floor <br>
-                        Shahrah-e-Faisal, <br>
-						Block 6 PECHS <br>
-                        Contact: 021-34540913 <br>
-						www.sourcecode.world
+                        17, Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan. <br>
+                        Contact: (+92 21) 34311172 - 76 <br>
+						https://ismailindustries.com.pk/
                     </td>
                 </tr>
             </table>  
