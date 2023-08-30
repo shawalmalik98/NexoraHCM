@@ -53,7 +53,7 @@
                         
                         <div class="card-body">
                             <div class="text-gray-900 fw-bold fs-2 mb-2 mt-5" data-kt-countup="true" data-kt-countup-value="{{ $total_loan }}"></div>
-                            <div class="fw-semibold text-gray-400">Total Loan Given (By SourceCode)</div>
+                            <div class="fw-semibold text-gray-400">Total Loan Given (By Company)</div>
                         </div>
                         
                     </div>

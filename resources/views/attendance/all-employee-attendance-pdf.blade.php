@@ -74,7 +74,7 @@
             @php $apply_month_year =  $month .'-'. $year; @endphp
 
             @if(!empty($companySetting['company_logo']))
-                <img src="{{$companySetting['company_logo']}}" draggable="false" alt="logo" class="logo">
+                <img src="{{$companySetting['company_logo']}}" draggable="false" alt="logo" class="logo" style="width:10%">
             @else
                 <img src="{{ url('/portal_assets/images/logo.png') }}" draggable="false" class="img-fluid" >
             @endif

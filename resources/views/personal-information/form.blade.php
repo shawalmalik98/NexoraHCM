@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-    <title>Portal || SourceCode</title>
+    <title>IIL - HCM</title>
     <meta charset="utf-8" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
@@ -615,7 +615,7 @@
                         <thead>
                             <tr>
                                 <th scope="col" colspan="4" class="pi">DO YOU HAVE ANY RELATIVES AT
-                                    SOURCECODE PRIVATE LIMITED?</th>
+                                    ISMAIL INUDSTRIES LIMITED?</th>
                             </tr>
                         </thead>
                         <tbody>

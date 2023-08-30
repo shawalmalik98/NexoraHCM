@@ -4,14 +4,14 @@
 	<head>
 		<title>IIL - HCM</title>
 		<meta charset="utf-8" />
-		<meta name="description" content="Streamline your HR management processes with SourceCode HCM, the fastest-growing HR software solution available. Our comprehensive On-Cloud Human Capital Management system is designed to meet the needs of modern businesses and strictly adheres to local and global best HR practices. Our diverse range of customers from various industries are benefiting from SourceCode HCM, making it the preferred choice for businesses looking to optimize their HR management processes." />
-		<meta name="keywords" content="SourceCode - HCM, SourceCode - HRM, SourceCode, HCM, HRM, Human Capital Management, Human Resource Management." />
+		<meta name="description" content="Ismail Industries Limited - HCM" />
+		<meta name="keywords" content="IIL - HCM, IIL - HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta property="og:locale" content="en_US" />
 		<meta property="og:type" content="article" />
 		<meta property="og:title" content="The Ultimate HR Management Solution" />
 		<meta property="og:url" content="{{ url('/') }}" />
-		<meta property="og:site_name" content="SourceCode - HCM" />
+		<meta property="og:site_name" content="IIL - HCM" />
 		<meta name="csrf-token" content="{{ csrf_token() }}" />
 		<link rel="canonical" href="{{ url('/') }}" />
 		<link rel="icon" href="{{ url('portal_assets/images/fav-icons.png') }}"/>

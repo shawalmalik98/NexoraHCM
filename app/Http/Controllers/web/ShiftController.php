@@ -65,8 +65,8 @@ class ShiftController extends Controller
                     ->whereIn('tbl_employees.employee_id',$total_team_member)
                     ->whereIn('shift_start_from_date',function($query) use($date){
                         $query->fromRaw('tbl_shift_management as sub_table')
-                        ->selectRaw('MAX(STR_TO_DATE(shift_start_from_date,"%Y-%m-%d"))')
-                        ->whereRaw('STR_TO_DATE(shift_start_from_date,"%Y-%m-%d") <= "'.$date.'"')
+                        ->selectRaw('MAX(CONVERT(DATE, shift_start_from_date, 120))')
+                        ->whereRaw("CONVERT(DATE, shift_start_from_date, 120) <= '".$date."'")
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
                     })->get(['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by','shift_id','employee_name','employee_code'])->toArray();
 
@@ -92,8 +92,6 @@ class ShiftController extends Controller
         }finally{
           
             ActivityTracker::track_activity('View All Shift Time');
-       
-            
            
         }
     }
@@ -159,8 +157,8 @@ class ShiftController extends Controller
                     ->whereIn('tbl_employees.employee_id',$total_team_member)
                     ->whereIn('shift_start_from_date',function($query) use($date){
                         $query->fromRaw('tbl_shift_management as sub_table')
-                        ->selectRaw('MAX(STR_TO_DATE(shift_start_from_date,"%Y-%m-%d"))')
-                        ->whereRaw('STR_TO_DATE(shift_start_from_date,"%Y-%m-%d") <= "'.$date.'"')
+                        ->selectRaw('MAX(CONVERT(DATE, shift_start_from_date, 120))')
+                        ->whereRaw("CONVERT(DATE, shift_start_from_date, 120) <= '".$date."'")
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
                     })->get(['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by','shift_id','employee_name','employee_code'])->toArray();
 
@@ -187,8 +185,6 @@ class ShiftController extends Controller
         }finally{
 
             ActivityTracker::track_activity('Download Shift Management Report pdf');
-
-            
            
         }
     }
@@ -242,8 +238,8 @@ class ShiftController extends Controller
                 ->where(function($query_main){
                     $query_main->whereIn('shift_start_from_date',function($query){
                         $query->fromRaw('tbl_shift_management as sub_table')
-                        ->selectRaw('MAX(STR_TO_DATE(shift_start_from_date,"%Y-%m-%d"))')
-                        ->whereRaw('STR_TO_DATE(shift_start_from_date,"%Y-%m-%d") <= "'.date('Y-m-d').'"')
+                        ->selectRaw('MAX(CONVERT(DATE, shift_start_from_date, 120))')
+                        ->whereRaw("CONVERT(DATE, shift_start_from_date, 120) <= '".date('Y-m-d')."'")
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
                     });
                     $query_main->orWhere('shift_start_from_date',null);
@@ -268,8 +264,8 @@ class ShiftController extends Controller
                 ->where(function($query_main){
                     $query_main->whereIn('shift_start_from_date',function($query){
                         $query->fromRaw('tbl_shift_management as sub_table')
-                        ->selectRaw('MAX(STR_TO_DATE(shift_start_from_date,"%Y-%m-%d"))')
-                        ->whereRaw('STR_TO_DATE(shift_start_from_date,"%Y-%m-%d") <= "'.date('Y-m-d').'"')
+                        ->selectRaw('MAX(CONVERT(DATE, shift_start_from_date, 120))')
+                        ->whereRaw("CONVERT(DATE, shift_start_from_date, 120) <= '".date('Y-m-d')."'")
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
                     });
                 })

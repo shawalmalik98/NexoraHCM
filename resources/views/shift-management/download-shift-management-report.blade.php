@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SourceCode-HCM</title>
+        <title>IIL - HCM</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" >
     <style>
 
@@ -85,7 +85,7 @@
         <div class="col-12 text-center" style="clear:right">
 
             @if(!empty($companySetting['company_logo']))
-                <img src="{{$companySetting['company_logo']}}" draggable="false" alt="logo" class="logo">
+                <img src="{{$companySetting['company_logo']}}" draggable="false" alt="logo" class="logo" style="width:10%">
             @else
                 <img src="{{ public_path('/portal_assets/images/logo.png') }}" draggable="false" class="img-fluid" >
             @endif

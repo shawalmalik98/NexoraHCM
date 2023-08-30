@@ -2,16 +2,16 @@
 <html lang="en">
 
     <head>
-    <title>SourceCode - HCM</title>
+    <title>IIL - HCM</title>
     <meta charset="utf-8" />
-    <meta name="description" content="Our state of the art product offers complete HR management with latest technology and AI based help you to put your employees at the center of your company" />
-    <meta name="keywords" content="SourceCode - HCM, SourceCode - HRM, SourceCode, HCM, HRM, Human Capital Management, Human Resource Management." />
+    <meta name="description" content="Ismail Industries Limited - HCM" />
+    <meta name="keywords" content="IIL - HCM, IIL - HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="Intelligent and Efficient HCM System" />
     <meta property="og:url" content="{{ url('/') }}" />
-    <meta property="og:site_name" content="SourceCode - HCM" />
+    <meta property="og:site_name" content="IIL - HCM" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="canonical" href="{{ url('/') }}" />
     <link rel="icon" href="{{ url('portal_assets/images/fav-icons.png') }}"/>

@@ -75,7 +75,7 @@ trait MailTrait {
     }
 
     protected function sent_email_on_boarding($email, $name, $employee_code, $password){
-        //$email = 'saad0100@sourcecode.world';
+        //$email = 'saaahmed@ismailindustries.com';
         $user_logined = session('user_session');
         $SendEmailJob = new OnBoardingEmail($email, $name, $employee_code, $password, $user_logined);
         dispatch($SendEmailJob);

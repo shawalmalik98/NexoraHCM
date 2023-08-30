@@ -33,7 +33,7 @@ return new class extends Migration
                 $table->integer('att_remote_applicable')->default(0)->comment('0 = Attendence 1 = WFH');
                 $table->integer('att_request_approval')->nullable()->comment('1 = Request Approval Attendance 2 = Request Approval Leave');
                 $table->integer('att_check_in_source')->default(1)->comment('1 = Web Application , 2 = Mobile Application, 3 = Update Attendance, 4 = Biometric Machine');
-                $table->integer('att_check_out_source')->comment('1 = Web Application , 2 = Mobile Application, 3 = Update Attendance, 4 = Biometric Machine');
+                $table->integer('att_check_out_source')->nullable()->comment('1 = Web Application , 2 = Mobile Application, 3 = Update Attendance, 4 = Biometric Machine');
                 $table->timestamp('att_created_at')->nullable()->default(DB::raw('CURRENT_TIMESTAMP'));
                 $table->string('att_updated_at',50)->nullable();
             });

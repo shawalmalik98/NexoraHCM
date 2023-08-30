@@ -50,7 +50,7 @@ class SendMailCandidate extends Mailable
         if(!empty($company_name)){
             $company_name = $company_name[0]['company_name'];
         }else{
-            $company_name = 'SourceCode';
+            $company_name = 'Ismail Industries Limited';
         }
         return new Content(
             view: 'email-template.candidate-email',

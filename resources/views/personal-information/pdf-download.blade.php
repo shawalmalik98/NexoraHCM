@@ -262,7 +262,7 @@
 
             <table class="table custom_table table-bordered" style="width: 100%">
                 <tr style="background:#0000ff4d;">
-                    <th colspan="4" style="font-size:15px">DO YOU HAVE ANY RELATIVES AT SOURCECODE PRIVATE LIMITED?</th>
+                    <th colspan="4" style="font-size:15px">DO YOU HAVE ANY RELATIVES AT ISMAIL INDUSTRIES PRIVATE LIMITED?</th>
                 </tr>
                 <tr>
                     <td colspan="4" style="text-align: center"><b>Relative 1</b></td>
@@ -303,11 +303,11 @@
 
             <table class="table custom_table table-bordered" style="width: 100%">
                 <tr style="background:#0000ff4d;">
-                    <th colspan="4" style="font-size:15px">PREVIOUS APPLICATION IN SOURCECODE?</th>
+                    <th colspan="4" style="font-size:15px">PREVIOUS APPLICATION IN ISMAIL INDUSTRIES LIMITED?</th>
                 </tr>
 
                 <tr>
-                    <td colspan="2" width="50%">Have you applied in Sourcecode before?</td>
+                    <td colspan="2" width="50%">Have you applied in IIL before?</td>
                     <td colspan="2"  width="50%">{{ $information_data[0]['appliedbefore'] }}</td>
                 </tr>
                 <tr>

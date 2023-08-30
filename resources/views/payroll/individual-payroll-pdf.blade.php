@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Payslip || SourceCode</title>
+    <title>Payslip || IIL</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://sourcecode.world/wp-content/uploads/2021/10/SourceCode-FavIcon.png"
         type="image/x-icon" />

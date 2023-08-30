@@ -5,14 +5,14 @@
 <head>
 	<title>IIL - HCM</title>
 	<meta charset="utf-8" />
-	<meta name="description" content="Our state of the art product offers complete HR management with latest technology and AI based help you to put your employees at the center of your company" />
-	<meta name="keywords" content="SourceCode - HCM, SourceCode - HRM, SourceCode, HCM, HRM, Human Capital Management, Human Resource Management." />
+	<meta name="description" content="Ismail Industries Limited - HCM" />
+	<meta name="keywords" content="IIL - HCM, IIL - HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:type" content="article" />
 	<meta property="og:title" content="Intelligent and Efficient HCM System" />
 	<meta property="og:url" content="{{ url('/') }}" />
-	<meta property="og:site_name" content="SourceCode - HCM" />
+	<meta property="og:site_name" content="IIL - HCM" />
 	<link rel="canonical" href="{{ url('/') }}" />
 	<link rel="shortcut icon" href="{{ url('portal_assets/images/fav-icons.png') }}" />
 	{{--begin::Fonts--}}
@@ -61,7 +61,7 @@
 						<img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20" src="{{ URL('/portal_assets/images/main-login.png') }}" alt="" />
 						<h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">The Ultimate HR Management Solution</h1>
 						
-						<div class="text-gray-600 fs-base text-center fw-semibold">At SourceCode, we have a reliable, secure and adaptable HR management built from the ground up. 
+						<div class="text-gray-600 fs-base text-center fw-semibold">At IIL, we have a reliable, secure and adaptable HR management built from the ground up. 
 						    <br />We are determined to help our employees to give their best efforts every day to achieve the goals of their job.
 					    </div>
 						
