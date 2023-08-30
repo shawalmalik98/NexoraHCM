@@ -36,7 +36,7 @@ class HelpdeskController extends Controller
                 $status = 1;
             }
             
-            $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
+            $where_clause = "1=1 AND employee_isactive = '".$status."'";
             $where_clause_to = '1=1';
             if(!empty($request_data->employee_location) || !empty(is_numeric($request_data->emp_status)) || !empty(is_numeric($request_data->emp_name))  || !empty($request_data->request_submited_date)){
                 $limit_query = '';

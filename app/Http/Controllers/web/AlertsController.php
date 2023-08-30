@@ -27,7 +27,7 @@ class AlertsController extends Controller
 
             $alerts = Alert::leftJoin('tbl_alert_status', 'tbl_alerts.alert_id', '=', 'tbl_alert_status.alert_status_alert_id')
             ->select('tbl_alerts.*', DB::raw('COUNT(tbl_alert_status.alert_status_id) AS status_count'))
-            ->groupBy('tbl_alerts.alert_id')
+            ->groupBy('tbl_alerts.alert_id','tbl_alerts.title','tbl_alerts.message','tbl_alerts.department','tbl_alerts.scheduled_time','tbl_alerts.days','tbl_alerts.valid_dates','tbl_alerts.created_by','tbl_alerts.created_at','tbl_alerts.modified_at')
             ->get()
             ->toArray();
            
@@ -334,7 +334,7 @@ class AlertsController extends Controller
          
             if(!empty($alert_employees)){
             
-                $employees =  Employees::selectRaw('date_format(created_at,"%d %M, %Y %H:%i:%s") as created_at,employee_code,employee_name')->join('tbl_alert_status', 'tbl_employees.employee_id', '=', 'tbl_alert_status.alert_status_employee_id')->where('alert_status_alert_id',$request->alert_id)->whereIn('employee_id',$alert_employees)->get()->toArray();
+                $employees =  Employees::selectRaw('CONVERT(NVARCHAR(50), created_at, 106) as created_at,employee_code,employee_name')->join('tbl_alert_status', 'tbl_employees.employee_id', '=', 'tbl_alert_status.alert_status_employee_id')->where('alert_status_alert_id',$request->alert_id)->whereIn('employee_id',$alert_employees)->get()->toArray();
                
                 return response()->json([
                     'data' => $employees,
