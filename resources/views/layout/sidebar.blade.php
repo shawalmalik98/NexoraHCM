@@ -13,7 +13,7 @@
                 {{-- <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" /> --}}
 
                 {{-- <img alt="Logo" src="{{$companySetting['company_favicon']}}" class="h-20px app-sidebar-logo-minimize" /> --}}
-                <span class=" font-weight-bold text-white text-capitalize text-center">
+                <span class="font-weight-bold text-white text-capitalize text-center">
                     @if(!empty($companySetting['company_name']))
                         {{$companySetting['company_name']}}
                     @else
@@ -35,9 +35,9 @@
 
 
         <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
-            {{--begin::Menu wrapper--}}
+
             <div id="kt_app_sidebar_menu_wrapper" class="app-sidebar-wrapper hover-scroll-overlay-y my-5" data-kt-scroll="true" data-kt-scroll-activate="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_logo, #kt_app_sidebar_footer" data-kt-scroll-wrappers="#kt_app_sidebar_menu" data-kt-scroll-offset="5px" data-kt-scroll-save-state="true">
-                {{--begin::Menu--}}
+
                 <div class="menu menu-column menu-rounded menu-sub-indention px-3" id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false">
 
                     <div class="mb-2">
@@ -53,7 +53,7 @@
 
                     </div>
 
-                    <div class="menu-item search-item">
+                    {{-- <div class="menu-item search-item">
                         <a class="menu-link nav-link  @if($title == 'index') active @endif" href="{{ url('/') }}">
                             <span class="menu-icon">
                                 <span class="svg-icon svg-icon-2">
@@ -124,17 +124,6 @@
                                     </div>
 
                                 @endif
-                                
-                                {{-- @if(!empty($permission) && !empty($permission[45]['permission_status'] == 1))
-                                    <div class="menu-item search-item">
-                                        <a class="menu-link nav-link @if($title == 'permission') active @endif" href="{{url('permissions')}}">
-                                            <span class="menu-bullet">
-                                                <i class="far fa-circle nav-icon"></i>
-                                            </span>
-                                            <span class="menu-title">Employees Permissions</span>
-                                        </a>
-                                    </div>
-                                @endif --}}
 
 
                                 @if(!empty($permission) && $permission[15]['module_accessibility'] == 1 && $permission[15]['permission_status'] == 1)
@@ -1267,16 +1256,191 @@
 
 
                         </div>
-                    @endif
+                    @endif --}}
+
+                    <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'employee' || $title == 'manage-designations' || $title == 'manage-departments' || $title == 'manage-locations' || $title == 'manage-companies') show @endif">
+
+                        <span class="menu-link">
+                            <span class="menu-icon">
+                                <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Employees MDM.png') }}" />
+                            </span>
+                            <span class="menu-title">MDM</span>
+                            <span class="menu-arrow"></span>
+                        </span>
+
+                        <div class="menu-sub menu-sub-accordion menu-active-bg">
+
+                            @if(!empty($permission) && $permission[76]['module_accessibility'] == 1 && $permission[76]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link nav-link @if($title == 'manage-companies') active @endif" href="{{ url('/companies') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+                                        <span class="menu-title ">Companies</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+                            @if(!empty($permission) && $permission[50]['module_accessibility'] == 1 && $permission[50]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link @if($title == 'manage-locations') active @endif" href="{{ url('/locations') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+
+                                        <span class="menu-title ">Locations</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+
+
+                            @if(!empty($permission) && $permission[32]['module_accessibility'] == 1 && $permission[32]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link nav-link @if($title == 'manage-departments') active @endif" href="{{ url('/departments') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+                                        <span class="menu-title">Departments</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+
+                            @if(!empty($permission) && $permission[33]['module_accessibility'] == 1 && $permission[33]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link nav-link @if($title == 'manage-designations') active @endif" href="{{ url('/designations') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+                                        <span class="menu-title">Designations</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+                            @if(!empty($permission) && $permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link nav-link @if($title == 'employee') active @endif" href="{{ url('/employees') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+                                        <span class="menu-title">Employees</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+                            
+                        </div>
+
+
+                    </div>
+
+
+
+
+                    <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'monthly-attendance' || $title == 'manage-attendance' || $title == 'payroll' || $title == 'manage-locations' || $title == 'manage-companies') show @endif">
+
+                        <span class="menu-link">
+                            <span class="menu-icon">
+                                <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Employees MDM.png') }}" />
+                            </span>
+                            <span class="menu-title">Transaction</span>
+                            <span class="menu-arrow"></span>
+                        </span>
+
+                        <div class="menu-sub menu-sub-accordion menu-active-bg">
+
+                            @if(!empty($permission) && $permission[67]['module_accessibility'] == 1 && $permission[67]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link @if($title == 'monthly-attendance') active @endif" href="{{ url('/monthly-attendance') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+
+                                        <span class="menu-title ">Monthly Attendance</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+                            @if(!empty($permission) && $permission[19]['module_accessibility'] == 1 && $permission[19]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link @if($title == 'manage-attendance') active @endif" href="{{ url('/attendance') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+
+                                        <span class="menu-title ">Detailed Attendance</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+                            @if(!empty($permission) && $permission[27]['module_accessibility'] == 1 && $permission[27]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link @if($title == 'payroll') active @endif" href="{{ url('/payroll') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+
+                                        <span class="menu-title ">Payroll</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+
+
+                            @if(!empty($permission) && $permission[30]['module_accessibility'] == 1 && $permission[30]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link nav-link @if($title == 'manage-loan') active @endif" href="{{ url('/loans') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+                                        <span class="menu-title">Loans</span>
+                                    </a>
+                                </div>
+
+                            @endif
+
+
+                            {{-- @if(!empty($permission) && $permission[33]['module_accessibility'] == 1 && $permission[33]['permission_status'] == 1)
+
+                                <div class="menu-item search-item">
+                                    <a class="menu-link nav-link @if($title == 'manage-designations') active @endif" href="{{ url('/designations') }}">
+                                        <span class="menu-bullet">
+                                            <i class="far fa-circle nav-icon"></i>
+                                        </span>
+                                        <span class="menu-title">Leaves</span>
+                                    </a>
+                                </div>
+
+                            @endif --}}
+                            
+                        </div>
+
+
+                    </div>
     
                 </div>
-                {{--end::Menu--}}
             </div>
-            {{--end::Menu wrapper--}}
         </div>
 
     </div>
-        {{--end::sidebar--}}
         
 @push('js-link')
     <script>
