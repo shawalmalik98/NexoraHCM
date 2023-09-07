@@ -84,7 +84,7 @@ class DesignationController extends Controller
             $validator = Validator::make($designation_data->all(), [
                 'designation_name' => [
                     'required',
-                    'regex:/^[\pL\s\&\,(\).]+$/u',
+                    //'regex:/^[\pL\s\&\,(\).]+$/u',
                     Rule::unique('tbl_designations')->where(function ($query) use ($designation_name, $department_ids) {
                         return $query->where('designation_name', $designation_name)->whereIn('department_id', $department_ids);
                     })
@@ -168,7 +168,7 @@ class DesignationController extends Controller
             $department_id = $designation_data->input('department_id');
 
             $validator = Validator::make($designation_data->all(), [
-                'designation_name' => [ 'required', 'regex:/^[\pL\s\&\,(\).]+$/u',
+                'designation_name' => [ 'required',
                     Rule::unique('tbl_designations')->ignore($designation_data->input('designation_id'), 'designation_id')->where(function ($query) use ($designation_name, $department_id) {
                         return $query->where('designation_name', $designation_name)
                             ->where('department_id', $department_id);

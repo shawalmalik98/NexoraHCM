@@ -48,7 +48,7 @@ class DepartmentController extends Controller
 		try{
 
             $validator = Validator::make($depart_data->all(), [
-                'department_name' => ['required','unique:tbl_departments,department_name','regex:/^[\pL\s\&\,(\)]+$/u'],
+                'department_name' => ['required','unique:tbl_departments,department_name'],
             ]);
 
             if($validator->fails()) {
@@ -108,7 +108,7 @@ class DepartmentController extends Controller
 		try{
 
             $validator = Validator::make($depart_data->all(), [
-                'department_name' => ['required','unique:tbl_departments,department_name, ' .$depart_data->input('department_id'). ' ,department_id', 'regex:/^[\pL\s\&\,(\)]+$/u'],
+                'department_name' => ['required','unique:tbl_departments,department_name, ' .$depart_data->input('department_id'). ' ,department_id'],
             ]);
 
             if($validator->fails()) {

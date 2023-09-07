@@ -45,7 +45,7 @@ class CompanyController extends Controller
 		try{
 
             $validator = Validator::make($company_data->all(), [
-                'company_name' => ['required','unique:tbl_company,company_name','regex:/^[\pL\s\&\,(\)]+$/u'],
+                'company_name' => ['required','unique:tbl_company,company_name'],
             ]);
 
             if($validator->fails()) {
@@ -103,7 +103,7 @@ class CompanyController extends Controller
 		try{
 
             $validator = Validator::make($company_data->all(), [
-                'company_name' => ['required','unique:tbl_company,company_name, ' .$company_data->input('company_id'). ' ,company_id', 'regex:/^[\pL\s\&\,(\)]+$/u'],
+                'company_name' => ['required','unique:tbl_company,company_name, ' .$company_data->input('company_id'). ' ,company_id'],
             ]);
 
             if($validator->fails()) {
