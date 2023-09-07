@@ -46,13 +46,43 @@ class MachineAttendanceController extends Controller
 
     protected function pull_attendance_from_machine_into_portal(Request $request){
         try{
-            $machine_attendance_records = $request->input('attendance_array');
+
+            $attendance_array = [
+                [
+                    'employee_id' => '1',
+                    'attendance_punched_time' => '2023-09-05 09:04:06',
+                    'attendance_type' => 'CI',
+                ],
+                [
+                    'employee_id' => '1',
+                    'attendance_punched_time' => '2023-09-06 09:22:06',
+                    'attendance_type' => 'CI',
+                ],
+                [
+                    'employee_id' => '1',
+                    'attendance_punched_time' => '2023-09-06 14:22:06',
+                    'attendance_type' => 'CO',
+                ]
+            ];
+            // $machine_attendance_records = $request->input('attendance_array');
+            $machine_attendance_records = $attendance_array;
             
             $machine_id = ($request->input('machine_id') == 1) ? 1:2;
             
             if(!empty($machine_attendance_records)){
                 $this->records_insertion($machine_attendance_records);
+                return response([
+                    'message' => 'Attendance inserted successfully',
+                    'status' => TRUE,
+                    'data' => ''
+                ], 200);
                 $this->machine_logs(1 , NULL ,$machine_id);
+            }else{
+                return response([
+                    'message' => 'No attendance record in payload.',
+                    'status' => FALSE,
+                    'data' => ''
+                ], 200);
             }
            
            
@@ -66,10 +96,10 @@ class MachineAttendanceController extends Controller
     protected function records_insertion($machine_records){
         foreach($machine_records as $record){
             if(!empty($record['employee_id']) && !empty($record['attendance_punched_time']) && !empty($record['attendance_type'])){
-                if($record['attendance_type'] == 88 || $record['attendance_type'] === 88){
+                if($record['attendance_type'] == 'CI'){
                     $this->multiple_check_in_machine($record['attendance_punched_time'], $record['employee_id'],4);
                 }
-                elseif($record['attendance_type'] == 1 || $record['attendance_type'] == '1'){
+                elseif($record['attendance_type'] == 'CO'){
                     $this->multiple_check_out_machine($record['attendance_punched_time'], $record['employee_id'],4);
                 }
             }
