@@ -221,7 +221,7 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         Route::get('/employee-personal-documents', [EmployeeApiController::class, 'employee_personal_documents']);
         Route::get('/download-personal-document', [EmployeeApiController::class, 'download_personal_document']);
         Route::post('/upload-personal-document', [EmployeeApiController::class , 'store_employee_personal_documents']);
-        Route::get('/office-location',[EmployeeApiController::class,'employee_office_location']);
+        Route::get('/employee-mapped-location',[EmployeeApiController::class,'employee_office_location']);
 
         // employee api end
 

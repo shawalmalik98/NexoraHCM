@@ -203,15 +203,11 @@ class EmployeeApiController extends Controller
 
         try{
             
-            $title = Self::LOCATION;
-
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
             $employee_office_location = OfficeLocation::join('tbl_employees','tbl_office_locations.location_id','tbl_employees.employee_location')->where('employee_isactive',1)->where('employee_id',$login_user[0]['employee_id'])->get(['location_latitude','location_longitude'])->toArray();
 
-            $data = compact('title','employee_office_location');
-
-            return $this->api_response_json(TRUE,"Employee Office Location",$data,200);
+            return $this->api_response_json(TRUE,"Employee Office Location",$employee_office_location,200);
         }
         catch(\Exception $e){
 
