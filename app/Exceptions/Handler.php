@@ -3,6 +3,9 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -43,8 +46,11 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (MethodNotAllowedHttpException $exception, $request) {
+            return response()->json([
+                'status' => FALSE,
+                'message' => 'The requested '.$request->method().' method is not supported for this route.',
+            ], 405);
         });
     }
 }

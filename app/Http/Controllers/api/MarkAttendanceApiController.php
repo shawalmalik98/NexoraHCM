@@ -450,7 +450,7 @@ class MarkAttendanceApiController extends Controller
 			//return $this->api_response_json(FALSE,"This feature is not enable in this version of mobile app.","",500);
 			
 			$validator = Validator::make($request->post(), [
-                'multi_attendance' => 'required',
+                'attendance_object' => 'required',
             ]);
 
             if($validator->fails()) {
@@ -462,16 +462,16 @@ class MarkAttendanceApiController extends Controller
 			}
 			
 		
-			$multi_attendance  = json_decode($request->post('multi_attendance'), true);
+			$attendance_object  = json_decode($request->post('attendance_object'), true);
 			
 			$login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
-			if(count($multi_attendance) > 0 ){
+			if(count($attendance_object) > 0 ){
 				DB::table('tbl_offline_attendance_object')->insert([
-					'att_offline_object' => $request->post('multi_attendance'),
+					'att_offline_object' => $request->post('attendance_object'),
 					
 				]);
 				
-				foreach($multi_attendance as $attendance){
+				foreach($attendance_object as $attendance){
 					if(array_key_exists("checkin",$attendance)){
 						$this->multiple_check_in_mobile($attendance['formatted_date'],$login_user[0]['employee_id'], 2);
 						
@@ -483,7 +483,7 @@ class MarkAttendanceApiController extends Controller
 					}
 				}
 				
-				return $this->api_response_json(TRUE,"Offline attendance add successfully.","",200);
+				return $this->api_response_json(TRUE,"Attendance pushed to server successfully.","",200);
 
 
 			}else{
