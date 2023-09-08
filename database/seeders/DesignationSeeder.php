@@ -33,42 +33,42 @@ class DesignationSeeder extends Seeder
                 'designation_name' => "Senior General Manager",
                 'department_id' => 2,
             ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "General Manager",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Deputy General Manager",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Assistant General Manager",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Senior Manager",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Manager - II",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Manager - I",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Deputy Manager",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Assistant Manager - II",
-                'department_id' => 2,
-            ]);
-            DB::table('tbl_designations')->insert([
-                'designation_name' => "Assistant Manager - I",
-                'department_id' => 2,
-            ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "General Manager",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Deputy General Manager",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Assistant General Manager",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Senior Manager",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Manager - II",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Manager - I",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Deputy Manager",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Assistant Manager - II",
+            //     'department_id' => 2,
+            // ]);
+            // DB::table('tbl_designations')->insert([
+            //     'designation_name' => "Assistant Manager - I",
+            //     'department_id' => 2,
+            // ]);
             DB::table('tbl_designations')->insert([
                 'designation_name' => "Executive",
                 'department_id' => 3,
