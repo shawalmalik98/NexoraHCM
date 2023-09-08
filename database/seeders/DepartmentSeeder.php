@@ -17,7 +17,7 @@ class DepartmentSeeder extends Seeder
     {
         $get_departments = DB::select('SELECT * FROM tbl_departments');
         if(empty($get_departments)){
-            $depart_array = ['Admin','Human Resources','Account & Finance'];
+            $depart_array = ['Executive','HR & Admin','Accounts & Finance'];
             foreach($depart_array as $department){
                 DB::table('tbl_departments')->insert([
                     'department_name' => $department,
