@@ -738,7 +738,7 @@
                     <div class="text-center">
                         <img class="w-150px pt-15 pb-5" src="{{ url('/portal_assets/images/checked.png') }}" alt="" />
                         <h3 class="text-center text-success">Congratulations !</h3>
-                        <p class="text-center">Employee profile has been successfully created in our HCM. Below mentioned are the details of recently craeted employee.</p>
+                        <p class="text-center">Employee profile has been successfully created in our HCM. Below mentioned are the details of recently created employee.</p>
                     </div>
              
                     <div id="employee-registered">

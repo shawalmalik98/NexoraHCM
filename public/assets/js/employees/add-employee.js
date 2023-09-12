@@ -421,16 +421,18 @@ function Copy() {
     $("#copy_btn").attr('data-kt-indicator', 'on');
     $('#copy_btn').css('cursor', 'not-allowed');
 
-    var employee_details = document.getElementById('employee_infomcation_copier');
+    // var employee_details = document.getElementById('employee_infomcation_copier');
+    var employee_details = $("#employee_infomcation_copier");
 
-    employee_details.select();
-    navigator.clipboard.writeText(employee_details.value)
-        .then(function () {
+    // employee_details.select()
+    // document.execCommand('copy')
+    // navigator.clipboard.writeText(employee_details.value)
+        // .then(function () {
             window.location.href = base_url + '/employees';
-        })
-        .catch(function (error) {
-            console.error('Unable to copy text to clipboard:', error);
-        });
+        // })
+        // .catch(function (error) {
+        //     console.error('Unable to copy text to clipboard:', error);
+        // });
 
 }
 
