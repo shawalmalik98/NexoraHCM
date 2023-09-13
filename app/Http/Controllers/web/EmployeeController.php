@@ -3452,852 +3452,1736 @@ class EmployeeController extends Controller
         }
     }
 
+    // protected function upload_employee_record(Request $request){
+
+    //     // try{
+
+    //         $validator = Validator::make($request->all(), [
+    //             'file' => 'required|file|mimes:csv'
+    //         ]);
+    //         if($validator->fails()) {
+    //             foreach($validator->errors()->all() as $error){
+    //                 return response()->json([
+    //                     'msg' => $error,
+    //                     'status' => 'FALSE',
+    //                     'validation' => 'TRUE',
+    //                 ]);
+    //             }
+    //         }else{
+    //             $filename = $request->file('file')->getPathName();
+    //             // dd($filename);
+    //             if($request->file('file')->getSize() > 0)
+    //             {
+    //                 $error = 0;
+    //                 $success = 0;
+    //                 $file = fopen($filename, "r");
+    //                 $file2 = fopen($filename, "r");
+    //                 $error_logs = array();
+    //                 $count_row = 0;
+    //                 // dd('here');
+
+                    
+
+    //                 while (($getData = fgetcsv($file)) !== FALSE)
+    //                 {
+
+    //                     $count_row;
+
+    //                     if($count_row !=0){
+
+    //                         $employee_name = $getData[0];
+    //                         // $employee_contact_no = $getData[1];
+    //                         // $employee_email =  $getData[2];
+    //                         // $employee_nic =  $getData[3];
+    //                         $employee_contact_no = '090078601' . $count_row;
+    //                         $employee_email =  'test@ismailindustries.com' . $count_row;
+    //                         $employee_nic =  '42111-6352412-9' . $count_row;
+    //                         // $employee_gender =  $getData[4];
+    //                         $employee_gender =  'Male';
+    //                         $employee_department =  $getData[1];
+    //                         $employee_designation =  $getData[2];
+    //                         $employee_job_title =  $getData[3];
+    //                         // $employee_can_ra =  $getData[8];
+    //                         $employee_can_ra =  1;
+    //                         // $joining_date =  $getData[9];
+    //                         $joining_date =  $getData[4];
+    //                         // $employee_status =  $getData[10];
+    //                         $employee_status =  'Permanent';
+    //                         // $employee_salary =  $getData[11];
+    //                         $employee_salary =  '25000';
+    //                         // $employee_earning_type =  $getData[12];
+    //                         $employee_earning_type =  'Monthly';
+    //                         // $employee_job_type =  $getData[13];
+    //                         $employee_job_type =  'Office Based';
+    //                         // $employee_password =  $getData[14];
+    //                         $employee_password =  '123';
+    //                         // $shift_start_time =  $getData[15];
+    //                         $shift_start_time =  '09:00';
+    //                         // $shift_end_time =  $getData[16];
+    //                         $shift_end_time =  '18:00';
+    //                         // $employee_Off_day =  $getData[17];
+    //                         $employee_Off_day =  'Saturday,Sunday';
+    //                         // $employee_location =  $getData[18];
+    //                         $employee_location =  'Head Office - I';
+    //                         // $employee_permissions =  $getData[19];
+    //                         $employee_permissions =  'No';
+
+    //                         $count_record = "TRUE";
+
+    //                         if(empty($employee_name)){
+    //                             $error_msg = "Row# $count_row : Employee name required ";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }
+
+    //                         if(empty($employee_contact_no)){
+    //                             $error_msg = "Row# $count_row :  contact number required ";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $employee_contact = Employees::where('employee_contactno', $employee_contact_no)->get('employee_contactno')->toArray();
+
+    //                             if(strlen((int)$employee_contact_no) != strlen($employee_contact_no) && !empty($employee_contact_no)){
+
+    //                                 $error_msg = "Row# $count_row : contact number must be a number";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+
+    //                             if(!empty($employee_contact)){
+    //                                 $error_msg = "Row# $count_row : contact number already exist";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_email)){
+    //                             $error_msg = "Row# $count_row : email required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+
+    //                             if(!empty( $employees_email)){
+    //                                 $error_msg = "Row# $count_row : email already exist";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_nic)){
+    //                             $error_msg = "Row# $count_row : Nic number required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $employees_nic = Employees::where('employee_cnic', $employee_nic)->get('employee_cnic')->toArray();
+
+    //                             if(!empty($employees_nic)){
+    //                                 $error_msg = "Row# $count_row : Nic number already exist";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_gender)){
+    //                             $error_msg = "Row# $count_row : Gender required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $employment_gender_field  = ['Male','Female'];
+
+    //                             if(!in_array($employee_gender,  $employment_gender_field)){
+    //                                 $error_msg = "Row# $count_row : Unknown employee gender field";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_department)){
+    //                             $error_msg = "Row# $count_row : department name required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
+
+    //                             if(empty($departments)){
+    //                                 $error_msg = "Row# $count_row : Unknown department name";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_designation)){
+    //                             $error_msg = "Row# $count_row : designation required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
+    //                             ->where('designation_name', $employee_designation)
+    //                             ->where('department_name', $employee_department)
+    //                             ->get(['designation_id','designation_name','tbl_designations.department_id','department_name'])->toArray();
+
+    //                             if(empty($designations)){
+    //                                 $error_msg = "Row# $count_row : Unknown designation name";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_job_title)){
+    //                             $error_msg = "Row# $count_row : Employee job title required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }
+
+    //                         if(empty($employee_can_ra)){
+    //                             $error_msg = "Row# $count_row : Employee can ra required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }
+
+    //                         if($employee_can_ra  == 'Yes'){
+    //                             $employee_ra = 1 ;
+    //                         }elseif($employee_can_ra  == 'No') {
+    //                             $employee_ra= 0;
+    //                         }else{
+    //                             $error_msg = "Row# $count_row : Unknown employee can ra type";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }
+
+    //                         if(empty($joining_date)){
+    //                             $error_msg = "Row# $count_row : Date of joining required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
+
+    //                             if ($dateTime == TRUE) {
+    //                                 $joining_date = $dateTime->format('Y-m-d');
+    //                             }else {
+    //                                 $error_msg = "Row# $count_row : Date of joning must be a date";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_status)){
+    //                             $error_msg = "Row# $count_row : Employement status required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
+
+    //                             if(empty($employement_status)){
+    //                                 $error_msg = "Row# $count_row : Unknown Employement status";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_salary)){
+    //                             $error_msg = "Row# $count_row : Employee salary required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             if(strlen((int)$employee_salary) != strlen($employee_salary) && !empty($employee_salary)){
+
+    //                                 $error_msg = "Row# $count_row : employee salary must be number";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_earning_type)){
+    //                             $error_msg = "Row# $count_row : Employee earning type required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             if($employee_earning_type == 'Monthly'){
+    //                                 $employee_earning = 1;
+    //                             }elseif($employee_earning_type == 'Daily wages') {
+    //                                 $employee_earning = 2;
+    //                             }else{
+    //                                 $error_msg = "Row# $count_row : Unknown earning type";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_job_type)){
+    //                             $error_msg = "Row# $count_row : Employee job type required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             if($employee_job_type == 'Office Based'){
+    //                                 $employee_job = 'Office';
+    //                             }elseif($employee_job_type == 'Home Based') {
+    //                                 $employee_job= 'Home';
+    //                             }else{
+    //                                 $error_msg = "Row# $count_row : Unknown employee job type";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_password)){
+    //                             $error_msg = "Row# $count_row : Employee password required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }
+
+    //                         if(empty($shift_start_time)){
+    //                             $error_msg = "Row# $count_row : shift start time required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $dateTime = DateTime::createFromFormat('H:i', $shift_start_time);
+
+    //                             if ($dateTime == TRUE) {
+    //                                 $shift_start_time = $dateTime->format('H:i');
+    //                             }else {
+    //                                 $error_msg = "Row# $count_row : shift start time must be a time";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($shift_end_time)){
+    //                             $error_msg = "Row# $count_row : shift end time required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $dateTime = DateTime::createFromFormat('H:i', $shift_end_time);
+
+    //                             if ($dateTime == TRUE) {
+    //                                 $shift_end_time = $dateTime->format('H:i');
+    //                             }else {
+    //                                 $error_msg = "Row# $count_row : shift end time must be a time";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_Off_day)){
+    //                             $error_msg = "Row# $count_row : Employee off day required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $employment_off_day_field  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+    //                             $employee_Off_day = explode(',',$employee_Off_day);
+
+    //                             if (array_intersect($employee_Off_day , $employment_off_day_field) != $employee_Off_day ) {
+
+    //                                 $error_msg = "Row# $count_row : Unknown employement off day field";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_location)){
+    //                             $error_msg = "Row# $count_row : location required";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $locations = OfficeLocation::where('location_title', $employee_location)->get('location_id')->toArray();
+
+    //                             if(empty($locations)){
+    //                                 $error_msg = "Row# $count_row : Unknown location";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if(empty($employee_permissions)){
+    //                             $error_msg = "Row# $count_row : Employee permission required ";
+    //                             $count_record = "FALSE";
+    //                             array_push($error_logs, $error_msg);
+    //                         }else{
+
+    //                             $employment_permission  = ['Yes','No'];
+
+    //                             if(!in_array($employee_permissions,  $employment_permission)){
+    //                                 $error_msg = "Row# $count_row : Unknown employee permission field";
+    //                                 $count_record = "FALSE";
+    //                                 array_push($error_logs, $error_msg);
+    //                             }
+    //                         }
+
+    //                         if($count_record == "TRUE"){
+    //                             $success++;
+    //                         }else{
+    //                             $error++;
+    //                         }
+
+
+    //                     }
+    //                     $count_row ++;
+
+    //                 }
+    //                 if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
+    //                     $count_row = 0;
+    //                     while (($getData = fgetcsv($file2)) !== FALSE)
+    //                     {
+
+    //                         if($count_row !=0){
+
+    //                             $employee_name = $getData[0];
+    //                             $employee_contact_no = $getData[1];
+    //                             $employee_email =  $getData[2];
+    //                             $employee_nic =  $getData[3];
+    //                             $employee_gender =  $getData[4];
+    //                             $employee_department =  $getData[5];
+    //                             $employee_designation =  $getData[6];
+    //                             $employee_job_title =  $getData[7];
+    //                             $employee_can_ra =  $getData[8];
+    //                             $joining_date =  $getData[9];
+    //                             $employee_status =  $getData[10];
+    //                             $employee_salary =  $getData[11];
+    //                             $employee_earning_type =  $getData[12];
+    //                             $employee_job_type =  $getData[13];
+    //                             $employee_password =  $getData[14];
+    //                             $shift_start_time =  $getData[15];
+    //                             $shift_end_time =  $getData[16];
+    //                             $employee_Off_day =  $getData[17];
+    //                             $employee_location =  $getData[18];
+    //                             $employee_permissions =  $getData[19];
+
+    //                             $employee_record_insert = "TRUE";
+
+    //                             if(empty($employee_name)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_contact_no)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $employee_contact = Employees::where('employee_contactno', $employee_contact_no)->get('employee_contactno')->toArray();
+
+    //                             if(strlen((int)$employee_contact_no) != strlen($employee_contact_no) && !empty($employee_contact_no)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(!empty($employee_contact)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_email)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+    //                             $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+
+    //                             if(!empty( $employees_email)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_nic)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $employees_nic = Employees::where('employee_cnic', $employee_nic)->get('employee_cnic')->toArray();
+
+    //                             if(!empty($employees_nic)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_gender)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $employment_gender_field  = ['Male','Female'];
+
+    //                             if(!in_array($employee_gender,  $employment_gender_field)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_department)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
+
+    //                             if(empty($departments)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_designation)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
+    //                             ->where('designation_name', $employee_designation)
+    //                             ->where('department_name', $employee_department)
+    //                             ->get(['designation_id','designation_name','tbl_designations.department_id','department_name'])->toArray();
+
+    //                             if(empty($designations)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_job_title)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_can_ra)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if($employee_can_ra  == 'Yes'){
+    //                                 $employee_ra = '1' ;
+    //                             }elseif($employee_can_ra  == 'No') {
+    //                                 $employee_ra= '0';
+    //                             }else{
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($joining_date)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
+
+    //                             if ($dateTime == TRUE) {
+    //                                 $joining_date = $dateTime->format('Y-m-d');
+    //                             }else {
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_status)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
+
+    //                             if(empty($employement_status)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_salary)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(strlen((int)$employee_salary) != strlen($employee_salary) && !empty($employee_salary)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_earning_type)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if($employee_earning_type == 'Monthly'){
+    //                                 $employee_earning = 1;
+    //                             }elseif($employee_earning_type == 'Daily wages') {
+    //                                 $employee_earning = 2;
+    //                             }else{
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_job_type)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if($employee_job_type == 'Office Based'){
+    //                                 $employee_job = 'Office';
+    //                             }elseif($employee_job_type == 'Home Based') {
+    //                                 $employee_job= 'Home';
+    //                             }else{
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_password)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($shift_start_time)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $dateTime = DateTime::createFromFormat('H:i', $shift_start_time);
+
+    //                             if ($dateTime == TRUE) {
+    //                                 $shift_start_time = $dateTime->format('H:i');
+    //                             }else {
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($shift_end_time)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $dateTime = DateTime::createFromFormat('H:i', $shift_end_time);
+
+    //                             if ($dateTime == TRUE) {
+    //                                 $shift_end_time = $dateTime->format('H:i');
+    //                             }else {
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_Off_day)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $employment_off_day_field  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    //                             $employee_Off_day = explode(',',$employee_Off_day);
+
+    //                             if (array_intersect($employee_Off_day , $employment_off_day_field) != $employee_Off_day ) {
+
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_location)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $locations = OfficeLocation::where('location_title', $employee_location)->get('location_id')->toArray();
+
+    //                             if(empty($locations)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if(empty($employee_permissions)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             $employment_permission  = ['Yes','No'];
+
+    //                             if(!in_array($employee_permissions,  $employment_permission)){
+    //                                 $employee_record_insert = "FALSE";
+    //                             }
+
+    //                             if($employee_record_insert == "TRUE"){
+
+    //                                 $all_employees = Employees::orderBy('employee_id','DESC')->limit(1)->get(['employee_code'])->toArray();
+    //                                 if(empty($all_employees)){
+    //                                     $employeeCode = '001';
+    //                                 }else{
+    //                                     $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
+    //                                 }
+    //                                 $add_employee = new Employees();
+    //                                 $add_employee->employee_name = $employee_name;
+    //                                 $add_employee->employee_code = $employeeCode;
+    //                                 $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
+    //                                 $add_employee->employee_cnic = $employee_nic;
+    //                                 $add_employee->employee_email = $employee_email;
+    //                                 $add_employee->employee_contactno = $employee_contact_no;
+    //                                 $add_employee->employee_gender = $employee_gender;
+    //                                 $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
+    //                                 $add_employee->employee_designation = $designations[0]['designation_id'];
+    //                                 $add_employee->employee_department = $departments[0]['department_id'];
+    //                                 $add_employee->employee_jobtitle = $employee_job_title;
+    //                                 $add_employee->employee_password = Crypt::encryptString($employee_password);
+    //                                 $add_employee->employee_ra =  '1';
+    //                                 $add_employee->employee_can_ra = $employee_ra;
+    //                                 $add_employee->employee_offday1 = (!empty($employee_Off_day)) ? implode(',',$employee_Off_day) : '';
+    //                                 $add_employee->employee_jobtype = $employee_job;
+    //                                 $add_employee->employee_location = $locations[0]['location_id'];
+    //                                 $add_employee->employee_isactive =  1;
+    //                                 $add_employee->employee_earning_type = $employee_earning;
+
+    //                                 $employee = $add_employee->save();
+    //                                 $employee_registration_id = $add_employee->employee_id;
+
+    //                                 if($employee == 1){
+
+    //                                     $emp_salary = new EmployeeSalary();
+    //                                     $emp_salary->salary_employee_id = $employee_registration_id;
+    //                                     $emp_salary->salary_amount =  $employee_salary;
+    //                                     $emp_salary->salary_effected_date = $joining_date;
+    //                                     $emp_salary->salary_created_date = date('d-m-Y');
+    //                                     $emp_salary->salary_earning_type = $employee_earning_type;
+    //                                     $emp_salary->save();
+
+    //                                     $add_leaves =  new Leave();
+    //                                     $add_leaves->leaves_employee_id = $employee_registration_id;
+    //                                     $add_leaves->leave_type_id      = 1;
+    //                                     $add_leaves->leave_allotement   = 0;
+    //                                     $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+    //                                     $add_leaves->save();
+
+    //                                     $add_leaves =  new Leave();
+    //                                     $add_leaves->leaves_employee_id = $employee_registration_id;
+    //                                     $add_leaves->leave_type_id      = 2;
+    //                                     $add_leaves->leave_allotement   = 0;
+    //                                     $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+    //                                     $add_leaves->save();
+
+    //                                     $add_leaves =  new Leave();
+    //                                     $add_leaves->leaves_employee_id = $employee_registration_id;
+    //                                     $add_leaves->leave_type_id      = 3;
+    //                                     $add_leaves->leave_allotement   = 0;
+    //                                     $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+    //                                     $add_leaves->save();
+
+    //                                     $add_shift = new ShiftManagement();
+    //                                     $add_shift->employee_id = $employee_registration_id;
+    //                                     $add_shift->shift_start_from_date = $joining_date;
+    //                                     $add_shift->shift_start_time = $shift_start_time.':00';
+    //                                     $add_shift->shift_end_time = $shift_end_time.':00';
+    //                                     $add_shift->shift_created_by = session('user_session');
+    //                                     $process = $add_shift->save();
+
+    //                                     if($process == 1){
+
+    //                                         $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
+
+    //                                         $submitInformation = new EmployeeInformation();
+    //                                         $submitInformation->employeeid = $employee_registration_id;
+    //                                         $submitInformation->save();
+
+    //                                         $get_holidays =  Holiday::where('holiday_date','>=', $joining_date)->where(function ($query) use ($departments) {
+    //                                             $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
+    //                                             ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
+    //                                         })
+    //                                         ->get()->toArray();
+
+    //                                         if(!empty($get_holidays)){
+    //                                             foreach($get_holidays as $get_holiday){
+    //                                                 $day = date("d", strtotime($get_holiday['holiday_date']));
+    //                                                 $month = date("m", strtotime($get_holiday['holiday_date']));
+    //                                                 $year = date("Y", strtotime($get_holiday['holiday_date']));
+
+    //                                                 $mark_attendance = new Attendance();
+    //                                                 $mark_attendance->att_employee_id =  $employee_registration_id;
+    //                                                 $mark_attendance->att_check_in_time = '00:00:00';
+    //                                                 $mark_attendance->att_check_out_time = '00:00:00';
+    //                                                 $mark_attendance->att_check_in_status = '0';
+    //                                                 $mark_attendance->att_check_out_status = 0;
+    //                                                 $mark_attendance->att_shift_start_time = $shift_start_time->input('shift_start_timings').':00';
+    //                                                 $mark_attendance->att_shift_end_time = $shift_end_time->input('shift_end_timings').':00';
+    //                                                 $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
+    //                                                 $mark_attendance->att_for_date = $day;
+    //                                                 $mark_attendance->att_for_month = $month;
+    //                                                 $mark_attendance->att_for_year = $year;
+    //                                                 $mark_attendance->save();
+
+
+    //                                             }
+    //                                         }
+
+    //                                         $mypermissions = [
+
+    //                                             '/dashboard',
+    //                                             '/my-attendance',
+    //                                             '/my-attendance-request',
+    //                                             '/my-leaves',
+    //                                             '/my-interviews',
+    //                                             '/payslip',
+    //                                             '/my-meetings',
+    //                                             '/my-wfh-requests',
+    //                                             '/employee-resignation',
+    //                                             '/my-salary-request',
+    //                                             '/my-loan',
+    //                                             '/my-tickets',
+    //                                             '/my-expense',
+    //                                             '/my-shift-time',
+    //                                             '/permissions',
+    //                                         ];
+
+    //                                         $permissionRecords = [
+    //                                             '/dashboard',
+    //                                             '/my-attendance',
+    //                                             '/my-attendance-request',
+    //                                             '/my-leaves',
+    //                                             '/my-interviews',
+    //                                             '/payslip',
+    //                                             '/my-meetings',
+    //                                             '/my-wfh-requests',
+    //                                             '/employee-resignation',
+    //                                             '/my-salary-request',
+    //                                             '/my-loan',
+    //                                             '/my-tickets',
+    //                                             '/employees',
+    //                                             '/employees-managers',
+    //                                             '/employee-birthdays',
+    //                                             '/employee-work-anniversay',
+    //                                             '/gadgets-inventory',
+    //                                             '/gadgets-allotment',
+    //                                             '/meetings',
+    //                                             '/attendance',
+    //                                             '/attendance-requests',
+    //                                             '/daily-attendance-report',
+    //                                             '/wfh-requests',
+    //                                             '/employees-leaves',
+    //                                             '/manage-leaves',
+    //                                             '/interviews',
+    //                                             '/employee-onboarding',
+    //                                             '/payroll',
+    //                                             '/petty-cash',
+    //                                             '/daily-expense',
+    //                                             '/loans',
+    //                                             '/holidays',
+    //                                             '/departments',
+    //                                             '/designations',
+    //                                             '/vehicles',
+    //                                             '/login-history',
+    //                                             '/system-settings',
+    //                                             '/system-error-logs',
+    //                                             '/resignations',
+    //                                             '/alerts',
+    //                                             '/requisition',
+    //                                             '/my-requisition',
+    //                                             '/letters',
+    //                                             '/all-salary-request',
+    //                                             '/all-loan-request',
+    //                                             '/all-tickets',
+    //                                             '/permissions',
+    //                                             '/tax-slab',
+    //                                             '/tax-collection',
+    //                                             '/rooms',
+    //                                             '/locations',
+    //                                             '/candiddate-interviews',
+    //                                             '/employee-devices',
+    //                                             '/linked-in-post',
+    //                                             '/shift-management',
+    //                                             '/employee-expense',
+    //                                             '/overtime-management',
+    //                                             '/organogram',
+    //                                             '/my-expense',
+    //                                             '/my-shift-time',
+    //                                             '/employee-letter',
+    //                                             '/letter-template',
+    //                                             '/machine-attendance-logs',
+    //                                             '/leave-management',
+    //                                             '/polling',
+    //                                             '/shift-time-request'
+
+
+    //                                         ];
+
+    //                                         foreach($permissionRecords as $permissionRecord ){
+    //                                             $permissions = new Permission();
+    //                                             $permissions->module_url = $permissionRecord;
+    //                                             $permissions->employee_id = $employee_registration_id;
+    //                                             if($employee_permissions == "No"){
+    //                                                 $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
+    //                                             }else{
+    //                                                 $permissions->permission_status = 1 ;
+    //                                             }
+    //                                             $permissions->save();
+
+    //                                         }
+
+    //                                     }
+    //                                 }
+    //                                 $success++;
+    //                             }
+
+    //                         }
+    //                         $count_row ++;
+
+
+    //                     }
+    //                     fclose($file2);
+
+    //                     return response()->json([
+    //                         'status' => 'TRUE',
+    //                         'msg' => 'Upload employees record',
+    //                         'error_logs' => $error_logs
+    //                     ]);
+    //                 }else{
+    //                     $msg = "You have $success valid records and $error invalid records.";
+
+    //                     return response()->json([
+    //                         'status' => 'FALSE',
+    //                         'msg' =>  'Employee record upload failed '."<br>".$msg,
+    //                         'error_logs' => $error_logs
+    //                     ]);
+    //                 }
+
+    //             }
+
+
+    //         }
+    //     // }catch(\Exception $e){
+    //     //     $this->create_error_log('Upload employee information', $e);
+    //     //     return response()->json([
+    //     //         'status' => 'FALSE',
+    //     //         'msg' => 'Something went wrong. Please try again.',
+    //     //     ]);
+    //     // }finally{
+    //     //     ActivityTracker::track_activity('Upload employee information');
+
+    //     // }
+    // }
+
     protected function upload_employee_record(Request $request){
 
-        try{
-
-            $validator = Validator::make($request->all(), [
-                'file' => 'required|file|mimes:csv'
-            ]);
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'msg' => $error,
-                        'status' => 'FALSE',
-                        'validation' => 'TRUE',
-                    ]);
-                }
-            }else{
-                $filename = $request->file('file')->getPathName();
-                if($request->file('file')->getSize() > 0)
-                {
-                    $error = 0;
-                    $success = 0;
-                    $file = fopen($filename, "r");
-                    $file2 = fopen($filename, "r");
-                    $error_logs = array();
-                    $count_row = 0;
-
-                    while (($getData = fgetcsv($file)) !== FALSE)
-                    {
-
-                        if($count_row !=0){
-
-                            $employee_name = $getData[0];
-                            $employee_contact_no = $getData[1];
-                            $employee_email =  $getData[2];
-                            $employee_nic =  $getData[3];
-                            $employee_gender =  $getData[4];
-                            $employee_department =  $getData[5];
-                            $employee_designation =  $getData[6];
-                            $employee_job_title =  $getData[7];
-                            $employee_can_ra =  $getData[8];
-                            $joining_date =  $getData[9];
-                            $employee_status =  $getData[10];
-                            $employee_salary =  $getData[11];
-                            $employee_earning_type =  $getData[12];
-                            $employee_job_type =  $getData[13];
-                            $employee_password =  $getData[14];
-                            $shift_start_time =  $getData[15];
-                            $shift_end_time =  $getData[16];
-                            $employee_Off_day =  $getData[17];
-                            $employee_location =  $getData[18];
-                            $employee_permissions =  $getData[19];
-
-                            $count_record = "TRUE";
-
-                            if(empty($employee_name)){
-                                $error_msg = "Row# $count_row : Employee name required ";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }
-
-                            if(empty($employee_contact_no)){
-                                $error_msg = "Row# $count_row :  contact number required ";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $employee_contact = Employees::where('employee_contactno', $employee_contact_no)->get('employee_contactno')->toArray();
-
-                                if(strlen((int)$employee_contact_no) != strlen($employee_contact_no) && !empty($employee_contact_no)){
-
-                                    $error_msg = "Row# $count_row : contact number must be a number";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-
-                                if(!empty($employee_contact)){
-                                    $error_msg = "Row# $count_row : contact number already exist";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_email)){
-                                $error_msg = "Row# $count_row : email required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
-
-                                if(!empty( $employees_email)){
-                                    $error_msg = "Row# $count_row : email already exist";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_nic)){
-                                $error_msg = "Row# $count_row : Nic number required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $employees_nic = Employees::where('employee_cnic', $employee_nic)->get('employee_cnic')->toArray();
-
-                                if(!empty($employees_nic)){
-                                    $error_msg = "Row# $count_row : Nic number already exist";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_gender)){
-                                $error_msg = "Row# $count_row : Gender required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $employment_gender_field  = ['Male','Female'];
-
-                                if(!in_array($employee_gender,  $employment_gender_field)){
-                                    $error_msg = "Row# $count_row : Unknown employee gender field";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_department)){
-                                $error_msg = "Row# $count_row : department name required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
-
-                                if(empty($departments)){
-                                    $error_msg = "Row# $count_row : Unknown department name";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_designation)){
-                                $error_msg = "Row# $count_row : designation required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
-                                ->where('designation_name', $employee_designation)
-                                ->where('department_name', $employee_department)
-                                ->get(['designation_id','designation_name','tbl_designations.department_id','department_name'])->toArray();
-
-                                if(empty($designations)){
-                                    $error_msg = "Row# $count_row : Unknown designation name";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_job_title)){
-                                $error_msg = "Row# $count_row : Employee job title required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }
-
-                            if(empty($employee_can_ra)){
-                                $error_msg = "Row# $count_row : Employee can ra required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }
-
-                            if($employee_can_ra  == 'Yes'){
-                                $employee_ra = 1 ;
-                            }elseif($employee_can_ra  == 'No') {
-                                $employee_ra= 0;
-                            }else{
-                                $error_msg = "Row# $count_row : Unknown employee can ra type";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }
-
-                            if(empty($joining_date)){
-                                $error_msg = "Row# $count_row : Date of joining required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
-
-                                if ($dateTime == TRUE) {
-                                    $joining_date = $dateTime->format('Y-m-d');
-                                }else {
-                                    $error_msg = "Row# $count_row : Date of joning must be a date";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_status)){
-                                $error_msg = "Row# $count_row : Employement status required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
-
-                                if(empty($employement_status)){
-                                    $error_msg = "Row# $count_row : Unknown Employement status";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_salary)){
-                                $error_msg = "Row# $count_row : Employee salary required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                if(strlen((int)$employee_salary) != strlen($employee_salary) && !empty($employee_salary)){
-
-                                    $error_msg = "Row# $count_row : employee salary must be number";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-
-                                }
-                            }
-
-                            if(empty($employee_earning_type)){
-                                $error_msg = "Row# $count_row : Employee earning type required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                if($employee_earning_type == 'Monthly'){
-                                    $employee_earning = 1;
-                                }elseif($employee_earning_type == 'Daily wages') {
-                                    $employee_earning = 2;
-                                }else{
-                                    $error_msg = "Row# $count_row : Unknown earning type";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_job_type)){
-                                $error_msg = "Row# $count_row : Employee job type required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                if($employee_job_type == 'Office Based'){
-                                    $employee_job = 'Office';
-                                }elseif($employee_job_type == 'Home Based') {
-                                    $employee_job= 'Home';
-                                }else{
-                                    $error_msg = "Row# $count_row : Unknown employee job type";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_password)){
-                                $error_msg = "Row# $count_row : Employee password required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }
-
-                            if(empty($shift_start_time)){
-                                $error_msg = "Row# $count_row : shift start time required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $dateTime = DateTime::createFromFormat('H:i', $shift_start_time);
-
-                                if ($dateTime == TRUE) {
-                                    $shift_start_time = $dateTime->format('H:i');
-                                }else {
-                                    $error_msg = "Row# $count_row : shift start time must be a time";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($shift_end_time)){
-                                $error_msg = "Row# $count_row : shift end time required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $dateTime = DateTime::createFromFormat('H:i', $shift_end_time);
-
-                                if ($dateTime == TRUE) {
-                                    $shift_end_time = $dateTime->format('H:i');
-                                }else {
-                                    $error_msg = "Row# $count_row : shift end time must be a time";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_Off_day)){
-                                $error_msg = "Row# $count_row : Employee off day required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $employment_off_day_field  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-
-                                $employee_Off_day = explode(',',$employee_Off_day);
-
-                                if (array_intersect($employee_Off_day , $employment_off_day_field) != $employee_Off_day ) {
-
-                                    $error_msg = "Row# $count_row : Unknown employement off day field";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_location)){
-                                $error_msg = "Row# $count_row : location required";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $locations = OfficeLocation::where('location_title', $employee_location)->get('location_id')->toArray();
-
-                                if(empty($locations)){
-                                    $error_msg = "Row# $count_row : Unknown location";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if(empty($employee_permissions)){
-                                $error_msg = "Row# $count_row : Employee permission required ";
-                                $count_record = "FALSE";
-                                array_push($error_logs, $error_msg);
-                            }else{
-
-                                $employment_permission  = ['Yes','No'];
-
-                                if(!in_array($employee_permissions,  $employment_permission)){
-                                    $error_msg = "Row# $count_row : Unknown employee permission field";
-                                    $count_record = "FALSE";
-                                    array_push($error_logs, $error_msg);
-                                }
-                            }
-
-                            if($count_record == "TRUE"){
-                                $success++;
-                            }else{
-                                $error++;
-                            }
-
-
-                        }
-                        $count_row ++;
-
-                    }
-                    if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
-                        $count_row = 0;
-                        while (($getData = fgetcsv($file2)) !== FALSE)
-                        {
-
-                            if($count_row !=0){
-
-                                $employee_name = $getData[0];
-                                $employee_contact_no = $getData[1];
-                                $employee_email =  $getData[2];
-                                $employee_nic =  $getData[3];
-                                $employee_gender =  $getData[4];
-                                $employee_department =  $getData[5];
-                                $employee_designation =  $getData[6];
-                                $employee_job_title =  $getData[7];
-                                $employee_can_ra =  $getData[8];
-                                $joining_date =  $getData[9];
-                                $employee_status =  $getData[10];
-                                $employee_salary =  $getData[11];
-                                $employee_earning_type =  $getData[12];
-                                $employee_job_type =  $getData[13];
-                                $employee_password =  $getData[14];
-                                $shift_start_time =  $getData[15];
-                                $shift_end_time =  $getData[16];
-                                $employee_Off_day =  $getData[17];
-                                $employee_location =  $getData[18];
-                                $employee_permissions =  $getData[19];
-
-                                $employee_record_insert = "TRUE";
-
-                                if(empty($employee_name)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_contact_no)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $employee_contact = Employees::where('employee_contactno', $employee_contact_no)->get('employee_contactno')->toArray();
-
-                                if(strlen((int)$employee_contact_no) != strlen($employee_contact_no) && !empty($employee_contact_no)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(!empty($employee_contact)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_email)){
-                                    $employee_record_insert = "FALSE";
-                                }
-                                $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
-
-                                if(!empty( $employees_email)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_nic)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $employees_nic = Employees::where('employee_cnic', $employee_nic)->get('employee_cnic')->toArray();
-
-                                if(!empty($employees_nic)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_gender)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $employment_gender_field  = ['Male','Female'];
-
-                                if(!in_array($employee_gender,  $employment_gender_field)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_department)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
-
-                                if(empty($departments)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_designation)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
-                                ->where('designation_name', $employee_designation)
-                                ->where('department_name', $employee_department)
-                                ->get(['designation_id','designation_name','tbl_designations.department_id','department_name'])->toArray();
-
-                                if(empty($designations)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_job_title)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_can_ra)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if($employee_can_ra  == 'Yes'){
-                                    $employee_ra = '1' ;
-                                }elseif($employee_can_ra  == 'No') {
-                                    $employee_ra= '0';
-                                }else{
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($joining_date)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
-
-                                if ($dateTime == TRUE) {
-                                    $joining_date = $dateTime->format('Y-m-d');
-                                }else {
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_status)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
-
-                                if(empty($employement_status)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_salary)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(strlen((int)$employee_salary) != strlen($employee_salary) && !empty($employee_salary)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_earning_type)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if($employee_earning_type == 'Monthly'){
-                                    $employee_earning = 1;
-                                }elseif($employee_earning_type == 'Daily wages') {
-                                    $employee_earning = 2;
-                                }else{
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_job_type)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if($employee_job_type == 'Office Based'){
-                                    $employee_job = 'Office';
-                                }elseif($employee_job_type == 'Home Based') {
-                                    $employee_job= 'Home';
-                                }else{
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_password)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($shift_start_time)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $dateTime = DateTime::createFromFormat('H:i', $shift_start_time);
-
-                                if ($dateTime == TRUE) {
-                                    $shift_start_time = $dateTime->format('H:i');
-                                }else {
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($shift_end_time)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $dateTime = DateTime::createFromFormat('H:i', $shift_end_time);
-
-                                if ($dateTime == TRUE) {
-                                    $shift_end_time = $dateTime->format('H:i');
-                                }else {
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_Off_day)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $employment_off_day_field  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-                                $employee_Off_day = explode(',',$employee_Off_day);
-
-                                if (array_intersect($employee_Off_day , $employment_off_day_field) != $employee_Off_day ) {
-
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_location)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $locations = OfficeLocation::where('location_title', $employee_location)->get('location_id')->toArray();
-
-                                if(empty($locations)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if(empty($employee_permissions)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                $employment_permission  = ['Yes','No'];
-
-                                if(!in_array($employee_permissions,  $employment_permission)){
-                                    $employee_record_insert = "FALSE";
-                                }
-
-                                if($employee_record_insert == "TRUE"){
-
-                                    $all_employees = Employees::orderBy('employee_id','DESC')->limit(1)->get(['employee_code'])->toArray();
-                                    if(empty($all_employees)){
-                                        $employeeCode = '001';
-                                    }else{
-                                        $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
-                                    }
-                                    $add_employee = new Employees();
-                                    $add_employee->employee_name = $employee_name;
-                                    $add_employee->employee_code = $employeeCode;
-                                    $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
-                                    $add_employee->employee_cnic = $employee_nic;
-                                    $add_employee->employee_email = $employee_email;
-                                    $add_employee->employee_contactno = $employee_contact_no;
-                                    $add_employee->employee_gender = $employee_gender;
-                                    $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
-                                    $add_employee->employee_designation = $designations[0]['designation_id'];
-                                    $add_employee->employee_department = $departments[0]['department_id'];
-                                    $add_employee->employee_jobtitle = $employee_job_title;
-                                    $add_employee->employee_password = Crypt::encryptString($employee_password);
-                                    $add_employee->employee_ra =  '1';
-                                    $add_employee->employee_can_ra = $employee_ra;
-                                    $add_employee->employee_offday1 = (!empty($employee_Off_day)) ? implode(',',$employee_Off_day) : '';
-                                    $add_employee->employee_jobtype = $employee_job;
-                                    $add_employee->employee_location = $locations[0]['location_id'];
-                                    $add_employee->employee_isactive =  1;
-                                    $add_employee->employee_earning_type = $employee_earning;
-
-                                    $employee = $add_employee->save();
-                                    $employee_registration_id = $add_employee->employee_id;
-
-                                    if($employee == 1){
-
-                                        $emp_salary = new EmployeeSalary();
-                                        $emp_salary->salary_employee_id = $employee_registration_id;
-                                        $emp_salary->salary_amount =  $employee_salary;
-                                        $emp_salary->salary_effected_date = $joining_date;
-                                        $emp_salary->salary_created_date = date('d-m-Y');
-                                        $emp_salary->salary_earning_type = $employee_earning_type;
-                                        $emp_salary->save();
-
-                                        $add_leaves =  new Leave();
-                                        $add_leaves->leaves_employee_id = $employee_registration_id;
-                                        $add_leaves->leave_type_id      = 1;
-                                        $add_leaves->leave_allotement   = 0;
-                                        $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
-                                        $add_leaves->save();
-
-                                        $add_leaves =  new Leave();
-                                        $add_leaves->leaves_employee_id = $employee_registration_id;
-                                        $add_leaves->leave_type_id      = 2;
-                                        $add_leaves->leave_allotement   = 0;
-                                        $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
-                                        $add_leaves->save();
-
-                                        $add_leaves =  new Leave();
-                                        $add_leaves->leaves_employee_id = $employee_registration_id;
-                                        $add_leaves->leave_type_id      = 3;
-                                        $add_leaves->leave_allotement   = 0;
-                                        $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
-                                        $add_leaves->save();
-
-                                        $add_shift = new ShiftManagement();
-                                        $add_shift->employee_id = $employee_registration_id;
-                                        $add_shift->shift_start_from_date = $joining_date;
-                                        $add_shift->shift_start_time = $shift_start_time.':00';
-                                        $add_shift->shift_end_time = $shift_end_time.':00';
-                                        $add_shift->shift_created_by = session('user_session');
-                                        $process = $add_shift->save();
-
-                                        if($process == 1){
-
-                                            $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
-
-                                            $submitInformation = new EmployeeInformation();
-                                            $submitInformation->employeeid = $employee_registration_id;
-                                            $submitInformation->save();
-
-                                            $get_holidays =  Holiday::where('holiday_date','>=', $joining_date)->where(function ($query) use ($departments) {
-                                                $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
-                                                ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
-                                            })
-                                            ->get()->toArray();
-
-                                            if(!empty($get_holidays)){
-                                                foreach($get_holidays as $get_holiday){
-                                                    $day = date("d", strtotime($get_holiday['holiday_date']));
-                                                    $month = date("m", strtotime($get_holiday['holiday_date']));
-                                                    $year = date("Y", strtotime($get_holiday['holiday_date']));
-
-                                                    $mark_attendance = new Attendance();
-                                                    $mark_attendance->att_employee_id =  $employee_registration_id;
-                                                    $mark_attendance->att_check_in_time = '00:00:00';
-                                                    $mark_attendance->att_check_out_time = '00:00:00';
-                                                    $mark_attendance->att_check_in_status = '0';
-                                                    $mark_attendance->att_check_out_status = 0;
-                                                    $mark_attendance->att_shift_start_time = $shift_start_time->input('shift_start_timings').':00';
-                                                    $mark_attendance->att_shift_end_time = $shift_end_time->input('shift_end_timings').':00';
-                                                    $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
-                                                    $mark_attendance->att_for_date = $day;
-                                                    $mark_attendance->att_for_month = $month;
-                                                    $mark_attendance->att_for_year = $year;
-                                                    $mark_attendance->save();
-
-
-                                                }
-                                            }
-
-                                            $mypermissions = [
-
-                                                '/dashboard',
-                                                '/my-attendance',
-                                                '/my-attendance-request',
-                                                '/my-leaves',
-                                                '/my-interviews',
-                                                '/payslip',
-                                                '/my-meetings',
-                                                '/my-wfh-requests',
-                                                '/employee-resignation',
-                                                '/my-salary-request',
-                                                '/my-loan',
-                                                '/my-tickets',
-                                                '/my-expense',
-                                                '/my-shift-time',
-                                                '/permissions',
-                                            ];
-
-                                            $permissionRecords = [
-                                                '/dashboard',
-                                                '/my-attendance',
-                                                '/my-attendance-request',
-                                                '/my-leaves',
-                                                '/my-interviews',
-                                                '/payslip',
-                                                '/my-meetings',
-                                                '/my-wfh-requests',
-                                                '/employee-resignation',
-                                                '/my-salary-request',
-                                                '/my-loan',
-                                                '/my-tickets',
-                                                '/employees',
-                                                '/employees-managers',
-                                                '/employee-birthdays',
-                                                '/employee-work-anniversay',
-                                                '/gadgets-inventory',
-                                                '/gadgets-allotment',
-                                                '/meetings',
-                                                '/attendance',
-                                                '/attendance-requests',
-                                                '/daily-attendance-report',
-                                                '/wfh-requests',
-                                                '/employees-leaves',
-                                                '/manage-leaves',
-                                                '/interviews',
-                                                '/employee-onboarding',
-                                                '/payroll',
-                                                '/petty-cash',
-                                                '/daily-expense',
-                                                '/loans',
-                                                '/holidays',
-                                                '/departments',
-                                                '/designations',
-                                                '/vehicles',
-                                                '/login-history',
-                                                '/system-settings',
-                                                '/system-error-logs',
-                                                '/resignations',
-                                                '/alerts',
-                                                '/requisition',
-                                                '/my-requisition',
-                                                '/letters',
-                                                '/all-salary-request',
-                                                '/all-loan-request',
-                                                '/all-tickets',
-                                                '/permissions',
-                                                '/tax-slab',
-                                                '/tax-collection',
-                                                '/rooms',
-                                                '/locations',
-                                                '/candiddate-interviews',
-                                                '/employee-devices',
-                                                '/linked-in-post',
-                                                '/shift-management',
-                                                '/employee-expense',
-                                                '/overtime-management',
-                                                '/organogram',
-                                                '/my-expense',
-                                                '/my-shift-time',
-                                                '/employee-letter',
-                                                '/letter-template',
-                                                '/machine-attendance-logs',
-                                                '/leave-management',
-                                                '/polling',
-                                                '/shift-time-request'
-
-
-                                            ];
-
-                                            foreach($permissionRecords as $permissionRecord ){
-                                                $permissions = new Permission();
-                                                $permissions->module_url = $permissionRecord;
-                                                $permissions->employee_id = $employee_registration_id;
-                                                if($employee_permissions == "No"){
-                                                    $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
-                                                }else{
-                                                    $permissions->permission_status = 1 ;
-                                                }
-                                                $permissions->save();
-
-                                            }
-
-                                        }
-                                    }
-                                    $success++;
-                                }
-
-                            }
-                            $count_row ++;
-
-
-                        }
-                        fclose($file2);
-
+            // try{
+                set_time_limit(18000);
+                $validator = Validator::make($request->all(), [
+                    'file' => 'required|file|mimes:csv'
+                ]);
+                if($validator->fails()) {
+                    foreach($validator->errors()->all() as $error){
                         return response()->json([
-                            'status' => 'TRUE',
-                            'msg' => 'Upload employees record',
-                            'error_logs' => $error_logs
-                        ]);
-                    }else{
-                        $msg = "You have $success valid records and $error invalid records.";
-
-                        return response()->json([
+                            'msg' => $error,
                             'status' => 'FALSE',
-                            'msg' =>  'Employee record upload failed '."<br>".$msg,
-                            'error_logs' => $error_logs
+                            'validation' => 'TRUE',
                         ]);
                     }
-
+                }else{
+                    $filename = $request->file('file')->getPathName();
+                    // dd($filename);
+                    if($request->file('file')->getSize() > 0)
+                    {
+                        $error = 0;
+                        $success = 0;
+                        $file = fopen($filename, "r");
+                        $file2 = fopen($filename, "r");
+                        $error_logs = array();
+                        $count_row = 0;
+                        // dd('here');
+    
+                        
+    
+                        // while (($getData = fgetcsv($file)) !== FALSE)
+                        // {
+    
+                        //     $count_row;
+    
+                        //     if($count_row !=0){
+                        //         // dd($getData[0][1]);
+                        //         $employee_name = $getData[0];
+                        //         // $employee_contact_no = $getData[1];
+                        //         // $employee_email =  $getData[2];
+                        //         // $employee_nic =  $getData[3];
+                        //         $employee_contact_no = '090078601' . $count_row;
+                        //         $employee_email =  'test@gmail.com' . $count_row;
+                        //         $employee_nic =  '48943-0987654-0' . $count_row;
+                        //         $employee_gender =  $getData[4];
+                        //         $employee_department =  $getData[5];
+                        //         $employee_designation =  $getData[6];
+                        //         $employee_job_title =  $getData[7];
+                        //         $employee_can_ra =  $getData[8];
+                        //         $joining_date =  $getData[9];
+                        //         $employee_status =  $getData[10];
+                        //         $employee_salary =  $getData[11];
+                        //         $employee_earning_type =  $getData[12];
+                        //         $employee_job_type =  $getData[13];
+                        //         $employee_password =  $getData[14];
+                        //         $shift_start_time =  $getData[15];
+                        //         $shift_end_time =  $getData[16];
+                        //         $employee_Off_day =  $getData[17];
+                        //         $employee_location =  $getData[18];
+                        //         $employee_permissions =  $getData[19];
+    
+                        //         $count_record = "TRUE";
+    
+                        //         if(empty($employee_name)){
+                        //             $error_msg = "Row# $count_row : Employee name required ";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }
+    
+                        //         if(empty($employee_contact_no)){
+                        //             $error_msg = "Row# $count_row :  contact number required ";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $employee_contact = Employees::where('employee_contactno', $employee_contact_no)->get('employee_contactno')->toArray();
+    
+                        //             if(strlen((int)$employee_contact_no) != strlen($employee_contact_no) && !empty($employee_contact_no)){
+    
+                        //                 $error_msg = "Row# $count_row : contact number must be a number";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+    
+                        //             if(!empty($employee_contact)){
+                        //                 $error_msg = "Row# $count_row : contact number already exist";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_email)){
+                        //             $error_msg = "Row# $count_row : email required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+    
+                        //             if(!empty( $employees_email)){
+                        //                 $error_msg = "Row# $count_row : email already exist";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_nic)){
+                        //             $error_msg = "Row# $count_row : Nic number required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $employees_nic = Employees::where('employee_cnic', $employee_nic)->get('employee_cnic')->toArray();
+    
+                        //             if(!empty($employees_nic)){
+                        //                 $error_msg = "Row# $count_row : Nic number already exist";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_gender)){
+                        //             $error_msg = "Row# $count_row : Gender required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $employment_gender_field  = ['Male','Female'];
+    
+                        //             if(!in_array($employee_gender,  $employment_gender_field)){
+                        //                 $error_msg = "Row# $count_row : Unknown employee gender field";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_department)){
+                        //             $error_msg = "Row# $count_row : department name required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
+    
+                        //             if(empty($departments)){
+                        //                 $error_msg = "Row# $count_row : Unknown department name";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_designation)){
+                        //             $error_msg = "Row# $count_row : designation required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
+                        //             ->where('designation_name', $employee_designation)
+                        //             ->where('department_name', $employee_department)
+                        //             ->get(['designation_id','designation_name','tbl_designations.department_id','department_name'])->toArray();
+    
+                        //             if(empty($designations)){
+                        //                 $error_msg = "Row# $count_row : Unknown designation name";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_job_title)){
+                        //             $error_msg = "Row# $count_row : Employee job title required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }
+    
+                        //         if(empty($employee_can_ra)){
+                        //             $error_msg = "Row# $count_row : Employee can ra required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }
+    
+                        //         if($employee_can_ra  == 'Yes'){
+                        //             $employee_ra = 1 ;
+                        //         }elseif($employee_can_ra  == 'No') {
+                        //             $employee_ra= 0;
+                        //         }else{
+                        //             $error_msg = "Row# $count_row : Unknown employee can ra type";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }
+    
+                        //         if(empty($joining_date)){
+                        //             $error_msg = "Row# $count_row : Date of joining required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
+    
+                        //             if ($dateTime == TRUE) {
+                        //                 $joining_date = $dateTime->format('Y-m-d');
+                        //             }else {
+                        //                 $error_msg = "Row# $count_row : Date of joning must be a date";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_status)){
+                        //             $error_msg = "Row# $count_row : Employement status required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
+    
+                        //             if(empty($employement_status)){
+                        //                 $error_msg = "Row# $count_row : Unknown Employement status";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_salary)){
+                        //             $error_msg = "Row# $count_row : Employee salary required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             if(strlen((int)$employee_salary) != strlen($employee_salary) && !empty($employee_salary)){
+    
+                        //                 $error_msg = "Row# $count_row : employee salary must be number";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+    
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_earning_type)){
+                        //             $error_msg = "Row# $count_row : Employee earning type required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             if($employee_earning_type == 'Monthly'){
+                        //                 $employee_earning = 1;
+                        //             }elseif($employee_earning_type == 'Daily wages') {
+                        //                 $employee_earning = 2;
+                        //             }else{
+                        //                 $error_msg = "Row# $count_row : Unknown earning type";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_job_type)){
+                        //             $error_msg = "Row# $count_row : Employee job type required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             if($employee_job_type == 'Office Based'){
+                        //                 $employee_job = 'Office';
+                        //             }elseif($employee_job_type == 'Home Based') {
+                        //                 $employee_job= 'Home';
+                        //             }else{
+                        //                 $error_msg = "Row# $count_row : Unknown employee job type";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_password)){
+                        //             $error_msg = "Row# $count_row : Employee password required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }
+    
+                        //         if(empty($shift_start_time)){
+                        //             $error_msg = "Row# $count_row : shift start time required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $dateTime = DateTime::createFromFormat('H:i', $shift_start_time);
+    
+                        //             if ($dateTime == TRUE) {
+                        //                 $shift_start_time = $dateTime->format('H:i');
+                        //             }else {
+                        //                 $error_msg = "Row# $count_row : shift start time must be a time";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($shift_end_time)){
+                        //             $error_msg = "Row# $count_row : shift end time required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $dateTime = DateTime::createFromFormat('H:i', $shift_end_time);
+    
+                        //             if ($dateTime == TRUE) {
+                        //                 $shift_end_time = $dateTime->format('H:i');
+                        //             }else {
+                        //                 $error_msg = "Row# $count_row : shift end time must be a time";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_Off_day)){
+                        //             $error_msg = "Row# $count_row : Employee off day required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $employment_off_day_field  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+    
+                        //             $employee_Off_day = explode(',',$employee_Off_day);
+    
+                        //             if (array_intersect($employee_Off_day , $employment_off_day_field) != $employee_Off_day ) {
+    
+                        //                 $error_msg = "Row# $count_row : Unknown employement off day field";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_location)){
+                        //             $error_msg = "Row# $count_row : location required";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $locations = OfficeLocation::where('location_title', $employee_location)->get('location_id')->toArray();
+    
+                        //             if(empty($locations)){
+                        //                 $error_msg = "Row# $count_row : Unknown location";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if(empty($employee_permissions)){
+                        //             $error_msg = "Row# $count_row : Employee permission required ";
+                        //             $count_record = "FALSE";
+                        //             array_push($error_logs, $error_msg);
+                        //         }else{
+    
+                        //             $employment_permission  = ['Yes','No'];
+    
+                        //             if(!in_array($employee_permissions,  $employment_permission)){
+                        //                 $error_msg = "Row# $count_row : Unknown employee permission field";
+                        //                 $count_record = "FALSE";
+                        //                 array_push($error_logs, $error_msg);
+                        //             }
+                        //         }
+    
+                        //         if($count_record == "TRUE"){
+                        //             $success++;
+                        //         }else{
+                        //             $error++;
+                        //         }
+    
+    
+                        //     }
+                        //     $count_row ++;
+    
+                        // }
+                        // if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
+                            $count_row = 0;
+                            while (($getData = fgetcsv($file2)) !== FALSE)
+                            {
+    
+                                if($count_row !=0){
+    
+                                    $employee_name = $getData[0];
+                                    // $employee_contact_no = $getData[1];
+                                    // $employee_email =  $getData[2];
+                                    // $employee_nic =  $getData[3];
+                                    $employee_contact_no = '090078601' . $count_row;
+                                    $employee_email =  'test@gmail.com' . $count_row;
+                                    $employee_nic =  '48943-0987654-0' . $count_row;
+                                    $employee_gender =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); //$getData[4];
+                                    $employee_department =  iconv('ISO-8859-1', 'UTF-8', $getData[5]); //$getData[5];
+                                    $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[6]); //$getData[6];
+                                    $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[7]); //$getData[7];
+                                    $employee_can_ra =  iconv('ISO-8859-1', 'UTF-8', $getData[8]); //$getData[8];
+                                    $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[9]); //$getData[9];
+                                    $employee_status =  iconv('ISO-8859-1', 'UTF-8', $getData[10]); //$getData[10];
+                                    $employee_salary =  iconv('ISO-8859-1', 'UTF-8', $getData[11]); //$getData[11];
+                                    $employee_earning_type = iconv('ISO-8859-1', 'UTF-8',  $getData[12]); // $getData[12];
+                                    $employee_job_type =  iconv('ISO-8859-1', 'UTF-8', $getData[13]); //$getData[13];
+                                    $employee_password =  iconv('ISO-8859-1', 'UTF-8', $getData[14]); //$getData[14];
+                                    $shift_start_time =  iconv('ISO-8859-1', 'UTF-8', $getData[15]); //$getData[15];
+                                    $shift_end_time = iconv('ISO-8859-1', 'UTF-8',  $getData[16]); // $getData[16];
+                                    $employee_Off_day =  iconv('ISO-8859-1', 'UTF-8', $getData[17]); //$getData[17];
+                                    $employee_location =  iconv('ISO-8859-1', 'UTF-8', $getData[18]); //$getData[18];
+                                    $employee_permissions =  iconv('ISO-8859-1', 'UTF-8', $getData[19]); //$getData[19];
+    
+                                    $employee_record_insert = "TRUE";
+    
+                                    // if(empty($employee_name)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_contact_no)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // $employee_contact = Employees::where('employee_contactno', $employee_contact_no)->get('employee_contactno')->toArray();
+    
+                                    // if(strlen((int)$employee_contact_no) != strlen($employee_contact_no) && !empty($employee_contact_no)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(!empty($employee_contact)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_email)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+                                    // $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+    
+                                    // if(!empty( $employees_email)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_nic)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // $employees_nic = Employees::where('employee_cnic', $employee_nic)->get('employee_cnic')->toArray();
+    
+                                    // if(!empty($employees_nic)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_gender)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // $employment_gender_field  = ['Male','Female'];
+    
+                                    // if(!in_array($employee_gender,  $employment_gender_field)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_department)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
+    
+                                    // if(empty($departments)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_designation)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    $designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
+                                    ->where('designation_name', $employee_designation)
+                                    ->where('department_name', $employee_department)
+                                    ->get(['designation_id','designation_name','tbl_designations.department_id','department_name'])->toArray();
+    
+                                    if(empty($designations)){
+                                        $employee_record_insert = "FALSE";
+                                    }
+    
+                                    // if(empty($employee_job_title)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_can_ra)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    if($employee_can_ra  == 'Yes'){
+                                        $employee_ra = '1' ;
+                                    }elseif($employee_can_ra  == 'No') {
+                                        $employee_ra= '0';
+                                    }
+                                    // else{
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($joining_date)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
+    
+                                    if ($dateTime == TRUE) {
+                                        $joining_date = $dateTime->format('Y-m-d');
+                                    }else {
+                                        $employee_record_insert = "FALSE";
+                                    }
+    
+                                    // if(empty($employee_status)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
+    
+                                    if(empty($employement_status)){
+                                        $employee_record_insert = "FALSE";
+                                    }
+    
+                                    // if(empty($employee_salary)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(strlen((int)$employee_salary) != strlen($employee_salary) && !empty($employee_salary)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_earning_type)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    if($employee_earning_type == 'Monthly'){
+                                        $employee_earning = 1;
+                                    }elseif($employee_earning_type == 'Daily wages') {
+                                        $employee_earning = 2;
+                                    }else{
+                                        $employee_record_insert = "FALSE";
+                                    }
+    
+                                    // if(empty($employee_job_type)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    if($employee_job_type == 'Office Based'){
+                                        $employee_job = 'Office';
+                                    }elseif($employee_job_type == 'Home Based') {
+                                        $employee_job= 'Home';
+                                    }
+                                    // else{
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_password)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($shift_start_time)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    $dateTime = DateTime::createFromFormat('H:i', $shift_start_time);
+    
+                                    if ($dateTime == TRUE) {
+                                        $shift_start_time = $dateTime->format('H:i');
+                                    }else {
+                                        $employee_record_insert = "FALSE";
+                                    }
+    
+                                    // if(empty($shift_end_time)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    $dateTime = DateTime::createFromFormat('H:i', $shift_end_time);
+    
+                                    if ($dateTime == TRUE) {
+                                        $shift_end_time = $dateTime->format('H:i');
+                                    }else {
+                                        $employee_record_insert = "FALSE";
+                                    }
+    
+                                    // if(empty($employee_Off_day)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // $employment_off_day_field  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+                                    // $employee_Off_day = explode(',',$employee_Off_day);
+    
+                                    // if (array_intersect($employee_Off_day , $employment_off_day_field) != $employee_Off_day ) {
+    
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_location)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    $locations = OfficeLocation::where('location_title', $employee_location)->get('location_id')->toArray();
+    
+                                    // if(empty($locations)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // if(empty($employee_permissions)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    // $employment_permission  = ['Yes','No'];
+    
+                                    // if(!in_array($employee_permissions,  $employment_permission)){
+                                    //     $employee_record_insert = "FALSE";
+                                    // }
+    
+                                    if($employee_record_insert == "TRUE"){
+    
+                                        $all_employees = Employees::orderBy('employee_id','DESC')->limit(1)->get(['employee_code'])->toArray();
+                                        if(empty($all_employees)){
+                                            $employeeCode = '001';
+                                        }else{
+                                            $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
+                                        }
+                                        $add_employee = new Employees();
+                                        $add_employee->employee_name = $employee_name;
+                                        $add_employee->employee_code = $employeeCode;
+                                        $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
+                                        $add_employee->employee_cnic = $employee_nic;
+                                        $add_employee->employee_email = $employee_email;
+                                        $add_employee->employee_contactno = $employee_contact_no;
+                                        $add_employee->employee_gender = $employee_gender;
+                                        $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
+                                        $add_employee->employee_designation = $designations[0]['designation_id'];
+                                        $add_employee->employee_department = $departments[0]['department_id'];
+                                        $add_employee->employee_jobtitle = $employee_job_title;
+                                        $add_employee->employee_password = Crypt::encryptString($employee_password);
+                                        $add_employee->employee_ra =  '1';
+                                        $add_employee->employee_can_ra = $employee_ra;
+                                        $add_employee->employee_offday1 = $employee_Off_day;
+                                        $add_employee->employee_jobtype = $employee_job;
+                                        $add_employee->employee_location = $locations[0]['location_id'];
+                                        $add_employee->employee_isactive =  1;
+                                        $add_employee->employee_earning_type = $employee_earning;
+    
+                                        $employee = $add_employee->save();
+                                        $employee_registration_id = $add_employee->employee_id;
+    
+                                        if($employee == 1){
+    
+                                            $emp_salary = new EmployeeSalary();
+                                            $emp_salary->salary_employee_id = $employee_registration_id;
+                                            $emp_salary->salary_amount =  $employee_salary;
+                                            $emp_salary->salary_effected_date = $joining_date;
+                                            $emp_salary->salary_created_date = date('d-m-Y');
+                                            $emp_salary->salary_earning_type = $employee_earning;
+                                            $emp_salary->save();
+    
+                                            $add_leaves =  new Leave();
+                                            $add_leaves->leaves_employee_id = $employee_registration_id;
+                                            $add_leaves->leave_type_id      = 1;
+                                            $add_leaves->leave_allotement   = 0;
+                                            $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+                                            $add_leaves->save();
+    
+                                            $add_leaves =  new Leave();
+                                            $add_leaves->leaves_employee_id = $employee_registration_id;
+                                            $add_leaves->leave_type_id      = 2;
+                                            $add_leaves->leave_allotement   = 0;
+                                            $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+                                            $add_leaves->save();
+    
+                                            $add_leaves =  new Leave();
+                                            $add_leaves->leaves_employee_id = $employee_registration_id;
+                                            $add_leaves->leave_type_id      = 3;
+                                            $add_leaves->leave_allotement   = 0;
+                                            $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+                                            $add_leaves->save();
+    
+                                            $add_shift = new ShiftManagement();
+                                            $add_shift->employee_id = $employee_registration_id;
+                                            $add_shift->shift_start_from_date = $joining_date;
+                                            $add_shift->shift_start_time = $shift_start_time.':00';
+                                            $add_shift->shift_end_time = $shift_end_time.':00';
+                                            $add_shift->shift_created_by = session('user_session');
+                                            $process = $add_shift->save();
+    
+                                            if($process == 1){
+    
+                                                $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
+    
+                                                $submitInformation = new EmployeeInformation();
+                                                $submitInformation->employeeid = $employee_registration_id;
+                                                $submitInformation->save();
+    
+                                                $get_holidays =  Holiday::where('holiday_date','>=', $joining_date)->where(function ($query) use ($departments) {
+                                                    $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
+                                                    ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
+                                                })
+                                                ->get()->toArray();
+    
+                                                if(!empty($get_holidays)){
+                                                    foreach($get_holidays as $get_holiday){
+                                                        $day = date("d", strtotime($get_holiday['holiday_date']));
+                                                        $month = date("m", strtotime($get_holiday['holiday_date']));
+                                                        $year = date("Y", strtotime($get_holiday['holiday_date']));
+    
+                                                        $mark_attendance = new Attendance();
+                                                        $mark_attendance->att_employee_id =  $employee_registration_id;
+                                                        $mark_attendance->att_check_in_time = '00:00:00';
+                                                        $mark_attendance->att_check_out_time = '00:00:00';
+                                                        $mark_attendance->att_check_in_status = '0';
+                                                        $mark_attendance->att_check_out_status = 0;
+                                                        $mark_attendance->att_shift_start_time = $shift_start_time->input('shift_start_timings').':00';
+                                                        $mark_attendance->att_shift_end_time = $shift_end_time->input('shift_end_timings').':00';
+                                                        $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
+                                                        $mark_attendance->att_for_date = $day;
+                                                        $mark_attendance->att_for_month = $month;
+                                                        $mark_attendance->att_for_year = $year;
+                                                        $mark_attendance->save();
+    
+    
+                                                    }
+                                                }
+    
+                                                $mypermissions = [
+    
+                                                    '/dashboard',
+                                                    '/my-attendance',
+                                                    '/my-attendance-request',
+                                                    '/my-leaves',
+                                                    '/my-interviews',
+                                                    '/payslip',
+                                                    '/my-meetings',
+                                                    '/my-wfh-requests',
+                                                    '/employee-resignation',
+                                                    '/my-salary-request',
+                                                    '/my-loan',
+                                                    '/my-tickets',
+                                                    '/my-expense',
+                                                    '/my-shift-time',
+                                                    '/permissions',
+                                                ];
+    
+                                                $permissionRecords = [
+                                                    '/dashboard',
+                                                    '/my-attendance',
+                                                    '/my-attendance-request',
+                                                    '/my-leaves',
+                                                    '/my-interviews',
+                                                    '/payslip',
+                                                    '/my-meetings',
+                                                    '/my-wfh-requests',
+                                                    '/employee-resignation',
+                                                    '/my-salary-request',
+                                                    '/my-loan',
+                                                    '/my-tickets',
+                                                    '/employees',
+                                                    '/employees-managers',
+                                                    '/employee-birthdays',
+                                                    '/employee-work-anniversay',
+                                                    '/gadgets-inventory',
+                                                    '/gadgets-allotment',
+                                                    '/meetings',
+                                                    '/attendance',
+                                                    '/attendance-requests',
+                                                    '/daily-attendance-report',
+                                                    '/wfh-requests',
+                                                    '/employees-leaves',
+                                                    '/manage-leaves',
+                                                    '/interviews',
+                                                    '/employee-onboarding',
+                                                    '/payroll',
+                                                    '/petty-cash',
+                                                    '/daily-expense',
+                                                    '/loans',
+                                                    '/holidays',
+                                                    '/departments',
+                                                    '/designations',
+                                                    '/vehicles',
+                                                    '/login-history',
+                                                    '/system-settings',
+                                                    '/system-error-logs',
+                                                    '/resignations',
+                                                    '/alerts',
+                                                    '/requisition',
+                                                    '/my-requisition',
+                                                    '/letters',
+                                                    '/all-salary-request',
+                                                    '/all-loan-request',
+                                                    '/all-tickets',
+                                                    '/permissions',
+                                                    '/tax-slab',
+                                                    '/tax-collection',
+                                                    '/rooms',
+                                                    '/locations',
+                                                    '/candiddate-interviews',
+                                                    '/employee-devices',
+                                                    '/linked-in-post',
+                                                    '/shift-management',
+                                                    '/employee-expense',
+                                                    '/overtime-management',
+                                                    '/organogram',
+                                                    '/my-expense',
+                                                    '/my-shift-time',
+                                                    '/employee-letter',
+                                                    '/letter-template',
+                                                    '/machine-attendance-logs',
+                                                    '/leave-management',
+                                                    '/polling',
+                                                    '/shift-time-request'
+    
+    
+                                                ];
+    
+                                                foreach($permissionRecords as $permissionRecord ){
+                                                    $permissions = new Permission();
+                                                    $permissions->module_url = $permissionRecord;
+                                                    $permissions->employee_id = $employee_registration_id;
+                                                    if($employee_permissions == "No"){
+                                                        $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
+                                                    }else{
+                                                        $permissions->permission_status = 1 ;
+                                                    }
+                                                    $permissions->save();
+    
+                                                }
+    
+                                            }
+                                        }
+                                        $success++;
+                                    }
+    
+                                }
+                                $count_row ++;
+    
+    
+                            }
+                            fclose($file2);
+    
+                            return response()->json([
+                                'status' => 'TRUE',
+                                'msg' => 'Upload employees record',
+                                'error_logs' => $error_logs
+                            ]);
+                        // }
+                        // else{
+                        //     $msg = "You have $success valid records and $error invalid records.";
+    
+                        //     return response()->json([
+                        //         'status' => 'FALSE',
+                        //         'msg' =>  'Employee record upload failed '."<br>".$msg,
+                        //         'error_logs' => $error_logs
+                        //     ]);
+                        // }
+    
+                    }
+    
+    
                 }
-
-
-            }
-        }catch(\Exception $e){
-            $this->create_error_log('Upload employee information', $e);
-            return response()->json([
-                'status' => 'FALSE',
-                'msg' => 'Something went wrong. Please try again.',
-            ]);
-        }finally{
-            ActivityTracker::track_activity('Upload employee information');
-
+            // }catch(\Exception $e){
+            //     $this->create_error_log('Upload employee information', $e);
+            //     return response()->json([
+            //         'status' => 'FALSE',
+            //         'msg' => 'Something went wrong. Please try again.',
+            //     ]);
+            // }finally{
+            //     ActivityTracker::track_activity('Upload employee information');
+    
+            // }
         }
-    }
 
     protected function employees_bank_detail(Request $request){
 
