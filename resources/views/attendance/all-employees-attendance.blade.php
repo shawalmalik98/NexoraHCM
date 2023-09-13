@@ -315,7 +315,7 @@ table.dataTable
                                                 @php  
                                                     $calculate_absent_shift = 0;
                                                     $calculate_absent_shift += CustomHelper::employee_shift_time_calculation_absent($all_attendance['employee_id'],$month,$year,$from_date=NUll,$to_date=Null);  @endphp
-                                                <td class="ps-6">{!! CustomHelper::getEmpProfileDiv($all_attendance['employee_id']) !!}</td>
+                                                <td class="ps-6">{{ $all_attendance['employee_name'] }}</td>
 												
 
 												@php 
