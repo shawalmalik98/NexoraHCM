@@ -4698,9 +4698,10 @@ class EmployeeController extends Controller
                             {
     
                                 if($count_row !=0){
+                                    // dd($getData[1]);
     
-                                    $employee_name = $getData[0];
-                                    // $employee_contact_no = $getData[1];
+                                    $employee_name = iconv('ISO-8859-1', 'UTF-8', $getData[0]);//$getData[0];
+                                    $employee_code = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
                                     // $employee_email =  $getData[2];
                                     // $employee_nic =  $getData[3];
                                     $employee_contact_no = '090078601' . $count_row;
@@ -4938,6 +4939,7 @@ class EmployeeController extends Controller
                                         $add_employee = new Employees();
                                         $add_employee->employee_name = $employee_name;
                                         $add_employee->employee_code = $employeeCode;
+                                        // $add_employee->employee_code = $employeeCode;
                                         $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
                                         $add_employee->employee_cnic = $employee_nic;
                                         $add_employee->employee_email = $employee_email;
