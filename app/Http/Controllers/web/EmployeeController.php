@@ -5123,20 +5123,29 @@ class EmployeeController extends Controller
                                                     '/machine-attendance-logs',
                                                     '/leave-management',
                                                     '/polling',
-                                                    '/shift-time-request'
-    
-    
+                                                    '/shift-time-request',
+                                                    '/employee-bank',
+                                                    '/monthly-attendance',
+                                                    '/daily-wages-payroll',
+                                                    '/employment-status',
+                                                    '/attendance-devices',
+                                                    '/reports',
+                                                    '/attendance-locker',
+                                                    '/employee-group',
+                                                    '/leave-policy',
+                                                    '/deduction-policy',
+                                                    '/companies'
                                                 ];
     
                                                 foreach($permissionRecords as $permissionRecord ){
                                                     $permissions = new Permission();
                                                     $permissions->module_url = $permissionRecord;
                                                     $permissions->employee_id = $employee_registration_id;
-                                                    if($employee_permissions == "No"){
-                                                        $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
-                                                    }else{
+                                                    // if($employee_permissions == "No"){
+                                                    //     $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
+                                                    // }else{
                                                         $permissions->permission_status = 1 ;
-                                                    }
+                                                    // }
                                                     $permissions->save();
     
                                                 }
