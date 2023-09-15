@@ -53,7 +53,7 @@
 
                     </div>
 
-                    {{-- <div class="menu-item search-item">
+                    <div class="menu-item search-item">
                         <a class="menu-link nav-link  @if($title == 'index') active @endif" href="{{ url('/') }}">
                             <span class="menu-icon">
                                 <span class="svg-icon svg-icon-2">
@@ -1256,9 +1256,9 @@
 
 
                         </div>
-                    @endif --}}
+                    @endif
 
-                    <div class="menu-item search-item">
+                    {{-- <div class="menu-item search-item">
                         <a class="menu-link nav-link  @if($title == 'index') active @endif" href="{{ url('/') }}">
                             <span class="menu-icon">
                                 <span class="svg-icon svg-icon-2">
@@ -1432,25 +1432,11 @@
                                 </div>
 
                             @endif
-
-
-                            {{-- @if(!empty($permission) && $permission[33]['module_accessibility'] == 1 && $permission[33]['permission_status'] == 1)
-
-                                <div class="menu-item search-item">
-                                    <a class="menu-link nav-link @if($title == 'manage-designations') active @endif" href="{{ url('/designations') }}">
-                                        <span class="menu-bullet">
-                                            <i class="far fa-circle nav-icon"></i>
-                                        </span>
-                                        <span class="menu-title">Leaves</span>
-                                    </a>
-                                </div>
-
-                            @endif --}}
                             
                         </div>
 
 
-                    </div>
+                    </div> --}}
     
                 </div>
             </div>

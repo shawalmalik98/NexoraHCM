@@ -71,7 +71,7 @@ class HomeController extends Controller
             if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2){
                 $where_clause = "interview_date LIKE '%" . date("Y-m-d") . "%'";
             }else{
-                $where_clause = 'interview_date LIKE  "%'.date("Y-m-d").'%"  and ( interview_interviewer1 = '.session('user_session').' or interview_interviewer2 = '.session('user_session').' )';
+                $where_clause = "interview_date LIKE  '%".date("Y-m-d")."%'  and ( interview_interviewer1 = ".session('user_session')." or interview_interviewer2 = ".session('user_session')." )";
             }
             
             $interviews = Interview::join('tbl_interview_candidate','tbl_interviews.interview_candidate_id','=','tbl_interview_candidate.candidate_id')->whereRaw($where_clause)->get(['interview_id','candidate_name','interview_date','interview_time','interview_interviewer1','interview_interviewer2'])->toArray();

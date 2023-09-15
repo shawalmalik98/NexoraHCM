@@ -376,14 +376,6 @@ class EmployeeController extends Controller
                     $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
                     $process = $employment_period->save();
 
-                    $employment_period = new EmploymentPeriod();
-                    $employment_period->employement_status_id = $employee_data->input('employee_status');
-                    $employment_period->employee_id = $employee_registration_id;
-                    $employment_period->effective_date = $employee_data->input('employee_doj');
-                    $employment_period->employement_period_created_by = session('user_session');
-                    $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
-                    $process = $employment_period->save();
-
                     $add_attendance_access = new AttendanceAccess();
                     $add_attendance_access->access_employee_id = $employee_registration_id;
                     if($employee_data->input('make_ra') == '1'){
@@ -5003,6 +4995,14 @@ class EmployeeController extends Controller
                                             $add_shift->shift_end_time = $shift_end_time.':00';
                                             $add_shift->shift_created_by = session('user_session');
                                             $process = $add_shift->save();
+
+                                            $employment_period = new EmploymentPeriod();
+                                            $employment_period->employement_status_id = 1;
+                                            $employment_period->employee_id = $employee_registration_id;
+                                            $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
+                                            $employment_period->employement_period_created_by = 1;
+                                            $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
+                                            $process = $employment_period->save();
     
                                             if($process == 1){
     
@@ -5145,11 +5145,11 @@ class EmployeeController extends Controller
                                                     $permissions = new Permission();
                                                     $permissions->module_url = $permissionRecord;
                                                     $permissions->employee_id = $employee_registration_id;
-                                                    // if($employee_permissions == "No"){
-                                                    //     $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
-                                                    // }else{
+                                                    if($employee_permissions == "No"){
+                                                        $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
+                                                    }else{
                                                         $permissions->permission_status = 1 ;
-                                                    // }
+                                                    }
                                                     $permissions->save();
     
                                                 }
