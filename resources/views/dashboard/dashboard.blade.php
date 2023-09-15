@@ -435,8 +435,8 @@
 
                                     <div class="card-body">
                                         
-                                            <img src="{{ asset('portal_assets/images/mobile-app2.webp') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
-                                            <img src="{{ asset('portal_assets/images/mobile-app.webp') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
+                                            <img src="{{ asset('portal_assets/images/mobile-app2.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
+                                            <img src="{{ asset('portal_assets/images/mobile-app.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             
                                             <a target="_blank" href="https://play.google.com/store/apps/details?id=com.sourcecodeemployees" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
                                     </div>
@@ -591,8 +591,8 @@
 
                                     <div class="card-body">
                                         
-                                            <img src="{{ asset('portal_assets/images/mobile-app2.webp') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
-                                            <img src="{{ asset('portal_assets/images/mobile-app.webp') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
+                                            <img src="{{ asset('portal_assets/images/mobile-app2.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
+                                            <img src="{{ asset('portal_assets/images/mobile-app.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             
                                             <a target="_blank" href="https://play.google.com/store/apps/details?id=com.sourcecodeemployees" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
                                         {{-- </div> --}}
