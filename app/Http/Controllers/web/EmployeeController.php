@@ -1042,7 +1042,7 @@ class EmployeeController extends Controller
                 'emergency_name' => 'string|max:100|nullable',
                 'emergency_contact_no' => 'string|min:0|max:50|nullable',
                 'employee_location' => 'required|in:'.implode(",",$locations),
-                'employment_status_date' => ($lastStatus == $employee_data->input('employee_status')) ? 'required|date_format:Y-m-d' : 'required|date_format:Y-m-d|after:'.$minDate,
+                'employment_status_date' => ($lastStatus == $employee_data->input('employee_status')) ? 'required|date_format:Y-m-d' : 'required|date_format:Y-m-d|after_or_equal:'.$minDate,
                 'employee_deactivate_date'=> $employee_deactivate_date,
                 'employee_deactive_type'=> $employee_deactivate_type,
                 'leave_allotment.*' => 'required|numeric|min:0|max:100',
@@ -4939,6 +4939,7 @@ class EmployeeController extends Controller
                                         $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
                                         $add_employee->employee_cnic = $employee_nic;
                                         $add_employee->employee_email = $employee_email;
+                                        $add_employee->employee_work_email = $employee_email;
                                         $add_employee->employee_contactno = $employee_contact_no;
                                         $add_employee->employee_gender = $employee_gender;
                                         $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
