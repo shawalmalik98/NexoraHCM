@@ -344,8 +344,8 @@
                                 </div>
                             </div>
 
-                            {{-- <div class="col-xl-4">
-                                <div class="card card-flush" style="height : 443px;">
+                            <div class="col-xl-4">
+                                <div class="card card-flush" style="height : 500px;">
                                     <div class="card-header pt-7">
                                         <h3 class="card-title align-items-start flex-column">
                                             <span class="card-label fw-bold text-dark">Reporting Authorities</span>
@@ -374,7 +374,7 @@
                                                     </div>
 
                                                     <div class="m-0">
-                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">Senior Manager</a>
+                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">HOD</a>
                                                         <span class="fw-bold fs-6 text-gray-400 d-block lh-1 text-center">
                                                             @if(empty($senior_manager))
                                                                 Not Assigned
@@ -406,7 +406,7 @@
                                                     </div>
 
                                                     <div class="m-0">
-                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">Junior Manager</a>
+                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">Line Manager</a>
                                                         <span class="fw-bold fs-6 text-gray-400 d-block lh-1 text-center">
                                                             @if(empty($junior_manager))
                                                                 Not Assigned
@@ -422,9 +422,9 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div> --}}
+                            </div>
 
-                            <div class="col-xl-4">
+                            {{--<div class="col-xl-4">
                                 <div class="card card-flush" style="height: 500px;">
                                     <div class="card-header pt-7" >
                                         <h3 class="card-title align-items-start flex-column">
@@ -439,10 +439,9 @@
                                             <img src="{{ asset('portal_assets/images/mobile-app.webp') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             
                                             <a target="_blank" href="https://play.google.com/store/apps/details?id=com.sourcecodeemployees" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
-                                        {{-- </div> --}}
                                     </div>
                                 </div>
-                            </div>
+                            </div>--}}
                             @if(!empty($my_team_mates))
                                 <div class="col-xl-4">
                                     <div class="card card-flush" style="height: 500px;" >
@@ -632,7 +631,7 @@
                                                     </div>
 
                                                     <div class="m-0">
-                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">Senior Manager</a>
+                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">HOD</a>
                                                         <span class="fw-bold fs-6 text-gray-400 d-block lh-1 text-center">
                                                             @if(empty($senior_manager))
                                                                 Not Assigned
@@ -664,7 +663,7 @@
                                                     </div>
 
                                                     <div class="m-0">
-                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">Junior Manager</a>
+                                                        <a  class="text-gray-800 fs-3 fw-bold d-block mb-2 text-center">Line Manager</a>
                                                         <span class="fw-bold fs-6 text-gray-400 d-block lh-1 text-center">
                                                             @if(empty($junior_manager))
                                                                 Not Assigned
