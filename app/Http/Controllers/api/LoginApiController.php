@@ -37,7 +37,7 @@ class LoginApiController extends Controller
                 }
             }else {
 
-                $filter_user = Employees::where('employee_code',$request->post('employee_code'))->get()->toArray();
+                $filter_user = Employees::join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->where('employee_code',$request->post('employee_code'))->get(['tbl_employees.*','tbl_designations.designation_name'])->toArray();
                 if(!empty($filter_user)){
                     if(Crypt::decryptString($filter_user[0]['employee_password']) == $request->post('employee_password')){
                         if($filter_user[0]['employee_isactive'] == 1){
