@@ -282,7 +282,7 @@ class MarkAttendanceApiController extends Controller
 
 			$employee_id = $login_user[0]['employee_id'];
 		
-			$login_user = Employees::where('employee_code' , $employee_id)->where('employee_isactive', 1)->get()->toArray();
+			$login_user = Employees::where('employee_id' , $employee_id)->where('employee_isactive', 1)->get()->toArray();
 		
 			if(!empty($login_user)){
 				$employee_id = 	$login_user[0]['employee_id'];

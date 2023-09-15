@@ -448,7 +448,7 @@
                                         <div class="card-header pt-7" >
                                             <h3 class="card-title align-items-start flex-column">
                                                 <span class="card-label fw-bold text-dark">My Team</span>
-                                                <span class="text-gray-400 mt-1 fw-semibold fs-6">Total {{ count($my_team_mates) }} employees under your reporting</span>
+                                                <span class="text-gray-400 mt-1 fw-semibold fs-6">Approx. {{ count($my_team_mates) }} employees under your reporting</span>
                                             </h3>
                                         </div>
 
