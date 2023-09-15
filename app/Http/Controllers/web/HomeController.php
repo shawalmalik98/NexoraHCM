@@ -108,7 +108,7 @@ class HomeController extends Controller
                 $my_team_mates = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->where(function($query) use($login_user,$total_team_member) {
-                    $query->where('employee_id','!=',$login_user[0]['employee_id'])->whereIn('employee_id',$total_team_member);
+                    $query->where('employee_id','!=',$login_user[0]['employee_id'])->whereIn('employee_id',array_slice($total_team_member, 0, 2000));
                 })->get(['employee_name','department_name as employee_department','designation_name as employee_designation','profile_avatar'])->toArray();
 
             }else{

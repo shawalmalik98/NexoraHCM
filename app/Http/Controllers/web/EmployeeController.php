@@ -4693,15 +4693,17 @@ class EmployeeController extends Controller
     
                         // }
                         // if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
+                            $arrays = [];
                             $count_row = 0;
                             while (($getData = fgetcsv($file2)) !== FALSE)
                             {
     
-                                if($count_row !=0){
+                                if($count_row != 0){
                                     // dd($getData[1]);
+                                    // dd('here');
     
                                     $employee_name = iconv('ISO-8859-1', 'UTF-8', $getData[0]);//$getData[0];
-                                    $employee_code = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
+                                    $employeeCode = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
                                     // $employee_email =  $getData[2];
                                     // $employee_nic =  $getData[3];
                                     $employee_contact_no = '090078601' . $count_row;
@@ -4795,6 +4797,8 @@ class EmployeeController extends Controller
                                     if(empty($designations)){
                                         $employee_record_insert = "FALSE";
                                     }
+
+                                    array_push($arrays , $employee_designation);
     
                                     // if(empty($employee_job_title)){
                                     //     $employee_record_insert = "FALSE";
@@ -4928,14 +4932,14 @@ class EmployeeController extends Controller
                                     //     $employee_record_insert = "FALSE";
                                     // }
     
-                                    if($employee_record_insert == "TRUE"){
+                                    if(1 == 1){
     
-                                        $all_employees = Employees::orderBy('employee_id','DESC')->limit(1)->get(['employee_code'])->toArray();
-                                        if(empty($all_employees)){
-                                            $employeeCode = '001';
-                                        }else{
-                                            $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
-                                        }
+                                        // $all_employees = Employees::orderBy('employee_id','DESC')->limit(1)->get(['employee_code'])->toArray();
+                                        // if(empty($all_employees)){
+                                        //     $employeeCode = '001';
+                                        // }else{
+                                        //     $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
+                                        // }
                                         $add_employee = new Employees();
                                         $add_employee->employee_name = $employee_name;
                                         $add_employee->employee_code = $employeeCode;
@@ -4946,7 +4950,7 @@ class EmployeeController extends Controller
                                         $add_employee->employee_contactno = $employee_contact_no;
                                         $add_employee->employee_gender = $employee_gender;
                                         $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
-                                        $add_employee->employee_designation = $designations[0]['designation_id'];
+                                        $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
                                         $add_employee->employee_department = $departments[0]['department_id'];
                                         $add_employee->employee_jobtitle = $employee_job_title;
                                         $add_employee->employee_password = Crypt::encryptString($employee_password);
@@ -4966,7 +4970,7 @@ class EmployeeController extends Controller
                                             $emp_salary = new EmployeeSalary();
                                             $emp_salary->salary_employee_id = $employee_registration_id;
                                             $emp_salary->salary_amount =  $employee_salary;
-                                            $emp_salary->salary_effected_date = $joining_date;
+                                            $emp_salary->salary_effected_date = date('Y-m-d',strtotime($joining_date));
                                             $emp_salary->salary_created_date = date('d-m-Y');
                                             $emp_salary->salary_earning_type = $employee_earning;
                                             $emp_salary->save();
@@ -4994,7 +4998,7 @@ class EmployeeController extends Controller
     
                                             $add_shift = new ShiftManagement();
                                             $add_shift->employee_id = $employee_registration_id;
-                                            $add_shift->shift_start_from_date = $joining_date;
+                                            $add_shift->shift_start_from_date = date('Y-m-d',strtotime($joining_date));
                                             $add_shift->shift_start_time = $shift_start_time.':00';
                                             $add_shift->shift_end_time = $shift_end_time.':00';
                                             $add_shift->shift_created_by = session('user_session');
@@ -5008,7 +5012,7 @@ class EmployeeController extends Controller
                                                 $submitInformation->employeeid = $employee_registration_id;
                                                 $submitInformation->save();
     
-                                                $get_holidays =  Holiday::where('holiday_date','>=', $joining_date)->where(function ($query) use ($departments) {
+                                                $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
                                                     $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
                                                     ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
                                                 })
@@ -5160,6 +5164,7 @@ class EmployeeController extends Controller
     
     
                             }
+                            // dd($arrays);
                             fclose($file2);
     
                             return response()->json([

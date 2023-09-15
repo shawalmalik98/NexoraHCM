@@ -25,8 +25,9 @@ class AttendanceController extends Controller
     const SERVER_ERROR = 'Unknown error occured on server. Please try again after some time.';
     
     protected function all_attendance(Request $request){
-        try{
-        
+        // try{
+            set_time_limit(1800);
+
             $title = Self::TITLE_GLOBAL;
       
             $login_user = $this->get_login_user_detail();
@@ -50,7 +51,7 @@ class AttendanceController extends Controller
             }
 
             if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 3 ){
-                $all_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $all_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause)->limit(1000)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
             }
             else{
                 if($login_user[0]['employee_can_ra'] == 1){
@@ -58,12 +59,12 @@ class AttendanceController extends Controller
                         $query->where('employee_ra',session('user_session'));
                         $query->orWhere('employee_ra2',session('user_session'));
                     })
-                    ->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                    ->whereRaw($where_clause)->limit(10)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
                     $attendance_access = AttendanceAccess::where('access_employee_id',session('user_session'))->get('attendance_access')->toArray();
 
                 }else{
-                    $all_employees = Employees::where('employee_id',session('user_session'))->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                    $all_employees = Employees::where('employee_id',session('user_session'))->limit(1)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
                    
                 }
             }
@@ -107,17 +108,19 @@ class AttendanceController extends Controller
 
            
             $send_data = compact('title','login_user','all_attendances','month_days','all_department','all_employees','month','year','employee_locations','active_employees','manage_leaves','leaves_name','dynamic_years','attendance_access');
+
+            // dd($all_attendances);
             
             return view('attendance.all-employees-attendance',$send_data);
-        }catch(\Exception $e){
-            $this->create_error_log('View All Employees Attendance', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-        }finally{
+        // }catch(\Exception $e){
+        //     $this->create_error_log('View All Employees Attendance', $e);
+        //     $send_data = compact('title');
+        //     return view('errors.500');
+        // }finally{
 
-            ActivityTracker::track_activity('View All Employees Attendance');
+        //     ActivityTracker::track_activity('View All Employees Attendance');
          
-        }
+        // }
     }
 
     protected function personal_attendace(Request $request){
