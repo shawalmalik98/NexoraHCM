@@ -307,7 +307,7 @@ class MarkAttendanceApiController extends Controller
 						$employee_shift_start = $this->get_employee_today_shift($login_user[0]['employee_id'],"in",date('Y-m-d'));
 						$employee_shift_end = $this->get_employee_today_shift($login_user[0]['employee_id'],"out",date('Y-m-d'));
 					
-						if($get_attendance[0]['att_check_out_time'] == '00:00:00' && ($get_attendance[0]['att_check_out_status'] == 0 || $get_attendance[0]['att_check_out_status'] == NULL) && in_array($get_attendance[0]['att_check_overall_status'],$manage_leaves) == false){
+						// if($get_attendance[0]['att_check_out_time'] == '00:00:00' && ($get_attendance[0]['att_check_out_status'] == 0 || $get_attendance[0]['att_check_out_status'] == NULL) && in_array($get_attendance[0]['att_check_overall_status'],$manage_leaves) == false){
 						
 							$check_out = Attendance::find($get_attendance[0]['attendance_id']);
 
@@ -340,18 +340,18 @@ class MarkAttendanceApiController extends Controller
 							$check_out->save();
 							
 							return $this->api_response_json(TRUE,"Check Out Successfully","",200);
-						}else{
+						// }else{
 
-							if(in_array($get_attendance[0]['att_check_overall_status'],$manage_leaves) !== false){
+						// 	if(in_array($get_attendance[0]['att_check_overall_status'],$manage_leaves) !== false){
 
-								return $this->api_response_json(FALSE,"You can't check out, Your " . $get_attendance[0]['att_check_overall_status'] . " request is marked today","",200);
+						// 		return $this->api_response_json(FALSE,"You can't check out, Your " . $get_attendance[0]['att_check_overall_status'] . " request is marked today","",200);
 
-							}else{
+						// 	}else{
 
-								return $this->api_response_json(FALSE,"You have already checked out for today's shift","",200);
+						// 		return $this->api_response_json(FALSE,"You have already checked out for today's shift","",200);
 
-							}
-						}
+						// 	}
+						// }
 						
 					}else{
 				
