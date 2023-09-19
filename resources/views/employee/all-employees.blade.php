@@ -168,8 +168,8 @@
                             
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
-                                        <th class="ps-4">ID</th>
-                                        <th>Code</th>
+                                        {{-- <th class="ps-4">ID</th> --}}
+                                        <th class="ps-4">Code</th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Depart &amp; Desig</th>
@@ -181,9 +181,9 @@
                                     @if(!empty($employees))
                                         @foreach ($employees as $employee)
                                             <tr >
-                                                <td class="ps-4">{{ $employee['employee_id'] }}</td>
+                                                {{-- <td class="ps-4">{{ $employee['employee_id'] }}</td> --}}
                                                 <td class="ps-4">{{ $employee['employee_code'] }}</td>
-                                                <td class="ps-4">{!! CustomHelper::getEmpProfileDiv($employee['employee_id']) !!}</td>
+                                                <td>{{ $employee['employee_name'] }}</td>
                                             
                                                 <td>{{ ($employee['employee_email']) ?? 'N/A' }}</td>
                                                 <td>

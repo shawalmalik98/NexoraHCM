@@ -60,7 +60,7 @@ class EmployeeController extends Controller
 
             }
 
-            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->orderBy('employee_id','ASC')->get(['employee_id','employee_code','employee_email','employee_department','department_name','designation_name','employee_can_ra'])->toArray();
+            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->orderBy('employee_id','ASC')->get(['employee_id','employee_code','employee_name','employee_email','employee_department','department_name','designation_name','employee_can_ra'])->toArray();
 
             $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
