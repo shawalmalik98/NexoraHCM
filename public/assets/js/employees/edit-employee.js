@@ -124,7 +124,7 @@ $('#edit_employee_form').submit(function (e) {
 
                     $('#emp_deactivate_date').val(response.deactivate_date)
                     $('#emp_deactivate_type').val(response.deactivation_type)
-                    $('#emp_can_ra').val(response.employee_can_ra)
+                    $('#emp_can_ra').val(response.employee_is_manager)
                 }
                 else {
                     Toast.fire({
@@ -293,7 +293,7 @@ function employee_name_list() {
                 $('#employee-data').html('');
                 $('#employee-manager').html('');
                 employee_record = data.reporting_employee;
-                employee_record_can_ra = employee_can_ra(data.employee_can_ra);
+                employee_record_can_ra = employee_is_manager(data.employee_is_manager);
                 employeeArray = [];
                 $.each(employee_record, function (key, employee) {
                     if (employee) {
@@ -305,7 +305,7 @@ function employee_name_list() {
                     }
                 });
 
-                $('#employee-manager').html(parent_employee_can_ra(data.employee_can_ra));
+                $('#employee-manager').html(parent_employee_can_ra(data.employee_is_manager));
                 $('#parent_employee_reporting_manager').select2({
                     dropdownParent: $('#check-employee-name')
                 });
@@ -387,7 +387,7 @@ function parent_employee_can_ra(employee_record_can_ra) {
     return can_ra;
 }
 
-function employee_can_ra(employee_record_can_ra) {
+function employee_is_manager(employee_record_can_ra) {
 
 
     var can_ra = '';

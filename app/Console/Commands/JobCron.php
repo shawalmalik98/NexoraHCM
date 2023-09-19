@@ -47,7 +47,7 @@ class JobCron extends Command
             $add_cron_job->save();
 
             $get_all_active_employees = Employees::where('employee_isactive',1)
-            ->get(['employee_id','employee_code','employee_name','employee_offday1','employee_department'])->toArray();
+            ->get(['employee_id','employee_code','employee_name','employee_offdays','employee_department'])->toArray();
 
 
             foreach($get_all_active_employees as $employee){
@@ -58,14 +58,14 @@ class JobCron extends Command
 
                 $past_day = -1;
 
-                $employee['employee_offday1'] = (!empty($employee['employee_offday1'])) ? explode(",",$employee['employee_offday1']):[];
+                $employee['employee_offdays'] = (!empty($employee['employee_offdays'])) ? explode(",",$employee['employee_offdays']):[];
 
                 while(count($last_coming_dates) != 2){
 
                     $new_date = date('Y-m-d',strtotime($past_day.' days'));
                     $check_holiday = in_array($new_date,$fetch_all_holiday);
 
-                    if(!in_array(date('l',strtotime($new_date)),$employee['employee_offday1']) && !$check_holiday ) {
+                    if(!in_array(date('l',strtotime($new_date)),$employee['employee_offdays']) && !$check_holiday ) {
 
                         array_push($last_coming_dates,$new_date);
                     }

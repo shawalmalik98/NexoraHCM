@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\File;
 use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
-use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company};
+use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation};
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee, MailTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +60,7 @@ class EmployeeController extends Controller
 
             }
 
-            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->orderBy('employee_id','ASC')->get(['employee_id','employee_code','employee_name','employee_email','employee_department','department_name','designation_name','employee_can_ra'])->toArray();
+            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->orderBy('employee_id','ASC')->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager'])->toArray();
 
             $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
@@ -102,7 +102,7 @@ class EmployeeController extends Controller
 
             $employee_active = Employees::where('employee_isactive', '=', 1)->count();
 
-            $reporting_managers = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_can_ra', 1)->where('employee_isactive',1)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
+            $reporting_managers = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_is_manager', 1)->where('employee_isactive',1)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
 
             $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
 
@@ -140,7 +140,7 @@ class EmployeeController extends Controller
     }
 
     protected function create_employee(Request $employee_data){
-       
+
         try{
          
             $locations = OfficeLocation::pluck('location_id')->toArray();
@@ -161,8 +161,8 @@ class EmployeeController extends Controller
             $validator = Validator::make($employee_data->all(), [
                 'employee_name' =>  ['required', 'regex:/^([a-zA-Z]+)(\s[a-zA-Z]+)*$/'],
                 'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno'],
-                'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_email','unique:tbl_employees,employee_work_email'],
-                'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email','unique:tbl_employees,employee_email'],
+                'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_personal_email','unique:tbl_employees,employee_work_email'],
+                'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email','unique:tbl_employees,employee_personal_email'],
                 'employee_cnic' => ['required','unique:tbl_employees'],
                 'employee_gender' => 'required|in:Male,Female',
                 'employee_status' => 'required|numeric',
@@ -187,7 +187,8 @@ class EmployeeController extends Controller
                 'earning_type' => 'required|numeric|in:1,2',
                 'emergency_name' => 'string|max:100|nullable',
                 'emergency_contact_no' => 'string|min:0|max:50|nullable',
-                'employee_location' => 'required|in:'.implode(",",$locations),
+                // 'employee_location' => 'required|in:'.implode(",",$locations),
+                'employee_location' => 'required',
                 'employee_deactivate_date' => $employee_deactivate_date,
                 'employee_deactivate_type' => $employee_deactivate_type,
                 'employee_group' => 'required|numeric',
@@ -203,6 +204,18 @@ class EmployeeController extends Controller
                     ]);
                 }
             }else{
+
+                if(!empty($employee_data->input('employee_location'))){
+                    foreach($employee_data->input('employee_location') as $location){
+                        $get_office_location = OfficeLocation::where('location_id', $location)->get('location_id')->toArray();
+                        if(empty($get_office_location)){
+                            return response()->json([
+                                'status' => 'FALSE',
+                                'msg' => "Location ".$location." doesn't exists in record.",
+                            ]);
+                        }
+                    }
+                }
               
                 $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
@@ -279,7 +292,7 @@ class EmployeeController extends Controller
                 $add_employee->employee_code = $employeeCode;
                 $add_employee->employee_doj = $employee_data->input('employee_doj');
                 $add_employee->employee_cnic = $employee_data->input('employee_cnic');
-                $add_employee->employee_email = $employee_data->input('employee_personal_email');
+                $add_employee->employee_personal_email = $employee_data->input('employee_personal_email');
                 $add_employee->employee_work_email = $employee_data->input('employee_official_email');
                 $add_employee->employee_contactno = $employee_data->input('employee_contact_no');
                 $add_employee->employee_gender = $employee_data->input('employee_gender');
@@ -290,12 +303,12 @@ class EmployeeController extends Controller
                 $add_employee->employee_jobtitle = $employee_data->input('employee_jobtitle');
                 $add_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
                 $add_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
-                $add_employee->employee_ra = $employee_data->input('employee_reporting_person');
-                $add_employee->employee_ra2 = $employee_data->input('employee_reporting_person2');
-                $add_employee->employee_can_ra = $employee_data->input('make_ra');
-                $add_employee->employee_offday1 = (!empty($employee_data->input('employee_offday'))) ? implode(',',$employee_data->input('employee_offday')) : '';
+                $add_employee->employee_senior_manager = $employee_data->input('employee_reporting_person');
+                $add_employee->employee_junior_manager = $employee_data->input('employee_reporting_person2');
+                $add_employee->employee_is_manager = $employee_data->input('make_ra');
+                $add_employee->employee_offdays = (!empty($employee_data->input('employee_offday'))) ? implode(',',$employee_data->input('employee_offday')) : '';
                 $add_employee->employee_jobtype = $employee_data->input('employee_jobtype');
-                $add_employee->employee_location = $employee_data->input('employee_location');
+                // $add_employee->employee_location = $employee_data->input('employee_location');
                 $add_employee->employee_isactive = $employee_data->input('employee_isactive');
                 $add_employee->employee_earning_type = $employee_data->input('earning_type');
                 $add_employee->employee_group = $employee_data->input('employee_group');
@@ -307,6 +320,16 @@ class EmployeeController extends Controller
                 $employee_registration_id = $add_employee->employee_id;
 
                 if($employee == 1){
+
+                    if(!empty($employee_data->input('employee_location'))){
+                        foreach($employee_data->input('employee_location') as $location){
+                            $new_employee_location = new EmployeeLocation();
+                            $new_employee_location->emp_loc_employee_id = $employee_registration_id;
+                            $new_employee_location->emp_loc_loc_id = $location;
+                            $new_employee_location->created_at = date('Y-m-d H:i:s');
+                            $new_employee_location->save();
+                        }
+                    }
 
                     $emp_salary = new EmployeeSalary();
                     $emp_salary->salary_employee_id = $employee_registration_id;
@@ -468,28 +491,7 @@ class EmployeeController extends Controller
                             'total_candidate' => $all_candidates,
                         ]);
                     }else{
-
-                        if(!env('APP_DEBUG') && env('APP_URL') === 'https://sourcecodeemployees.com/'){
-
-                            $depratment_name = Department::where('department_id',$employee_data->input('employee_department'))->get('department_name')->toArray();
-                            $designation_name = Designation::where('designation_id',$employee_data->input('employee_designation'))->get('designation_name')->toArray();
-
-                            Http::withHeaders([
-                                'access-token' => 'PoRtAlCrMkEy',
-                            ])->post(env('APP_SC_URL').'api/add-employee', [
-                                'employee_id' => $employee_registration_id,
-                                'employee_code' => $employeeCode,
-                                'employee_name' => $employee_data->input('employee_name'),
-                                'employee_contactno' => $employee_data->input('employee_contactno'),
-                                'employee_email' => $employee_data->input('employee_official_email'),
-                                'employee_department' => $employee_data->input('employee_department'),
-                                'employee_designation' => $employee_data->input('employee_designation'),
-                                'employee_jobtitle' => $employee_data->input('employee_jobtitle'),
-                                'employee_department_name' => $depratment_name[0]['department_name'],
-                                'employee_designation_name' => $designation_name[0]['designation_name'],
-                            ]);
-                        }
-                        $employee_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_registration_id)->get(['employee_id','employee_name','employee_gender','employee_password','employee_code','employee_email','department_name','designation_name'])->toArray();
+                        $employee_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_registration_id)->get(['employee_id','employee_name','employee_gender','employee_password','employee_code','employee_personal_email','department_name','designation_name'])->toArray();
 
                         return response()->json([
                             'status' => 'TRUE',
@@ -551,9 +553,9 @@ class EmployeeController extends Controller
                 $where_clause .= ' AND employee_department = "'.$request->employee_department.'"';
             }
 
-            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name','employee_designation','employee_department','employee_ra','employee_ra2','employee_can_ra','department_name','designation_name'])->toArray();
+            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name','employee_designation','employee_department','employee_senior_manager','employee_junior_manager','employee_is_manager','department_name','designation_name'])->toArray();
 
-            $managers = Employees::where('employee_can_ra', 1)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name'])->toArray();
+            $managers = Employees::where('employee_is_manager', 1)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name'])->toArray();
 
             $employee_ids = Employees::where('employee_isactive', 1)->pluck('employee_id')->toArray();
 
@@ -606,8 +608,8 @@ class EmployeeController extends Controller
 
             $employees = Employees::join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_employees.employee_department')
             ->join('tbl_designations', 'tbl_designations.designation_id', '=', 'tbl_employees.employee_designation')
-            ->leftJoin('tbl_employees as emp_ra', 'emp_ra.employee_id', '=', 'tbl_employees.employee_ra')
-            ->leftJoin('tbl_employees as emp_ra2', 'emp_ra2.employee_id', '=', 'tbl_employees.employee_ra2')
+            ->leftJoin('tbl_employees as emp_ra', 'emp_ra.employee_id', '=', 'tbl_employees.employee_senior_manager')
+            ->leftJoin('tbl_employees as emp_ra2', 'emp_ra2.employee_id', '=', 'tbl_employees.employee_junior_manager')
             ->whereRaw($where_clause)
             ->where('tbl_employees.employee_isactive', 1)
             ->get([
@@ -623,7 +625,7 @@ class EmployeeController extends Controller
             ])
             ->toArray();
 
-            $managers = Employees::where('employee_can_ra', 1)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name'])->toArray();
+            $managers = Employees::where('employee_is_manager', 1)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name'])->toArray();
 
             $employee_ids = Employees::where('employee_isactive', 1)->pluck('employee_id')->toArray();
 
@@ -703,7 +705,7 @@ class EmployeeController extends Controller
 
                 if(!empty($employee_id)){
 
-                    $all_employees = Employees::where('employee_isactive','=', 1)->whereIn('employee_id', $employee_id )->get(['employee_id','employee_code','employee_name','employee_ra','employee_ra2'])->toArray();
+                    $all_employees = Employees::where('employee_isactive','=', 1)->whereIn('employee_id', $employee_id )->get(['employee_id','employee_code','employee_name','employee_senior_manager','employee_junior_manager'])->toArray();
 
                     $manager_insert = 1;
 
@@ -713,26 +715,26 @@ class EmployeeController extends Controller
 
                         if(in_array($request->input('employee_senior_manager'),$total_team_member)){
 
-                            $employee_ra = Employees::where('employee_id', $request->input('employee_senior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
+                            $employee_senior_manager = Employees::where('employee_id', $request->input('employee_senior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
 
                             return response()->json([
                                 'status' => 'FALSE',
-                                'msg' => $employee_ra[0]['employee_name'].' Cannot be assign as senior manager of '.$employees['employee_name'].' Already exists in its team.',
+                                'msg' => $employee_senior_manager[0]['employee_name'].' Cannot be assign as senior manager of '.$employees['employee_name'].' Already exists in its team.',
                             ]);
                         }
 
                         if(in_array($request->input('employee_junior_manager'),$total_team_member)){
 
-                            $employee_ra2 = Employees::where('employee_id', $request->input('employee_junior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
+                            $employee_junior_manager = Employees::where('employee_id', $request->input('employee_junior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
 
                             return response()->json([
                                 'status' => 'FALSE',
-                                'msg' => $employee_ra2[0]['employee_name'].' Cannot be assign as junior manager of '.$employees['employee_name'].' Already exists in its team.',
+                                'msg' => $employee_junior_manager[0]['employee_name'].' Cannot be assign as junior manager of '.$employees['employee_name'].' Already exists in its team.',
                             ]);
                         }
 
                         if($employees['employee_id'] != $request->input('employee_senior_manager')){
-                            if(!empty($employees['employee_ra']) && !empty($request->input('employee_junior_manager')) && $employees['employee_ra'] == $request->input('employee_junior_manager')){
+                            if(!empty($employees['employee_senior_manager']) && !empty($request->input('employee_junior_manager')) && $employees['employee_senior_manager'] == $request->input('employee_junior_manager')){
 
                                 $employee_senior = Employees::where('employee_id', $employees['employee_id'])->get(['employee_id','employee_code','employee_name'])->toArray();
 
@@ -762,14 +764,14 @@ class EmployeeController extends Controller
 
                         $employee = Employees::find($employees['employee_id']);
 
-                        if(!empty($employees['employee_ra2']) && !empty($request->input('employee_senior_manager')) && $employees['employee_ra2'] == $request->input('employee_senior_manager')){
-                            $employee->employee_ra2 = null; 
+                        if(!empty($employees['employee_junior_manager']) && !empty($request->input('employee_senior_manager')) && $employees['employee_junior_manager'] == $request->input('employee_senior_manager')){
+                            $employee->employee_junior_manager = null; 
                         }
 
                         if($request->input("manager_type") == "Senior"){
-                            $employee->employee_ra = $request->input('employee_senior_manager');
+                            $employee->employee_senior_manager = $request->input('employee_senior_manager');
                         }else{
-                            $employee->employee_ra2 = $request->input('employee_junior_manager');
+                            $employee->employee_junior_manager = $request->input('employee_junior_manager');
                         }
 
                         $employee->save();
@@ -789,7 +791,7 @@ class EmployeeController extends Controller
                     }
                 }else{
 
-                    $all_employees = Employees::where('employee_isactive','=', 1)->whereIn('employee_department', $request->input('department') )->get(['employee_id','employee_code','employee_name','employee_department','employee_ra','employee_ra2'])->toArray();
+                    $all_employees = Employees::where('employee_isactive','=', 1)->whereIn('employee_department', $request->input('department') )->get(['employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager'])->toArray();
 
                     $manager_insert = 1;
 
@@ -799,26 +801,26 @@ class EmployeeController extends Controller
 
                         if(in_array($request->input('employee_senior_manager'),$total_team_member)){
 
-                            $employee_ra = Employees::where('employee_id', $request->input('employee_senior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
+                            $employee_senior_manager = Employees::where('employee_id', $request->input('employee_senior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
 
                             return response()->json([
                                 'status' => 'FALSE',
-                                'msg' => $employee_ra[0]['employee_name'].' Cannot be assign as senior manager of '.$employees['employee_name'].' Already exists in its team.',
+                                'msg' => $employee_senior_manager[0]['employee_name'].' Cannot be assign as senior manager of '.$employees['employee_name'].' Already exists in its team.',
                             ]);
                         }
 
                         if(in_array($request->input('employee_junior_manager'),$total_team_member)){
 
-                            $employee_ra2 = Employees::where('employee_id', $request->input('employee_junior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
+                            $employee_junior_manager = Employees::where('employee_id', $request->input('employee_junior_manager'))->get(['employee_id','employee_code','employee_name'])->toArray();
 
                             return response()->json([
                                 'status' => 'FALSE',
-                                'msg' => $employee_ra2[0]['employee_name'].' Cannot be assign as junior manager of '.$employees['employee_name'].' Already exists in its team.',
+                                'msg' => $employee_junior_manager[0]['employee_name'].' Cannot be assign as junior manager of '.$employees['employee_name'].' Already exists in its team.',
                             ]);
                         }
 
                         if($employees['employee_id'] != $request->input('employee_senior_manager')){
-                            if(!empty($employees['employee_ra']) && !empty($request->input('employee_junior_manager')) && $employees['employee_ra'] == $request->input('employee_junior_manager')){
+                            if(!empty($employees['employee_senior_manager']) && !empty($request->input('employee_junior_manager')) && $employees['employee_senior_manager'] == $request->input('employee_junior_manager')){
 
                                 $employee_senior = Employees::where('employee_id', $employees['employee_id'])->get(['employee_id','employee_code','employee_name'])->toArray();
 
@@ -848,14 +850,14 @@ class EmployeeController extends Controller
 
                         $employee = Employees::find($employees['employee_id']);
 
-                        if(!empty($employees['employee_ra2']) && !empty($request->input('employee_senior_manager')) && $employees['employee_ra2'] == $request->input('employee_senior_manager')){
-                            $employee->employee_ra2 = null; 
+                        if(!empty($employees['employee_junior_manager']) && !empty($request->input('employee_senior_manager')) && $employees['employee_junior_manager'] == $request->input('employee_senior_manager')){
+                            $employee->employee_junior_manager = null; 
                         }
 
                         if($request->input("manager_type") == "Senior"){
-                            $employee->employee_ra = $request->input('employee_senior_manager');
+                            $employee->employee_senior_manager = $request->input('employee_senior_manager');
                         }else{
-                            $employee->employee_ra2 = $request->input('employee_junior_manager');
+                            $employee->employee_junior_manager = $request->input('employee_junior_manager');
                         }
 
                         $employee->save();
@@ -931,6 +933,8 @@ class EmployeeController extends Controller
 
             $employment_period_count  = EmploymentPeriod::where('employee_id',$employee_id)->count();
 
+            $employee_locations = EmployeeLocation::where('emp_loc_employee_id', $employee_id)->get()->toArray();
+
             $all_departments = Department::get()->toArray();
 
             $all_locations = OfficeLocation::get()->toArray();
@@ -943,7 +947,7 @@ class EmployeeController extends Controller
 
             $relations = ['Father','Mother','Brother','Sister','Guardian'];
            
-            $reporting_managers = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_can_ra',1)->where('employee_isactive',1)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
+            $reporting_managers = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_is_manager',1)->where('employee_isactive',1)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
 
             $total_team_member = $this->get_employee_hierarchy_unique($employee_id, 1);
 
@@ -967,7 +971,7 @@ class EmployeeController extends Controller
 
             $employee_groups = EmployeeGroup::get()->toArray();
 
-            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies');
+            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies','employee_locations');
 
             return view('employee.edit-employee', $send_data);
         }catch(\Exception $e){
@@ -1017,8 +1021,8 @@ class EmployeeController extends Controller
             $validator = Validator::make($employee_data->all(), [
                 'employee_name' =>  ['required', 'regex:/^([a-zA-Z]+)(\s[a-zA-Z]+)*$/'],
                 'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno,'.$employee_data->input('employee_id').',employee_id'],
-                'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id'],
-                'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_email,'.$employee_data->input('employee_id').',employee_id'],
+                'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id'],
+                'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id'],
                 'employee_cnic' => ['required', 'unique:tbl_employees,employee_cnic,'.$employee_data->input('employee_id').',employee_id'],
                 'employee_gender' => 'required|in:Male,Female',
                 'employee_status' => 'required|numeric',
@@ -1041,7 +1045,8 @@ class EmployeeController extends Controller
                 'shift_end_timings' => 'required|date_format:H:i',
                 'emergency_name' => 'string|max:100|nullable',
                 'emergency_contact_no' => 'string|min:0|max:50|nullable',
-                'employee_location' => 'required|in:'.implode(",",$locations),
+                // 'employee_location' => 'required|in:'.implode(",",$locations),
+                'employee_location' => 'required',
                 'employment_status_date' => ($lastStatus == $employee_data->input('employee_status')) ? 'required|date_format:Y-m-d' : 'required|date_format:Y-m-d|after_or_equal:'.$minDate,
                 'employee_deactivate_date'=> $employee_deactivate_date,
                 'employee_deactive_type'=> $employee_deactivate_type,
@@ -1060,6 +1065,18 @@ class EmployeeController extends Controller
             }
 
             else{
+
+                if(!empty($employee_data->input('employee_location'))){
+                    foreach($employee_data->input('employee_location') as $location){
+                        $get_office_location = OfficeLocation::where('location_id', $location)->get('location_id')->toArray();
+                        if(empty($get_office_location)){
+                            return response()->json([
+                                'status' => 'FALSE',
+                                'msg' => "Location ".$location." doesn't exists in record.",
+                            ]);
+                        }
+                    }
+                }
 
                 $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
@@ -1150,10 +1167,11 @@ class EmployeeController extends Controller
                     ]);
                 }else{
                     $attendance_count = Attendance::where('att_employee_id',$employee_data->input('employee_id'))->whereNot('att_check_overall_status','LIKE', '%Holiday%')->count();
-
+                    // dd($employee_data->input('employee_id'));
                     $update_employee = Employees::find($employee_data->input('employee_id'));
+                    // dd($update_employee);
                     $employee_old_doj = $update_employee->employee_doj;
-                    $employee_old_make_ra = $update_employee->employee_can_ra;
+                    $employee_old_make_ra = $update_employee->employee_is_manager;
                     $employee_old_department = $update_employee->employee_department;
 
                     if($attendance_count > 0){
@@ -1167,7 +1185,7 @@ class EmployeeController extends Controller
                     // $update_employee->employee_code = $employee_data->input('employee_code');
                     $update_employee->employee_name = $employee_data->input('employee_name');
                     $update_employee->employee_cnic = $employee_data->input('employee_cnic');
-                    $update_employee->employee_email = $employee_data->input('employee_personal_email');
+                    $update_employee->employee_personal_email = $employee_data->input('employee_personal_email');
                     $update_employee->employee_work_email = $employee_data->input('employee_official_email');
                     $update_employee->employee_contactno = $employee_data->input('employee_contact_no');
                     $update_employee->employee_gender = $employee_data->input('employee_gender');
@@ -1177,18 +1195,19 @@ class EmployeeController extends Controller
                     $update_employee->employee_company = $employee_data->input('employee_company');
                     $update_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
                     $update_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
-                    $update_employee->employee_ra = $employee_data->input('employee_reporting_person');
-                    $update_employee->employee_ra2 = $employee_data->input('employee_reporting_person2');
-                    $update_employee->employee_can_ra = $employee_data->input('make_ra');
+                    $update_employee->employee_senior_manager = $employee_data->input('employee_reporting_person');
+                    $update_employee->employee_junior_manager = $employee_data->input('employee_reporting_person2');
+                    $update_employee->employee_is_manager = $employee_data->input('make_ra');
                     $update_employee->employee_isactive = $employee_data->input('employee_isactive');
                     $update_employee->employee_earning_type = $employee_data->input('earning_type');
                     $update_employee->employee_deactivate_date = $employee_data->input('employee_deactivate_date');
-                    $update_employee->employee_offday1 = (!empty($employee_data->input('employee_offday'))) ? implode(',',$employee_data->input('employee_offday')) : '';
+                    $update_employee->employee_offdays = (!empty($employee_data->input('employee_offday'))) ? implode(',',$employee_data->input('employee_offday')) : '';
                     $update_employee->employee_jobtype = $employee_data->input('employee_jobtype');
-                    $update_employee->employee_location = $employee_data->input('employee_location');
+                    // $update_employee->employee_location = $employee_data->input('employee_location');
                     $update_employee->employee_grade = $employee_data->input('employee_grade');
                     $update_employee->employee_group = $employee_data->input('employee_group');
                     $update_employee->employee_deactivation_type = $employee_data->input('employee_deactive_type');
+                    
                     if($employee_data->input('employee_isactive') == 0){
 
                         $check_vehicle_allots = VehicleAllotment::where('allotment_employee_id',$employee_data->input('employee_id'))->whereNull('allotment_cancellation_date')->get(['allotment_employee_id','allotment_cancellation_date','allotment_id'])->toArray();
@@ -1203,7 +1222,7 @@ class EmployeeController extends Controller
                         
                         if($employee_data->input('make_ra') == '1'){
 
-                            $all_employee = Employees::where('employee_ra','=',$employee_data->input('employee_id'))->orWhere('employee_ra2','=',$employee_data->input('employee_id'))->count();
+                            $all_employee = Employees::where('employee_senior_manager','=',$employee_data->input('employee_id'))->orWhere('employee_junior_manager','=',$employee_data->input('employee_id'))->count();
 
                             if($all_employee > 0){
 
@@ -1212,7 +1231,6 @@ class EmployeeController extends Controller
                                     'total_employee' => $all_employee,
                                     'deactivate_date' => $employee_data->input('employee_deactivate_date'),
                                     'deactivation_type' => $employee_data->input('employee_deactive_type'),
-
                                 ]);
                             }
 
@@ -1222,22 +1240,35 @@ class EmployeeController extends Controller
 
                     if($employee_old_make_ra == '1' && $employee_data->input('make_ra') == '0'){
 
-                        $all_employee = Employees::where('employee_ra','=',$employee_data->input('employee_id'))->orWhere('employee_ra2','=',$employee_data->input('employee_id'))->count();
+                        $all_employee = Employees::where('employee_senior_manager','=',$employee_data->input('employee_id'))->orWhere('employee_junior_manager','=',$employee_data->input('employee_id'))->count();
 
                         if($all_employee > 0){
 
                             return response()->json([
                                 'status' => 'TRUE',
                                 'total_employee' => $all_employee,
-                                'employee_can_ra' => $employee_data->input('make_ra'),
+                                'employee_is_manager' => $employee_data->input('make_ra'),
 
                             ]);
                         }
 
                     }
 
-
                     $update_employee->save();
+                    
+
+                    if(!empty($employee_data->input('employee_location'))){
+                        foreach($employee_data->input('employee_location') as $location){
+                            $check_if_emp_location_exists = EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->where('emp_loc_loc_id',$location)->get()->toArray();
+                            if(empty($check_if_emp_location_exists)){
+                                $new_employee_location = new EmployeeLocation();
+                                $new_employee_location->emp_loc_employee_id = $employee_data->input('employee_id');
+                                $new_employee_location->emp_loc_loc_id = $location;
+                                $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                $new_employee_location->save();
+                            }
+                        }
+                    }
 
 
                     $itEmployees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('department_name','=','IT')->where('employee_isactive','=',1)->get('employee_id')->toArray();
@@ -1561,28 +1592,6 @@ class EmployeeController extends Controller
                     }
 
                     if($process == 1){
-                        if(!env('APP_DEBUG') && env('APP_URL') === 'https://sourcecodeemployees.com/'){
-
-                            $depratment_name = Department::where('department_id',$employee_data->input('employee_department'))->get('department_name')->toArray();
-                            $designation_name = Designation::where('designation_id',$employee_data->input('employee_designation'))->get('designation_name')->toArray();
-
-                            Http::withHeaders([
-                                'access-token' => 'PoRtAlCrMkEy',
-                            ])->post(env('APP_SC_URL').'api/add-employee', [
-                                'employee_id' =>$employee_data->input('employee_id'),
-                                'employee_code' => $employee_data->input('employee_code'),
-                                'employee_name' => $employee_data->input('employee_name'),
-                                'employee_contactno' => $employee_data->input('employee_contactno'),
-                                'employee_email' => $employee_data->input('employee_personal_email'),
-                                'employee_department' => $employee_data->input('employee_department'),
-                                'employee_designation' => $employee_data->input('employee_designation'),
-                                'employee_jobtitle' => $employee_data->input('employee_jobtitle'),
-                                'employee_department_name' => $depratment_name[0]['department_name'],
-                                'employee_designation_name' => $designation_name[0]['designation_name'],
-                            ]);
-                        }
-
-
                         return response()->json([
                             'status' => 'TRUE',
                             'msg' => "Employee details updated successfully.",
@@ -1639,9 +1648,9 @@ class EmployeeController extends Controller
             $employee = Employees::find($employee_id);
             $employee_data = json_decode(json_encode($employee), TRUE);
             if($employee_id != $request->input('senior_manager') && $employee_id != $request->input('junior_manager')){
-                if($employee_data['employee_ra2'] != $request->input('senior_manager') && $employee_data['employee_ra'] != $request->input('junior_manager') ){
-                    $employee->employee_ra = $request->input('senior_manager');
-                    $employee->employee_ra2 = $request->input('junior_manager');
+                if($employee_data['employee_junior_manager'] != $request->input('senior_manager') && $employee_data['employee_senior_manager'] != $request->input('junior_manager') ){
+                    $employee->employee_senior_manager = $request->input('senior_manager');
+                    $employee->employee_junior_manager = $request->input('junior_manager');
                     $process = $employee->save();
                     if($process == 1){
                         return response()->json([
@@ -2789,7 +2798,7 @@ class EmployeeController extends Controller
 
         try{
 
-            $employee_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->orderBy('employee_id','DESC')->offset(0)->limit(1)->get(['employee_id','employee_name','employee_gender','employee_password','employee_code','employee_email','department_name','designation_name'])->toArray();
+            $employee_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->orderBy('employee_id','DESC')->offset(0)->limit(1)->get(['employee_id','employee_name','employee_gender','employee_password','employee_code','employee_personal_email','department_name','designation_name'])->toArray();
 
             if(!empty($request->input('onboarding_id'))){
 
@@ -2913,16 +2922,16 @@ class EmployeeController extends Controller
 
     protected function get_reporting_employees(Request $request){
 
-        $all_employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_ra','=',$request->employee_id)->orWhere('employee_ra2','=',$request->employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
+        $all_employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_senior_manager','=',$request->employee_id)->orWhere('employee_junior_manager','=',$request->employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
 
-        $get_employee_can_ra = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_isactive',1)->where('employee_can_ra',1)->where('employee_id','!=',$request->employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
+        $get_employee_can_ra = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_isactive',1)->where('employee_is_manager',1)->where('employee_id','!=',$request->employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
 
         if(!empty($all_employee)){
             return response()->json([
                 'status' => 'TRUE',
                 'old_reporting_manager' => $request->employee_id,
                 'reporting_employee'  => $all_employee,
-                'employee_can_ra'   =>  $get_employee_can_ra,
+                'employee_is_manager'   =>  $get_employee_can_ra,
             ]);
         }else{
             return response()->json([
@@ -2937,34 +2946,34 @@ class EmployeeController extends Controller
             foreach($request->employees as $key=>$employee){
 
 
-                $get_employee_ca_ra = Employees::where('employee_ra','=',$request->old_reporting_emp_id)->orWhere('employee_ra2','=',$request->old_reporting_emp_id)->get(['employee_ra','employee_ra2'])->toArray();
+                $get_employee_ca_ra = Employees::where('employee_senior_manager','=',$request->old_reporting_emp_id)->orWhere('employee_junior_manager','=',$request->old_reporting_emp_id)->get(['employee_senior_manager','employee_junior_manager'])->toArray();
 
                 foreach($get_employee_ca_ra as $get_employee){
 
                     if($employee  ==  $request->employee_reporting_manager[$key]){
-                        Employees::where('employee_id',$employee)->where('employee_ra',$request->old_reporting_emp_id)->update(['employee_ra'=> 1]);
+                        Employees::where('employee_id',$employee)->where('employee_senior_manager',$request->old_reporting_emp_id)->update(['employee_senior_manager'=> 1]);
 
                     }else{
 
-                        if($get_employee['employee_ra'] == $request->employee_reporting_manager[$key] || $get_employee['employee_ra2'] == $request->employee_reporting_manager[$key]){
+                        if($get_employee['employee_senior_manager'] == $request->employee_reporting_manager[$key] || $get_employee['employee_junior_manager'] == $request->employee_reporting_manager[$key]){
 
-                            Employees::where('employee_id',$employee)->where('employee_ra',$request->old_reporting_emp_id)
-                            ->update(['employee_ra'=> $request->employee_reporting_manager[$key]]);
+                            Employees::where('employee_id',$employee)->where('employee_senior_manager',$request->old_reporting_emp_id)
+                            ->update(['employee_senior_manager'=> $request->employee_reporting_manager[$key]]);
 
-                            Employees::where('employee_id',$employee)->where('employee_ra2',$request->employee_reporting_manager[$key])->update(['employee_ra2'=>'']);
+                            Employees::where('employee_id',$employee)->where('employee_junior_manager',$request->employee_reporting_manager[$key])->update(['employee_junior_manager'=>'']);
 
 
-                            Employees::where('employee_id',$employee)->where('employee_ra2',$request->old_reporting_emp_id)
-                            ->update(['employee_ra2'=> '']);
+                            Employees::where('employee_id',$employee)->where('employee_junior_manager',$request->old_reporting_emp_id)
+                            ->update(['employee_junior_manager'=> '']);
 
 
 
                         }
 
-                        if($get_employee['employee_ra'] == $request->old_reporting_emp_id || $get_employee['employee_ra2'] == $request->old_reporting_emp_id){
-                            Employees::where('employee_id',$employee)->where('employee_ra',$request->old_reporting_emp_id)->update(['employee_ra'=> $request->employee_reporting_manager[$key]]);
+                        if($get_employee['employee_senior_manager'] == $request->old_reporting_emp_id || $get_employee['employee_junior_manager'] == $request->old_reporting_emp_id){
+                            Employees::where('employee_id',$employee)->where('employee_senior_manager',$request->old_reporting_emp_id)->update(['employee_senior_manager'=> $request->employee_reporting_manager[$key]]);
 
-                            Employees::where('employee_id',$employee)->where('employee_ra2',$request->old_reporting_emp_id)->update(['employee_ra2'=>'']);
+                            Employees::where('employee_id',$employee)->where('employee_junior_manager',$request->old_reporting_emp_id)->update(['employee_junior_manager'=>'']);
                         }
 
                     }
@@ -2981,7 +2990,7 @@ class EmployeeController extends Controller
 
                 }
                 if($request->input('emp_can_ra') != null){
-                    $update_employee->employee_can_ra = $request->input('emp_can_ra');
+                    $update_employee->employee_is_manager = $request->input('emp_can_ra');
                 }
 
                 $process = $update_employee->save();
@@ -3025,7 +3034,7 @@ class EmployeeController extends Controller
     protected function get_all_employees_for_crm_api(Request $RequestData){
 		$accessToken = $RequestData->input('access-token');
 		if(!empty($accessToken) && $accessToken == 'PoRtAlCrMkEy'){
-            $get_all_employees = Employees::join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->join('tbl_personal_informations','tbl_employees.employee_id','=','tbl_personal_informations.employeeid')->whereIn('employee_department', [1, 2, 3, 7, 10, 11, 12, 13, 15])->get(['employee_id','employee_code','employee_name','employee_contactno','employee_email','employee_department','employee_designation','department_name as employee_department_name','designation_name as employee_designation_name','employee_jobtitle','profile_avatar','employee_isactive'])->toArray();
+            $get_all_employees = Employees::join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->join('tbl_personal_informations','tbl_employees.employee_id','=','tbl_personal_informations.employeeid')->whereIn('employee_department', [1, 2, 3, 7, 10, 11, 12, 13, 15])->get(['employee_id','employee_code','employee_name','employee_contactno','employee_personal_email','employee_department','employee_designation','department_name as employee_department_name','designation_name as employee_designation_name','employee_jobtitle','profile_avatar','employee_isactive'])->toArray();
 			if(!empty($get_all_employees)){
                 $i=0;
                 foreach($get_all_employees as $employee){
@@ -3059,7 +3068,7 @@ class EmployeeController extends Controller
 		$employeeCode = $RequestData->input('employee-id');
 		if(!empty($accessToken) && $accessToken == 'PoRtAlCrMkEy'){
 			if(!empty($employeeCode)){
-                $get_employee_record = Employees::join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->join('tbl_personal_informations','tbl_employees.employee_id','=','tbl_personal_informations.employeeid')->where('employee_isactive', 1)->whereIn('employee_department', [1, 2, 3, 7, 10, 11, 12, 13])->where('employee_id',$employeeCode)->get(['employee_id','employee_code','employee_name','employee_contactno','employee_email','employee_department','employee_designation','department_name as employee_department_name','designation_name as employee_designation_name','employee_jobtitle','profile_avatar'])->toArray();
+                $get_employee_record = Employees::join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->join('tbl_personal_informations','tbl_employees.employee_id','=','tbl_personal_informations.employeeid')->where('employee_isactive', 1)->whereIn('employee_department', [1, 2, 3, 7, 10, 11, 12, 13])->where('employee_id',$employeeCode)->get(['employee_id','employee_code','employee_name','employee_contactno','employee_personal_email','employee_department','employee_designation','department_name as employee_department_name','designation_name as employee_designation_name','employee_jobtitle','profile_avatar'])->toArray();
 				if(!empty($get_employee_record)){
 					return response([
 						'message' => 'Employee record',
@@ -3097,7 +3106,7 @@ class EmployeeController extends Controller
 				if(!empty($get_employee)){
 					if($get_employee[0]['employee_department'] == '1' || $get_employee[0]['employee_department'] == '2' || $get_employee[0]['employee_department'] == '3' || $get_employee[0]['employee_department'] == '7' || $get_employee[0]['employee_department'] == '10' || $get_employee[0]['employee_department'] == '11' || $get_employee[0]['employee_department'] == '12' || $get_employee[0]['employee_department'] == '13' || $get_employee[0]['employee_department'] == '15'){
 						if($employeePassword == Crypt::decryptString($get_employee[0]['employee_password'])){
-							$result_array = array(['employee_id' => $get_employee[0]['employee_id'] , 'employee_code' => $get_employee[0]['employee_code'] , 'employee_name' => $get_employee[0]['employee_name'] , 'employee_email' => $get_employee[0]['employee_email'] , 'employee_department' => $get_employee[0]['employee_department'] , 'employee_designation' => $get_employee[0]['employee_designation']]);
+							$result_array = array(['employee_id' => $get_employee[0]['employee_id'] , 'employee_code' => $get_employee[0]['employee_code'] , 'employee_name' => $get_employee[0]['employee_name'] , 'employee_personal_email' => $get_employee[0]['employee_personal_email'] , 'employee_department' => $get_employee[0]['employee_department'] , 'employee_designation' => $get_employee[0]['employee_designation']]);
 							return response([
 								'message' => 'Login successfully',
 								'status' => 200,
@@ -3483,18 +3492,18 @@ class EmployeeController extends Controller
 
     //                         $employee_name = $getData[0];
     //                         // $employee_contact_no = $getData[1];
-    //                         // $employee_email =  $getData[2];
+    //                         // $employee_personal_email =  $getData[2];
     //                         // $employee_nic =  $getData[3];
     //                         $employee_contact_no = '090078601' . $count_row;
-    //                         $employee_email =  'test@ismailindustries.com' . $count_row;
+    //                         $employee_personal_email =  'test@ismailindustries.com' . $count_row;
     //                         $employee_nic =  '42111-6352412-9' . $count_row;
     //                         // $employee_gender =  $getData[4];
     //                         $employee_gender =  'Male';
     //                         $employee_department =  $getData[1];
     //                         $employee_designation =  $getData[2];
     //                         $employee_job_title =  $getData[3];
-    //                         // $employee_can_ra =  $getData[8];
-    //                         $employee_can_ra =  1;
+    //                         // $employee_is_manager =  $getData[8];
+    //                         $employee_is_manager =  1;
     //                         // $joining_date =  $getData[9];
     //                         $joining_date =  $getData[4];
     //                         // $employee_status =  $getData[10];
@@ -3548,13 +3557,13 @@ class EmployeeController extends Controller
     //                             }
     //                         }
 
-    //                         if(empty($employee_email)){
+    //                         if(empty($employee_personal_email)){
     //                             $error_msg = "Row# $count_row : email required";
     //                             $count_record = "FALSE";
     //                             array_push($error_logs, $error_msg);
     //                         }else{
 
-    //                             $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+    //                             $employees_email = Employees::where('employee_personal_email', $employee_personal_email)->get('employee_personal_email')->toArray();
 
     //                             if(!empty( $employees_email)){
     //                                 $error_msg = "Row# $count_row : email already exist";
@@ -3632,16 +3641,16 @@ class EmployeeController extends Controller
     //                             array_push($error_logs, $error_msg);
     //                         }
 
-    //                         if(empty($employee_can_ra)){
+    //                         if(empty($employee_is_manager)){
     //                             $error_msg = "Row# $count_row : Employee can ra required";
     //                             $count_record = "FALSE";
     //                             array_push($error_logs, $error_msg);
     //                         }
 
-    //                         if($employee_can_ra  == 'Yes'){
-    //                             $employee_ra = 1 ;
-    //                         }elseif($employee_can_ra  == 'No') {
-    //                             $employee_ra= 0;
+    //                         if($employee_is_manager  == 'Yes'){
+    //                             $employee_senior_manager = 1 ;
+    //                         }elseif($employee_is_manager  == 'No') {
+    //                             $employee_senior_manager= 0;
     //                         }else{
     //                             $error_msg = "Row# $count_row : Unknown employee can ra type";
     //                             $count_record = "FALSE";
@@ -3837,13 +3846,13 @@ class EmployeeController extends Controller
 
     //                             $employee_name = $getData[0];
     //                             $employee_contact_no = $getData[1];
-    //                             $employee_email =  $getData[2];
+    //                             $employee_personal_email =  $getData[2];
     //                             $employee_nic =  $getData[3];
     //                             $employee_gender =  $getData[4];
     //                             $employee_department =  $getData[5];
     //                             $employee_designation =  $getData[6];
     //                             $employee_job_title =  $getData[7];
-    //                             $employee_can_ra =  $getData[8];
+    //                             $employee_is_manager =  $getData[8];
     //                             $joining_date =  $getData[9];
     //                             $employee_status =  $getData[10];
     //                             $employee_salary =  $getData[11];
@@ -3876,10 +3885,10 @@ class EmployeeController extends Controller
     //                                 $employee_record_insert = "FALSE";
     //                             }
 
-    //                             if(empty($employee_email)){
+    //                             if(empty($employee_personal_email)){
     //                                 $employee_record_insert = "FALSE";
     //                             }
-    //                             $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+    //                             $employees_email = Employees::where('employee_personal_email', $employee_personal_email)->get('employee_personal_email')->toArray();
 
     //                             if(!empty( $employees_email)){
     //                                 $employee_record_insert = "FALSE";
@@ -3932,14 +3941,14 @@ class EmployeeController extends Controller
     //                                 $employee_record_insert = "FALSE";
     //                             }
 
-    //                             if(empty($employee_can_ra)){
+    //                             if(empty($employee_is_manager)){
     //                                 $employee_record_insert = "FALSE";
     //                             }
 
-    //                             if($employee_can_ra  == 'Yes'){
-    //                                 $employee_ra = '1' ;
-    //                             }elseif($employee_can_ra  == 'No') {
-    //                                 $employee_ra= '0';
+    //                             if($employee_is_manager  == 'Yes'){
+    //                                 $employee_senior_manager = '1' ;
+    //                             }elseif($employee_is_manager  == 'No') {
+    //                                 $employee_senior_manager= '0';
     //                             }else{
     //                                 $employee_record_insert = "FALSE";
     //                             }
@@ -4071,7 +4080,7 @@ class EmployeeController extends Controller
     //                                 $add_employee->employee_code = $employeeCode;
     //                                 $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
     //                                 $add_employee->employee_cnic = $employee_nic;
-    //                                 $add_employee->employee_email = $employee_email;
+    //                                 $add_employee->employee_personal_email = $employee_personal_email;
     //                                 $add_employee->employee_contactno = $employee_contact_no;
     //                                 $add_employee->employee_gender = $employee_gender;
     //                                 $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
@@ -4079,9 +4088,9 @@ class EmployeeController extends Controller
     //                                 $add_employee->employee_department = $departments[0]['department_id'];
     //                                 $add_employee->employee_jobtitle = $employee_job_title;
     //                                 $add_employee->employee_password = Crypt::encryptString($employee_password);
-    //                                 $add_employee->employee_ra =  '1';
-    //                                 $add_employee->employee_can_ra = $employee_ra;
-    //                                 $add_employee->employee_offday1 = (!empty($employee_Off_day)) ? implode(',',$employee_Off_day) : '';
+    //                                 $add_employee->employee_senior_manager =  '1';
+    //                                 $add_employee->employee_is_manager = $employee_senior_manager;
+    //                                 $add_employee->employee_offdays = (!empty($employee_Off_day)) ? implode(',',$employee_Off_day) : '';
     //                                 $add_employee->employee_jobtype = $employee_job;
     //                                 $add_employee->employee_location = $locations[0]['location_id'];
     //                                 $add_employee->employee_isactive =  1;
@@ -4352,16 +4361,16 @@ class EmployeeController extends Controller
                         //         // dd($getData[0][1]);
                         //         $employee_name = $getData[0];
                         //         // $employee_contact_no = $getData[1];
-                        //         // $employee_email =  $getData[2];
+                        //         // $employee_personal_email =  $getData[2];
                         //         // $employee_nic =  $getData[3];
                         //         $employee_contact_no = '090078601' . $count_row;
-                        //         $employee_email =  'test@gmail.com' . $count_row;
+                        //         $employee_personal_email =  'test@gmail.com' . $count_row;
                         //         $employee_nic =  '48943-0987654-0' . $count_row;
                         //         $employee_gender =  $getData[4];
                         //         $employee_department =  $getData[5];
                         //         $employee_designation =  $getData[6];
                         //         $employee_job_title =  $getData[7];
-                        //         $employee_can_ra =  $getData[8];
+                        //         $employee_is_manager =  $getData[8];
                         //         $joining_date =  $getData[9];
                         //         $employee_status =  $getData[10];
                         //         $employee_salary =  $getData[11];
@@ -4404,13 +4413,13 @@ class EmployeeController extends Controller
                         //             }
                         //         }
     
-                        //         if(empty($employee_email)){
+                        //         if(empty($employee_personal_email)){
                         //             $error_msg = "Row# $count_row : email required";
                         //             $count_record = "FALSE";
                         //             array_push($error_logs, $error_msg);
                         //         }else{
     
-                        //             $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+                        //             $employees_email = Employees::where('employee_personal_email', $employee_personal_email)->get('employee_personal_email')->toArray();
     
                         //             if(!empty( $employees_email)){
                         //                 $error_msg = "Row# $count_row : email already exist";
@@ -4488,16 +4497,16 @@ class EmployeeController extends Controller
                         //             array_push($error_logs, $error_msg);
                         //         }
     
-                        //         if(empty($employee_can_ra)){
+                        //         if(empty($employee_is_manager)){
                         //             $error_msg = "Row# $count_row : Employee can ra required";
                         //             $count_record = "FALSE";
                         //             array_push($error_logs, $error_msg);
                         //         }
     
-                        //         if($employee_can_ra  == 'Yes'){
-                        //             $employee_ra = 1 ;
-                        //         }elseif($employee_can_ra  == 'No') {
-                        //             $employee_ra= 0;
+                        //         if($employee_is_manager  == 'Yes'){
+                        //             $employee_senior_manager = 1 ;
+                        //         }elseif($employee_is_manager  == 'No') {
+                        //             $employee_senior_manager= 0;
                         //         }else{
                         //             $error_msg = "Row# $count_row : Unknown employee can ra type";
                         //             $count_record = "FALSE";
@@ -4696,16 +4705,16 @@ class EmployeeController extends Controller
     
                                     $employee_name = iconv('ISO-8859-1', 'UTF-8', $getData[0]);//$getData[0];
                                     $employeeCode = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
-                                    // $employee_email =  $getData[2];
+                                    // $employee_personal_email =  $getData[2];
                                     // $employee_nic =  $getData[3];
                                     $employee_contact_no = '090078601' . $count_row;
-                                    $employee_email =  'test@gmail.com' . $count_row;
+                                    $employee_personal_email =  'test@gmail.com' . $count_row;
                                     $employee_nic =  '48943-0987654-0' . $count_row;
                                     $employee_gender =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); //$getData[4];
                                     $employee_department =  iconv('ISO-8859-1', 'UTF-8', $getData[5]); //$getData[5];
                                     $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[6]); //$getData[6];
                                     $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[7]); //$getData[7];
-                                    $employee_can_ra =  iconv('ISO-8859-1', 'UTF-8', $getData[8]); //$getData[8];
+                                    $employee_is_manager =  iconv('ISO-8859-1', 'UTF-8', $getData[8]); //$getData[8];
                                     $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[9]); //$getData[9];
                                     $employee_status =  iconv('ISO-8859-1', 'UTF-8', $getData[10]); //$getData[10];
                                     $employee_salary =  iconv('ISO-8859-1', 'UTF-8', $getData[11]); //$getData[11];
@@ -4738,10 +4747,10 @@ class EmployeeController extends Controller
                                     //     $employee_record_insert = "FALSE";
                                     // }
     
-                                    // if(empty($employee_email)){
+                                    // if(empty($employee_personal_email)){
                                     //     $employee_record_insert = "FALSE";
                                     // }
-                                    // $employees_email = Employees::where('employee_email', $employee_email)->get('employee_email')->toArray();
+                                    // $employees_email = Employees::where('employee_personal_email', $employee_personal_email)->get('employee_personal_email')->toArray();
     
                                     // if(!empty( $employees_email)){
                                     //     $employee_record_insert = "FALSE";
@@ -4796,14 +4805,14 @@ class EmployeeController extends Controller
                                     //     $employee_record_insert = "FALSE";
                                     // }
     
-                                    // if(empty($employee_can_ra)){
+                                    // if(empty($employee_is_manager)){
                                     //     $employee_record_insert = "FALSE";
                                     // }
     
-                                    if($employee_can_ra  == 'Yes'){
-                                        $employee_ra = '1' ;
-                                    }elseif($employee_can_ra  == 'No') {
-                                        $employee_ra= '0';
+                                    if($employee_is_manager  == 'Yes'){
+                                        $employee_senior_manager = '1' ;
+                                    }elseif($employee_is_manager  == 'No') {
+                                        $employee_senior_manager= '0';
                                     }
                                     // else{
                                     //     $employee_record_insert = "FALSE";
@@ -4938,8 +4947,8 @@ class EmployeeController extends Controller
                                         // $add_employee->employee_code = $employeeCode;
                                         $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
                                         $add_employee->employee_cnic = $employee_nic;
-                                        $add_employee->employee_email = $employee_email;
-                                        $add_employee->employee_work_email = $employee_email;
+                                        $add_employee->employee_personal_email = $employee_personal_email;
+                                        $add_employee->employee_work_email = $employee_personal_email;
                                         $add_employee->employee_contactno = $employee_contact_no;
                                         $add_employee->employee_gender = $employee_gender;
                                         $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
@@ -4947,11 +4956,11 @@ class EmployeeController extends Controller
                                         $add_employee->employee_department = $departments[0]['department_id'];
                                         $add_employee->employee_jobtitle = $employee_job_title;
                                         $add_employee->employee_password = Crypt::encryptString($employee_password);
-                                        $add_employee->employee_ra =  '1';
-                                        $add_employee->employee_can_ra = $employee_ra;
-                                        $add_employee->employee_offday1 = $employee_Off_day;
+                                        $add_employee->employee_senior_manager =  '1';
+                                        $add_employee->employee_is_manager = $employee_senior_manager;
+                                        $add_employee->employee_offdays = $employee_Off_day;
                                         $add_employee->employee_jobtype = $employee_job;
-                                        $add_employee->employee_location = $locations[0]['location_id'];
+                                        // $add_employee->employee_location = $locations[0]['location_id'];
                                         $add_employee->employee_isactive =  1;
                                         $add_employee->employee_earning_type = $employee_earning;
     
@@ -4959,6 +4968,12 @@ class EmployeeController extends Controller
                                         $employee_registration_id = $add_employee->employee_id;
     
                                         if($employee == 1){
+
+                                            $new_employee_location = new EmployeeLocation();
+                                            $new_employee_location->emp_loc_employee_id = $employee_registration_id;
+                                            $new_employee_location->emp_loc_loc_id = $locations[0]['location_id'];
+                                            $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                            $new_employee_location->save();
     
                                             $emp_salary = new EmployeeSalary();
                                             $emp_salary->salary_employee_id = $employee_registration_id;
@@ -5794,11 +5809,11 @@ class EmployeeController extends Controller
     {
         $exists = '';
         if(!empty($request->input('email'))){
-            $exists = Employees::where('employee_email',$request->input('email'))->orWhere('employee_work_email',$request->input('email'))->exists();
+            $exists = Employees::where('employee_personal_email',$request->input('email'))->orWhere('employee_work_email',$request->input('email'))->exists();
 
         }elseif(!empty($request->input('email_update'))){
            
-            $exists = Employees::where('employee_email',$request->input('email_update'))->orWhere('employee_work_email',$request->input('email_update'))->where('employee_id','!=',$request->input('employee_id'))->exists();
+            $exists = Employees::where('employee_personal_email',$request->input('email_update'))->orWhere('employee_work_email',$request->input('email_update'))->where('employee_id','!=',$request->input('employee_id'))->exists();
 
         }
         if(!empty($request->input('contact'))){

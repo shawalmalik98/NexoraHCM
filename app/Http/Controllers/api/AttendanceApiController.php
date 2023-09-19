@@ -45,8 +45,8 @@ class AttendanceApiController extends Controller
                 ->orWhere('att_check_overall_status','RPL');
             })->count();
            
-            $login_user[0]['employee_offday1'] = (!empty($login_user[0]['employee_offday1'])) ? explode(",",$login_user[0]['employee_offday1']):[];
-            $off_days =  $login_user[0]['employee_offday1'];   
+            $login_user[0]['employee_offdays'] = (!empty($login_user[0]['employee_offdays'])) ? explode(",",$login_user[0]['employee_offdays']):[];
+            $off_days =  $login_user[0]['employee_offdays'];   
         
             $data = compact('title','attendance','month_days','t_employee_leaves','month','year','off_days','manage_leaves');
 

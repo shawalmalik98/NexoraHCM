@@ -150,7 +150,7 @@ class InterviewsController extends Controller
 
             if(!empty($interviewData->input('candidate_email'))){
                 $employee_email_check = Employees::where('employee_isactive',1)->where(function ($query) use ($interviewData) {
-                    $query->where('employee_email',$interviewData->input('candidate_email'))
+                    $query->where('employee_personal_email',$interviewData->input('candidate_email'))
                     ->orWhere('employee_work_email',$interviewData->input('candidate_email'));
                 })
                 
@@ -771,7 +771,7 @@ class InterviewsController extends Controller
 
             if(!empty($interviewData->input('candidate_email'))){
                 $employee_email_check = Employees::where('employee_isactive',1)->where(function ($query) use ($interviewData) {
-                    $query->where('employee_email',$interviewData->input('candidate_email'))
+                    $query->where('employee_personal_email',$interviewData->input('candidate_email'))
                     ->orWhere('employee_work_email',$interviewData->input('candidate_email'));
                 })
                 
@@ -1281,7 +1281,7 @@ class InterviewsController extends Controller
 
                         $itEmployees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('department_name','=','IT')->where('employee_isactive','=',1)->get(['employee_id'])->toArray();
                     
-                        $department_managers = Employees::where('employee_isactive','=',1)->where('employee_department','=',$request_data->input('deprt_id'))->where('employee_can_ra',1)->get('employee_id')->toArray();
+                        $department_managers = Employees::where('employee_isactive','=',1)->where('employee_department','=',$request_data->input('deprt_id'))->where('employee_is_manager',1)->get('employee_id')->toArray();
                     
                     
                         if(!empty($itEmployees) || !empty($department_managers)){

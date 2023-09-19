@@ -60,7 +60,7 @@ return new class extends Migration
             }
 
             Schema::table('tbl_employees', function (Blueprint $table) {
-                $table->string('employee_offday1', 255)->nullable()->change();
+                $table->string('employee_offdays', 255)->nullable()->change();
             });
             
         }

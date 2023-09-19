@@ -248,7 +248,7 @@
                                         $holiday_count = 0;
 
                                         $attendance_total_count = count($attendance);
-                                        $login_user[0]['employee_offday1'] = (!empty($login_user[0]['employee_offday1'])) ? explode(",",$login_user[0]['employee_offday1']):[]; 
+                                        $login_user[0]['employee_offdays'] = (!empty($login_user[0]['employee_offdays'])) ? explode(",",$login_user[0]['employee_offdays']):[]; 
                                         @endphp
                                        
                                         @for ($month_count = $month_count; $month_count <= $month_days; $month_count++)
@@ -305,7 +305,7 @@
                                                         
                                                         @if($absent )
                                                         
-                                                            @if(in_array($name_of_day,$login_user[0]['employee_offday1']) )
+                                                            @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
                                                             00:00:00
 
                                                             @elseif($date_filter< $today)
@@ -349,7 +349,7 @@
                                                     @endphp
                                                     
                                                     @if($absent )
-                                                        @if(in_array($name_of_day,$login_user[0]['employee_offday1']) )
+                                                        @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
                                                             00:00:00
 
                                                         @elseif($date_filter< $today)
@@ -394,7 +394,7 @@
 
 
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$login_user[0]['employee_offday1']) )
+                                                            @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
                                                                 00:00:00
                                                             @elseif($date_filter < $today)
                                                                 00:00:00
@@ -496,7 +496,7 @@
                                                     @endphp
                                                     
                                                     @if($absent )
-                                                        @if(in_array($name_of_day,$login_user[0]['employee_offday1']) )
+                                                        @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
                                                             00:00:00
                                                         @elseif($date_filter < $today)
                                                         00:00:00
@@ -543,7 +543,7 @@
                                                     
                                                     @if($absent )
                                                         
-                                                        @if(in_array($name_of_day,$login_user[0]['employee_offday1']) )
+                                                        @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
                                                             @php $offdays++; @endphp
                                                             <p class="text-warning">
                                                             <i class="fa-solid fa-sun text-warning" data-bs-toggle="tooltip"

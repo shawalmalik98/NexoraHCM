@@ -54,7 +54,7 @@ trait NotificationTrait {
 	  
 		if(!empty($login_employee_id) || $login_employee_id != ''){
 
-			$login_user_detail = Employees::where('employee_id',$login_employee_id)->get(['employee_department','employee_can_ra','employee_doj'])->toArray();
+			$login_user_detail = Employees::where('employee_id',$login_employee_id)->get(['employee_department','employee_is_manager','employee_doj'])->toArray();
 			
 			if(!empty($login_user_detail)){
 
@@ -87,7 +87,7 @@ trait NotificationTrait {
 
 				}else{
 				   
-					if($login_user_detail[0]['employee_can_ra'] == 1){
+					if($login_user_detail[0]['employee_is_manager'] == 1){
 					
 					   $get_notifications = Notification::where(function ($query) use ($login_employee_id) {
 							$query->where('notification_to_manager1' , $login_employee_id)

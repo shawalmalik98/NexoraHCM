@@ -19,7 +19,7 @@ return new class extends Migration
                 $table->string('employee_code', 255);
                 $table->string('employee_name', 255);
                 $table->string('employee_contactno', 255);
-                $table->string('employee_email', 255);
+                $table->string('employee_personal_email', 255);
                 $table->string('employee_work_email', 255)->nullable();
                 $table->string('employee_cnic', 255)->nullable();
                 $table->string('employee_gender', 10)->nullable();
@@ -30,12 +30,12 @@ return new class extends Migration
                 $table->integer('employee_company')->default(1);
                 $table->integer('employee_group')->default(1);
                 $table->string('employee_jobtitle', 255);
-                $table->string('employee_offday1', 255)->nullable();
+                $table->string('employee_offdays', 255)->nullable();
                 $table->string('employee_shift_flexibilty', 5)->nullable();
                 $table->string('employee_password', 1000);
-                $table->integer('employee_ra');
-                $table->integer('employee_ra2')->nullable();
-                $table->integer('employee_can_ra');
+                $table->integer('employee_senior_manager');
+                $table->integer('employee_junior_manager')->nullable();
+                $table->integer('employee_is_manager');
                 $table->integer('employee_isactive');
                 $table->string('employee_deactivate_date', 50)->nullable();
                 $table->string('employee_jobtype', 50);

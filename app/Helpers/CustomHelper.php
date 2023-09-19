@@ -117,18 +117,18 @@ class CustomHelper
           
             $t_employee_leaves = Attendance::where(['att_employee_id'=>session('user_session'),'att_for_month'=>date('m'),'att_for_year'=>date('Y')])->whereIn('att_check_overall_status' , $manage_leaves)->count();
           
-            $employee_offDays = Employees::where('employee_id',session('user_session'))->get(['employee_offday1'])->toArray();
+            $employee_offDays = Employees::where('employee_id',session('user_session'))->get(['employee_offdays'])->toArray();
 
             $month = date('d');
             $offDays = 0;
             $absent = 0;
-            $employee_offDays[0]['employee_offday1'] = (!empty($employee_offDays[0]['employee_offday1'])) ? explode(",",$employee_offDays[0]['employee_offday1']):[];
+            $employee_offDays[0]['employee_offdays'] = (!empty($employee_offDays[0]['employee_offdays'])) ? explode(",",$employee_offDays[0]['employee_offdays']):[];
             for ($month_count = 1; $month_count <=$month; ++$month_count){
                 $date =  $month_count;
                 if(!in_array($date,$employee_attendance)){
                     $nameOfDay = date("l", strtotime(date($date.'-m-Y')));
 
-                    if(in_array($nameOfDay,$employee_offDays[0]['employee_offday1']) ){
+                    if(in_array($nameOfDay,$employee_offDays[0]['employee_offdays']) ){
                         $offDays++;
                     }else{
                         $absent++;
@@ -158,9 +158,9 @@ class CustomHelper
         array_push($manage_leaves, "RPL");
         $t_employee_leaves = Attendance::where(['att_employee_id'=>$employee_id,'att_for_month'=>date('m'),'att_for_year'=>date('Y')])->whereIn('att_check_overall_status' ,$manage_leaves)->count();
 
-        $employee_offDays = Employees::where('employee_id',$employee_id)->get(['employee_offday1'])->toArray();
+        $employee_offDays = Employees::where('employee_id',$employee_id)->get(['employee_offdays'])->toArray();
 
-        $employee_offDays[0]['employee_offday1'] = (!empty($employee_offDays[0]['employee_offday1'])) ? explode(",",$employee_offDays[0]['employee_offday1']):[];
+        $employee_offDays[0]['employee_offdays'] = (!empty($employee_offDays[0]['employee_offdays'])) ? explode(",",$employee_offDays[0]['employee_offdays']):[];
 
         $month = date('d');
         $offDays = 0;
@@ -170,7 +170,7 @@ class CustomHelper
             if( !in_array($date,$employee_attendance)){
                 $nameOfDay = date("l", strtotime(date($date.'-m-Y')));
 
-                if(in_array($nameOfDay,$employee_offDays[0]['employee_offday1']) ){
+                if(in_array($nameOfDay,$employee_offDays[0]['employee_offdays']) ){
                     $offDays++;
                 }else{
                     $absent++;
@@ -331,7 +331,7 @@ class CustomHelper
 
     }
 
-    // public static function calculate_working_hour($att_for_year,$att_for_month,$att_for_date,$att_check_in_time,$att_check_out_time,$employee_shift_start,$employee_shift_end,$month_count,$att_check_overall_status,$request_m,$request_y,$total_working_hours,$total_working_hours_actual,$employee_offday1,$helper_absent,$attendance_total_count,$loop_count,$check_out_status,$att_updated_date){
+    // public static function calculate_working_hour($att_for_year,$att_for_month,$att_for_date,$att_check_in_time,$att_check_out_time,$employee_shift_start,$employee_shift_end,$month_count,$att_check_overall_status,$request_m,$request_y,$total_working_hours,$total_working_hours_actual,$employee_offdays,$helper_absent,$attendance_total_count,$loop_count,$check_out_status,$att_updated_date){
 
        
     //     $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
@@ -406,7 +406,7 @@ class CustomHelper
     //         $total_working_hour_of_this_day_actual = $out_day_time_actual - $in_day_time_actual;
     //         $total_working_hours_actual += $total_working_hour_of_this_day_actual;
 
-    //         if(in_array($att_check_overall_status, $manage_leaves) || substr($att_check_overall_status , 0, 7) == 'Holiday' || in_array($nameOfDay,$employee_offday1)){
+    //         if(in_array($att_check_overall_status, $manage_leaves) || substr($att_check_overall_status , 0, 7) == 'Holiday' || in_array($nameOfDay,$employee_offdays)){
     //             // echo "Leave";
     //             $total_working_hour_of_this_day_actual = $out_day_time_actual - $in_day_time_actual;
     //             $total_working_hours_actual -= $total_working_hour_of_this_day_actual;
@@ -424,7 +424,7 @@ class CustomHelper
 
     //             $today = strtotime(date("Y-m-d"));
 
-    //             if(in_array($nameOfDay,$employee_offday1) ){
+    //             if(in_array($nameOfDay,$employee_offdays) ){
     //                 // $total_working_hour_of_this_day_actual = $out_day_time_actual - $in_day_time_actual;
     //                 // $total_working_hours_actual += $total_working_hour_of_this_day_actual;
     //                 // echo "off day";
@@ -933,7 +933,7 @@ class CustomHelper
        
 		try{
             $total_absent = [];
-            $employee_records = Employees::where('employee_isactive',1)->where('employee_id',$employee_id)->get(['employee_offday1','employee_id','employee_doj'])->toArray();
+            $employee_records = Employees::where('employee_isactive',1)->where('employee_id',$employee_id)->get(['employee_offdays','employee_id','employee_doj'])->toArray();
             
             if(!empty($month) && !empty($year)){
                 $month_dates = LoginEmployee::get_all_date_from_month($month,$year,$format=1);
@@ -971,7 +971,7 @@ class CustomHelper
                 }
               
                 $employee_attendance = array_column($employee_attendance,'date');
-                $employee_record['employee_offday1'] = (!empty($employee_record['employee_offday1'])) ? explode(",",$employee_record['employee_offday1']):[];
+                $employee_record['employee_offdays'] = (!empty($employee_record['employee_offdays'])) ? explode(",",$employee_record['employee_offdays']):[];
                 
                 foreach($month_dates as $date){
                     $date = date("Y-m-d", strtotime($date));
@@ -980,7 +980,7 @@ class CustomHelper
                         if(!in_array($date,$employee_attendance)){
                             $nameOfDay = date("l", strtotime(date($date)));
                     
-                            if(in_array($nameOfDay,$employee_record['employee_offday1'])){
+                            if(in_array($nameOfDay,$employee_record['employee_offdays'])){
                                 continue;
                             }else if($date < $employee_record['employee_doj'] ){
                                 continue;

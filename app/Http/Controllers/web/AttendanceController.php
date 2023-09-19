@@ -54,10 +54,10 @@ class AttendanceController extends Controller
                 $all_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause)->limit(1000)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
             }
             else{
-                if($login_user[0]['employee_can_ra'] == 1){
+                if($login_user[0]['employee_is_manager'] == 1){
                     $all_employees = Employees::where('employee_isactive',$employement_status)->where(function($query){
-                        $query->where('employee_ra',session('user_session'));
-                        $query->orWhere('employee_ra2',session('user_session'));
+                        $query->where('employee_senior_manager',session('user_session'));
+                        $query->orWhere('employee_junior_manager',session('user_session'));
                     })
                     ->whereRaw($where_clause)->limit(10)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
@@ -266,13 +266,13 @@ class AttendanceController extends Controller
             if(!empty($emp_name)){
                 $all_employees = Employees::where('employee_isactive', $employement_status)
                 ->where('employee_id',$emp_name)
-                ->get(['employee_id','employee_code','employee_name','employee_offday1'])->toArray();
+                ->get(['employee_id','employee_code','employee_name','employee_offdays'])->toArray();
             }
             elseif(!empty($reporting_authority) && !empty($department) ){
             
-                $all_employees =  Employees::select('employee_id', 'employee_code', 'employee_name', 'employee_offday1')->where('employee_department',$department)->where('employee_isactive', $employement_status)->where(function ($query) use ($reporting_authority) {
-                    $query->where('employee_ra',$reporting_authority)
-                        ->orWhere('employee_ra2',$reporting_authority);
+                $all_employees =  Employees::select('employee_id', 'employee_code', 'employee_name', 'employee_offdays')->where('employee_department',$department)->where('employee_isactive', $employement_status)->where(function ($query) use ($reporting_authority) {
+                    $query->where('employee_senior_manager',$reporting_authority)
+                        ->orWhere('employee_junior_manager',$reporting_authority);
                     })
                 ->orWhere('employee_id',$reporting_authority)
                 ->get()->toArray();
@@ -282,17 +282,17 @@ class AttendanceController extends Controller
             
                 $all_employees = Employees::where('employee_isactive',$employement_status)
                 ->where('employee_department',$department)
-                ->get(['employee_id','employee_code','employee_name','employee_offday1'])->toArray();
+                ->get(['employee_id','employee_code','employee_name','employee_offdays'])->toArray();
             }
             elseif(!empty($employee_list)){
                 $all_employees = Employees::where('employee_isactive', $employement_status)
                 ->whereIn('employee_id',$employee_list)
-                ->get(['employee_id','employee_code','employee_name','employee_offday1'])->toArray();
+                ->get(['employee_id','employee_code','employee_name','employee_offdays'])->toArray();
             }
             else{
 
                 $all_employees = Employees::where('employee_isactive',$employement_status)
-                ->get(['employee_id','employee_code','employee_name','employee_offday1'])->toArray();
+                ->get(['employee_id','employee_code','employee_name','employee_offdays'])->toArray();
 
             }
         
@@ -945,17 +945,17 @@ class AttendanceController extends Controller
 
         try{
 
-            $get_all_dept_employees = Employees::where('employee_department', $request->input('department'))->where('employee_isactive', '1')->get(['employee_ra', 'employee_ra2'])->toArray();
+            $get_all_dept_employees = Employees::where('employee_department', $request->input('department'))->where('employee_isactive', '1')->get(['employee_senior_manager', 'employee_junior_manager'])->toArray();
             if(!empty($get_all_dept_employees)){
                 
                 $ra_employees = array();
                 
                 foreach($get_all_dept_employees as $employee){
-                    if(!in_array($employee['employee_ra'], $ra_employees)){
-                        array_push($ra_employees, $employee['employee_ra']);
+                    if(!in_array($employee['employee_senior_manager'], $ra_employees)){
+                        array_push($ra_employees, $employee['employee_senior_manager']);
                     }
-                    if(!in_array($employee['employee_ra2'], $ra_employees)){
-                        array_push($ra_employees, $employee['employee_ra2']);
+                    if(!in_array($employee['employee_junior_manager'], $ra_employees)){
+                        array_push($ra_employees, $employee['employee_junior_manager']);
                     } 
                 }
                 
@@ -1162,7 +1162,7 @@ class AttendanceController extends Controller
         join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')
         ->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')
         ->whereRaw($where_clause)
-        ->get(['employee_id','employee_code','employee_name','employee_offday1','department_name','designation_name'])->toArray();
+        ->get(['employee_id','employee_code','employee_name','employee_offdays','department_name','designation_name'])->toArray();
 		
        
         if(!empty($all_employees)){
@@ -1227,9 +1227,9 @@ class AttendanceController extends Controller
             
             $attendances = Attendance::where(['att_employee_id'=>$employee_id,'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
 
-            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offday1','employee_shift_flexibilty','employee_ra'])->toArray();
+            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offdays','employee_shift_flexibilty','employee_senior_manager'])->toArray();
 
-            $employee_senior_manager = Employees::where('employee_id',$employee[0]['employee_ra'])->get('employee_name')->toArray();
+            $employee_senior_manager = Employees::where('employee_id',$employee[0]['employee_senior_manager'])->get('employee_name')->toArray();
            
             $send_data = compact('employee','month','month_days','year','attendances','employee_senior_manager','manage_leaves','dates','month_count');
 
@@ -1350,9 +1350,9 @@ class AttendanceController extends Controller
                 $attendances = Attendance::where(['att_employee_id'=>session('user_session'),'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
             }
           
-            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',session('user_session'))->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offday1','employee_shift_flexibilty','employee_ra'])->toArray();
+            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',session('user_session'))->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offdays','employee_shift_flexibilty','employee_senior_manager'])->toArray();
       
-            $employee_senior_manager = Employees::where('employee_id',$employee[0]['employee_ra'])->get('employee_name')->toArray();
+            $employee_senior_manager = Employees::where('employee_id',$employee[0]['employee_senior_manager'])->get('employee_name')->toArray();
            
             
             $send_data = compact('employee','month','month_days','year','attendances','employee_senior_manager','manage_leaves','dates','month_count');
@@ -1479,9 +1479,9 @@ class AttendanceController extends Controller
             }
 
            
-            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offday1','employee_shift_flexibilty','employee_ra'])->toArray();
+            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offdays','employee_shift_flexibilty','employee_senior_manager'])->toArray();
 
-            $employee_senior_manager = Employees::where('employee_id',$employee[0]['employee_ra'])->get('employee_name')->toArray();
+            $employee_senior_manager = Employees::where('employee_id',$employee[0]['employee_senior_manager'])->get('employee_name')->toArray();
             
             $setting = HrmSetting::get(['company_logo','company_name','company_address'])->toArray();
          
@@ -1535,7 +1535,7 @@ class AttendanceController extends Controller
                 $employee_id = session('user_session');
             }
 
-            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offday1','employee_shift_flexibilty'])->toArray();
+            $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offdays','employee_shift_flexibilty'])->toArray();
 
             $attendances = Attendance::where(['att_employee_id'=>$employee_id,'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
 
@@ -1832,10 +1832,10 @@ class AttendanceController extends Controller
                 $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
             }
             else{
-                if($login_user[0]['employee_can_ra'] == 1){
+                if($login_user[0]['employee_is_manager'] == 1){
                     $all_employees = Employees::where('employee_isactive',$employement_status)->where(function($query){
-                        $query->where('employee_ra',session('user_session'));
-                        $query->orWhere('employee_ra2',session('user_session'));
+                        $query->where('employee_senior_manager',session('user_session'));
+                        $query->orWhere('employee_junior_manager',session('user_session'));
                     })
                     ->whereRaw($where_clause)->whereRaw($emp_name)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
@@ -1944,10 +1944,10 @@ class AttendanceController extends Controller
                 $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
             }
             else{
-                if($login_user[0]['employee_can_ra'] == 1){
+                if($login_user[0]['employee_is_manager'] == 1){
                     $all_employees = Employees::where('employee_isactive',$employement_status)->where(function($query){
-                        $query->where('employee_ra',session('user_session'));
-                        $query->orWhere('employee_ra2',session('user_session'));
+                        $query->where('employee_senior_manager',session('user_session'));
+                        $query->orWhere('employee_junior_manager',session('user_session'));
                     })
                     ->whereRaw($where_clause)->whereRaw($emp_name)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 

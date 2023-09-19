@@ -62,7 +62,7 @@ class WFHApiController extends Controller
                 ->get(['wfh_request_id','wfh_employee_id','employee_name', 'wfh_request_date','wfh_request_message','wfh_request_approved_by_hr','wfh_request_approved_date_hr','wfh_request_submition_date'])->toArray();
             }
 
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_can_ra'] == 1){
+            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -82,7 +82,7 @@ class WFHApiController extends Controller
                     }
                 }
 
-                $all_requests = WFH::join('tbl_employees', 'tbl_work_from_homes.wfh_employee_id', '=', 'tbl_employees.employee_id')->whereIn('wfh_employee_id',$total_team_member)->whereRaw($where_clause)->orderBy('wfh_request_id','DESC')->get(['wfh_request_id','wfh_employee_id','wfh_request_date','wfh_request_message','wfh_request_approved_by_hr','wfh_request_approved_date_hr','wfh_request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_ra','employee_ra2'])->toArray();
+                $all_requests = WFH::join('tbl_employees', 'tbl_work_from_homes.wfh_employee_id', '=', 'tbl_employees.employee_id')->whereIn('wfh_employee_id',$total_team_member)->whereRaw($where_clause)->orderBy('wfh_request_id','DESC')->get(['wfh_request_id','wfh_employee_id','wfh_request_date','wfh_request_message','wfh_request_approved_by_hr','wfh_request_approved_date_hr','wfh_request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager'])->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id', 3)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
 
@@ -274,11 +274,11 @@ class WFHApiController extends Controller
 
                     if($process == 1){
 
-                        if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                            $to_mngr1  = $login_user[0]['employee_ra'];
+                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                            $to_mngr1  = $login_user[0]['employee_senior_manager'];
                         }
-                        if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                            $to_mngr2 = $login_user[0]['employee_ra2'];
+                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
                         }
 
                         if(!empty($request->post('from_date')) && !empty($request->post('to_date'))){
@@ -365,11 +365,11 @@ class WFHApiController extends Controller
                             $process = $wfh_update_request->save();
 
                             if($process == 1){
-                                if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                                    $to_mngr1  = $login_user[0]['employee_ra'];
+                                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                    $to_mngr1  = $login_user[0]['employee_senior_manager'];
                                 }
-                                if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                                    $to_mngr2 = $login_user[0]['employee_ra2'];
+                                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
                                 }
 
                                 $this->send_notification_api('Update Remote Work Request',''.$login_user[0]['employee_name'].' update a remote work request. for the date of '.$request->post('request_date').' Please click here to view.','wfh-requests?employee_id='. $login_user[0]['employee_id'].'&date='.$request->post('request_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);

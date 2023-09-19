@@ -275,7 +275,7 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Joining Date</span></label>
                                 
-                                <input type="date" class="form-control " placeholder="mm/dd/yyyy" name="employee_doj" required="required" />
+                                <input type="date" class="form-control " placeholder="mm/dd/yyyy" name="employee_doj" required="required" value="{{ date('Y-m-d') }}"/>
                             </div>
                             
                             
@@ -307,7 +307,7 @@
                                 <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false"   name="earning_type" required>
                                     <option value="">Select Employee Earning Type</option>
-                                    <option value="1">Monthly</option>
+                                    <option value="1" selected>Monthly</option>
                                     <option value="2">Daily Wages</option>
                                 </select>
                             </div>
@@ -320,7 +320,7 @@
                                 <label class="fs-6 fw-semibold mb-2 required">Employee Job Type</label>
                                 <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select a Job Type" name="employee_jobtype" required="required">
                                     <option value="">Select Job Type</option>
-                                    <option value="Office">Office Base</option>
+                                    <option value="Office" selected>Office Base</option>
                                     <option value="Home">Home Base</option>
                                 </select>
                             </div>
@@ -331,7 +331,7 @@
                                 <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select a Activity Status" name="employee_isactive"
                                 required="required" id="activity_status">
                                     <option value="">Select Activity Status</option>
-                                    <option value="1">Active</option>
+                                    <option value="1" selected>Active</option>
                                     <option value="0">De-Active</option>
                                 </select>
                             </div>                            
@@ -348,7 +348,7 @@
 
                             <div class="col-md-6 fv-row ">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Location</label>
-                                <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select location" name="employee_location" required >
+                                <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select location" name="employee_location[]" required multiple>
                                     <option value="">Select Bank Name</option>
                                     @if(!empty($all_locations))
                                         @foreach ($all_locations as $location)
@@ -432,7 +432,7 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Shift Start Time</span></label>
                                 
-                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_start_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_start_timings" oninput="calculateShiftDuration()"/>
+                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_start_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_start_timings" oninput="calculateShiftDuration()" value="09:00:00"/>
                             </div>
                             
                             
@@ -440,7 +440,7 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Shift End Time</span></label>
                                 
-                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_end_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_end_timings" oninput="calculateShiftDuration()"/>
+                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_end_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_end_timings" oninput="calculateShiftDuration()" value="06:00:00"/>
                             </div>
 
                             <div class="col-md-4 fv-row">
@@ -479,8 +479,8 @@
                                 <label class="fs-6 fw-semibold mb-2">Employee Off Day(s)</label>
                                 <select class="form-select " data-control="select2" data-close-on-select="false" data-hide-search="false" data-placeholder="Select Off Day(s)" name="employee_offday[]" multiple>
                                     <option value="">Select Off Day(s)</option>
-                                    <option value="Sunday">Sunday</option>
-                                    <option value="Saturday">Saturday</option>
+                                    <option value="Sunday" selected>Sunday</option>
+                                    <option value="Saturday" selected>Saturday</option>
                                     <option value="Friday">Friday</option>
                                     <option value="Thursday">Thursday</option>
                                     <option value="Wednesday">Wednesday</option>

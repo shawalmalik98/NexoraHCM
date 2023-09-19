@@ -123,7 +123,7 @@ class PersonalInformationController extends Controller
     protected function submit_information(Request $informationData){
 
         try{
-            $employee_record = Employees::where('employee_id',$informationData->input('employeeid'))->get(['employee_id','employee_code','employee_name','employee_email','employee_department','employee_designation','employee_contactno'])->toArray();
+            $employee_record = Employees::where('employee_id',$informationData->input('employeeid'))->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','employee_designation','employee_contactno'])->toArray();
             
             $submitInformation = EmployeeInformation::find($informationData->input('information_id'));
             $submitInformation->employeeid = $informationData->input('employeeid');
@@ -244,7 +244,7 @@ class PersonalInformationController extends Controller
                     'employee_code'         =>  $employee_record[0]['employee_code'],
                     'employee_name'         =>  $employee_record[0]['employee_name'],
                     'employee_contactno'    =>  $employee_record[0]['employee_contactno'],
-                    'employee_email'        =>  $employee_record[0]['employee_email'],
+                    'employee_personal_email'        =>  $employee_record[0]['employee_personal_email'],
                     'employee_department'   =>  $employee_record[0]['employee_department'],
                     'employee_designation'  =>  $employee_record[0]['employee_designation'],
                     'profile_avatar'        => $document_name,

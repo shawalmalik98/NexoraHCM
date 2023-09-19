@@ -95,15 +95,15 @@ class HomeController extends Controller
             ->get(['employee_id','department_name as employee_department','designation_name as employee_designation','dob'])
             ->toArray();
 
-            $senior_manager = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_ra'])->get(['employee_name','profile_avatar'])->toArray();
+            $senior_manager = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_senior_manager'])->get(['employee_name','profile_avatar'])->toArray();
                 
-            $junior_manager = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_ra2'])->get(['employee_name','profile_avatar'])->toArray();
+            $junior_manager = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_junior_manager'])->get(['employee_name','profile_avatar'])->toArray();
 
             $bad_attendance_employees = LateComers::join('tbl_employees','tbl_continous_latecomers.employee_id','=','tbl_employees.employee_id')->where('employee_isactive', 1)->where('create_date' , date('Y-m-d'))->get(['tbl_employees.employee_id','attendance_status','create_date'])->toArray();
 
             $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],1);
            
-            if($login_user[0]['employee_can_ra'] == 1){
+            if($login_user[0]['employee_is_manager'] == 1){
 
                 $my_team_mates = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
@@ -929,7 +929,7 @@ class HomeController extends Controller
                 $month = date('m');
                 
                 $total_absent = [];
-                $employee_records = Employees::where('employee_isactive',1)->whereIn('employee_id',$employees)->get(['employee_offday1','employee_id'])->toArray();
+                $employee_records = Employees::where('employee_isactive',1)->whereIn('employee_id',$employees)->get(['employee_offdays','employee_id'])->toArray();
         
                 
                 for($month_count = 1; $month_count <=$month; $month_count++){
@@ -939,8 +939,8 @@ class HomeController extends Controller
                     foreach($employee_records as $employee_record){
                         $employee_attendance =  Attendance::selectRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) as date')->where('att_employee_id',$employee_record['employee_id'])->where(['att_for_year'=>$year])->get()->toArray();
                         $employee_attendance  =  array_column($employee_attendance,'date');
-                        $employee_record['employee_offday1'] = 
-                        $employee_record['employee_offday1'] = (!empty($employee_record['employee_offday1'])) ? explode(",",$employee_record['employee_offday1']):[];
+                        $employee_record['employee_offdays'] = 
+                        $employee_record['employee_offdays'] = (!empty($employee_record['employee_offdays'])) ? explode(",",$employee_record['employee_offdays']):[];
 
                         foreach($month_dates as $date){
                             $date = date("Y-m-d", strtotime($date));
@@ -948,7 +948,7 @@ class HomeController extends Controller
                                 if(!in_array($date,$employee_attendance)){
                                 
                                     $nameOfDay = date("l", strtotime(date($date)));
-                                    if(in_array($nameOfDay,$employee_record['employee_offday1'])){
+                                    if(in_array($nameOfDay,$employee_record['employee_offdays'])){
             
                                         $offDays++;
                                     }else{

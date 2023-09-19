@@ -432,7 +432,7 @@ trait AttendanceEmployee {
     }
 
 	protected function get_monthly_attendance($leave_name,$lastDate,$year,$month,$employement_status,$where_clause_two){
-		$all_attendances = DB::select("SELECT employee_id,employee_code,employee_name,employee_offday1,
+		$all_attendances = DB::select("SELECT employee_id,employee_code,employee_name,employee_offdays,
 		employee_location,employee_isactive,
 		SUM(att_check_overall_status = 'Present') AS total_present,
 		SUM(att_check_overall_status = 'Early out' OR att_check_overall_status = 'Late Coming') AS total_late_early,
@@ -447,12 +447,12 @@ trait AttendanceEmployee {
 				+ SUM(att_check_overall_status = 'Half day'))+ (SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) FROM tbl_attendance
 				WHERE att_for_year =  $year 
 				AND att_for_month = $month
-				AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)),REPLACE(employee_offday1, ' ', '')))
+				AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)),REPLACE(employee_offdays, ' ', '')))
 				- (SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) 
 				FROM tbl_attendance
 				WHERE att_for_year =  $year 
 				AND att_for_month = $month 
-				AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)), REPLACE(employee_offday1, ' ', '')) 
+				AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)), REPLACE(employee_offdays, ' ', '')) 
 				AND (att_check_overall_status IN ('Present','Half day','Early out','Late Coming',$leave_name)
 				OR att_check_overall_status LIKE '%Holiday%')
 				AND employee_id = tbl_attendance.att_employee_id))  
@@ -461,11 +461,11 @@ trait AttendanceEmployee {
 			(SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) FROM tbl_attendance
 			WHERE att_for_year =  $year
 				AND att_for_month = $month
-			AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)),REPLACE(employee_offday1, ' ', '')))-
+			AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)),REPLACE(employee_offdays, ' ', '')))-
 			(SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) FROM tbl_attendance
 			WHERE  att_for_year =  $year
 				AND att_for_month = $month
-			AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)), REPLACE(employee_offday1, ' ', ''))
+			AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)), REPLACE(employee_offdays, ' ', ''))
 			AND (att_check_overall_status IN ('Present','Half day','Early out','Late Coming',$leave_name)
 			OR att_check_overall_status LIKE '%Holiday%')
 			AND employee_id = tbl_attendance.att_employee_id)

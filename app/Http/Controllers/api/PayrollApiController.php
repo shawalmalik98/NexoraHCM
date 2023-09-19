@@ -261,7 +261,7 @@ class PayrollApiController extends Controller
         })
         ->whereRaw($where_clause)
         ->where('employee_earning_type',1) //monthly earning time
-        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offday1','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
+        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
 
         return $fetch_employee;
     }
@@ -290,7 +290,7 @@ class PayrollApiController extends Controller
 
         $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
 
-        $attendances['employee_offday1'] = (!empty($attendances['employee_offday1'])) ? explode(",",$attendances['employee_offday1']):[];
+        $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[];
 
 
         $join_date = strtotime($attendances['employee_doj']);
@@ -378,7 +378,7 @@ class PayrollApiController extends Controller
 
                 if($absent ){
 
-                    if(in_array($nameOfDay,$attendances['employee_offday1']) ){
+                    if(in_array($nameOfDay,$attendances['employee_offdays']) ){
                         $date_with_status[$date] = "Off Day";
 
                     }else{
@@ -425,14 +425,14 @@ class PayrollApiController extends Controller
         $off_days = [];
         $weekends = [];
         $applied_club_rule_dates = [];
-        $attendances['employee_offday1'] = (!empty($attendances['employee_offday1'])) ? explode(",",$attendances['employee_offday1']):[];
+        $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[];
 
         foreach($all_dates_of_periods as $all_dates_of_period){
 
             $date_filter = $all_dates_of_period;
             $nameOfDay = date('l' , strtotime($date_filter));
 
-            if(in_array($nameOfDay,$attendances['employee_offday1']) ){
+            if(in_array($nameOfDay,$attendances['employee_offdays']) ){
 
                 array_push($weekends,$all_dates_of_period);
                 

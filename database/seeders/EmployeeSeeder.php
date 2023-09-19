@@ -23,7 +23,7 @@ class EmployeeSeeder extends Seeder
                 'employee_code' => "001",
                 'employee_name' => "Administrator Account",
                 'employee_contactno' => "0648-8439872",
-                'employee_email' => "saaahmed@ismailindustries.com",
+                'employee_personal_email' => "saaahmed@ismailindustries.com",
                 'employee_work_email' => "saaahmed@ismailindustries.com",
                 'employee_cnic' => "44444-4444444-1",
                 'employee_gender' => "Male",
@@ -34,17 +34,17 @@ class EmployeeSeeder extends Seeder
                 'employee_company' => 1,
                 'employee_group' => 1,
                 'employee_jobtitle' => "Administrator",
-                'employee_offday1' => "Sunday",
+                'employee_offdays' => "Sunday",
                 'employee_shift_flexibilty' => "1",
                 'employee_password' => Crypt::encryptString('123'),
-                'employee_ra' => "1",
-                'employee_ra2' => NULL,
-                'employee_can_ra' => 1,
+                'employee_senior_manager' => "1",
+                'employee_junior_manager' => NULL,
+                'employee_is_manager' => 1,
                 'employee_isactive' => 1,
                 'employee_deactivate_date' => NULL,
                 'employee_jobtype' => "Office",
                 'employee_earning_type' => 1,
-                'employee_location' => 1,
+                // 'employee_location' => 1,
             ]);
         }
 
@@ -96,6 +96,15 @@ class EmployeeSeeder extends Seeder
                    
                 }
             }
+        }
+
+        $get_employee_location = DB::select('SELECT * FROM tbl_employees_location');
+        if(empty($get_employee_location)){
+            DB::table('tbl_employees_location')->insert([
+                'emp_loc_employee_id' => 1,
+                'emp_loc_loc_id' => 1,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
         }
        
         $get_employee_permissions = DB::select('SELECT * FROM tbl_employee_permission');

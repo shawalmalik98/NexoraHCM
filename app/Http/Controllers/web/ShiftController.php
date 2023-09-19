@@ -484,11 +484,11 @@ class ShiftController extends Controller
                 $add_request_log->shift_log_create_at = date('Y-m-d H:i:s');
                 $add_request_log->save();
                     
-                if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                    $to_mngr1  = $login_user[0]['employee_ra'];
+                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                    $to_mngr1  = $login_user[0]['employee_senior_manager'];
                 }
-                if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                    $to_mngr2 = $login_user[0]['employee_ra2'];
+                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
                 }
 
                 $this->send_notification('Shift Time Request ', '' . $login_user[0]['employee_name']. ' applied for a shift time changing request. Please click here to view. ','shift-time-request?request-id='.$add_shift_request->shift_request_id,NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');

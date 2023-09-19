@@ -326,7 +326,7 @@ table.dataTable
 													$late_count = 0;
 													$leave_count = 0;
 												@endphp
-                                                @php $all_attendance['employee_offday1'] = (!empty($all_attendance['employee_offday1'])) ? explode(",",$all_attendance['employee_offday1']):[]; @endphp
+                                                @php $all_attendance['employee_offdays'] = (!empty($all_attendance['employee_offdays'])) ? explode(",",$all_attendance['employee_offdays']):[]; @endphp
 												@for ($month_count = 1; $month_count <= $month_days; ++$month_count)
 													@php
 														
@@ -460,7 +460,7 @@ table.dataTable
 														
 														@if($absent )
 										
-                                                            @if(in_array($name_of_day,$all_attendance['employee_offday1']))
+                                                            @if(in_array($name_of_day,$all_attendance['employee_offdays']))
 																<i class="fa-solid fa-sun text-warning {{$update_attendance}}"
 																data-bs-toggle="tooltip"
 																data-bs-placement="top" data-bs-title="Off Day"

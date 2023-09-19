@@ -252,7 +252,7 @@
                                         @if (!empty($attendance))
                                         
                                             @foreach ($attendance as $attendances)
-                                                @php $attendances['employee_offday1'] = (!empty($attendances['employee_offday1'])) ? explode(",",$attendances['employee_offday1']):[]; @endphp
+                                                @php $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[]; @endphp
                                                 @php $absent = true;@endphp
 
                                                 <tr>
@@ -289,7 +289,7 @@
                                                         @endphp
                                                         
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offday1']) )
+                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
                                                             00:00:00
                                                             @elseif($date_filter< $today)
                                                                 00:00:00
@@ -330,7 +330,7 @@
                                                         @endphp
                                                         
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offday1']) )
+                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
                                                                 00:00:00
 
                                                             @elseif($date_filter< $today)
@@ -373,7 +373,7 @@
                                                         @endphp
                                                         
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offday1']) )
+                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
                                                                 00:00:00
                                                             @elseif($date_filter< $today)
                                                                 00:00:00
@@ -428,7 +428,7 @@
                                                         @endphp
                                                 
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offday1']) )
+                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
                                                                 @php $offdays++; @endphp
                                                                 <p class="text-warning">
                                                                 <i class="fa-solid fa-sun text-warning marked-attendance"

@@ -292,7 +292,7 @@
                             </div>
                         </div>
                     @endif
-                    @if($login_user[0]['employee_can_ra'] == 1 && !empty($my_team_mates))
+                    @if($login_user[0]['employee_is_manager'] == 1 && !empty($my_team_mates))
                         <div class="row g-5 g-xl-10 mb-5">
 
                             <div class="col-xl-4 mb-xl-10 ">

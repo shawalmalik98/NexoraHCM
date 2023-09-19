@@ -137,7 +137,7 @@
                 <div class="card-body py-3">
                     <div class="row" id="myDiv">
                         
-                        @php $employee[0]['employee_offday1'] = (!empty($employee[0]['employee_offday1'])) ? explode(",",$employee[0]['employee_offday1']):[]; @endphp
+                        @php $employee[0]['employee_offdays'] = (!empty($employee[0]['employee_offdays'])) ? explode(",",$employee[0]['employee_offdays']):[]; @endphp
 
                         @for ($month_count = 1; $month_count <= $month_days; $month_count++)
                             @php
@@ -213,7 +213,7 @@
                                 
                                     @if($absent )
 
-                                        @if(in_array($name_of_day,$employee[0]['employee_offday1']) )
+                                        @if(in_array($name_of_day,$employee[0]['employee_offdays']) )
                                             
                                             <p class="text-warning" data-attendance_id="NA"
                                             data-intime="00:00:00"

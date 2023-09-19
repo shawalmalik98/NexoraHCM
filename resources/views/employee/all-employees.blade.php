@@ -42,7 +42,7 @@
                     </a>
                 </div>
 
-                <div class="m-0">
+                {{-- <div class="m-0">
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#employee_information">
                         <span class="svg-icon svg-icon-2">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -52,7 +52,7 @@
                         </span>										
                         Download Employees Records
                     </a>
-                </div>
+                </div> --}}
 
                 @if(!empty($no_of_employees && (!empty($employee_active))))
                     @if($no_of_employees[0]['no_of_employees'] == "unlimited" || $no_of_employees[0]['no_of_employees'] > $employee_active )
@@ -185,7 +185,7 @@
                                                 <td class="ps-4">{{ $employee['employee_code'] }}</td>
                                                 <td>{{ $employee['employee_name'] }}</td>
                                             
-                                                <td>{{ ($employee['employee_email']) ?? 'N/A' }}</td>
+                                                <td>{{ ($employee['employee_personal_email']) ?? 'N/A' }}</td>
                                                 <td>
                                                     @if($employee['employee_department'] != '')
                                                         <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee['department_name'] }}</p>
@@ -196,7 +196,7 @@
                                                     
                                                 </td>
                                                 <td>
-                                                    @if($employee['employee_can_ra'] != '' && $employee['employee_can_ra'] == 1)
+                                                    @if($employee['employee_is_manager'] != '' && $employee['employee_is_manager'] == 1)
                                                         <span class="badge badge-light-success font-weight-bold">Yes, Given</span>
                                                     @else
                                                         <span class="badge badge-light-danger font-weight-bold">Not, Given</span>

@@ -71,7 +71,7 @@ class LeaveRequestApiController extends Controller
 
             }
             
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_can_ra'] == 1){
+            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -383,11 +383,11 @@ class LeaveRequestApiController extends Controller
                             if($process == 1){
                 
 
-                                if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                                    $to_mngr1 = $login_user[0]['employee_ra'];
+                                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                    $to_mngr1 = $login_user[0]['employee_senior_manager'];
                                 }
-                                if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                                    $to_mngr2 = $login_user[0]['employee_ra2'];
+                                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
                                 }
                 
                                 if(!empty($request->post('from_date')) && !empty($request->post('to_date'))){
@@ -576,11 +576,11 @@ class LeaveRequestApiController extends Controller
                                     $process = $leave_update_request->save();
         
                                     if( $process == 1){
-                                        if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                                            $to_mngr1 = $login_user[0]['employee_ra'];
+                                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                            $to_mngr1 = $login_user[0]['employee_senior_manager'];
                                         }
-                                        if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                                            $to_mngr2 = $login_user[0]['employee_ra2'];
+                                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
                                         }
                         
                                         $this->send_notification_api('Update Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $request->post('leave_date').' Please click here to view.','employees-leaves?employee_id='.$login_user[0]['employee_id'].'&date='.$request->post('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);

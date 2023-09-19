@@ -136,7 +136,7 @@
                 </thead>
 
                 <tbody>
-                    @php $employee[0]['employee_offday1'] = (!empty($employee[0]['employee_offday1'])) ? explode(",",$employee[0]['employee_offday1']):[]; @endphp
+                    @php $employee[0]['employee_offdays'] = (!empty($employee[0]['employee_offdays'])) ? explode(",",$employee[0]['employee_offdays']):[]; @endphp
                     @for ($month_count = $month_count; $month_count <= $month_days; $month_count++)
                     @php $absent = true; @endphp
                     <tr>
@@ -443,7 +443,7 @@
                             @endphp
                             
                             @if($absent )
-                                @if(in_array($name_of_day,$employee[0]['employee_offday1']) )
+                                @if(in_array($name_of_day,$employee[0]['employee_offdays']) )
                                     Off Day
 
                                 @elseif($date_filter< $today)

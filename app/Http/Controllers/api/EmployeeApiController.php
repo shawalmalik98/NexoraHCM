@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File;  
-use App\Models\{Employees, EmployeeDocument,OfficeLocation};
+use App\Models\{Employees, EmployeeDocument, OfficeLocation, EmployeeLocation};
 use App\Traits\{LoginEmployee, LogGenerateTrait, ApiResponseTrait, NotificationTrait};
 use App\Helpers\ActivityTracker;
 
@@ -205,9 +205,14 @@ class EmployeeApiController extends Controller
             
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
-            $employee_office_location = OfficeLocation::join('tbl_employees','tbl_office_locations.location_id','tbl_employees.employee_location')->where('employee_isactive',1)->where('employee_id',$login_user[0]['employee_id'])->get(['location_latitude','location_longitude'])->toArray();
+            $employee_office_location = EmployeeLocation::join('tbl_office_locations','tbl_employees_location.emp_loc_loc_id','tbl_office_locations.location_id')
+            ->join('tbl_employees','tbl_employees_location.emp_loc_employee_id','tbl_employees.employee_id')
+            ->where('employee_isactive',1)
+            ->where('employee_id',$login_user[0]['employee_id'])
+            ->get(['location_title','location_latitude','location_longitude'])
+            ->toArray();
 
-            return $this->api_response_json(TRUE,"Employee Office Location",$employee_office_location,200);
+            return $this->api_response_json(TRUE,"Employee Office Location(s)",$employee_office_location,200);
         }
         catch(\Exception $e){
 

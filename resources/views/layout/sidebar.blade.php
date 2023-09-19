@@ -480,7 +480,7 @@
                                     </div>
                                 @endif
                                
-                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 &&  $login_user[0]['employee_can_ra'] == 1))
+                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 &&  $login_user[0]['employee_is_manager'] == 1))
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'rpl-leaves') active @endif" href="{{url('rpl-leaves')}}">
                                             <span class="menu-icon">

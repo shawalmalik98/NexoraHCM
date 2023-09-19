@@ -402,16 +402,16 @@
                                     </div>
 
                                     <div class="d-flex flex-column">
-                                        @if (!empty($login_user[0]['employee_name']) || !empty($login_user[0]['employee_email']))
+                                        @if (!empty($login_user[0]['employee_name']) || !empty($login_user[0]['employee_personal_email']))
                                             <div class="fw-bold d-flex align-items-center fs-5">
                                                 <span class="fw-semibold fs-5">{{ $login_user[0]['employee_name'] }}</span>
                                             </div>
                                             <span class="fw-semibold text-muted fs-7">
-                                                @if (strlen($login_user[0]['employee_email']) < 27)
-                                                    {{ $login_user[0]['employee_email'] }}
+                                                @if (strlen($login_user[0]['employee_personal_email']) < 27)
+                                                    {{ $login_user[0]['employee_personal_email'] }}
                                                 @else
                                                     @php
-                                                        $email = explode('@', $login_user[0]['employee_email']);
+                                                        $email = explode('@', $login_user[0]['employee_personal_email']);
                                                     @endphp
                                                     {{ $email[0] }}<br>{{ '@' . $email['1'] }}
                                                 @endif

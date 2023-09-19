@@ -239,7 +239,7 @@ class DepartmentController extends Controller
 
         try{
 
-            $get_all_dept_employees = Employees::where('employee_department', $request->input('department'))->where('employee_can_ra', 1)->where('employee_isactive', '1')->get(['employee_id','employee_code','employee_name'])->toArray();
+            $get_all_dept_employees = Employees::where('employee_department', $request->input('department'))->where('employee_is_manager', 1)->where('employee_isactive', '1')->get(['employee_id','employee_code','employee_name'])->toArray();
             
             return response()->json([
                 'data' => $get_all_dept_employees

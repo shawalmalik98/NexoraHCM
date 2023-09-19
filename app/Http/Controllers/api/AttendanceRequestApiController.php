@@ -39,7 +39,7 @@ class AttendanceRequestApiController extends Controller
             })
             ->where('request_employee_id' , $login_user[0]['employee_id'])
             ->orderBy('attendance_request_id','desc')
-            ->get(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_ra','employee_ra2','attendance_checkin_time','attendance_checkout_time','attendance_request_time_id'])->toArray();
+            ->get(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time','attendance_request_time_id'])->toArray();
 
             $attendance_request_id = array_column($my_requests,'attendance_request_id');
 
@@ -296,11 +296,11 @@ class AttendanceRequestApiController extends Controller
                  
                     if($process == 1){
 
-                        if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                            $to_mngr1  = $login_user[0]['employee_ra'];
+                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                            $to_mngr1  = $login_user[0]['employee_senior_manager'];
                         }
-                        if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                            $to_mngr2 = $login_user[0]['employee_ra2'];
+                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
                         }
         
                          if(!empty($request->post('from_date')) && !empty($request->post('to_date'))){
@@ -383,7 +383,7 @@ class AttendanceRequestApiController extends Controller
                     }
                 }
 
-                $all_requests = AttendanceRequest::select(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_ra','employee_ra2','attendance_checkin_time','attendance_checkout_time'])
+                $all_requests = AttendanceRequest::select(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time'])
                 ->join('tbl_employees','tbl_attendance_requests.request_employee_id','=','tbl_employees.employee_id')
                 ->leftJoin('tbl_attendance_request_time','tbl_attendance_requests.attendance_request_id','=','tbl_attendance_request_time.attendance_req_id')
                 ->where(function($query){
@@ -401,7 +401,7 @@ class AttendanceRequestApiController extends Controller
     
             }
            
-            elseif($login_user[0]['employee_department'] !== 2 && $login_user[0]['employee_department'] !== 1 &&  $login_user[0]['employee_can_ra'] == 1){
+            elseif($login_user[0]['employee_department'] !== 2 && $login_user[0]['employee_department'] !== 1 &&  $login_user[0]['employee_is_manager'] == 1){
                
 
                 $login_employee_id = $login_user[0]['employee_id'];
@@ -437,7 +437,7 @@ class AttendanceRequestApiController extends Controller
                 ->whereRaw($where_query)
                 ->orderBy('attendance_request_id','DESC')
                 ->limit($limit_query)
-                ->get(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_ra','employee_ra2','attendance_checkin_time','attendance_checkout_time'])->toArray();
+                ->get(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time'])->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id',1)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
             }
@@ -600,11 +600,11 @@ class AttendanceRequestApiController extends Controller
                         }
                         if( $process == 1){
                             
-                            if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                                $to_mngr1  = $login_user[0]['employee_ra'];
+                            if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                $to_mngr1  = $login_user[0]['employee_senior_manager'];
                             }
-                            if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                                $to_mngr2 = $login_user[0]['employee_ra2'];
+                            if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                $to_mngr2 = $login_user[0]['employee_junior_manager'];
                             }
             
                             $this->send_notification_api('Update Attendance Request', '' . $login_user[0]['employee_name']. ' update for an attendance request as ('. $request->post('edit_attendance_type') .') for the date of '. $request->post('edit_attendance_date').' Please click here to view.','attendance-requests?employee_id='.$login_user[0]['employee_id'].'&date='.$request->post('edit_attendance_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);

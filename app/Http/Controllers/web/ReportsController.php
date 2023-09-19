@@ -76,7 +76,7 @@ class ReportsController extends Controller
         $get_designation_wise_employees = json_decode(json_encode($get_employees_designation_wise), TRUE);
         $get_employee_count_hiring_wise = DB::select('SELECT COUNT(e.employee_id) as total_empoloyees , YEAR(e.employee_doj) as year FROM tbl_employees e GROUP BY YEAR(e.employee_doj)');
         $get_employee_count_hiring_wise = json_decode(json_encode($get_employee_count_hiring_wise), TRUE);
-        $get_managers_wise_employee = DB::select("SELECT COUNT(employee_id) total_employees , CASE WHEN employee_can_ra = '1' THEN 'Managers' ELSE 'Non Managers' END manager_type FROM tbl_employees WHERE employee_isactive = 1 GROUP BY employee_can_ra");
+        $get_managers_wise_employee = DB::select("SELECT COUNT(employee_id) total_employees , CASE WHEN employee_is_manager = '1' THEN 'Managers' ELSE 'Non Managers' END manager_type FROM tbl_employees WHERE employee_isactive = 1 GROUP BY employee_is_manager");
         $get_managers_wise_employee = json_decode(json_encode($get_managers_wise_employee), TRUE);
         $send_data = compact('title','login_user','get_total_employees','get_active_employees','get_deactive_employees','get_onboard_employees','get_resignated_employees','get_estimated_salary','head_count_office_wise','head_count_by_employeement_wise','age_range_employees','tenure_wise_employees','get_designation_wise_employees','get_employee_count_hiring_wise','get_managers_wise_employee');
         return view('reports.employee-report', $send_data);

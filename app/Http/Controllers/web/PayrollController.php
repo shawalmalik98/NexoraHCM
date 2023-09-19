@@ -1048,7 +1048,7 @@ class PayrollController extends Controller
         })
         ->whereRaw($where_clause)
         ->where('employee_earning_type',1) //monthly earning time
-        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offday1','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
+        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
 
         return $fetch_employee;
     }
@@ -1080,7 +1080,7 @@ class PayrollController extends Controller
         $date_with_status = [];
         $absent_dates = [];
 
-        $attendances['employee_offday1'] = (!empty($attendances['employee_offday1'])) ? explode(",",$attendances['employee_offday1']):[];
+        $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[];
 
 
         $join_date = strtotime($attendances['employee_doj']);
@@ -1172,7 +1172,7 @@ class PayrollController extends Controller
 
                 if($absent ){
 
-                    if(in_array($nameOfDay,$attendances['employee_offday1']) ){
+                    if(in_array($nameOfDay,$attendances['employee_offdays']) ){
                         $date_with_status[$date] = "Off Day";
 
                     }else{
@@ -1369,14 +1369,14 @@ class PayrollController extends Controller
         $off_days = [];
         $weekends = [];
         $applied_club_rule_dates = [];
-        $attendances['employee_offday1'] = (!empty($attendances['employee_offday1'])) ? explode(",",$attendances['employee_offday1']):[];
+        $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[];
 
         foreach($all_dates_of_periods as $all_dates_of_period){
 
             $date_filter = $all_dates_of_period;
             $nameOfDay = date('l' , strtotime($date_filter));
 
-            if(in_array($nameOfDay,$attendances['employee_offday1']) ){
+            if(in_array($nameOfDay,$attendances['employee_offdays']) ){
 
                 array_push($weekends,$all_dates_of_period);
                 
@@ -2589,15 +2589,15 @@ class PayrollController extends Controller
         ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
         ->where('employee_earning_type',2) //monthly earning time
         ->whereIn('employee_id',$employee_array) 
-        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offday1','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
+        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
 
         if($request->input('days_assign') == 'single' && !empty($request->input('employee_id'))){
             foreach($get_employees as $employee){
 
                 $off_days_array = [];
                 
-                if(!empty($employee) && !empty($employee['employee_offday1'])){
-                    $off_days_array = explode(",",$employee['employee_offday1']);
+                if(!empty($employee) && !empty($employee['employee_offdays'])){
+                    $off_days_array = explode(",",$employee['employee_offdays']);
                 }
                 
                 foreach($dates_array as $date){
@@ -2658,8 +2658,8 @@ class PayrollController extends Controller
 
             $off_days_array = [];
             
-            if(!empty($employee) && !empty($employee['employee_offday1'])){
-                $off_days_array = explode(",",$employee['employee_offday1']);
+            if(!empty($employee) && !empty($employee['employee_offdays'])){
+                $off_days_array = explode(",",$employee['employee_offdays']);
             }
             $entry = 0;
             $total_wages = 0;
@@ -2850,7 +2850,7 @@ class PayrollController extends Controller
             ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('employee_earning_type',2) //monthly earning time
             ->whereIn('employee_id',$employee_array) 
-            ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offday1','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
+            ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
     
             $any_record = 0;
     
@@ -2858,8 +2858,8 @@ class PayrollController extends Controller
     
                 $off_days_array = [];
                 
-                if(!empty($employee) && !empty($employee['employee_offday1'])){
-                    $off_days_array = explode(",",$employee['employee_offday1']);
+                if(!empty($employee) && !empty($employee['employee_offdays'])){
+                    $off_days_array = explode(",",$employee['employee_offdays']);
                 }
                 $total_wages = 0 ;
                 foreach($dates_array as $date){
@@ -2935,7 +2935,7 @@ class PayrollController extends Controller
         ->join('tbl_personal_informations','tbl_personal_informations.employeeid','tbl_employees.employee_id')
         ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
         ->where('employee_earning_type',2) //monthly earning time 
-        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offday1','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
+        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
 
 
         if( $date != "multiple"){
@@ -3786,7 +3786,7 @@ class PayrollController extends Controller
             ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('employee_earning_type',2) //monthly earning time
             ->whereIn('employee_id',$employee_array) 
-            ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offday1','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
+            ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
     
             if(!empty($get_employees)){
     
@@ -3794,8 +3794,8 @@ class PayrollController extends Controller
         
                     $off_days_array = [];
                     
-                    if(!empty($employee) && !empty($employee['employee_offday1'])){
-                        $off_days_array = explode(",",$employee['employee_offday1']);
+                    if(!empty($employee) && !empty($employee['employee_offdays'])){
+                        $off_days_array = explode(",",$employee['employee_offdays']);
                     }
                     $total_wages = 0 ;
                     foreach($dates_array as $date){

@@ -66,7 +66,7 @@
                             <div class="col-md-6 ">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2"> Employee Personal Email</label>
                                 <input type="email" class="form-control emailInput" name="employee_personal_email"
-                                placeholder="Enter Employee Email" required="required"  value="{{$employee_detail[0]['employee_email'] }}" onkeyup="checkValidationExists(this,'email',2)"/>
+                                placeholder="Enter Employee Email" required="required"  value="{{$employee_detail[0]['employee_personal_email'] }}" onkeyup="checkValidationExists(this,'email',2)"/>
                                 <p class="status"></p>
                             </div>
                             
@@ -144,7 +144,7 @@
                                         @foreach ($all_companies as $company)
                                             <option value="{{ $company['company_id'] }}" @if($employee_detail[0]['employee_company'] == $company['company_id']) selected @endif>{{ $company['company_name'] }}</option>
                                         @endforeach
-                                    @endif                               
+                                    @endif
                                 </select>
                             </div>
                             
@@ -185,16 +185,16 @@
                                 required name="employee_jobtitle"  value="{{ $employee_detail[0]['employee_jobtitle'] }}"/>
                             </div>
 
-                            <div class="{{ $employee_detail[0]['employee_can_ra'] == 1 ? "col-md-3" : "col-md-6" }} fv-row" id="manager_right_div">
+                            <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-3" : "col-md-6" }} fv-row" id="manager_right_div">
                                 <label class="required fs-6 fw-semibold mb-2">Mark as Manager / Team Lead</label>
                                 <select class="form-select" data-control="select2" data-hide-search="false" name="make_ra" required="required" id="manager_rights">
                                     <option value="">Select Manager Rights</option>
-                                    <option value="1" @if($employee_detail[0]['employee_can_ra'] == 1) selected @endif>Yes, Employee's can report</option>
-                                    <option value="0" @if($employee_detail[0]['employee_can_ra'] == 0) selected @endif>No, Employee's can't report</option>
+                                    <option value="1" @if($employee_detail[0]['employee_is_manager'] == 1) selected @endif>Yes, Employee's can report</option>
+                                    <option value="0" @if($employee_detail[0]['employee_is_manager'] == 0) selected @endif>No, Employee's can't report</option>
                                 </select>
                             </div>
 
-                            <div class="{{ $employee_detail[0]['employee_can_ra'] == 1 ? "col-md-3" : "col-md-3" }} fv-row {{ $employee_detail[0]['employee_can_ra'] == 1 ? "" : "d-none" }}" id="attendance_access_div">
+                            <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-3" : "col-md-3" }} fv-row {{ $employee_detail[0]['employee_is_manager'] == 1 ? "" : "d-none" }}" id="attendance_access_div">
                                 <label class="required fs-6 fw-semibold mb-2">Attendance Rights</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" name="attendance_access" id="attendance_access">
                                     <option value="">Select Attendance Rights</option>
@@ -208,11 +208,11 @@
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Mark As Manager / Team Lead  </label>
                                 <div class="d-flex align-items-center">
                                     <label class="form-check form-check-custom me-10 form-check-solid">
-                                        <input class="form-check-input h-20px w-20px" type="radio" id="customRadio5" name="make_ra" required="" value="1"  @if ($employee_detail[0]['employee_can_ra'] == 1) checked @endif />
+                                        <input class="form-check-input h-20px w-20px" type="radio" id="customRadio5" name="make_ra" required="" value="1"  @if ($employee_detail[0]['employee_is_manager'] == 1) checked @endif />
                                         <span class="form-check-label fw-semibold">Yes, Employee's can report to him</span>
                                     </label>
                                     <label class="form-check form-check-custom form-check-solid">
-                                        <input class="form-check-input h-20px w-20px" type="radio" id="customRadio6" name="make_ra" value="0"  @if ($employee_detail[0]['employee_can_ra'] == 0) checked @endif />
+                                        <input class="form-check-input h-20px w-20px" type="radio" id="customRadio6" name="make_ra" value="0"  @if ($employee_detail[0]['employee_is_manager'] == 0) checked @endif />
                                         <span class="form-check-label fw-semibold">No, Employee's can't report to him</span>
                                     </label>
                                 </div>
@@ -233,7 +233,7 @@
                                     @foreach ($reporting_managers as $reporting_manager)
                                         @if(!in_array($reporting_manager['employee_id'],$total_team_member))
                                             <option value="{{ $reporting_manager['employee_id'] }}"
-                                                @if ($employee_detail[0]['employee_ra'] == $reporting_manager['employee_id']) selected @endif>
+                                                @if ($employee_detail[0]['employee_senior_manager'] == $reporting_manager['employee_id']) selected @endif>
                                                 {{ $reporting_manager['employee_name'] }}
                                                 ({{ $reporting_manager['department_name'] }} -
                                                 {{ $reporting_manager['designation_name'] }})
@@ -253,7 +253,7 @@
                                         @foreach ($reporting_managers as $reporting_manager)
                                             @if(!in_array($reporting_manager['employee_id'],$total_team_member))
                                                 <option value="{{ $reporting_manager['employee_id'] }}"
-                                                    @if($employee_detail[0]['employee_ra2'] == $reporting_manager['employee_id']) selected @endif>
+                                                    @if($employee_detail[0]['employee_junior_manager'] == $reporting_manager['employee_id']) selected @endif>
                                                     {{ $reporting_manager['employee_name'] }}
                                                     ({{ $reporting_manager['department_name'] }} -
                                                     {{ $reporting_manager['designation_name'] }})
@@ -393,13 +393,11 @@
                             
                             <div class="col-md-6 ">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Location</label>
-                                <select class="form-select" data-control="select2" data-hide-search="true" name="employee_location">
+                                <select class="form-select" data-control="select2" data-hide-search="true" name="employee_location[]" multiple>
                                     <option value="">Select Employee Location</option>
                                     @if (!empty($all_locations))
                                         @foreach ($all_locations as $location)
-                                            <option value="{{ $location['location_id'] }}"
-                                                @if ($employee_detail[0]['employee_location'] == $location['location_id']) selected @endif>
-                                                {{ $location['location_title'] }}</option>
+                                            <option value="{{ $location['location_id'] }}" @if(in_array($location['location_id'] , array_column($employee_locations , 'emp_loc_loc_id'))) selected @endif>{{ $location['location_title'] }}</option>
                                         @endforeach
                                     @endif                                                          
                                 </select>
@@ -528,16 +526,16 @@
                             
                             <div class="col-md-6 ">
                                 <label class="fs-6 fw-semibold mb-2 required">Employee Off Day(s)</label>
-                                @php $employee_detail[0]['employee_offday1'] = (!empty($employee_detail[0]['employee_offday1'])) ? explode(",",$employee_detail[0]['employee_offday1']):[] @endphp
+                                @php $employee_detail[0]['employee_offdays'] = (!empty($employee_detail[0]['employee_offdays'])) ? explode(",",$employee_detail[0]['employee_offdays']):[] @endphp
                                 <select class="form-select " data-control="select2" data-close-on-select="false" data-hide-search="false" data-placeholder="Select Off Day(s)" name="employee_offday[]" multiple>
                                     <option value="">Select Off Day(s)</option>
-                                    <option value="Sunday" @if(in_array("Sunday",$employee_detail[0]['employee_offday1'] )) selected @endif >Sunday</option>
-                                    <option value="Saturday" @if(in_array("Saturday",$employee_detail[0]['employee_offday1'] )) selected @endif >Saturday</option>
-                                    <option value="Friday" @if(in_array("Friday",$employee_detail[0]['employee_offday1'] )) selected @endif >Friday</option>
-                                    <option value="Thursday" @if(in_array("Thursday",$employee_detail[0]['employee_offday1'] )) selected @endif >Thursday</option>
-                                    <option value="Wednesday" @if(in_array("Wednesday",$employee_detail[0]['employee_offday1'] )) selected @endif >Wednesday</option>
-                                    <option value="Tuesday" @if(in_array("Tuesday",$employee_detail[0]['employee_offday1'] )) selected @endif >Tuesday</option>
-                                    <option value="Monday" @if(in_array("Monday",$employee_detail[0]['employee_offday1'] )) selected @endif >Monday</option>
+                                    <option value="Sunday" @if(in_array("Sunday",$employee_detail[0]['employee_offdays'] )) selected @endif >Sunday</option>
+                                    <option value="Saturday" @if(in_array("Saturday",$employee_detail[0]['employee_offdays'] )) selected @endif >Saturday</option>
+                                    <option value="Friday" @if(in_array("Friday",$employee_detail[0]['employee_offdays'] )) selected @endif >Friday</option>
+                                    <option value="Thursday" @if(in_array("Thursday",$employee_detail[0]['employee_offdays'] )) selected @endif >Thursday</option>
+                                    <option value="Wednesday" @if(in_array("Wednesday",$employee_detail[0]['employee_offdays'] )) selected @endif >Wednesday</option>
+                                    <option value="Tuesday" @if(in_array("Tuesday",$employee_detail[0]['employee_offdays'] )) selected @endif >Tuesday</option>
+                                    <option value="Monday" @if(in_array("Monday",$employee_detail[0]['employee_offdays'] )) selected @endif >Monday</option>
                                 </select>
                                 
                             </div>

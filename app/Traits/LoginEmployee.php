@@ -11,7 +11,7 @@ trait LoginEmployee {
 
 		$get_login_user = Employees::join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id')
 		->where('employee_id', session('user_session'))
-		->get(['employee_id','employee_code','employee_email','employee_name','employee_doj','employee_designation','employee_department','employee_offday1','employee_shift_flexibilty','employee_ra','employee_ra2','employee_can_ra','employee_isactive','employee_password','dob','employee_jobtype','profile_avatar','employee_earning_type'])
+		->get(['employee_id','employee_code','employee_personal_email','employee_name','employee_doj','employee_designation','employee_department','employee_offdays','employee_shift_flexibilty','employee_senior_manager','employee_junior_manager','employee_is_manager','employee_isactive','employee_password','dob','employee_jobtype','profile_avatar','employee_earning_type'])
 		->toArray();
 
 		return $get_login_user;
@@ -24,7 +24,7 @@ trait LoginEmployee {
 		$get_login_user = Employees::join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id')
 		->join('tbl_employee_token','tbl_employee_token.employee_token_emp_id','tbl_employees.employee_id')
         ->where('employee_token',$token)
-		->get(['employee_id','employee_code','employee_email','employee_name','employee_doj','employee_designation','employee_department','employee_offday1','employee_shift_flexibilty','employee_ra','employee_ra2','employee_can_ra','employee_isactive','dob','employee_jobtype','profile_avatar'])
+		->get(['employee_id','employee_code','employee_personal_email','employee_name','employee_doj','employee_designation','employee_department','employee_offdays','employee_shift_flexibilty','employee_senior_manager','employee_junior_manager','employee_is_manager','employee_isactive','dob','employee_jobtype','profile_avatar'])
 		->toArray();
 
 		return $get_login_user;
@@ -60,13 +60,13 @@ trait LoginEmployee {
             $status == 0;
         }
 
-        $all_company_employees = Employees::where('employee_isactive', $status)->get(['employee_name','employee_id','employee_ra','employee_ra2','employee_can_ra'])->toArray();
+        $all_company_employees = Employees::where('employee_isactive', $status)->get(['employee_name','employee_id','employee_senior_manager','employee_junior_manager','employee_is_manager'])->toArray();
         $my_all_employees = array();
         if(!empty($all_company_employees)){
             foreach ($all_company_employees as $employee) {
-                if ($employee['employee_ra'] == $manager_id || $employee['employee_ra2'] == $manager_id) {
+                if ($employee['employee_senior_manager'] == $manager_id || $employee['employee_junior_manager'] == $manager_id) {
                     $my_all_employees[] = $employee;
-                    if($employee['employee_can_ra'] == 1 && $employee['employee_ra'] != $employee['employee_id']){
+                    if($employee['employee_is_manager'] == 1 && $employee['employee_senior_manager'] != $employee['employee_id']){
                         $my_all_employees = array_merge($my_all_employees, $this->get_employee_hierarchy($employee['employee_id'], $status));
                     }
                 }

@@ -111,11 +111,11 @@ class AdvanceSalaryApiController extends Controller
                     $process = $salary_request->save();
                     if($process == 1){
 
-                        if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                            $to_mngr1  = $login_user[0]['employee_ra'];
+                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                            $to_mngr1  = $login_user[0]['employee_senior_manager'];
                         }
-                        if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                            $to_mngr2 = $login_user[0]['employee_ra2'];
+                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
                         }
         
                         $this->send_notification_api('New Advance Salary Request',''.$login_user[0]['employee_name'].' submitted a Salary request. Please click here to view.','all-salary-request?request-id='. $salary_request->advance_salary_request_id .'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);
@@ -208,11 +208,11 @@ class AdvanceSalaryApiController extends Controller
                             $process =  $advancesalary_update_request->save();
     
                             if( $process == 1){
-                                if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                                    $to_mngr1  = $login_user[0]['employee_ra'];
+                                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                    $to_mngr1  = $login_user[0]['employee_senior_manager'];
                                 }
-                                if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                                    $to_mngr2 = $login_user[0]['employee_ra2'];
+                                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
                                 }
                 
                                 $this->send_notification_api('Update Advance Salary Request',''.$login_user[0]['employee_name'].' updated an advance salary request. Please click here to view.','all-salary-request?request-id='.$advancesalary_update_request->advance_salary_request_id .'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes', $login_user[0]['employee_id']);

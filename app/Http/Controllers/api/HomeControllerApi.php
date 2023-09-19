@@ -152,7 +152,7 @@ class HomeControllerApi extends Controller
             }
 
             // concat("'.asset('portal_assets/profile_pictures').'/" ,profile_avatar) as
-            $senior_manager = Employees::selectRaw('employee_name, profile_avatar')->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_ra'])->get()->toArray();
+            $senior_manager = Employees::selectRaw('employee_name, profile_avatar')->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_senior_manager'])->get()->toArray();
           
             if(!empty($senior_manager[0]['profile_avatar'])){
                 if(file_exists('portal_assets/profile_pictures/'.$senior_manager[0]['profile_avatar'])){
@@ -164,7 +164,7 @@ class HomeControllerApi extends Controller
                 $senior_manager[0]['profile_avatar'] = null;
             }
            
-            $junior_manager = Employees::selectRaw('employee_name,profile_avatar')->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_ra2'])->get()->toArray();
+            $junior_manager = Employees::selectRaw('employee_name,profile_avatar')->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_junior_manager'])->get()->toArray();
             
             if(!empty($junior_manager[0]['profile_avatar'])){
                 if(file_exists('portal_assets/profile_pictures/'.$junior_manager[0]['profile_avatar'])){
@@ -190,7 +190,7 @@ class HomeControllerApi extends Controller
             
             $my_team_mates = ['status' => FALSE, 'data' => []];
 
-            if($login_user[0]['employee_can_ra'] == 1){
+            if($login_user[0]['employee_is_manager'] == 1){
 
                 $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],1);
 

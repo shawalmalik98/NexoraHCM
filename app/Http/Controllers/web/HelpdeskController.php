@@ -92,7 +92,7 @@ class HelpdeskController extends Controller
                     ->from('tbl_help_desk_for_departments')
                     ->join('tbl_employees','tbl_employees.employee_department','=','tbl_help_desk_for_departments.hdf_department_id')
                     ->where('hdf_department_id','=',$login_user[0]['employee_department'])
-                    ->where('employee_can_ra',1)
+                    ->where('employee_is_manager',1)
                     ->where('employee_id',session('user_session'));
 
                 })->orWhereIN('tbl_help_desk.help_desk_id',function ($query) use($login_user){
@@ -153,7 +153,7 @@ class HelpdeskController extends Controller
 
                     $department_id = $request->department_id;
                     
-                    $employees_can_ra_depart = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('employee_isactive',1)->where('employee_can_ra',1)->whereIn('department_id',$department_id)->where('employee_id','!=',session('user_session'))->get(['employee_id'])->toArray();
+                    $employees_can_ra_depart = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('employee_isactive',1)->where('employee_is_manager',1)->whereIn('department_id',$department_id)->where('employee_id','!=',session('user_session'))->get(['employee_id'])->toArray();
                     
                     if(empty($employees_can_ra_depart)){
 
@@ -290,7 +290,7 @@ class HelpdeskController extends Controller
 
             $get_employees = Employees::where('employee_isactive', 1)->whereIn('employee_department',$employee_department_ids)->get(['employee_id','employee_name','employee_code'])->toArray();
        
-            $employee_department_can_ra = Employees::where('employee_isactive', 1)->whereIn('employee_department',$help_desk_departments)->where('employee_can_ra', 1)->get(['employee_id'])->toArray();
+            $employee_department_can_ra = Employees::where('employee_isactive', 1)->whereIn('employee_department',$help_desk_departments)->where('employee_is_manager', 1)->get(['employee_id'])->toArray();
            
             $employee_access = array_column($get_employees,'employee_id');
 
@@ -343,7 +343,7 @@ class HelpdeskController extends Controller
 
             $get_employees = Employees::where('employee_isactive', 1)->whereIn('employee_department',$employee_department_ids)->get(['employee_id','employee_name','employee_code'])->toArray();
        
-            $employee_department_can_ra = Employees::where('employee_isactive', 1)->whereIn('employee_department',$help_desk_departments)->where('employee_can_ra', 1)->where('employee_id','!=',session('user_session'))->get(['employee_id'])->toArray();
+            $employee_department_can_ra = Employees::where('employee_isactive', 1)->whereIn('employee_department',$help_desk_departments)->where('employee_is_manager', 1)->where('employee_id','!=',session('user_session'))->get(['employee_id'])->toArray();
            
             $send_data = compact('title','login_user','help_desk','help_desk_status','help_desk_departments','help_desk_employees','employee_department_can_ra','departments','help_desk_employees_selected','employee_department_ids','get_employees');
             
@@ -402,11 +402,11 @@ class HelpdeskController extends Controller
 
                 if($request_data->input('ticket_status') == 1 || $request_data->input('ticket_status') == 3  || $request_data->input('ticket_status') == 5 ){
                     
-                    $employees = Employees::join('tbl_help_desk_for_departments','tbl_help_desk_for_departments.hdf_department_id','=','tbl_employees.employee_department')->where('employee_isactive',1)->where('employee_can_ra',1)->where('hd_id',$request_data->hd_id)->where('employee_id','!=',session('user_session'))->get('employee_id')->toArray();
+                    $employees = Employees::join('tbl_help_desk_for_departments','tbl_help_desk_for_departments.hdf_department_id','=','tbl_employees.employee_department')->where('employee_isactive',1)->where('employee_is_manager',1)->where('hd_id',$request_data->hd_id)->where('employee_id','!=',session('user_session'))->get('employee_id')->toArray();
                 
                     if(empty($employees)){
                         
-                        $employees = Employees::join('tbl_help_desk_for_employees','tbl_help_desk_for_employees.hdf_employee_id','=','tbl_employees.employee_id')->where('employee_isactive',1)->where('employee_can_ra',1)->where('hd_id',$request_data->hd_id)->where('employee_id','!=',session('user_session'))->get('employee_id')->toArray();
+                        $employees = Employees::join('tbl_help_desk_for_employees','tbl_help_desk_for_employees.hdf_employee_id','=','tbl_employees.employee_id')->where('employee_isactive',1)->where('employee_is_manager',1)->where('hd_id',$request_data->hd_id)->where('employee_id','!=',session('user_session'))->get('employee_id')->toArray();
                        
                     }
     
@@ -589,7 +589,7 @@ class HelpdeskController extends Controller
                 
                 if(!empty($request->input('department_name'))){
 
-                    $employees_can_ra_depart = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('employee_isactive',1)->where('employee_can_ra',1)->whereIn('department_id',$department_id)->where('employee_id','!=',session('user_session'))->get(['employee_id'])->toArray();
+                    $employees_can_ra_depart = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('employee_isactive',1)->where('employee_is_manager',1)->whereIn('department_id',$department_id)->where('employee_id','!=',session('user_session'))->get(['employee_id'])->toArray();
                     
                     if(empty($employees_can_ra_depart)){
 

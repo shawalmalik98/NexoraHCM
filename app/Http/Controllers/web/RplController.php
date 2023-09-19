@@ -81,7 +81,7 @@ class RplController extends Controller
 
             }
           
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_can_ra'] == 1){
+            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -122,7 +122,7 @@ class RplController extends Controller
 
             $send_data = compact('title','login_user','employees_data','rpl_leaves','employee_locations','responsed_request','dates');
            
-            if($login_user[0]['employee_department'] == 1 ||$login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 && $login_user[0]['employee_can_ra'] == 1) ){
+            if($login_user[0]['employee_department'] == 1 ||$login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 && $login_user[0]['employee_is_manager'] == 1) ){
                 return view('leave.all-rpl-employees-request', $send_data);
             }else{
                 return view('errors.403');
@@ -251,11 +251,11 @@ class RplController extends Controller
 
                             if($process == 1){
                 
-                                if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                                    $to_mngr1 = $login_user[0]['employee_ra'];
+                                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                    $to_mngr1 = $login_user[0]['employee_senior_manager'];
                                 }
-                                if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                                    $to_mngr2 = $login_user[0]['employee_ra2'];
+                                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
                                 }
 
                                 $this->send_notification('New RPL Leave Request ', '' . $login_user[0]['employee_name']. ' applied for rpl leave request for the date of '. $leave_data->input('rpl_leave_required').' Please click here to view.','rpl-leaves?employee_id='.session('user_session').'&date='.$leave_data->input('rpl_leave_required').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
@@ -413,11 +413,11 @@ class RplController extends Controller
         
                                     if($process == 1){
                         
-                                        if(!empty($login_user[0]['employee_ra']) || $login_user[0]['employee_ra'] != ''){
-                                            $to_mngr1 = $login_user[0]['employee_ra'];
+                                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                            $to_mngr1 = $login_user[0]['employee_senior_manager'];
                                         }
-                                        if(!empty($login_user[0]['employee_ra2']) || $login_user[0]['employee_ra2'] != ''){
-                                            $to_mngr2 = $login_user[0]['employee_ra2'];
+                                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
                                         }
         
                                         $this->send_notification('Update RPL Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request for the date of '. $leave_data->input('rpl_leave_required').' Please click here to view.','rpl-leaves?employee_id='.session('user_session').'&date='.$leave_data->input('rpl_leave_required').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');

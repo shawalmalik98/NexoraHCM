@@ -176,7 +176,7 @@ class LoginApiController extends Controller
 
     protected function filter_array_key($filter_user){
         
-        unset($filter_user[0]['employee_password'] , $filter_user[0]['employee_bank_name'] , $filter_user[0]['employee_iban'] , $filter_user[0]['employee_account_number'] , $filter_user[0]['employee_shift_flexibilty'] , $filter_user[0]['employee_jobtitle'] , $filter_user[0]['employee_status']);
+        unset($filter_user[0]['employee_password'] , $filter_user[0]['employee_bank_name'] , $filter_user[0]['employee_iban'] , $filter_user[0]['employee_account_number'] , $filter_user[0]['employee_shift_flexibilty'] , $filter_user[0]['employee_jobtitle'] , $filter_user[0]['employee_status'] , $filter_user[0]['employee_location'] , $filter_user[0]['employee_earning_type'] , $filter_user[0]['employee_cnic'] , $filter_user[0]['employee_deactivation_type']);
 
         return $filter_user;
     }

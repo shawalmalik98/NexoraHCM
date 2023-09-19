@@ -14,7 +14,7 @@ class CustomController extends Controller
 
     // protected function fetch_all_employees_permission(){
 
-    //     $get_all_employees = Employees::get(['employee_id','employee_department','employee_can_ra'])->toArray();
+    //     $get_all_employees = Employees::get(['employee_id','employee_department','employee_is_manager'])->toArray();
 
     //     $permissionRecords = [
     //         '/attendance-locker',
@@ -39,7 +39,7 @@ class CustomController extends Controller
     //                     }
     //                 }
 
-    //             }elseif($employees['employee_department'] !== 2 && $employees['employee_department'] !== 1 && $employees['employee_can_ra'] == 1){
+    //             }elseif($employees['employee_department'] !== 2 && $employees['employee_department'] !== 1 && $employees['employee_is_manager'] == 1){
 
     //                 $mypermissions = [];
 
