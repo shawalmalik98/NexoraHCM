@@ -18,7 +18,7 @@
             <div class="card mb-5 mb-xl-8">
                 <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label fw-bold fs-3 mb-1">Personal Details</span>
+                        <span class="card-label fw-bold fs-3 mb-1">Employee Details</span>
                         <span class="text-muted mt-1 fw-semibold fs-7"></span>
                     </h3>
                 </div> 
@@ -30,7 +30,7 @@
                             
                             <div class="col-md-6 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Name</span>
+                                <span class="required">Name</span>
                                 </label>
                                 
                                 <input type="text" class="form-control " placeholder="Enter Employee Name" name="employee_name" required />
@@ -39,12 +39,12 @@
                             
                             <div class="col-md-6 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Contact No</span>
+                                <span class="required">Contact No</span>
                                 </label>
                                 
                                 <input type="text" class="form-control contactInput" name="employee_contact_no"
                                 placeholder="Enter Contact No" required="required"  onkeyup="checkValidationExists(this,'contact no',1)"/>
-                                <p class="status"></p>
+                                <span class="status"></span>
                             </div>
                             
                         </div>
@@ -53,40 +53,61 @@
                             
                             <div class="col-md-6 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Personal Email<span>
+                                <span class="required">Personal Email<span>
                                 </label>
                                 
                                 <input type="email" class="form-control emailInput" name="employee_personal_email"
-                                placeholder="Enter Employee Email"  required="required" onkeyup="checkValidationExists(this,'email',1)"/>
-                                <p class="status"></p>
+                                placeholder="Enter Personal Email"  required="required" onkeyup="checkValidationExists(this,'email',1)"/>
+                                <span class="status"></span>
                             </div>
 
                             <div class="col-md-6 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Official Email<span>
+                                <span class="required">Official Email<span>
                                 </label>
                                 
                                 <input type="email" class="form-control emailInput" name="employee_official_email"
-                                placeholder="Enter Employee Official Email" required="required" onkeyup="checkValidationExists(this,'email',1)"/>
-                                <p class="status"></p>
+                                placeholder="Enter Official Email" required="required" onkeyup="checkValidationExists(this,'email',1)"/>
+                                <span class="status"></span>
                             </div>
  
                         </div>
 
                         <div class="row g-9 mb-8">
 
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee NIC No</span>
+                                <span class="required">NIC No</span>
                                 </label>
                                 
                                 <input type="text" class="form-control cnicInput" name="employee_cnic" placeholder="Enter NIC No" required="required"  onkeyup="checkValidationExists(this,'cnic no',1)" />
-                                <p class="status"></p>
+                                <span class="status"></span>
                             </div>
 
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Gender<span>
+                                <span class="">NIC Issue Date</span>
+                                </label>
+                                
+                                <input type="date" class="form-control" name="employee_cnic_issue_date"/>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">NIC Expiry Date</span>
+                                </label>
+                                
+                                <input type="date" class="form-control" name="employee_cnic_expiry_date"/>
+                            </div>
+
+                            
+                            
+                        </div>
+                        <div class="row  g-9 mb-8">
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Gender<span>
                                 </label>
                                 
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_gender"
@@ -96,16 +117,92 @@
                                     <option value="Female">Female</option>    
                                 </select>
                             </div>
-                            
-                        </div>
-                        <div class="row  g-9 mb-8">
 
-                            <div class="col-md-6">
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Nationality<span>
+                                </label>
+                                
+                                <input type="text" class="form-control" name="employee_nationality" placeholder="Enter Nationality"/>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Marital Status<span>
+                                </label>
+                                
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_marital_status">
+                                    <option value="">Select Marital Status</option>
+                                    <option value="Single">Single</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Widowed">Widowed</option>
+                                    <option value="Separated">Separated</option>
+                                    <option value="Divorced">Divorced</option>    
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Religion<span>
+                                </label>
+                                
+                                <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Religion" name="employee_religion">
+                                    <option value="">Select Religion</option>
+                                    <option value="Atheism/Agnosticism">Atheism/Agnosticism</option>
+                                        <option value="Bahai" >Bahai</option>
+                                        <option value="Buddhism" >Buddhism</option>
+                                        <option value="Christianity">Christianity</option>
+                                        <option value="Confucianism">Confucianism</option>
+                                        <option value="Druze" >Druze</option>
+                                        <option value="Gnosticism">Gnosticism</option>
+                                        <option value="Hinduism">Hinduism</option>
+                                        <option value="Islam" >Islam</option>
+                                        <option value="Jainism">Jainism</option>
+                                        <option value="Rastafarianism">Rastafarianism</option>
+                                        <option value="Shinto" >Shinto</option>
+                                        <option value="Sikhism">Sikhism</option>
+                                        <option value="Zoroastrianism">Zoroastrianism</option>
+                                        <option value="Traditional African Religions">Traditional AfricanReligions</option>
+                                        <option value="African Diaspora Religions">African DiasporaReligions</option>
+                                        <option value="Indigenous American Religions">Indigenous AmericanReligions</option>   
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Place of Birth<span>
+                                </label>
+                                
+                                <input type="text" class="form-control" name="employee_place_of_birth" placeholder="Enter Place of Birth"/>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Date of Birth<span>
+                                </label>
+                                
+                                <input type="date" class="form-control" name="employee_dob" required="required"/>
+                            </div>
+
+                            {{-- <div class="col-md-3 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Marriage Date<span>
+                                </label>
+                                <input type="date" class="form-control" name="employee_contact_no" placeholder="Enter Contact No"/>
+                            </div>
+                            <div class="col-md-3 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                 <span class="d-none"><span>
+                                 </label>
+                                <input type="date" class="form-control" name="employee_contact_no" placeholder="Enter Contact No"/>
+                            </div> --}}
+
+                            {{-- <div class="col-md-6">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span>Residential Address</span></label>
                                 
                                 <textarea class="form-control max_length_validator_address"  placeholder="Residential Address" maxlength="500" row="4" name="permanentaddress" ></textarea>
-                            </div>
+                            </div> --}}
 
                         </div>
 
@@ -118,7 +215,7 @@
                         <div class="row g-9 mb-8">
 
                             <div class="col-md-4 fv-row">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Company</label>
+                                <label class="required fs-6 fw-semibold mb-2">Company</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Company" name="employee_company" required="required">
                                     <option value="">Select Employee Company</option>
                                     @if(!empty($all_companies))
@@ -130,7 +227,7 @@
                             </div>
                             
                             <div class="col-md-4 fv-row">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Department</label>
+                                <label class="required fs-6 fw-semibold mb-2">Department</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Department" name="employee_department"
                                 required="required" id="department_select">
                                     <option value="">Select Employee Department</option>
@@ -146,25 +243,25 @@
                             
                             
                             <div class="col-md-4 fv-row">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Designation</label>
+                                <label class="required fs-6 fw-semibold mb-2">Designation</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Designation" name="employee_designation"
                                 id="designss" required>
                                                                                            
                                 </select>
                             </div>
 
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Grade</span>                                                        
+                                <span class="required">Grade</span>                                                        
                                 </label>
                                 
                                 <input type="number" class="form-control " placeholder="Enter Employee Grade"
                                 required name="employee_grade" min="1" max="25" />
                             </div>
 
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Group</span>                                                        
+                                <span class="required">Group</span>                                                        
                                 </label>
                                 
                                 <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Employee Group" name="employee_group" required="required">
@@ -178,19 +275,19 @@
                                     @endif                                        
                                 </select>
                             </div>
-                            
-                        </div>
-                    
-                        <div class="row g-9 mb-8">
-                            
-                            <div class="col-md-6 fv-row">
+
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Job Title</span>                                                        
+                                <span class="required">Job Title</span>                                                        
                                 </label>
                                 
                                 <input type="text" class="form-control " placeholder="Enter Job Title"
                                 required name="employee_jobtitle"/>
                             </div>
+                            
+                        </div>
+                    
+                        <div class="row g-9 mb-8">
 
                             <div class="col-md-6 fv-row" id="manager_right_div">
                                 <label class="required fs-6 fw-semibold mb-2">Mark as Manager / Team Lead</label>
@@ -235,7 +332,7 @@
                         <div class="row g-9 mb-8">
                             
                             <div class="col-md-6 fv-row">
-                                <label class="required fs-6 fw-semibold mb-2">Employee's Senior Manager</label>
+                                <label class="required fs-6 fw-semibold mb-2">Senior Manager</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Senior Manager" name="employee_reporting_person"
                                  required="required">
                                 <option value="">Select Senior Manager </option>
@@ -252,18 +349,16 @@
                             </div>
                             
                             <div class="col-md-6 fv-row">
-                                <label class="fs-6 fw-semibold mb-2">Employee's Junior Manager</label>
+                                <label class="fs-6 fw-semibold mb-2">Junior Manager</label>
                                 <select class="form-select" data-control="select2" data-hide-search="false"  name="employee_reporting_person2">
                                     <option value="">No Junior Manager </option>
                                     @if(!empty($reporting_managers))
                                         @foreach ($reporting_managers as $reporting_manager)
                                             <option value="{{ $reporting_manager['employee_id'] }}">
-                                                {{ $reporting_manager['employee_name'] }}
-                                                ({{ $reporting_manager['department_name'] }} -
-                                                {{ $reporting_manager['designation_name'] }})
+                                                {{ $reporting_manager['employee_name'] }} ({{ $reporting_manager['department_name'] }} - {{ $reporting_manager['designation_name'] }})
                                             </option>
                                         @endforeach
-                                    @endif                                                   
+                                    @endif
                                 </select>
                             </div>
                             
@@ -287,7 +382,6 @@
                                         @foreach ($employment_status as $employment_stats)
                                             <option value="{{$employment_stats['employement_status_id']}}">{{$employment_stats['employement_status_name']}}</option>
                                         @endforeach
-                                    
                                     @endif  
                                 </select>
                             </div>
@@ -297,8 +391,7 @@
                             
                             <div class="col-md-6 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Salary</span></label>
-                                
+                                <span class="required">Salary</span></label>
                                 <input type="number" class="form-control " name="employee_salary"
                                 placeholder="Enter Employee Salary" required="required" min="0" max="99999999"/>
                             </div>
@@ -327,7 +420,7 @@
                             
                             
                             <div class="col-md-6 fv-row">
-                                <label class="fs-6 fw-semibold mb-2 required">Employee Activity Status</label>
+                                <label class="fs-6 fw-semibold mb-2 required">Activity Status</label>
                                 <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select a Activity Status" name="employee_isactive"
                                 required="required" id="activity_status">
                                     <option value="">Select Activity Status</option>
@@ -341,13 +434,13 @@
                            
                             <div class="col-md-6 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Employee Password</span> <span class="text-danger">(Max 10 characters)</span></label>
+                                <span class="required">Password</span> <span class="text-danger">(Max 10 characters)</span></label>
                                 <input type="text" class="form-control showpassword" name="employee_password"
                                 placeholder="Enter Employee Password" required="required" value="{{$randomPassword}}"/>
                             </div>
 
                             <div class="col-md-6 fv-row ">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Location</label>
+                                <label class="required fs-6 fw-semibold mb-2">Location</label>
                                 <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select location" name="employee_location[]" required multiple>
                                     <option value="">Select Bank Name</option>
                                     @if(!empty($all_locations))
@@ -362,7 +455,7 @@
                         <div class="row  g-9 mb-8" id="append_row_date">
                             <div class="col-md-6" >
                                 <div class="form-group" >
-                                    <label class="fs-6 fw-semibold mb-2">Employee Deactivation Date <span class="text-danger">*</span></label>
+                                    <label class="fs-6 fw-semibold mb-2">Deactivation Date <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control" name="employee_deactivate_date" id="deactivate_date">
                                 </div>
                             </div>
@@ -382,7 +475,7 @@
 
                         <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">
-                                <span class="card-label fw-bold fs-3 mb-1">Emergency Contact Information</span>
+                                <span class="card-label fw-bold fs-3 mb-1">Emergency Contact Information (Optional)</span>
                             </h3>
                         </div> 
 
@@ -415,7 +508,6 @@
                                     <option value="Brother">Brother</option>
                                     <option value="Sister">Sister</option>
                                     <option value="Guardian">Guardian</option>
-                                                                                         
                                 </select>
                             </div>
 
@@ -432,7 +524,7 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Shift Start Time</span></label>
                                 
-                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_start_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_start_timings" oninput="calculateShiftDuration()" value="09:00:00"/>
+                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_start_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_start_timings" oninput="calculateShiftDuration()" value="09:00"/>
                             </div>
                             
                             
@@ -440,7 +532,7 @@
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Shift End Time</span></label>
                                 
-                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_end_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_end_timings" oninput="calculateShiftDuration()" value="06:00:00"/>
+                                <input type="time" class="form-control " placeholder="--:-- --" name="shift_end_timings" pattern="^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$" required="required" id="shift_end_timings" oninput="calculateShiftDuration()" value="18:00"/>
                             </div>
 
                             <div class="col-md-4 fv-row">
@@ -455,6 +547,11 @@
                         <div class="row g-9 mb-8">
                             <div class="col-md-6 fv-row">
                                 <div class="d-flex align-items-center">
+                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1"
+                                        name="employee_geofencing_enability" value="1" checked/>
+                                        <span class="form-check-label fw-semibold">Geo Fencing Enability</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has to bee in radius of mapped location, otherwise he can mark attendance from anywhere."></i>
+                                    </label>
                                     <label class="form-check form-check-custom me-10 form-check-solid">
                                         <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1"
                                         name="employee_shift_flexibilty" value="1" />
@@ -476,7 +573,7 @@
                         <div class="row g-9 mb-8">
                             
                             <div class="col-md-6 fv-row">
-                                <label class="fs-6 fw-semibold mb-2">Employee Off Day(s)</label>
+                                <label class="fs-6 fw-semibold mb-2">Off Day(s)</label>
                                 <select class="form-select " data-control="select2" data-close-on-select="false" data-hide-search="false" data-placeholder="Select Off Day(s)" name="employee_offday[]" multiple>
                                     <option value="">Select Off Day(s)</option>
                                     <option value="Sunday" selected>Sunday</option>
@@ -509,7 +606,7 @@
                     
                         <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">
-                                <span class="card-label fw-bold fs-3 mb-1">Bank Account Detail (Optional)</span>
+                                <span class="card-label fw-bold fs-3 mb-1">Bank Account Details (Optional)</span>
                                 <span class="text-muted mt-1 fw-semibold fs-7"></span>
                             </h3>
                         </div> 

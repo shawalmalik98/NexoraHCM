@@ -112,7 +112,7 @@
                 <tr>
                     <td width="20%">Birth place</td>
                     <td width="30%">{{ $information_data[0]['birthplace'] }}</td>
-                    <td width="20%">Citizenship</td>
+                    <td width="20%">Nationality</td>
                     <td width="30%">{{ $information_data[0]['citizenship'] }}</td>
                 </tr>
                 <tr>

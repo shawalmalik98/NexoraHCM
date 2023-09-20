@@ -22,7 +22,7 @@
             <div class="card mb-5 mb-xl-8">
                 <div class="card-header border-0 pt-5">
                         <h3 class="card-title align-items-start flex-column">
-                        <span class="card-label fw-bold fs-3 mb-1">Personal Detail</span>
+                        <span class="card-label fw-bold fs-3 mb-1">Employee Details</span>
                         <span class="text-muted mt-1 fw-semibold fs-7"></span>
                     </h3>
                     <div class="card-toolbar">
@@ -47,16 +47,14 @@
                             <div class="col-md-6 ">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2"> Employee Name</label>
                                 <input type="text" class="form-control " placeholder="Enter Employee Name" name="employee_name" required  value="{{ $employee_detail[0]['employee_name'] }}">
-                                <input type="hidden" class="form-control" name="employee_id"
-                                    placeholder="Enter Employee Name" required="required"
-                                    value="{{ $employee_detail[0]['employee_id'] }}">
+                                <input type="hidden" class="form-control" name="employee_id" placeholder="Enter Employee Name" required="required" value="{{ $employee_detail[0]['employee_id'] }}">
                             </div>
                             
                             
                             <div class="col-md-6 ">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Contact No </label>
                                 <input type="text" class="form-control contactInput " name="employee_contact_no" placeholder="Enter Contact No" required="required" value="{{$employee_detail[0]['employee_contactno'] }}" onkeyup="checkValidationExists(this,'contact no',2,'{{$employee_id}}')"/>
-                                <p class="status"></p>
+                                <span class="status"></span>
                             </div>
                             
                         </div>
@@ -67,25 +65,45 @@
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2"> Employee Personal Email</label>
                                 <input type="email" class="form-control emailInput" name="employee_personal_email"
                                 placeholder="Enter Employee Email" required="required"  value="{{$employee_detail[0]['employee_personal_email'] }}" onkeyup="checkValidationExists(this,'email',2)"/>
-                                <p class="status"></p>
+                                <span class="status"></span>
                             </div>
                             
                             <div class="col-md-6 fv-row">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Official Email</label>
                                 <input type="email" class="form-control emailInput" name="employee_official_email"
                                 placeholder="Enter Employee Official Email" required="required" value="{{$employee_detail[0]['employee_work_email'] }}" onkeyup="checkValidationExists(this,'email',2)"/>
-                                <p class="status"></p>
+                                <span class="status"></span>
                             </div>
  
                         </div>
 
                         <div class="row g-9 mb-8">
                             
-                            <div class="col-md-6 ">
+                            <div class="col-md-4">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee NIC No </label>
                                 <input type="text" class="form-control cnicInput" name="employee_cnic" placeholder="Enter NIC No" required="required" value="{{$employee_detail[0]['employee_cnic'] }}"  onkeyup="checkValidationExists(this,'cnic no')"/>
                             </div>
-                            <div class="col-md-6 ">
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">NIC Issue Date</span>
+                                </label>
+                                
+                                <input type="date" class="form-control" name="employee_cnic_issue_date" value="{{ $employee_detail[0]['cnic_issue_date'] }}"/>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">NIC Expiry Date</span>
+                                </label>
+                                
+                                <input type="date" class="form-control" name="employee_cnic_expiry_date" value="{{ $employee_detail[0]['cnic_expiry_date'] }}"/>
+                            </div>
+                            
+                        </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-4 ">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Gender</label>
                                 <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_gender" required="required">
                                     <option value="">Select Employee Gender</option>
@@ -93,9 +111,75 @@
                                     <option value="Female" @if (!empty($employee_detail[0]['employee_gender']) && $employee_detail[0]['employee_gender'] == 'Female') selected @endif>Female</option>    
                                 </select>
                             </div>
-                            
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Nationality<span>
+                                </label>
+                                
+                                <input type="text" class="form-control" name="employee_nationality" placeholder="Enter Nationality" value="{{ $employee_bank[0]['citizenship'] }}"/>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Marital Status<span>
+                                </label>
+                                
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_marital_status">
+                                    <option value="">Select Marital Status</option>
+                                    <option value="Single" @if($employee_bank[0]['maritalstatus'] == 'Single') selected @endif>Single</option>
+                                    <option value="Married" @if($employee_bank[0]['maritalstatus'] == 'Married') selected @endif>Married</option>
+                                    <option value="Widowed" @if($employee_bank[0]['maritalstatus'] == 'Widowed') selected @endif>Widowed</option>
+                                    <option value="Separated" @if($employee_bank[0]['maritalstatus'] == 'Separated') selected @endif>Separated</option>
+                                    <option value="Divorced" @if($employee_bank[0]['maritalstatus'] == 'Divorced') selected @endif>Divorced</option>    
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Religion<span>
+                                </label>
+                                
+                                <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Religion" name="employee_religion">
+                                    <option value="">Select Religion</option>
+                                    <option value="Atheism/Agnosticism">Atheism/Agnosticism</option>
+                                        <option value="Bahai" @if($employee_bank[0]['religion'] == 'Bahai') selected @endif >Bahai</option>
+                                        <option value="Buddhism" @if($employee_bank[0]['religion'] == 'Buddhism') selected @endif >Buddhism</option>
+                                        <option value="Christianity" @if($employee_bank[0]['religion'] == 'Christianity') selected @endif>Christianity</option>
+                                        <option value="Confucianism" @if($employee_bank[0]['religion'] == 'Confucianism') selected @endif>Confucianism</option>
+                                        <option value="Druze" @if($employee_bank[0]['religion'] == 'Druze') selected @endif >Druze</option>
+                                        <option value="Gnosticism" @if($employee_bank[0]['religion'] == 'Gnosticism') selected @endif>Gnosticism</option>
+                                        <option value="Hinduism" @if($employee_bank[0]['religion'] == 'Hinduism') selected @endif>Hinduism</option>
+                                        <option value="Islam" @if($employee_bank[0]['religion'] == 'Islam') selected @endif >Islam</option>
+                                        <option value="Jainism" @if($employee_bank[0]['religion'] == 'Jainism') selected @endif>Jainism</option>
+                                        <option value="Rastafarianism" @if($employee_bank[0]['religion'] == 'Rastafarianism') selected @endif>Rastafarianism</option>
+                                        <option value="Shinto" @if($employee_bank[0]['religion'] == 'Shinto') selected @endif >Shinto</option>
+                                        <option value="Sikhism" @if($employee_bank[0]['religion'] == 'Sikhism') selected @endif>Sikhism</option>
+                                        <option value="Zoroastrianism" @if($employee_bank[0]['religion'] == 'Zoroastrianism') selected @endif>Zoroastrianism</option>
+                                        <option value="Traditional African Religions" @if($employee_bank[0]['religion'] == 'Traditional African Religions') selected @endif>Traditional AfricanReligions</option>
+                                        <option value="African Diaspora Religions" @if($employee_bank[0]['religion'] == 'African Diaspora Religions') selected @endif>African DiasporaReligions</option>
+                                        <option value="Indigenous American Religions" @if($employee_bank[0]['religion'] == 'Indigenous American Religions') selected @endif>Indigenous AmericanReligions</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="">Place of Birth<span>
+                                </label>
+                                
+                                <input type="text" class="form-control" name="employee_place_of_birth" placeholder="Enter Place of Birth" value="{{ $employee_bank[0]['pob'] }}"/>
+                            </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Date of Birth<span>
+                                </label>
+                                
+                                <input type="date" class="form-control" name="employee_dob" required="required" value="{{ $employee_bank[0]['dob'] }}"/>
+                            </div>
                         </div>
-                        <div class="row g-9 mb-8">
+
+                        {{-- <div class="row g-9 mb-8">
 
                             <div class="col-md-6">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">Residential Address</label> 
@@ -103,39 +187,14 @@
 
                             </div>
 
-                        </div>
+                        </div> --}}
 
                         <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">
                                 <span class="card-label fw-bold fs-3 mb-1">Company Details</span>
                             </h3>
-                        </div>  
+                        </div> 
                         
-                        <div class="row g-9 mb-8">
-
-                            <div class="col-md-6 fv-row">
-                                <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Grade </label>
-                                
-                                <input type="number" class="form-control " placeholder="Enter Employee Grade"
-                                required name="employee_grade" min="1" max="25" value="{{ $employee_detail[0]['employee_grade'] }}" />
-                            </div>
-
-                            <div class="col-md-6 ">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Group</label>
-                                <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Employee Group" name="employee_group" required="required">
-                                    <option value="">Select Employee Group</option>
-                                    @if(!empty($employee_groups))
-                                        @foreach ($employee_groups as $employee_group)
-                                            <option value="{{ $employee_group['employee_group_id'] }}"
-                                                @if ($employee_detail[0]['employee_group'] == $employee_group['employee_group_id']) selected @endif>
-                                                {{ $employee_group['group_name'] }}</option>
-                                        @endforeach
-                                    @endif                                        
-                                </select>
-                            </div>
-                            
-                        </div>
-
                         <div class="row g-9 mb-8">
                             <div class="col-md-4 ">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Company</label>
@@ -175,16 +234,41 @@
                                 </select>
                             </div>
                         </div>
+                        
+                        <div class="row g-9 mb-8">
+
+                            <div class="col-md-4 fv-row">
+                                <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Grade </label>
+                                
+                                <input type="number" class="form-control " placeholder="Enter Employee Grade"
+                                required name="employee_grade" min="1" max="25" value="{{ $employee_detail[0]['employee_grade'] }}" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="required fs-6 fw-semibold mb-2">Employee Group</label>
+                                <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Employee Group" name="employee_group" required="required">
+                                    <option value="">Select Employee Group</option>
+                                    @if(!empty($employee_groups))
+                                        @foreach ($employee_groups as $employee_group)
+                                            <option value="{{ $employee_group['employee_group_id'] }}"
+                                                @if ($employee_detail[0]['employee_group'] == $employee_group['employee_group_id']) selected @endif>
+                                                {{ $employee_group['group_name'] }}</option>
+                                        @endforeach
+                                    @endif                                        
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Job Title</label>
+                                
+                                <input type="text" class="form-control" placeholder="Enter Job Title"
+                                required name="employee_jobtitle"  value="{{ $employee_detail[0]['employee_jobtitle'] }}"/>
+                            </div>
+                            
+                        </div>
 
                         <div class="row g-9 mb-8">
                             
-                            <div class="col-md-6 ">
-                                <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Job Title</label>
-                                
-                                <input type="text" class="form-control " placeholder="Enter Job Title"
-                                required name="employee_jobtitle"  value="{{ $employee_detail[0]['employee_jobtitle'] }}"/>
-                            </div>
-
                             <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-3" : "col-md-6" }} fv-row" id="manager_right_div">
                                 <label class="required fs-6 fw-semibold mb-2">Mark as Manager / Team Lead</label>
                                 <select class="form-select" data-control="select2" data-hide-search="false" name="make_ra" required="required" id="manager_rights">
@@ -426,7 +510,7 @@
                         </div>
                         <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">
-                                <span class="card-label fw-bold fs-3 mb-1">Emergency Contact Information</span>
+                                <span class="card-label fw-bold fs-3 mb-1">Emergency Contact Information (Optional)</span>
                             </h3>
                         </div>
 
@@ -476,18 +560,7 @@
                             </div>
                         </div> 
                       
-                        <div class="row g-9 mb-8">
-                            
-                            <div class="col-md-6 ">
-                                <div class="d-flex align-items-center">
-                                    <label class="form-check form-check-custom me-10 form-check-solid">
-                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1" name="employee_shift_flexibilty" value="1" @if ($employee_detail[0]['employee_shift_flexibilty'] == '1') checked="" @endif />
-                                        <span class="form-check-label fw-semibold">Flexible Shift Timings</span>&nbsp; <i class="far fa-question-circle" data-toggle="tooltip" data-placement="right" data-title="If employee has given facility of flexible shift timings, employee can check-in at any time and has to complete their shift total hours. For e.g 8 hours or 9 hours or it can be any."></i>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                        </div>
+                        
                         <div class="row g-9 mb-8">
                             <div class="col-md-4">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Shift Start Timing </label>
@@ -511,6 +584,23 @@
                                     <i class="fas fa-eye"  data-bs-toggle="tooltip" title="View Employee Shift Detail"></i>               
                                 </a>
                             </div>
+                        </div>
+                        <div class="row g-9 mb-8">
+                            
+                            <div class="col-md-6 ">
+                                <div class="d-flex align-items-center">
+                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1"
+                                        name="employee_geofencing_enability" value="1" @if ($employee_detail[0]['employee_geofencing_enability'] == true) checked="" @endif/>
+                                        <span class="form-check-label fw-semibold">Geo Fencing Enability</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has to bee in radius of mapped location, otherwise he can mark attendance from anywhere."></i>
+                                    </label>
+                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1" name="employee_shift_flexibilty" value="1" @if ($employee_detail[0]['employee_shift_flexibilty'] == '1') checked="" @endif />
+                                        <span class="form-check-label fw-semibold">Flexible Shift Timings</span>&nbsp; <i class="far fa-question-circle" data-toggle="tooltip" data-placement="right" data-title="If employee has given facility of flexible shift timings, employee can check-in at any time and has to complete their shift total hours. For e.g 8 hours or 9 hours or it can be any."></i>
+                                    </label>
+                                </div>
+                            </div>
+                            
                         </div>
                         <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">

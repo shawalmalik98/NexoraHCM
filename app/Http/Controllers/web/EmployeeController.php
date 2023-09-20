@@ -292,6 +292,8 @@ class EmployeeController extends Controller
                 $add_employee->employee_code = $employeeCode;
                 $add_employee->employee_doj = $employee_data->input('employee_doj');
                 $add_employee->employee_cnic = $employee_data->input('employee_cnic');
+                $add_employee->cnic_issue_date = $employee_data->input('employee_cnic_issue_date');
+                $add_employee->cnic_expiry_date = $employee_data->input('employee_cnic_expiry_date');
                 $add_employee->employee_personal_email = $employee_data->input('employee_personal_email');
                 $add_employee->employee_work_email = $employee_data->input('employee_official_email');
                 $add_employee->employee_contactno = $employee_data->input('employee_contact_no');
@@ -302,6 +304,7 @@ class EmployeeController extends Controller
                 $add_employee->employee_company = $employee_data->input('employee_company');
                 $add_employee->employee_jobtitle = $employee_data->input('employee_jobtitle');
                 $add_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
+                $add_employee->employee_geofencing_enability = ($employee_data->input('employee_geofencing_enability') == '1') ? true : false;
                 $add_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
                 $add_employee->employee_senior_manager = $employee_data->input('employee_reporting_person');
                 $add_employee->employee_junior_manager = $employee_data->input('employee_reporting_person2');
@@ -437,6 +440,11 @@ class EmployeeController extends Controller
                         $submitInformation->emergency_contact_no = $employee_data->input('emergency_contact_no');
                         $submitInformation->emergency_name = $employee_data->input('emergency_name');
                         $submitInformation->employee_relation = $employee_data->input('employee_relation');
+                        $submitInformation->citizenship = $employee_data->input('employee_nationality');
+                        $submitInformation->maritalstatus = $employee_data->input('employee_marital_status');
+                        $submitInformation->religion = $employee_data->input('employee_religion');
+                        $submitInformation->dob = $employee_data->input('employee_dob');
+                        $submitInformation->pob = $employee_data->input('employee_place_of_birth');
                         $submitInformation->save();
 
                         $itEmployees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('department_name','=','IT')->where('employee_isactive','=',1)->get('employee_id')->toArray();
@@ -911,7 +919,7 @@ class EmployeeController extends Controller
 
             $employee_detail = Employees::join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->where('employee_id', $employee_id)->get()->toArray();
 
-            $employee_bank =  Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')->where('employee_id', $employee_id)->get(['employee_id','employee_name','employee_code','information_id','bankname','bankcode','accountno','accounttitle','ibannumber','permanentaddress','currentaddress','emergency_contact_no','emergency_name','employee_relation'])->toArray();
+            $employee_bank =  Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')->where('employee_id', $employee_id)->get(['employee_id','employee_name','employee_code','information_id','bankname','bankcode','accountno','accounttitle','ibannumber','permanentaddress','currentaddress','emergency_contact_no','emergency_name','employee_relation','citizenship','maritalstatus','dob','pob','religion'])->toArray();
 
             $employee_salary = Employees::join('tbl_employee_salary', 'tbl_employees.employee_id', '=', 'tbl_employee_salary.salary_employee_id')->where('employee_id', $employee_id)->orderBy('salary_id','DESC')->get('salary_amount')->toArray();
 
@@ -1185,6 +1193,8 @@ class EmployeeController extends Controller
                     // $update_employee->employee_code = $employee_data->input('employee_code');
                     $update_employee->employee_name = $employee_data->input('employee_name');
                     $update_employee->employee_cnic = $employee_data->input('employee_cnic');
+                    $update_employee->cnic_issue_date = $employee_data->input('employee_cnic_issue_date');
+                    $update_employee->cnic_expiry_date = $employee_data->input('employee_cnic_expiry_date');
                     $update_employee->employee_personal_email = $employee_data->input('employee_personal_email');
                     $update_employee->employee_work_email = $employee_data->input('employee_official_email');
                     $update_employee->employee_contactno = $employee_data->input('employee_contact_no');
@@ -1195,6 +1205,7 @@ class EmployeeController extends Controller
                     $update_employee->employee_company = $employee_data->input('employee_company');
                     $update_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
                     $update_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
+                    $update_employee->employee_geofencing_enability = ($employee_data->input('employee_geofencing_enability') == '1') ? true : false;
                     $update_employee->employee_senior_manager = $employee_data->input('employee_reporting_person');
                     $update_employee->employee_junior_manager = $employee_data->input('employee_reporting_person2');
                     $update_employee->employee_is_manager = $employee_data->input('make_ra');
@@ -1362,6 +1373,11 @@ class EmployeeController extends Controller
                     $updateInformation->emergency_contact_no = $employee_data->input('emergency_contact_no');
                     $updateInformation->emergency_name = $employee_data->input('emergency_name');
                     $updateInformation->employee_relation = $employee_data->input('employee_relation');
+                    $updateInformation->citizenship = $employee_data->input('employee_nationality');
+                    $updateInformation->maritalstatus = $employee_data->input('employee_marital_status');
+                    $updateInformation->religion = $employee_data->input('employee_religion');
+                    $updateInformation->dob = $employee_data->input('employee_dob');
+                    $updateInformation->pob = $employee_data->input('employee_place_of_birth');
                     $process = $updateInformation->save();
 
                     Permission::where('employee_id',$employee_data->input('employee_id'))->delete();
@@ -4956,6 +4972,7 @@ class EmployeeController extends Controller
                                         $add_employee->employee_department = $departments[0]['department_id'];
                                         $add_employee->employee_jobtitle = $employee_job_title;
                                         $add_employee->employee_password = Crypt::encryptString($employee_password);
+                                        $add_employee->employee_geofencing_enability = false;
                                         $add_employee->employee_senior_manager =  '1';
                                         $add_employee->employee_is_manager = $employee_senior_manager;
                                         $add_employee->employee_offdays = $employee_Off_day;

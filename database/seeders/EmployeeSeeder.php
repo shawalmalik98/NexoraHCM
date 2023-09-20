@@ -36,6 +36,7 @@ class EmployeeSeeder extends Seeder
                 'employee_jobtitle' => "Administrator",
                 'employee_offdays' => "Sunday",
                 'employee_shift_flexibilty' => "1",
+                'employee_geofencing_enability' => false,
                 'employee_password' => Crypt::encryptString('123'),
                 'employee_senior_manager' => "1",
                 'employee_junior_manager' => NULL,

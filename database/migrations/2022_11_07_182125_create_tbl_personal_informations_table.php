@@ -19,9 +19,9 @@ return new class extends Migration
                 $table->integer('employeeid');
                 $table->string('fathername', 50)->nullable();
                 $table->string('dob', 10)->nullable();
+                $table->string('pob', 255)->nullable();
                 $table->string('gender', 10)->nullable();
                 $table->string('bloodgroup', 10)->nullable();
-                $table->string('cnic', 50)->nullable();
                 $table->string('dateofexpiry', 10)->nullable();
                 $table->string('birthplace', 50)->nullable();
                 $table->string('citizenship', 50)->nullable();

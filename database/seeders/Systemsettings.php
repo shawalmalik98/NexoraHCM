@@ -29,6 +29,7 @@ class Systemsettings extends Seeder
                 'check_out_flexibility_time' => 20,
                 'no_of_employees' => "unlimited",
                 'web_attendance' => 1,
+                'mobile_attendance' => 1,
                 'signature_on_payslip' =>'default-signature.PNG',
                 'system_currency'   => 'PKR'
             ]);

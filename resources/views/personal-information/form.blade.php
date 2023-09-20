@@ -257,7 +257,7 @@
                                 <th scope="row">Birth place</th>
                                 <td> <input type="text" class="form-control" name="birth_place"
                                     value="{{ $information_data[0]['birthplace'] }}"></td>
-                                <th scope="row">Citizenship</th>
+                                <th scope="row">Nationality</th>
                                 <td> <input type="text" class="form-control" name="citizenship"
                                     value="{{ $information_data[0]['citizenship'] }}"></td>
                             </tr>
