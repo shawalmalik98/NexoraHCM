@@ -64,9 +64,11 @@
                                         <th class="ps-4">Ref ID</th>
                                         <th>Title</th>
                                         <th>Address</th>
-                                        <th>Lat & Long</th>
-                                        <th>Create date</th>
-                                        <th>Update date</th>
+                                        <th>Latitude</th>
+                                        <th>Longitude</th>
+                                        <th>Allowed Range (meters)</th>
+                                        {{-- <th>Create date</th> --}}
+                                        {{-- <th>Update date</th> --}}
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -77,13 +79,16 @@
                                                 <td class="ps-4">{{ $location['location_id'] }}</td>
                                                 <td> {{ $location['location_title'] }} </td>
                                                 <td> {{ $location['location_address'] }} </td>
-                                                 <td>
+                                                 {{-- <td>
                                                     <span class="badge badge-light-success fs-7 fw-bold">{{ $location['location_latitude'] }} & {{ $location['location_longitude'] }}</span>
-                                                </td>
-                                                <td> {{ $location['location_added_at'] }} </td>
-                                                <td> {{ $location['location_updated_at'] }} </td>
+                                                </td> --}}
+                                                <td> {{ $location['location_latitude'] }} </td>
+                                                <td> {{ $location['location_longitude'] }} </td>
+                                                <td> {{ $location['location_attendance_radius'] }}</td>
+                                                {{-- <td> {{ $location['location_added_at'] }} </td> --}}
+                                                {{-- <td> {{ $location['location_updated_at'] }} </td> --}}
                                                 <td>
-                                                  <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Edit Location Request" onclick="editlocationRequest('{{$location['location_id']}}','{{$location['location_title']}}','{{$location['location_address']}}','{{$location['location_latitude']}}','{{$location['location_longitude']}}')">
+                                                  <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Edit Location Request" onclick="editlocationRequest('{{$location['location_id']}}','{{$location['location_title']}}','{{$location['location_address']}}','{{$location['location_latitude']}}','{{$location['location_longitude']}}','{{$location['location_attendance_radius']}}')">
                                                             <span class="svg-icon svg-icon-3">
                                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
@@ -139,7 +144,7 @@
                             
                                 
                                 <div class="modal-header">
-                                <h4 class="modal-title pl-4">Add Location</h4>
+                                <h4 class="modal-title pl-4">Add New Location</h4>
                                 <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
                                     <span class="svg-icon svg-icon-1">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -154,26 +159,32 @@
                                 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
                                     <label class="fs-6 fw-semibold mb-2 required">Location Title</label>
-                                    <input type="text" class="form-control " name="location_title" placeholder="Enter Location" required="">
+                                    <input type="text" class="form-control " name="location_title" placeholder="Enter Location Title" required="">
                                 </div>
 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
                                     <label class="fs-6 fw-semibold mb-2 required">Location Address</label>
-                                    <input type="text" class="form-control " name="location_address" placeholder="Enter Address" required="">
+                                    <input type="text" class="form-control " name="location_address" placeholder="Enter Address Detail" required="">
+                                </div>
+
+                                <div class="row mb-8 mt-3">
+                                    <div class="col-md-6">
+                                        <label class="fs-6 fw-semibold mb-2 required">Location Latitude</label>
+                                        <input type="text" id="latitude" class="form-control " name="location_latitude"  maxlength="25" placeholder="Enter Latitude" required=""  onkeyup="checkLatLong()">
+                                    </div>
+    
+                                    <div class="col-md-6">
+                                        <label class="fs-6 fw-semibold mb-2 required">Location Longitude</label>
+                                        <input type="text" id="longitude" class="form-control " name="location_longitude"  maxlength="25" placeholder="Enter Longitude" required="" onkeyup="checkLatLong()">
+                                    </div>
                                 </div>
 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
-                                    <label class="fs-6 fw-semibold mb-2 required">Location Latitude</label>
-                                    <input type="text" id="latitude" class="form-control " name="location_latitude"  maxlength="25" placeholder="Enter Latitude" required=""  onkeyup="checkLatLong()">
+                                    <label class="fs-6 fw-semibold mb-2 required">Allowed Range (meter)</label>
+                                    <input type="number" class="form-control" name="location_allowed_range" placeholder="Enter Attendance Ranger in Meter(s)" required="" min="0" max="5000" value="100">
                                 </div>
 
-                                <div class="col-md-12 mb-8 mt-3 fv-row">
-                                    <label class="fs-6 fw-semibold mb-2 required">Location Longitude</label>
-                                    <input type="text" id="longitude" class="form-control " name="location_longitude"  maxlength="25" placeholder="Enter Longitude" required="" onkeyup="checkLatLong()">
-                                </div>
-
-
-                               <div class="col-sm-6 col-md-6 col-lg-9" >
+                                <div class="col-sm-6 col-md-6 col-lg-9" >
                                     <div class="card mb-6">
                                         <div class="card-body pt-9 pb-8 my-card-body"  >
                                             <iframe id="locationIframe" width="500" height="300" title="Google Maps"></iframe>                                       
@@ -210,8 +221,7 @@
                         
                         <div class="modal-content rounded">
                             
-                                
-                                <div class="modal-header">
+                            <div class="modal-header">
                                 <h4 class="modal-title pl-4">Update Location</h4>
                                 <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
                                     <span class="svg-icon svg-icon-1">
@@ -221,7 +231,7 @@
                                         </svg>
                                     </span>
                                 </button>
-                                </div>
+                            </div>
                                 
                             <div class="modal-body scroll-y pt-3 pb-5">
                                 
@@ -236,14 +246,21 @@
                                     <input type="text" class="form-control " name="location_address" id="address" placeholder="Enter Address" required="">
                                 </div>
 
-                                  <div class="col-md-12 mb-8 mt-3 fv-row">
-                                    <label class="fs-6 fw-semibold mb-2 required">Location Latitude</label>
-                                    <input type="text" class="form-control" id="location_latitude" name="latitude" maxlength="25" placeholder="Enter Latitude" required="" onkeyup="updatelocation()">
+                                <div class="row mb-8 mt-3">
+                                    <div class="col-md-6">
+                                        <label class="fs-6 fw-semibold mb-2 required">Location Latitude</label>
+                                        <input type="text" class="form-control" id="location_latitude" name="latitude" maxlength="25" placeholder="Enter Latitude" required="" onkeyup="updatelocation()">
+                                    </div>
+    
+                                    <div class="col-md-6">
+                                        <label class="fs-6 fw-semibold mb-2 required">Location Longitude</label>
+                                        <input type="text" class="form-control" id="location_longitude" name="longitude" maxlength="25" placeholder="Enter Longitude" required="" onkeyup="updatelocation()">
+                                    </div>
                                 </div>
 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
-                                    <label class="fs-6 fw-semibold mb-2 required">Location Longitude</label>
-                                    <input type="text" class="form-control" id="location_longitude" name="longitude" maxlength="25" placeholder="Enter Longitude" required="" onkeyup="updatelocation()">
+                                    <label class="fs-6 fw-semibold mb-2 required">Allowed Range (meter)</label>
+                                    <input type="number" class="form-control" name="location_allowed_range" placeholder="Enter Attendance Ranger in Meter(s)" required="" min="0" max="5000">
                                 </div>
 
                                 @if(!empty($locations)) 

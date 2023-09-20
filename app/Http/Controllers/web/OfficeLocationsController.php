@@ -52,8 +52,8 @@ class OfficeLocationsController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'location_title' => ['required','unique:tbl_office_locations,location_title'],
-                'location_address' => ['required','unique:tbl_office_locations,location_address'],
-                
+                'location_address' => ['required'],
+                'location_allowed_range' => ['required','numeric','between:0,5000'],
             ]);
 
             if($validator->fails()) {
@@ -70,6 +70,7 @@ class OfficeLocationsController extends Controller
                 $new_location->location_address = $request->input('location_address');
                 $new_location->location_latitude = $request->input('location_latitude');
                 $new_location->location_longitude = $request->input('location_longitude');
+                $new_location->location_attendance_radius = $request->input('location_allowed_range');
                 $new_location->location_added_at = date('d-m-Y H:i:s');
                 $new_location->location_updated_at = '00-00-00 00:00:00';
                 $process = $new_location->save();   
@@ -114,7 +115,8 @@ class OfficeLocationsController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'location_title' => ['required','unique:tbl_office_locations,location_title,'.$request->input('location_id').',location_id'],
-                'location_address' => ['required','unique:tbl_office_locations,location_address,'.$request->input('location_id').',location_id'],
+                'location_address' => ['required'],
+                'location_allowed_range' => ['required','numeric','between:0,5000'],
             ]);
             if($validator->fails()) {
                 foreach($validator->errors()->all() as $error){
@@ -133,6 +135,7 @@ class OfficeLocationsController extends Controller
                     $update_location->location_address = $request->input('location_address');
                     $update_location->location_latitude = $request->input('latitude');
                     $update_location->location_longitude = $request->input('longitude');
+                    $update_location->location_attendance_radius = $request->input('location_allowed_range');
                     $update_location->location_updated_at = date('d-m-Y H:i:s');
                     $process = $update_location->save();   
                     if($process == 1){

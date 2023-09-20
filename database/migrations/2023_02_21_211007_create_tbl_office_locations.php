@@ -20,6 +20,7 @@ return new class extends Migration
                 $table->longtext('location_address');
                 $table->string('location_latitude', 255);
                 $table->string('location_longitude', 255);
+                $table->integer('location_attendance_radius')->comment('Value is in meters');
                 $table->string('location_added_at',255);
                 $table->string('location_updated_at',255)->nullable();
             });

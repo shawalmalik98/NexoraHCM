@@ -1155,6 +1155,7 @@ class LocationSeeder extends Seeder
                     'location_address' => "17 - ".$key.", Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan.",
                     'location_latitude' => $loc['location_latitude'],
                     'location_longitude' => $loc['location_longitude'],
+                    'location_attendance_radius' => 100,
                     'location_added_at' => date('d-m-Y H:i:s'),
                 ]);
             }

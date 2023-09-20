@@ -209,7 +209,7 @@ class EmployeeApiController extends Controller
             ->join('tbl_employees','tbl_employees_location.emp_loc_employee_id','tbl_employees.employee_id')
             ->where('employee_isactive',1)
             ->where('employee_id',$login_user[0]['employee_id'])
-            ->get(['location_title','location_latitude','location_longitude'])
+            ->get(['location_title','location_latitude','location_longitude','location_attendance_radius'])
             ->toArray();
 
             return $this->api_response_json(TRUE,"Employee Office Location(s)",$employee_office_location,200);
