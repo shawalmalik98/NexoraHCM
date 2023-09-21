@@ -1053,7 +1053,7 @@ class EmployeeController extends Controller
                 'employee_offday.*' => 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday,',
                 'employee_reporting_person' => 'required|numeric',
                 'employee_salary' => 'required|min:0|max:99999999|numeric',
-                'earning_type' => 'required|numeric|in:1,2',
+                // 'earning_type' => 'required|numeric|in:1,2',
                 'shift_start_timings' => 'required|date_format:H:i',
                 'shift_end_timings' => 'required|date_format:H:i',
                 'emergency_name' => 'string|max:100|nullable',
