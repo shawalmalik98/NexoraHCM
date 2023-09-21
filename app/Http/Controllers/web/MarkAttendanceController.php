@@ -105,7 +105,7 @@ class MarkAttendanceController extends Controller
 										if($get_employee_decoded[0]['employee_shift_flexibilty'] != '1'){
 											$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
 											$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
-											$exceed = strtotime("+2 hours", strtotime($employee_shift_start));
+											$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
 											$exceed_final = date('H:i', $exceed);
 											$check_in_grace_period = HrmSetting::where('setting_id', 1)->pluck('check_in_flexibility_time')->toArray();
 											if($employee_shift_start_hour == date('H')){
@@ -419,11 +419,11 @@ class MarkAttendanceController extends Controller
 											$check_out_grace_period = HrmSetting::where('setting_id', 1)->pluck('check_out_flexibility_time')->toArray();
 											
 											
-											if($diff >= 120){
+											if($diff >= 60){
 
 												$check_out->att_check_overall_status = "Half day";
 
-											}elseif($diff > $check_out_grace_period[0] && $diff < 120){
+											}elseif($diff > $check_out_grace_period[0] && $diff < 60){
 
 												$check_out->att_check_overall_status = "Early out";
 											}             
@@ -486,14 +486,13 @@ class MarkAttendanceController extends Controller
 												$current_shift_time = $this->calculate_minutes_with_date($yesterday_full_date , date('Y-m-d H:i:s') );
 												
 												$diff  = $employee_official_time - $current_shift_time;
-												if($diff >= 120){
+												if($diff >= 60){
 													
 													$check_out->att_check_overall_status = "Half day";  
 
-												}elseif($diff > 15 && $diff < 120){
+												}elseif($diff > $check_out_grace_period[0] && $diff < 60){
 
 													$check_out->att_check_overall_status = "Early out"; 
-													
 													
 												}elseif(abs($diff) >= 300 ){
 													
@@ -517,17 +516,13 @@ class MarkAttendanceController extends Controller
 												return response()->json([
 													'status' => 'FALSE',
 													'msg' => "Kindly checkin first for today's shift",
-													
 												]);
-												
-											
 
 											}
 										}else{
 											return response()->json([
 												'status' => 'FALSE',
 												'msg' => "Kindly checkin first for today's shift",
-												
 											]);
 										}
 									}
@@ -559,7 +554,6 @@ class MarkAttendanceController extends Controller
 
 					}else{
 
-
 						return response()->json([
 							'status' => 'FALSE',
 							'msg' => "Wrong employee id entered. Please try again.",
@@ -573,11 +567,7 @@ class MarkAttendanceController extends Controller
 					return response()->json([
 						'status' => 'FALSE',
 						'msg' => "'Employee id and password is required.",
-						
 					]);
-
-				
-
 				}
 			
 		}catch(\Exception $e){
