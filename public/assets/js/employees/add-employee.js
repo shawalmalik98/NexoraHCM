@@ -11,6 +11,7 @@ $(function () {
         dataTable.search($(this).val()).draw();
     })
     $('#append_row_date').hide();
+    calculateShiftDuration();
 });
 
 // $('#make_manager').click(function () {
@@ -435,4 +436,10 @@ function Copy() {
         // });
 
 }
+
+$('.gross_salary').keyup(function(){
+    var gross_salary = $(this).val();
+    var basic_salary = (gross_salary / 100) * gross_salary_ratio;
+    $('#basic_salary').val(basic_salary.toFixed(2));
+});
 

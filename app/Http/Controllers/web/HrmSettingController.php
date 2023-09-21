@@ -197,26 +197,27 @@ class HrmSettingController extends Controller
                 }
                 
     
-                $add_hrm_setting->company_name   = $request->input('company_name');
-                $add_hrm_setting->company_email   = $request->input('company_email');
-                $add_hrm_setting->company_address  = $request->input('company_address');
+                $add_hrm_setting->company_name = $request->input('company_name');
+                $add_hrm_setting->company_email = $request->input('company_email');
+                $add_hrm_setting->company_address = $request->input('company_address');
                 $add_hrm_setting->company_email_permission = $request->input('email_permission');
                 $add_hrm_setting->push_notification_permission = $request->input('push_notification_permission');
                 $add_hrm_setting->check_in_flexibility_time = $request->input('check_in_grace_time');
                 $add_hrm_setting->check_out_flexibility_time = $request->input('check_out_grace_time');
-                $add_hrm_setting->payroll_start_date =  $payroll_start_date;
-                $add_hrm_setting->fiscal_date =  $request->input('fiscal_date');
-                $add_hrm_setting->club_rule_apply  = $this->checkbox_is_active($request->input('club_rule'));
-                $add_hrm_setting->tax_deduction_apply  = $this->checkbox_is_active($request->input('tax_deduction'));
-                $add_hrm_setting->web_attendance =  $request->input('web_attendance');
-                $add_hrm_setting->mobile_attendance =  $request->input('mobile_attendance');
-                $add_hrm_setting->name_on_payslip =  $request->input('name_on_payslip');
+                $add_hrm_setting->payroll_start_date = $payroll_start_date;
+                $add_hrm_setting->fiscal_date = $request->input('fiscal_date');
+                $add_hrm_setting->club_rule_apply = $this->checkbox_is_active($request->input('club_rule'));
+                $add_hrm_setting->tax_deduction_apply = $this->checkbox_is_active($request->input('tax_deduction'));
+                $add_hrm_setting->web_attendance = $request->input('web_attendance');
+                $add_hrm_setting->mobile_attendance = $request->input('mobile_attendance');
+                $add_hrm_setting->name_on_payslip = $request->input('name_on_payslip');
                 $add_hrm_setting->daily_wages_late_deduction = (!empty($request->input('daily_wages_late_deduction'))) ? $request->input('daily_wages_late_deduction')/100 : '';
                 $add_hrm_setting->daily_wages_half_deduction = (!empty($request->input('daily_wages_half_deduction'))) ? $request->input('daily_wages_half_deduction')/100 : '';
                 $add_hrm_setting->annual_leave_display = $this->checkbox_is_active($request->input('annual_leave_allow'));
                 $add_hrm_setting->total_leave_all_leaves_visibility = $this->checkbox_is_active($request->input('all_leave_visibilty_allow'));
                 $add_hrm_setting->onboarding_email_name = $request->input('onboarding_email_name');
-                $add_hrm_setting->system_currency   =  $request->input('system_currency');
+                $add_hrm_setting->system_currency = $request->input('system_currency');
+                $add_hrm_setting->gross_salary_ratio = $request->input('gross_salary_ratio');
                 $process = $add_hrm_setting->save();
                 
                 if($process == 1){

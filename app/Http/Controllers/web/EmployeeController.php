@@ -98,7 +98,7 @@ class EmployeeController extends Controller
 
             $all_banks = Bank::get()->toArray();
 
-            $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
+            $no_of_employees = HrmSetting::get(['no_of_employees','gross_salary_ratio'])->toArray();
 
             $employee_active = Employees::where('employee_isactive', '=', 1)->count();
 
@@ -116,7 +116,9 @@ class EmployeeController extends Controller
 
             $email_config = EmailConfiguration::get(['email_config_id'])->toArray();
 
-            $send_data = compact('title','login_user','all_departments','all_banks','reporting_managers','get_modules','all_locations','employee_active','no_of_employees','randomPassword','manage_leaves','employment_status','email_config','employee_group','all_companies');
+            $new_employee_id = Employees::select('employee_code')->max('employee_code') + 1;
+
+            $send_data = compact('title','login_user','all_departments','all_banks','reporting_managers','get_modules','all_locations','employee_active','no_of_employees','randomPassword','manage_leaves','employment_status','email_config','employee_group','all_companies','new_employee_id');
             
             if(!empty($no_of_employees && (!empty($employee_active)))){
                 if($no_of_employees[0]['no_of_employees'] != "unlimited" && $no_of_employees[0]['no_of_employees'] <= $employee_active ){
@@ -159,6 +161,7 @@ class EmployeeController extends Controller
             ];
 
             $validator = Validator::make($employee_data->all(), [
+                'employee_code' =>  ['required','numeric','unique:tbl_employees,employee_code'],
                 'employee_name' =>  ['required', 'regex:/^([a-zA-Z]+)(\s[a-zA-Z]+)*$/'],
                 'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno'],
                 'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_personal_email','unique:tbl_employees,employee_work_email'],
@@ -184,7 +187,7 @@ class EmployeeController extends Controller
                 'leave_manage_id' =>['array','required'],
                 'employee_reporting_person' => 'required|numeric',
                 'employee_salary' => 'required|min:0|max:99999999|numeric',
-                'earning_type' => 'required|numeric|in:1,2',
+                // 'earning_type' => 'required|numeric|in:1,2',
                 'emergency_name' => 'string|max:100|nullable',
                 'emergency_contact_no' => 'string|min:0|max:50|nullable',
                 // 'employee_location' => 'required|in:'.implode(",",$locations),
@@ -280,16 +283,16 @@ class EmployeeController extends Controller
                     ]);
                 }
 
-                $all_employees = Employees::orderBy('employee_id','DESC')->limit(1)->get(['employee_code'])->toArray();
-                if(empty($all_employees)){
-                    $employeeCode = '001';
-                }else{
-                    $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
-                }
+                // $all_employees = Employees::orderBy('employee_id','DESC')->limit(1)->get(['employee_code'])->toArray();
+                // if(empty($all_employees)){
+                //     $employeeCode = '001';
+                // }else{
+                //     $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
+                // }
                
                 $add_employee = new Employees();
                 $add_employee->employee_name = $employee_data->input('employee_name');
-                $add_employee->employee_code = $employeeCode;
+                $add_employee->employee_code = $employee_data->input('employee_code');
                 $add_employee->employee_doj = $employee_data->input('employee_doj');
                 $add_employee->employee_cnic = $employee_data->input('employee_cnic');
                 $add_employee->cnic_issue_date = $employee_data->input('employee_cnic_issue_date');
@@ -313,7 +316,7 @@ class EmployeeController extends Controller
                 $add_employee->employee_jobtype = $employee_data->input('employee_jobtype');
                 // $add_employee->employee_location = $employee_data->input('employee_location');
                 $add_employee->employee_isactive = $employee_data->input('employee_isactive');
-                $add_employee->employee_earning_type = $employee_data->input('earning_type');
+                $add_employee->employee_earning_type = 1;
                 $add_employee->employee_group = $employee_data->input('employee_group');
                 $add_employee->employee_deactivate_date = $employee_data->input('employee_deactivate_date');
                 $add_employee->employee_deactivation_type = $employee_data->input('employee_deactive_type');
@@ -951,6 +954,8 @@ class EmployeeController extends Controller
 
             $get_modules = SystemModule::get()->toArray();
 
+            $no_of_employees = HrmSetting::get(['no_of_employees','gross_salary_ratio'])->toArray();
+
             $get_permissions = Permission::where('employee_id',$employee_id)->where('permission_status',1)->pluck('module_url')->toArray();
 
             $relations = ['Father','Mother','Brother','Sister','Guardian'];
@@ -979,7 +984,7 @@ class EmployeeController extends Controller
 
             $employee_groups = EmployeeGroup::get()->toArray();
 
-            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies','employee_locations');
+            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies','employee_locations','no_of_employees');
 
             return view('employee.edit-employee', $send_data);
         }catch(\Exception $e){
@@ -1210,7 +1215,7 @@ class EmployeeController extends Controller
                     $update_employee->employee_junior_manager = $employee_data->input('employee_reporting_person2');
                     $update_employee->employee_is_manager = $employee_data->input('make_ra');
                     $update_employee->employee_isactive = $employee_data->input('employee_isactive');
-                    $update_employee->employee_earning_type = $employee_data->input('earning_type');
+                    $update_employee->employee_earning_type = 1;
                     $update_employee->employee_deactivate_date = $employee_data->input('employee_deactivate_date');
                     $update_employee->employee_offdays = (!empty($employee_data->input('employee_offday'))) ? implode(',',$employee_data->input('employee_offday')) : '';
                     $update_employee->employee_jobtype = $employee_data->input('employee_jobtype');

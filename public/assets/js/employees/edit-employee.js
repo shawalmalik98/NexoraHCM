@@ -5,6 +5,7 @@ $('.max_length_validator_address').maxlength({
 });
 
 $(function () {
+    // console.log('1231231231');
     dataTable = $('#tableEmployee').DataTable();
     $('#searchFilter').keyup(function () {
         dataTable.search($(this).val()).draw();
@@ -18,8 +19,16 @@ $(function () {
         $('#append_row_date').removeClass("d-none");
         $('#deactivate_date').attr('required', 'required');
     }
+    $('.gross_salary').keyup();
+    
 
+});
 
+$('.gross_salary').keyup(function(){
+    console.log('1231231231');
+    var gross_salary = $(this).val();
+    var basic_salary = (gross_salary / 100) * gross_salary_ratio;
+    $('#basic_salary').val(basic_salary.toFixed(2));
 });
 
 // $('#customRadio5').click(function () {

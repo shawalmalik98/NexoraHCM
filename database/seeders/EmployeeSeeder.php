@@ -20,7 +20,7 @@ class EmployeeSeeder extends Seeder
         $get_employees = json_decode(json_encode($get_employees), true);
         if(empty($get_employees)){
             DB::table('tbl_employees')->insert([
-                'employee_code' => "001",
+                'employee_code' => 1000001,
                 'employee_name' => "Administrator Account",
                 'employee_contactno' => "0648-8439872",
                 'employee_personal_email' => "saaahmed@ismailindustries.com",

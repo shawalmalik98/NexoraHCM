@@ -27,17 +27,28 @@
                     <form  id="add_employee_form" class="form" autocomplete="off">
                         @csrf
                         <div class="row g-9 mb-8">
+
+                            <div class="col-md-6 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Employee ID</span>
+                                </label>
+                                
+                                <input type="text" class="form-control" placeholder="Enter Employee ID" name="employee_code" required value="{{ $new_employee_id }}"/>
+                            </div>
                             
                             <div class="col-md-6 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Name</span>
                                 </label>
                                 
-                                <input type="text" class="form-control " placeholder="Enter Employee Name" name="employee_name" required />
+                                <input type="text" class="form-control" placeholder="Enter Employee Name" name="employee_name" required />
                             </div>
                             
-                            
-                            <div class="col-md-6 fv-row">
+                        </div>
+                    
+                        <div class="row g-9 mb-8">
+
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Contact No</span>
                                 </label>
@@ -47,11 +58,7 @@
                                 <span class="status"></span>
                             </div>
                             
-                        </div>
-                    
-                        <div class="row g-9 mb-8">
-                            
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Personal Email<span>
                                 </label>
@@ -61,7 +68,7 @@
                                 <span class="status"></span>
                             </div>
 
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                 <span class="required">Official Email<span>
                                 </label>
@@ -390,26 +397,6 @@
                         <div class="row g-9 mb-8">
                             
                             <div class="col-md-6 fv-row">
-                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                <span class="required">Salary</span></label>
-                                <input type="number" class="form-control " name="employee_salary"
-                                placeholder="Enter Employee Salary" required="required" min="0" max="99999999"/>
-                            </div>
-                            
-                            <div class="col-md-6 fv-row">
-                                <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
-                                <select class="form-select " data-control="select2" data-hide-search="false"   name="earning_type" required>
-                                    <option value="">Select Employee Earning Type</option>
-                                    <option value="1" selected>Monthly</option>
-                                    <option value="2">Daily Wages</option>
-                                </select>
-                            </div>
-                            
-                        </div>
-                    
-                        <div class="row g-9 mb-8">
-                            
-                            <div class="col-md-6 fv-row">
                                 <label class="fs-6 fw-semibold mb-2 required">Employee Job Type</label>
                                 <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select a Job Type" name="employee_jobtype" required="required">
                                     <option value="">Select Job Type</option>
@@ -473,7 +460,7 @@
                             </div>
                         </div>
 
-                        <div class="card-header border-0 px-0">
+                        {{-- <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">
                                 <span class="card-label fw-bold fs-3 mb-1">Emergency Contact Information (Optional)</span>
                             </h3>
@@ -511,6 +498,39 @@
                                 </select>
                             </div>
 
+                        </div> --}}
+
+                        <div class="card-header border-0 px-0">
+                            <h3 class="card-title align-items-start flex-column">
+                                <span class="card-label fw-bold fs-3 mb-1">Salary Details</span>
+                            </h3>
+                        </div> 
+
+                        <div class="row g-9 mb-8">
+                            
+                            <div class="col-md-6 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Gross Salary</span></label>
+                                <input type="number" class="form-control gross_salary" name="employee_salary"
+                                placeholder="Enter Employee Salary" required="required" min="0" max="99999999"/>
+                            </div>
+
+                            <div class="col-md-6 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Basic Salary</span></label>
+                                <input type="number" class="form-control " name="employee_basic_salary"
+                                placeholder="Enter Employee Salary" required="required" min="0" max="99999999" readonly value="0" id="basic_salary"/>
+                            </div>
+                            
+                            {{-- <div class="col-md-6 fv-row">
+                                <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
+                                <select class="form-select" data-control="select2" data-hide-search="false"   name="earning_type" required>
+                                    <option value="">Select Employee Earning Type</option>
+                                    <option value="1" selected>Monthly</option>
+                                    <option value="2">Daily Wages</option>
+                                </select>
+                            </div> --}}
+                            
                         </div>
                         
                         <div class="card-header border-0 px-0">
@@ -548,13 +568,11 @@
                             <div class="col-md-6 fv-row">
                                 <div class="d-flex align-items-center">
                                     <label class="form-check form-check-custom me-10 form-check-solid">
-                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1"
-                                        name="employee_geofencing_enability" value="1" checked/>
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_geofencing_enability" value="1" checked/>
                                         <span class="form-check-label fw-semibold">Geo Fencing Enability</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has to bee in radius of mapped location, otherwise he can mark attendance from anywhere."></i>
                                     </label>
                                     <label class="form-check form-check-custom me-10 form-check-solid">
-                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1"
-                                        name="employee_shift_flexibilty" value="1" />
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_shift_flexibilty" value="1" />
                                         <span class="form-check-label fw-semibold">Flexible Shift Timings</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If employee has given facility of flexible shift timings, employee can check-in at any time and has to complete their shift total hours. For e.g 8 hours or 9 hours or it can be any."></i>
                                     </label>
                                 </div>
@@ -862,6 +880,10 @@
 
 
 @push('js-link')
+
+<script>
+    var gross_salary_ratio = {{ $no_of_employees[0]['gross_salary_ratio'] }};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 
 <script src="{{url('assets/js/employees/add-employee.js')}}"></script>

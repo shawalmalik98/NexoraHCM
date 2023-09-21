@@ -16,7 +16,7 @@ return new class extends Migration
         if(!Schema::hasTable('tbl_employees')){
             Schema::create('tbl_employees', function (Blueprint $table) {
                 $table->id('employee_id');
-                $table->string('employee_code', 255);
+                $table->integer('employee_code');
                 $table->string('employee_name', 255);
                 $table->string('employee_contactno', 255);
                 $table->string('employee_personal_email', 255);

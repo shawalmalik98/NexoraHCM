@@ -31,6 +31,7 @@ class Systemsettings extends Seeder
                 'web_attendance' => 1,
                 'mobile_attendance' => 1,
                 'signature_on_payslip' =>'default-signature.PNG',
+                'system_currency'   => 'PKR',
                 'system_currency'   => 'PKR'
             ]);
         }

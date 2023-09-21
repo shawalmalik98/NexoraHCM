@@ -556,7 +556,15 @@
                                                 @php $count = 0 @endphp
                                                 @if(!empty($salary_division))
 
-                                                    <div class="card-body">   
+                                                    <div class="card-body">
+
+                                                        <div class="row mt-3 division_row"> 
+                                                            <div class="col-md-12 mb-4">
+                                                                <label class="fs-6 fw-semibold mb-2 required">Gross Salary Percentage</label>
+                                                                <input type="text" class="form-control"  name="gross_salary_ratio" value="{{ number_format($setting[0]['gross_salary_ratio'],3) }}" placeholder="Gross Salary Percentage" required="">
+                                                            </div>
+                                                        </div>
+
                                                         <div id="salary_div">
                                                             
                                                             @foreach($salary_division as $division)

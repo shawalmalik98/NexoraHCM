@@ -43,6 +43,14 @@
                         </div> --}}
                         {{-- <input type="hidden" class="form-control" placeholder="Enter Employee Code" name="employee_code" required  value="{{ $employee_detail[0]['employee_code'] }}"> --}}
                         <div class="row g-9 mb-8">
+
+                            <div class="col-md-6 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Employee ID</span>
+                                </label>
+                                
+                                <input type="text" class="form-control" placeholder="Enter Employee ID" name="employee_code" required value="{{ $employee_detail[0]['employee_code'] }}" readonly style="background-color:lightgray"/>
+                            </div>
                             
                             <div class="col-md-6 ">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2"> Employee Name</label>
@@ -50,25 +58,24 @@
                                 <input type="hidden" class="form-control" name="employee_id" placeholder="Enter Employee Name" required="required" value="{{ $employee_detail[0]['employee_id'] }}">
                             </div>
                             
-                            
-                            <div class="col-md-6 ">
+                        </div>
+
+                        <div class="row g-9 mb-8">
+
+                            <div class="col-md-4">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Contact No </label>
                                 <input type="text" class="form-control contactInput " name="employee_contact_no" placeholder="Enter Contact No" required="required" value="{{$employee_detail[0]['employee_contactno'] }}" onkeyup="checkValidationExists(this,'contact no',2,'{{$employee_id}}')"/>
                                 <span class="status"></span>
                             </div>
                             
-                        </div>
-
-                        <div class="row g-9 mb-8">
-                            
-                            <div class="col-md-6 ">
+                            <div class="col-md-4">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2"> Employee Personal Email</label>
                                 <input type="email" class="form-control emailInput" name="employee_personal_email"
                                 placeholder="Enter Employee Email" required="required"  value="{{$employee_detail[0]['employee_personal_email'] }}" onkeyup="checkValidationExists(this,'email',2)"/>
                                 <span class="status"></span>
                             </div>
                             
-                            <div class="col-md-6 fv-row">
+                            <div class="col-md-4 fv-row">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Official Email</label>
                                 <input type="email" class="form-control emailInput" name="employee_official_email"
                                 placeholder="Enter Employee Official Email" required="required" value="{{$employee_detail[0]['employee_work_email'] }}" onkeyup="checkValidationExists(this,'email',2)"/>
@@ -397,43 +404,7 @@
                             
                         </div>
 
-                        <div class="row g-9 mb-8">
-                            
-                            <div class="col-lg-5 col-md-5 col-sm-5 col-8">
-                                <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Salary </label>
-                                <input type="number" class="form-control " name="employee_salary"
-                                placeholder="Enter Employee Salary" required="required"  value="{{ $employee_salary[0]['salary_amount'] ?? ''}}" readonly/>
-                            </div>
-                            <div class="col-lg-1 col-md-1 col-1 " style="margin-top: 60px;">
-                                <a href="javascript:void(0)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#view-employee-salary-detail">	
-                               
-                                    <i class="fas fa-eye"  data-bs-toggle="tooltip" title="View Employee Salary"></i>
-                                                                
-                                </a>
-                                <a href="javascript:void(0)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#edit-employee-salary">
-                                    <span class="svg-icon svg-icon-3" data-bs-toggle="tooltip" title="Edit Employee Salary">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
-                                            <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
-                                        </svg>
-                                    </span>
-                                </a>
-                            </div>
-                            {{-- <div class="col-lg-1 col-md-1 col-2 " style="margin-top: 60px;">
-                                
-                            </div> --}}
-                            
-                            <div class="col-md-6 ">
-                                <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
-                                <select class="form-select " data-control="select2" data-hide-search="false"   name="earning_type">
-                                    <option value="">Select Employee Earning Type</option>
-                                    <option value="1" @if ($employee_detail[0]['employee_earning_type'] == 1) selected @endif>Monthly</option>
-                                    <option value="2" @if ($employee_detail[0]['employee_earning_type'] == 2) selected @endif>Daily Wages</option>                                                                                                                                         
-                                   
-                                </select>
-                            </div>
-
-                        </div>
+                        
 
                         <div class="row g-9 mb-8">
                             
@@ -467,12 +438,9 @@
                         <div class="row g-9 mb-8">
 
                             <div class="col-md-6 ">
-                                <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">
-                                    Employee Password                                                      
-                                </label>
-                                
-                                <input type="text" class="form-control "  name="employee_password"
-                                placeholder="Enter Employee Password" required="required"  value="{{Crypt::decryptString($employee_detail[0]['employee_password']) }}" />
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Password</span> <span class="text-danger">(Max 10 characters)</span></label>
+                                <input type="text" class="form-control showpassword"  name="employee_password" placeholder="Enter Employee Password" required="required" value="{{ Crypt::decryptString($employee_detail[0]['employee_password']) }}" />
                             </div>
                             
                             <div class="col-md-6 ">
@@ -508,7 +476,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="card-header border-0 px-0">
+                        {{-- <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">
                                 <span class="card-label fw-bold fs-3 mb-1">Emergency Contact Information (Optional)</span>
                             </h3>
@@ -545,6 +513,60 @@
                                 </select>
                             </div>
 
+
+                        </div> --}}
+
+                        <div class="card-header border-0 px-0">
+                            <h3 class="card-title align-items-start flex-column">
+                                <span class="card-label fw-bold fs-3 mb-1">Salary Details</span>
+                                <span class="text-muted mt-1 fw-semibold fs-7"></span>
+                            </h3>
+                            <div class="card-toolbar">
+                                
+                            </div>
+                        </div> 
+
+                        <div class="row g-9 mb-8">
+                            
+                            <div class="col-md-5">
+                                <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Salary </label>
+                                <input type="number" class="form-control gross_salary" name="employee_salary"
+                                placeholder="Enter Employee Salary" required="required"  value="{{ $employee_salary[0]['salary_amount'] ?? ''}}" readonly/>
+                            </div>
+                            <div class="col-md-5 fv-row">
+                                <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                <span class="required">Basic Salary</span></label>
+                                <input type="number" class="form-control " name="employee_basic_salary"
+                                placeholder="Enter Employee Salary" required="required" min="0" max="99999999" readonly value="0" id="basic_salary"/>
+                            </div>
+                            <div class="col-md-2" style="margin-top: 60px;">
+                                <a href="javascript:void(0)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#view-employee-salary-detail">	
+                               
+                                    <i class="fas fa-eye"  data-bs-toggle="tooltip" title="View Employee Salary"></i>
+                                                                
+                                </a>
+                                <a href="javascript:void(0)" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#edit-employee-salary">
+                                    <span class="svg-icon svg-icon-3" data-bs-toggle="tooltip" title="Edit Employee Salary">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
+                                            <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
+                                        </svg>
+                                    </span>
+                                </a>
+                            </div>
+                            {{-- <div class="col-lg-1 col-md-1 col-2 " style="margin-top: 60px;">
+                                
+                            </div> --}}
+                            
+                            {{-- <div class="col-md-6 ">
+                                <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
+                                <select class="form-select " data-control="select2" data-hide-search="false"   name="earning_type">
+                                    <option value="">Select Employee Earning Type</option>
+                                    <option value="1" @if ($employee_detail[0]['employee_earning_type'] == 1) selected @endif>Monthly</option>
+                                    <option value="2" @if ($employee_detail[0]['employee_earning_type'] == 2) selected @endif>Daily Wages</option>                                                                                                                                         
+                                   
+                                </select>
+                            </div> --}}
 
                         </div>
                         
@@ -590,12 +612,11 @@
                             <div class="col-md-6 ">
                                 <div class="d-flex align-items-center">
                                     <label class="form-check form-check-custom me-10 form-check-solid">
-                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1"
-                                        name="employee_geofencing_enability" value="1" @if ($employee_detail[0]['employee_geofencing_enability'] == true) checked="" @endif/>
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_geofencing_enability" value="1" @if ($employee_detail[0]['employee_geofencing_enability'] == true) checked="" @endif/>
                                         <span class="form-check-label fw-semibold">Geo Fencing Enability</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has to bee in radius of mapped location, otherwise he can mark attendance from anywhere."></i>
                                     </label>
                                     <label class="form-check form-check-custom me-10 form-check-solid">
-                                        <input class="form-check-input h-20px w-20px" type="checkbox" id="checkboxPrimary1" name="employee_shift_flexibilty" value="1" @if ($employee_detail[0]['employee_shift_flexibilty'] == '1') checked="" @endif />
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_shift_flexibilty" value="1" @if ($employee_detail[0]['employee_shift_flexibilty'] == '1') checked="" @endif />
                                         <span class="form-check-label fw-semibold">Flexible Shift Timings</span>&nbsp; <i class="far fa-question-circle" data-toggle="tooltip" data-placement="right" data-title="If employee has given facility of flexible shift timings, employee can check-in at any time and has to complete their shift total hours. For e.g 8 hours or 9 hours or it can be any."></i>
                                     </label>
                                 </div>
@@ -1125,8 +1146,8 @@
 
 @push('js-link')
 <script src="{{url('assets/js/employees/edit-employee.js')}}"></script>
-
 <script>
+    var gross_salary_ratio = {{ $no_of_employees[0]['gross_salary_ratio'] }};
     var employee_isactive = '{{ $employee_detail[0]['employee_isactive'] }}';
     var employement_status = @json($employee_detail[0]['employee_status']);
     var efffective_date = @json($employment_period[0]['effective_date']);
