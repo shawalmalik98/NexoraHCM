@@ -188,7 +188,7 @@
                                 <span class="required">Date of Birth<span>
                                 </label>
                                 
-                                <input type="date" class="form-control" name="employee_dob" required="required"/>
+                                <input type="date" class="form-control" name="employee_dob" Max="{{date('Y-m-d')}}" required="required"/>
                             </div>
 
                             {{-- <div class="col-md-3 fv-row">
@@ -305,7 +305,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-3 fv-row d-none" id="attendance_access_div">
+                            <div class="col-md-6 fv-row d-none" id="attendance_access_div">
                                 <label class="required fs-6 fw-semibold mb-2">Attendance Rights</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" name="attendance_access" id="attendance_access" required>
                                     <option value="">Select Attendance Rights</option>
