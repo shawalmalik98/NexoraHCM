@@ -73,6 +73,7 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         });
         
         Route::get('my-attendance', [AttendanceController::class, 'personal_attendace']);
+        Route::get('get-my-todays-attendance', [AttendanceController::class, 'get_todays_attendance']);
         // attendance end
 
         // attendance request start

@@ -65,4 +65,32 @@ class AttendanceApiController extends Controller
 
         }
     }
+
+    protected function get_todays_attendance(Request $request){
+        try{
+      
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
+
+            $get_todays_attendance = Attendance::where([
+                'att_employee_id' => $login_user[0]['employee_id'],
+                'att_for_month'=>date('m'),
+                'att_for_year'=>date('Y'),
+                'att_for_date'=>date('d')
+            ])->get(['att_check_in_time as check_in_time','att_check_in_status as check_in_status','att_check_out_time as check_out_time','att_check_out_status as check_out_status','att_check_overall_status as attendance_status'])->toArray();
+
+            return $this->api_response_json(TRUE,"My Today's Attendance",$get_todays_attendance,200);
+
+		
+        }catch(\Exception $e){
+            
+            $this->create_error_log_from_api('View My Attendance API', $e, $request->header('Bearer-Token'));
+
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+
+        }finally{
+
+            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'));
+
+        }
+    }
 }
