@@ -664,14 +664,15 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
 
       });
 
-      // Route::prefix('/employment-funds')->group(function (){
+      
+        Route::prefix('/funds')->group(function (){
 
-      //   Route::get('/', [FundController::class, 'index']);
-      //   Route::post('/add-employment-fund', [FundController::class, 'add_fund']);
-      //   Route::post('/update-employment-fund', [FundController::class, 'update_fund']);
-      //   Route::get('/discard-employee-fund', [FundController::class, 'delete_fund']);
+          Route::get('/', [FundController::class, 'index']);
+          Route::post('/add-fund', [FundController::class, 'add_fund']);
+          Route::post('/update-fund', [FundController::class, 'update_fund']);
+          Route::post('/discard-fund', [FundController::class, 'delete_fund']);
 
-      // });
+        });
 
       Route::prefix('/reports')->group(function (){
         Route::get('/employee-report',[ReportsController::class, 'employee_demographics']);
@@ -925,18 +926,6 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
   Route::post('/apply-rpl-leave', [RplController::class, 'apply_rpl_leave_request']);
   Route::post('/update-rpl-leave-request', [RplController::class, 'update_rpl_leave_request']);
   Route::post('/delete-rpl-leave-request', [RplController::class, 'delete_rpl_leave_request']);
-
-
-  Route::prefix('/employment-funds')->group(function (){
-
-    Route::get('/', [FundController::class, 'index']);
-    Route::post('/add-employment-fund', [FundController::class, 'add_fund']);
-    Route::post('/update-employment-fund', [FundController::class, 'update_fund']);
-    Route::post('/discard-employee-fund', [FundController::class, 'delete_fund']);
-
-  });
-  
-
   
   //Leave Request Controller End
 

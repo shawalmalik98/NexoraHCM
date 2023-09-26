@@ -22,12 +22,11 @@ class FundController extends Controller
             
             $login_user = $this->get_login_user_detail();
 
-            $funds= Fund::get()->toArray();
-
+            $funds = Fund::get()->toArray();
+            
             $send_data = compact('title' , 'login_user', 'funds');
 
             return view('funds.fund')->with($send_data);
-
         
         }catch(\Exception $e){
 
@@ -47,7 +46,7 @@ class FundController extends Controller
         try{
 
             $validator = Validator::make($request->all(), [
-                'fund_name' => 'required',
+                'fund_name' => ['required','unique:tbl_funds,fund_name'],
                 
             ]);
 
@@ -105,8 +104,7 @@ class FundController extends Controller
         try{
 
             $validator = Validator::make($request->all(), [
-                'fund_name' => 'required',
-                
+                'fund_name' =>  ['required','unique:tbl_funds,fund_name, '.$request->input('fund_id'). ',fund_id'],
             ]);
 
             if($validator->fails()) {
@@ -139,7 +137,7 @@ class FundController extends Controller
                 }else{
                     return response()->json([
                         'status' => 'FALSE',
-                        'msg' => 'Request not found on this id.',
+                        'msg' => 'Fund not found on this id.',
                     ]);
                 }      
             }   
@@ -183,7 +181,7 @@ class FundController extends Controller
             }else{
                 return response()->json([
                     'status' => 'FALSE',
-                    'msg' => 'Request not found on this id.',
+                    'msg' => 'Fund not found on this id.',
                 ]);
             }         
         }catch(\Exception $e){

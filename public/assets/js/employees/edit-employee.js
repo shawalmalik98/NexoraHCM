@@ -49,11 +49,11 @@ $('#manager_rights').change(function(){
     var reporting_access = $(this).val();
     if(reporting_access == 1){
         $('.checked').prop('checked', true);
-        $('#manager_right_div').removeClass('col-md-6').addClass('col-md-3');
+        $('#manager_right_div').removeClass('col-md-6').addClass('col-md-6');
         $('#attendance_access_div').removeClass('d-none');
         $('#attendance_access').attr('required','required');
     }else{
-        $('#manager_right_div').removeClass('col-md-3').addClass('col-md-6');
+        $('#manager_right_div').removeClass('col-md-6').addClass('col-md-6');
         $('.checked').prop('checked', false);
         $('#attendance_access_div').addClass('d-none');
         $('#attendance_access').removeAttr('required','required');

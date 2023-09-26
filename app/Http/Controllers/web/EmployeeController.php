@@ -142,7 +142,7 @@ class EmployeeController extends Controller
     }
 
     protected function create_employee(Request $employee_data){
-
+    
         try{
          
             $locations = OfficeLocation::pluck('location_id')->toArray();
@@ -195,7 +195,8 @@ class EmployeeController extends Controller
                 'employee_deactivate_date' => $employee_deactivate_date,
                 'employee_deactivate_type' => $employee_deactivate_type,
                 'employee_group' => 'required|numeric',
-                'employee_doj' => 'required|date_format:Y-m-d'
+                'employee_doj' => 'required|date_format:Y-m-d',
+                'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now'
 
             ],$messages);
 
@@ -342,7 +343,7 @@ class EmployeeController extends Controller
                     $emp_salary->salary_amount =  $employee_data->input('employee_salary');
                     $emp_salary->salary_effected_date = $employee_data->input('employee_doj');
                     $emp_salary->salary_created_date = date('d-m-Y');
-                    $emp_salary->salary_earning_type = $employee_data->input('earning_type');
+                    $emp_salary->salary_earning_type = 1;
                     $emp_salary->save();
 
                     for($i=0;$i<$employee_data->total_count;$i++){
@@ -1065,7 +1066,8 @@ class EmployeeController extends Controller
                 'employee_deactive_type'=> $employee_deactivate_type,
                 'leave_allotment.*' => 'required|numeric|min:0|max:100',
                 'employee_group' => 'required|numeric',
-                'employee_doj' => 'required|date_format:Y-m-d'
+                'employee_doj' => 'required|date_format:Y-m-d',
+                'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now'
             ], $messages);
             
             if($validator->fails()) {
@@ -5176,7 +5178,8 @@ class EmployeeController extends Controller
                                                     '/employee-group',
                                                     '/leave-policy',
                                                     '/deduction-policy',
-                                                    '/companies'
+                                                    '/companies',
+                                                    '/funds'
                                                 ];
     
                                                 foreach($permissionRecords as $permissionRecord ){

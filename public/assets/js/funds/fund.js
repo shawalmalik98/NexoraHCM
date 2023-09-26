@@ -6,7 +6,7 @@ $('#add_funds_form').submit(function (e) {
 
     e.preventDefault();
     $.ajax({
-        url: base_url + '/employment-funds/add-employment-fund',
+        url: base_url + '/funds/add-fund',
         type: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -71,12 +71,12 @@ $('#add_funds_form').submit(function (e) {
     }
     
     $('#delete_fund_form').submit(function (e) {
-        $('#delete_submit_btn').prop('disabled', true);
-        $("#delete_submit_btn").attr('data-kt-indicator', 'on');
-        $('#delete_submit_btn').css('cursor', 'pointer');
+        $('#delete-btn').prop('disabled', true);
+        $("#delete-btn").attr('data-kt-indicator', 'on');
+        $('#delete-btn').css('cursor', 'pointer');
         e.preventDefault();
         $.ajax({
-            url: base_url + '/employment-funds/discard-employee-fund/',
+            url: base_url + '/funds/discard-fund/',
             type: 'POST',
             data: new FormData(this),
             contentType: false,
@@ -110,16 +110,16 @@ $('#add_funds_form').submit(function (e) {
                         timer: 3000,
                     })
     
-                    $('#delete_submit_btn').prop('disabled', false);
-                    $('#delete_submit_btn').css('cursor', 'pointer');
-                    $("#delete_submit_btn").removeAttr('data-kt-indicator');
+                    $('#delete-btn').prop('disabled', false);
+                    $('#delete-btn').css('cursor', 'pointer');
+                    $("#delete-btn").removeAttr('data-kt-indicator');
                 }
             },
             error: function (jqXHR, textStatus) {
                 var errorStatus = jqXHR.status;
-                $('#delete_submit_btn').prop('disabled', false);
-                $('#delete_submit_btn').css('cursor', 'pointer');
-                $("#delete_submit_btn").removeAttr('data-kt-indicator');
+                $('#delete-btn').prop('disabled', false);
+                $('#delete-btn').css('cursor', 'pointer');
+                $("#delete-btn").removeAttr('data-kt-indicator');
                 if (errorStatus == 0) {
                     Toast.fire({
                         icon: 'warning',
@@ -154,7 +154,7 @@ $('#edit_fund_form').submit(function (e) {
     $('#update-btn').css('cursor', 'not-allowed');
     e.preventDefault();
     $.ajax({
-        url: base_url + '/employment-funds/update-employment-fund',
+        url: base_url + '/funds/update-fund',
         type: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

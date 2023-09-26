@@ -45,7 +45,6 @@ class EmployeeSeeder extends Seeder
                 'employee_deactivate_date' => NULL,
                 'employee_jobtype' => "Office",
                 'employee_earning_type' => 1,
-                // 'employee_location' => 1,
             ]);
         }
 
@@ -187,7 +186,8 @@ class EmployeeSeeder extends Seeder
                 '/employee-group',
                 '/leave-policy',
                 '/deduction-policy',
-                '/companies'
+                '/companies',
+                '/funds'
             ];
             foreach($permissionRecords as $permission){
                 DB::table('tbl_employee_permission')->insert([

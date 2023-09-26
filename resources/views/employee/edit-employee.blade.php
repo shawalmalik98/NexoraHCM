@@ -276,7 +276,7 @@
 
                         <div class="row g-9 mb-8">
                             
-                            <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-3" : "col-md-6" }} fv-row" id="manager_right_div">
+                            <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-6" : "col-md-6" }} fv-row" id="manager_right_div">
                                 <label class="required fs-6 fw-semibold mb-2">Mark as Manager / Team Lead</label>
                                 <select class="form-select" data-control="select2" data-hide-search="false" name="make_ra" required="required" id="manager_rights">
                                     <option value="">Select Manager Rights</option>
@@ -285,7 +285,7 @@
                                 </select>
                             </div>
 
-                            <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-3" : "col-md-3" }} fv-row {{ $employee_detail[0]['employee_is_manager'] == 1 ? "" : "d-none" }}" id="attendance_access_div">
+                            <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-6" : "col-md-6" }} fv-row {{ $employee_detail[0]['employee_is_manager'] == 1 ? "" : "d-none" }}" id="attendance_access_div">
                                 <label class="required fs-6 fw-semibold mb-2">Attendance Rights</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" name="attendance_access" id="attendance_access">
                                     <option value="">Select Attendance Rights</option>
