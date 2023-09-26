@@ -182,7 +182,7 @@
                                 <span class="required">Date of Birth<span>
                                 </label>
                                 
-                                <input type="date" class="form-control" name="employee_dob" required="required" value="{{ $employee_bank[0]['dob'] }}"/>
+                                <input type="date" class="form-control" name="employee_dob" Max="{{date('Y-m-d')}}" required="required" value="{{ $employee_bank[0]['dob'] }}"/>
                             </div>
                         </div>
 
