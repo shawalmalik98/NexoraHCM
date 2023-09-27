@@ -5,7 +5,8 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\{OfficeLocation, Employees, RoomScreen};
+use Illuminate\Validation\Rules\File;
+use App\Models\{OfficeLocation, Employees, RoomScreen, EmployeeLocation};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
 
@@ -233,5 +234,89 @@ class OfficeLocationsController extends Controller
         }
     }
     
+    protected function upload_employee_location_record(Request $request){
+
+    
+        set_time_limit(18000);
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:csv'
+        ]);
+        if($validator->fails()) {
+            foreach($validator->errors()->all() as $error){
+                return response()->json([
+                    'msg' => $error,
+                    'status' => 'FALSE',
+                    'validation' => 'TRUE',
+                ]);
+            }
+        }else{
+            $filename = $request->file('file')->getPathName();
+            
+            if($request->file('file')->getSize() > 0)
+            {
+                $error = 0;
+                $success = 0;
+                $file = fopen($filename, "r");
+                $file2 = fopen($filename, "r");
+                $error_logs = array();
+                $count_row = 0;
+
+                EmployeeLocation::truncate();
+                
+                
+                // if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
+                    $arrays = [];
+                    $count_row = 0;
+                    while (($getData = fgetcsv($file2)) !== FALSE)
+                    {
+            
+                        // if($count_row != 0){
+
+                            $location_id = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
+                            $employeeCode = iconv('ISO-8859-1', 'UTF-8', $getData[2]);//$getData[2];
+
+                            $get_employee_data = Employees::where('employee_code' , $employeeCode)->get(['employee_id'])->toArray();
+                           
+                            $location_data = OfficeLocation::where('location_alt_id', $location_id)->get('location_id')->toArray();
+                            
+                            if(!empty($get_employee_data) && !empty($location_data)){
+                                
+                                $new_employee_location = new EmployeeLocation();
+                                $new_employee_location->emp_loc_employee_id = $get_employee_data[0]['employee_id'];
+                                $new_employee_location->emp_loc_loc_id = $location_data[0]['location_id'];
+                                $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                $new_employee_location->save();
+                                
+                            }
+                            $success++;
+                        // }
+
+                    }
+                    $count_row ++;
+                   
+                    fclose($file2);
+                    
+                    return response()->json([
+                        'status' => 'TRUE',
+                        'msg' => 'Upload Location record',
+                        'error_logs' => $error_logs
+                    ]);
+                // }
+                // else{
+                //     $msg = "You have $success valid records and $error invalid records.";
+
+                //     return response()->json([
+                //         'status' => 'FALSE',
+                //         'msg' =>  'Location record upload failed '."<br>".$msg,
+                //         'error_logs' => $error_logs
+                //     ]);
+                // }
+
+            }
+
+
+        }
+    
+    }
 
 }
