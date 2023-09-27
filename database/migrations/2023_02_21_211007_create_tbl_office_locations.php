@@ -17,6 +17,7 @@ return new class extends Migration
             Schema::create('tbl_office_locations', function (Blueprint $table) {
                 $table->id('location_id');
                 $table->string('location_title', 255);
+                $table->string('location_alt_id', 50)->nullable();
                 $table->longtext('location_address');
                 $table->string('location_latitude', 255);
                 $table->string('location_longitude', 255);
