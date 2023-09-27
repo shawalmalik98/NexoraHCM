@@ -163,7 +163,7 @@
                                     @if(!empty($employee_bank))
                                         @foreach($employee_bank as $bank)
                                             <tr>
-                                                <td class="ps-4">{!! CustomHelper::getEmpProfileDiv($bank['employee_id']) !!}</td>
+                                                <td class="ps-4">{{$bank['employee_id']}} - {{$bank['employee_name']}}</td>
                                                 <td>{{ $bank['bankname'] ?? '-'}}</td>
                                                 <td>{{ $bank['bankcode']  ?? '-'}}</td>
                                                 <td>{{ $bank['accountno'] ?? '-'}}</td>

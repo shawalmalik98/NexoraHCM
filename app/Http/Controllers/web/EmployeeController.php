@@ -567,7 +567,31 @@ class EmployeeController extends Controller
                 $where_clause .= ' AND employee_department = "'.$request->employee_department.'"';
             }
 
-            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name','employee_designation','employee_department','employee_senior_manager','employee_junior_manager','employee_is_manager','department_name','designation_name'])->toArray();
+            $employees = Employees::join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_employees.employee_department')
+            ->join('tbl_designations', 'tbl_designations.designation_id', '=', 'tbl_employees.employee_designation')
+            ->leftJoin('tbl_employees as emp_ra', 'emp_ra.employee_id', '=', 'tbl_employees.employee_senior_manager')
+            ->leftJoin('tbl_employees as emp_ra2', 'emp_ra2.employee_id', '=', 'tbl_employees.employee_junior_manager')
+            ->whereRaw($where_clause)->where('tbl_employees.employee_isactive', 1)
+            ->where('tbl_employees.employee_isactive', 1)
+            ->get([
+                'tbl_employees.employee_id as employee_id',
+                'tbl_employees.employee_code as employee_code',
+                'tbl_employees.employee_name as employee_name',
+                'emp_ra.employee_id as employee_ra_id',
+                'emp_ra.employee_code as employee_ra_code',
+                'emp_ra.employee_name as employee_ra_name',
+                'emp_ra2.employee_id as employee_ra2_id',
+                'emp_ra2.employee_code as employee_ra2_code',
+                'emp_ra2.employee_name as employee_ra2_name',
+                'tbl_departments.department_name as department_name',
+                'tbl_designations.designation_name as designation_name',
+                'tbl_employees.employee_is_manager as employee_is_manager'
+            ])
+            ->toArray();
+            //  dd($employees);
+
+            // $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->where('employee_isactive', 1)
+            // ->get(['employee_id','employee_code','employee_name','employee_designation','employee_department','employee_senior_manager','employee_junior_manager','employee_is_manager','department_name','designation_name'])->toArray();
 
             $managers = Employees::where('employee_is_manager', 1)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name'])->toArray();
 
