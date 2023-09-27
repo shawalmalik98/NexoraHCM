@@ -216,7 +216,8 @@
                                                                     
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
-                                            <th  class="ps-8">Employee Name</th>
+                                            <th  class="ps-8">Employee Code & Name</th>
+                                            <th class="text-center">Depart &amp; Desig</th>
                                             <th class="text-center">Check In Time </th>
                                             <th class="text-center">Check Out Time</th>
                                             <th class="text-center">Hours Worked</th>
@@ -256,7 +257,16 @@
                                                 @php $absent = true;@endphp
 
                                                 <tr>
-                                                    <td class="ps-8">{!! CustomHelper::getEmpProfileDiv($attendances['employee_id']) !!} </td>
+                                                    <td class="ps-8">{{ $attendances['employee_code'] }} - {{ $attendances['employee_name'] }} </td>
+                                                    <td class="text-center">
+                                                    @if($attendances['department_name'] != '')
+                                                        <p class="text-dark fw-bold mb-1 fs-6"> {{ $attendances['department_name'] }}</p>
+                                                        <p class="text-muted fw-semibold text-muted fs-7">{{$attendances['designation_name'] }}</p>
+                                                    @else
+                                                        Not Available
+                                                    @endif
+                                                    
+                                                    </td>
 
                                                     <td  class="text-center"> 
                                                     

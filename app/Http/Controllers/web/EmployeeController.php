@@ -196,7 +196,9 @@ class EmployeeController extends Controller
                 'employee_deactivate_type' => $employee_deactivate_type,
                 'employee_group' => 'required|numeric',
                 'employee_doj' => 'required|date_format:Y-m-d',
-                'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now'
+                'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now',
+                'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
+                'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable'
 
             ],$messages);
 
@@ -1067,7 +1069,9 @@ class EmployeeController extends Controller
                 'leave_allotment.*' => 'required|numeric|min:0|max:100',
                 'employee_group' => 'required|numeric',
                 'employee_doj' => 'required|date_format:Y-m-d',
-                'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now'
+                'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now',
+                'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
+                'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable'
             ], $messages);
             
             if($validator->fails()) {

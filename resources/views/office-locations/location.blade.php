@@ -181,7 +181,7 @@
 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
                                     <label class="fs-6 fw-semibold mb-2 required">Allowed Range (meter)</label>
-                                    <input type="number" class="form-control" name="location_allowed_range" placeholder="Enter Attendance Ranger in Meter(s)" required="" min="0" max="5000" value="100">
+                                    <input type="number" class="form-control" name="location_allowed_range" placeholder="Enter Attendance Ranger in Meter(s)" required="" min="0" max="5000" value="1000">
                                 </div>
 
                                 <div class="col-sm-6 col-md-6 col-lg-9" >
