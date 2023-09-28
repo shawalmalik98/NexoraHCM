@@ -182,7 +182,7 @@
                                 <span class="required">Date of Birth<span>
                                 </label>
                                 
-                                <input type="date" class="form-control" name="employee_dob" Max="{{date('Y-m-d')}}" required="required" value="{{ $employee_bank[0]['dob'] }}"/>
+                                <input type="date" class="form-control" name="employee_dob" max="{{date('Y-m-d')}}" required="required" value="{{ $employee_bank[0]['dob'] }}"/>
                             </div>
                         </div>
 
@@ -554,6 +554,20 @@
                                     </span>
                                 </a>
                             </div>
+
+
+                            @if(!empty($employee_funds))
+                                @foreach ($employee_funds as $manage_fund)
+                                    <div class="col-md-3 fv-row">
+                                        <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                        <span class="required">{{$manage_fund['fund_name']}}</span></label>
+                                        <input type="hidden" value="{{$manage_fund['ef_created_at']}}" name="ef_created_at[]" />
+                                        <input type="hidden" class="form-control " value="{{$manage_fund['fund_id']}}"  name="fund_id[]"  required/>
+                                        <input type="number" class="form-control" name="fund_amount[]" value="{{$manage_fund['ef_amount'] ?? '0'}}" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
+                                    </div>
+                                
+                                @endforeach
+                            @endif
                             {{-- <div class="col-lg-1 col-md-1 col-2 " style="margin-top: 60px;">
                                 
                             </div> --}}

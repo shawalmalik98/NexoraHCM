@@ -480,7 +480,7 @@
                                     </div>
                                 @endif
                                
-                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 &&  $login_user[0]['employee_is_manager'] == 1))
+                                <!-- @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 &&  $login_user[0]['employee_is_manager'] == 1))
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'rpl-leaves') active @endif" href="{{url('rpl-leaves')}}">
                                             <span class="menu-icon">
@@ -495,8 +495,8 @@
                                         </a>
                                     </div>
                                 
-                                @endif
-                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 7 )
+                                @endif -->
+                                <!-- @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 7 )
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'my-rpl-leaves') active @endif" href="{{url('my-rpl-leave')}}">
                                             <span class="menu-icon">
@@ -505,7 +505,7 @@
                                             <span class="menu-title">My RPL Leaves</span>
                                         </a>
                                     </div>
-                                @endif
+                                @endif -->
 
                                 @if(!empty($permission) && $permission[31]['module_accessibility'] == 1 && $permission[31]['permission_status'] == 1)
 

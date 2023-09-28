@@ -521,6 +521,19 @@
                                 <input type="number" class="form-control " name="employee_basic_salary"
                                 placeholder="Enter Employee Salary" required="required" min="0" max="99999999" readonly value="0" id="basic_salary"/>
                             </div>
+
+                            
+                            @if(!empty($manage_funds))
+                                @foreach ($manage_funds as $manage_fund)
+                                    <div class="col-md-3 fv-row">
+                                        <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                        <span class="required">{{$manage_fund['fund_name']}}</span></label>
+                                        <input type="hidden" class="form-control " value="{{$manage_fund['fund_id']}}"  name="fund_id[]" required/>
+                                        <input type="number" class="form-control" name="fund_amount[]" value="0" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
+                                    </div>
+                                
+                                @endforeach
+                            @endif
                             
                             {{-- <div class="col-md-6 fv-row">
                                 <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>

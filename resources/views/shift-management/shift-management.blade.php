@@ -198,12 +198,12 @@
 
                                     <tr @if(request()->get('shift-id') != '' && $shift_timing['shift_id'] == request()->get('shift-id')) style="background-color:bisque;" @endif >
                                         <td class="ps-8" >{{++$i}}</td>
-                                        <td>{!! CustomHelper::getEmpProfileDiv($shift_timing['employee_id']) !!}</td>
+                                        <td>{{$shift_timing['employee_code']}} - {{$shift_timing['employee_name']}}</td>
                                         <td>{{date('d-M-Y',strtotime($shift_timing['shift_start_from_date']))}}</td>
                                         <td>{{date('h:i A',strtotime($shift_timing['shift_start_time']))}}</td>
                                         <td>{{date('h:i A',strtotime($shift_timing['shift_end_time']))}}</td>
                                         <td>{{CustomHelper::calculate_shift_timings_shift_management($shift_timing['shift_start_time'],$shift_timing['shift_end_time'])}}</td>
-                                        <td>{!! CustomHelper::getEmpProfileDiv($shift_timing['shift_created_by']) !!}</td>
+                                        <td>{{$shift_timing['employee_shift_code']}} - {{$shift_timing['employee_shift_name']}}</td>
 
                                     </tr>
                                 @endforeach

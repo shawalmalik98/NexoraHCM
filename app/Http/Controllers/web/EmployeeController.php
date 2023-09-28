@@ -11,7 +11,7 @@ use Illuminate\Validation\Rules\File;
 use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
-use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation};
+use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation, Fund, EmployeeFund};
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee, MailTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
@@ -111,6 +111,8 @@ class EmployeeController extends Controller
             $randomPassword = Str::random(5);
 
             $manage_leaves = LeaveManagement::get()->toArray();
+
+            $manage_funds = Fund::get()->toArray();
             
             $employee_group = EmployeeGroup::get()->toArray();
 
@@ -118,7 +120,7 @@ class EmployeeController extends Controller
 
             $new_employee_id = Employees::select('employee_code')->max('employee_code') + 1;
 
-            $send_data = compact('title','login_user','all_departments','all_banks','reporting_managers','get_modules','all_locations','employee_active','no_of_employees','randomPassword','manage_leaves','employment_status','email_config','employee_group','all_companies','new_employee_id');
+            $send_data = compact('title','login_user','all_departments','all_banks','reporting_managers','get_modules','all_locations','employee_active','no_of_employees','randomPassword','manage_leaves','employment_status','email_config','employee_group','all_companies','new_employee_id','manage_funds');
             
             if(!empty($no_of_employees && (!empty($employee_active)))){
                 if($no_of_employees[0]['no_of_employees'] != "unlimited" && $no_of_employees[0]['no_of_employees'] <= $employee_active ){
@@ -198,7 +200,9 @@ class EmployeeController extends Controller
                 'employee_doj' => 'required|date_format:Y-m-d',
                 'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now',
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
-                'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable'
+                'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
+                'fund_amount.*' => 'required|numeric|min:0',
+                'fund_id.*' => 'required|numeric'
 
             ],$messages);
 
@@ -387,6 +391,22 @@ class EmployeeController extends Controller
                             $add_leaves->leave_allotement   = $employee_data->leave_allotment[$key];
                             $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
                             $add_leaves->save();
+
+                        }
+
+                    }
+
+                    foreach($employee_data->fund_id as $key => $fund_id){
+
+                        $fund_names = Fund::where('fund_id', $fund_id)->get('fund_name')->toArray();
+
+                        if(!empty($fund_names)){
+                            $add_funds =  new EmployeeFund();
+                            $add_funds->ef_employee_id = $employee_registration_id;
+                            $add_funds->ef_fund_id      = $fund_id;
+                            $add_funds->ef_amount   =  $employee_data->fund_amount[$key];
+                            $add_funds->ef_created_at =  date('Y-m-d H:i:s');
+                            $add_funds->save();
 
                         }
 
@@ -588,10 +608,6 @@ class EmployeeController extends Controller
                 'tbl_employees.employee_is_manager as employee_is_manager'
             ])
             ->toArray();
-            //  dd($employees);
-
-            // $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->where('employee_isactive', 1)
-            // ->get(['employee_id','employee_code','employee_name','employee_designation','employee_department','employee_senior_manager','employee_junior_manager','employee_is_manager','department_name','designation_name'])->toArray();
 
             $managers = Employees::where('employee_is_manager', 1)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name'])->toArray();
 
@@ -1005,13 +1021,20 @@ class EmployeeController extends Controller
                 $join->where('leaves_employee_id',$employee_id);
             })->get(['leave_manage_id','leave_allotement','leave_ent_created_at','leave_name'])->toArray();
 
+            
+            $employee_funds = Fund::
+            leftjoin('tbl_employees_funds', function($join) use($employee_id){
+                $join->on('tbl_funds.fund_id','=', 'tbl_employees_funds.ef_fund_id');
+                $join->where('ef_employee_id',$employee_id);
+            })->get(['fund_id','ef_amount','ef_created_at','fund_name'])->toArray();
+           
             $employement_status_history = EmploymentPeriod::join('tbl_employees','tbl_employees.employee_id','=','tbl_employement_period.employee_id')->join('tbl_employement_status','tbl_employement_status.employement_status_id','=','tbl_employement_period.employement_status_id')->where('tbl_employement_period.employee_id',$employee_id)->orderBy('employement_period_id','ASC')->get(['employee_name','employement_status_name','effective_date'])->toArray();
 
             $get_attendance_access = AttendanceAccess::where('access_employee_id', $employee_id)->get()->toArray();
 
             $employee_groups = EmployeeGroup::get()->toArray();
 
-            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies','employee_locations','no_of_employees');
+            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies','employee_locations','no_of_employees','employee_funds');
 
             return view('employee.edit-employee', $send_data);
         }catch(\Exception $e){
@@ -1095,7 +1118,9 @@ class EmployeeController extends Controller
                 'employee_doj' => 'required|date_format:Y-m-d',
                 'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now',
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
-                'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable'
+                'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
+                'fund_amount.*' => 'required|numeric|min:0',
+                'fund_id.*' => 'required|numeric'
             ], $messages);
             
             if($validator->fails()) {
@@ -1392,6 +1417,29 @@ class EmployeeController extends Controller
                                 'leave_allotement' => $employee_data->leave_allotment[$key],
                                 'leave_ent_created_at' => $date,
                                 'leave_ent_updated_at' => $updated_date
+                            ]);
+                        }
+
+                    }
+
+                    foreach($employee_data->fund_id as $key=>$fund_detail_id){
+
+                        $funds_name = Fund::where('fund_id', $fund_detail_id)->get('fund_name')->toArray();
+
+                        if(!empty($funds_name)){
+
+                            if(!empty($employee_data->ef_created_at[$key])){
+                                $date = $employee_data->ef_created_at[$key];
+                            }else{
+                                $date =  date('Y-m-d H:i:s');
+                            }
+
+                            $employee_fund = EmployeeFund::updateOrCreate([
+                                'ef_employee_id' => $employee_data->input('employee_id'),
+                                'ef_fund_id' => $fund_detail_id
+                            ], [
+                                'ef_amount' => $employee_data->fund_amount[$key],
+                                'ef_created_at' => $date
                             ]);
                         }
 
@@ -3203,8 +3251,8 @@ class EmployeeController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
-            $all_devices = EmployeeDevice::get()->toArray();
-
+            $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')->get(['device_id','device_employee_id','device_name','device_token','device_status','device_created_at','device_updated_at','employee_code','employee_name'])->toArray();
+        
             $send_data = compact('title','login_user','all_devices');
 
             return view('employee.employee-devices', $send_data);

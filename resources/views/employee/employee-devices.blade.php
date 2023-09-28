@@ -76,7 +76,7 @@
                                     @if(!empty($all_devices))
                                         @foreach($all_devices as $all_device)
                                             <tr>
-                                                <td class="ps-4">{!! CustomHelper::getEmpProfileDiv($all_device['device_employee_id']) !!}</td>
+                                                <td class="ps-4">{{$all_device['employee_code']}} - {{$all_device['employee_name']}}</td>
                                                 <td> {{ $all_device['device_name']}}</td>
                                                 <td> {{ $all_device['device_token']}}</td>
                                                 <td>

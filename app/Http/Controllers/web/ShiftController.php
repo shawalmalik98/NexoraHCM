@@ -52,26 +52,59 @@ class ShiftController extends Controller
 
             if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2){
                 $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], $status);
-                $employees = Employees::whereIn('employee_id',$total_team_member)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
+
+                if(count($total_team_member) > 2100){
+
+                    $employees = [];
+                    $employee_array = array_chunk($total_team_member , 2000);
+
+                    foreach($employee_array as $employee){
+                        $employee_data = Employees::whereIn('employee_id', $employee)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
+                        $employees = array_merge($employees , $employee_data);
+                    }
+
+                }
+                
             }else{
                 $total_team_member = Employees::where('employee_isactive',$status)->whereRaw($where_clause)->pluck('employee_id')->toArray();
                 $employees = Employees::where('employee_isactive',$status)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
             }
-            if(empty($request->input('emp_name'))){
 
-                $fetch_shift_timing = Employees::
+
+            if(empty($request->input('emp_name'))){
+               
+                $fetch_shift_timing = [];
+                $employee_arrays = array_chunk($total_team_member , 2000);
+                
+                foreach($employee_arrays as $employee){
+                    
+                    $fetch_shift_timings = Employees::
                     join('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
+                    ->leftJoin('tbl_employees as emp_shift', 'emp_shift.employee_id', '=', 'tbl_shift_management.shift_created_by')
                     ->whereRaw($where_clause)
-                    ->whereIn('tbl_employees.employee_id',$total_team_member)
+                    ->whereIn('tbl_employees.employee_id', $employee)
                     ->whereIn('shift_start_from_date',function($query) use($date){
                         $query->fromRaw('tbl_shift_management as sub_table')
                         ->selectRaw('MAX(CONVERT(DATE, shift_start_from_date, 120))')
                         ->whereRaw("CONVERT(DATE, shift_start_from_date, 120) <= '".$date."'")
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
-                    })->get(['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by','shift_id','employee_name','employee_code'])->toArray();
+                    })->get(['tbl_shift_management.employee_id', 
+                        'shift_start_from_date',
+                        'shift_start_time',
+                        'shift_end_time',
+                        'shift_created_by',
+                        'shift_id',
+                        'tbl_employees.employee_name',
+                        'tbl_employees.employee_code',
+                        'emp_shift.employee_code as employee_shift_code',
+                        'emp_shift.employee_name as employee_shift_name'
+                    ])->toArray();
+                    
+                    $fetch_shift_timing = array_merge($fetch_shift_timing , $fetch_shift_timings);    
+                }    
 
             }else{
-
+               
                 $fetch_shift_timing = Employees::
                     join('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
                     ->where('tbl_employees.employee_id',$request->input('emp_name'))

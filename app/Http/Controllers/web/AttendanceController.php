@@ -1763,7 +1763,7 @@ class AttendanceController extends Controller
     }
 
     protected function monthly_attendance(Request $request){
-        try{
+        // try{
         
             $title = Self::TITLE_GLOBAL4;
       
@@ -1860,16 +1860,16 @@ class AttendanceController extends Controller
 
             return view('attendance.all-employee-manage-attendance',$send_data);
           
-        }catch(\Exception $e){
-            $this->create_error_log('View All Employees Monthly Attendance', $e);
-            $send_data = compact('title');
-            return $e->getMessage();
-            // return view('errors.500');
-        }finally{
+        // }catch(\Exception $e){
+        //     $this->create_error_log('View All Employees Monthly Attendance', $e);
+        //     $send_data = compact('title');
+        //     return $e->getMessage();
+        //     // return view('errors.500');
+        // }finally{
 
-            ActivityTracker::track_activity('View All Employees Monthly  Attendance');
+        //     ActivityTracker::track_activity('View All Employees Monthly  Attendance');
           
-        }
+        // }
     }
 
     protected function download_monthly_attendance(Request $request){
