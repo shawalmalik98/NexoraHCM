@@ -18,7 +18,7 @@ class MarkAttendanceApiController extends Controller
     const SERVER_ERROR = 'Unknown error occured on server. Please try again after some time.';
 
     protected function check_in(Request $request){
-		
+
 		try{
 			
 			$login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
@@ -36,160 +36,52 @@ class MarkAttendanceApiController extends Controller
 				$employee_shift_start = $this->get_employee_today_shift($employee_ID,"in",date('Y-m-d'));
 				$employee_shift_end = $this->get_employee_today_shift($employee_ID,"out",date('Y-m-d'));
 
-					$employee_data = Employees::where('employee_id', $login_user[0]['employee_id'])->get()->toArray();
 				
-					$day = date('d',strtotime("-1 days"));
-					$month = date('m',strtotime("-1 days"));
-					$year = date('Y',strtotime("-1 days"));
+			
+				$day = date('d',strtotime("-1 days"));
+				$month = date('m',strtotime("-1 days"));
+				$year = date('Y',strtotime("-1 days"));
 
-					$get_yesterday_attendance = Attendance::where('att_employee_id', $employee_data[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->where('att_check_out_time', '00:00:00')->get()->toArray();
-				
-					if(!empty($get_yesterday_attendance)){
-						
-						$employee_official_time = $this->calculate_minutes($employee_shift_start , $employee_shift_end);
-						
-						$yesterday_full_date = $get_yesterday_attendance[0]['att_for_year'] .'-'. $get_yesterday_attendance[0]['att_for_month'] .'-'. $get_yesterday_attendance[0]['att_for_date']. ' '. $get_yesterday_attendance[0]['att_check_in_time']; 
-						$current_shift_time = $this->calculate_minutes_with_date($yesterday_full_date ,date('Y-m-d H:i:s') );
-						
-						$diff  = $employee_official_time - $current_shift_time;
+				$get_yesterday_attendance = Attendance::where('att_employee_id', $employee_ID)->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->where('att_check_out_time', '00:00:00')->get()->toArray();
+			
+				if(!empty($get_yesterday_attendance)){
+					
+					$employee_official_time = $this->calculate_minutes($employee_shift_start , $employee_shift_end);
+					
+					$yesterday_full_date = $get_yesterday_attendance[0]['att_for_year'] .'-'. $get_yesterday_attendance[0]['att_for_month'] .'-'. $get_yesterday_attendance[0]['att_for_date']. ' '. $get_yesterday_attendance[0]['att_check_in_time']; 
+					$current_shift_time = $this->calculate_minutes_with_date($yesterday_full_date ,date('Y-m-d H:i:s') );
+					
+					$diff  = $employee_official_time - $current_shift_time;
 
-						if(abs($diff) <= 300 || $current_shift_time < 180){
-							return $this->api_response_json(FALSE,"You've already checked in for today's Shifts","",200);
-						}
-
+					if(abs($diff) <= 300 || $current_shift_time < 180){
+						return $this->api_response_json(FALSE,"You've already checked in for today's Shifts","",200);
 					}
-					
-					$day = date("d");
-					$month = date("m");
-					$year = date("Y");
-					
-					$get_attendance = Attendance::where('att_employee_id', $employee_data[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get()->toArray();
+
+				}
 				
-					if(!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false ){
-						Attendance::where('attendance_id',$get_attendance[0]['attendance_id'])->delete();
-					} 
-					
-					if(empty($get_attendance) || (!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false)){
-						if(!empty($employee_data)){
-							if($employee_data[0]['employee_shift_flexibilty'] != '1'){
-								$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
-								$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
-								$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
-								$exceed_final = date('H:i', $exceed);
-								$check_in_grace_period = HrmSetting::pluck('check_in_flexibility_time')->toArray();
-								if($employee_shift_start_hour == date('H')){
-									if(date('i') <= $employee_shift_start_minute + $check_in_grace_period[0]){
-										$mark_Attendance = new Attendance();
-										$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
-										$mark_Attendance->att_check_in_time = date('H:i:s');
-										$mark_Attendance->att_check_out_time = '00:00:00';
-										$mark_Attendance->att_check_in_status = 1;
-										$mark_Attendance->att_check_out_status = 0;
-										$mark_Attendance->att_shift_start_time = $employee_shift_start;
-										$mark_Attendance->att_shift_end_time = $employee_shift_end;
-										$mark_Attendance->att_check_overall_status = 'Present';
-										$mark_Attendance->att_for_date = $day;
-										$mark_Attendance->att_for_month = $month;
-										$mark_Attendance->att_for_year = $year;
-										$mark_Attendance->att_check_in_source = 2;
-										$mark_Attendance->att_remote_applicable = $remote_applicable;
-										$process = $mark_Attendance->save();
-										
-										if($process == 1){
+				$day = date("d");
+				$month = date("m");
+				$year = date("Y");
 
-											return $this->api_response_json(TRUE,"Check In Successfully","",200);
+				$get_attendance = Attendance::where('att_employee_id', $employee_ID)->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get()->toArray();
+			
+				if(!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false ){
+					Attendance::where('attendance_id',$get_attendance[0]['attendance_id'])->delete();
+				} 
+				
+				if(empty($get_attendance) || (!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false)){
 
-										}else{
+					$employee_data = Employees::where('employee_id', $login_user[0]['employee_id'])->get(['employee_id','employee_shift_flexibilty'])->toArray();
 
-											return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
-
-										}
-									}else{
-										$mark_Attendance = new Attendance();
-										$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
-										$mark_Attendance->att_check_in_time = date('H:i:s');
-										$mark_Attendance->att_check_out_time = '00:00:00';
-										$mark_Attendance->att_check_in_status = 1;
-										$mark_Attendance->att_check_out_status = 0;
-										$mark_Attendance->att_shift_start_time = $employee_shift_start;
-										$mark_Attendance->att_shift_end_time = $employee_shift_end;
-										$mark_Attendance->att_check_overall_status = 'Late Coming';
-										$mark_Attendance->att_for_date = $day;
-										$mark_Attendance->att_for_month = $month;
-										$mark_Attendance->att_for_year = $year;
-										$mark_Attendance->att_check_in_source = 2;
-										$mark_Attendance->att_remote_applicable = $remote_applicable;
-										$process = $mark_Attendance->save();
-
-										if($process == 1){
-
-											return $this->api_response_json(TRUE,"Check In Successfully","",200);
-
-
-										}else{
-
-											return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
-
-										}
-									}
-								}elseif(date('H') > $employee_shift_start_hour){
-									if(date('H:i') <= $exceed_final ){
-										$mark_Attendance = new Attendance();
-										$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
-										$mark_Attendance->att_check_in_time = date('H:i:s');
-										$mark_Attendance->att_check_out_time = '00:00:00';
-										$mark_Attendance->att_check_in_status = 1;
-										$mark_Attendance->att_check_out_status = 0;
-										$mark_Attendance->att_shift_start_time = $employee_shift_start;
-										$mark_Attendance->att_shift_end_time = $employee_shift_end;
-										$mark_Attendance->att_check_overall_status = 'Late Coming';
-										$mark_Attendance->att_for_date = $day;
-										$mark_Attendance->att_for_month = $month;
-										$mark_Attendance->att_for_year = $year;
-										$mark_Attendance->att_check_in_source = 2;
-										$mark_Attendance->att_remote_applicable = $remote_applicable;
-										$process = $mark_Attendance->save();
-
-										if($process == 1){
-
-											return $this->api_response_json(TRUE,"Check In Successfully","",200);
-											
-
-										}else{
-
-											return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
-
-										}
-									}else{
-										$mark_Attendance = new Attendance();
-										$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
-										$mark_Attendance->att_check_in_time = date('H:i:s');
-										$mark_Attendance->att_check_out_time = '00:00:00';
-										$mark_Attendance->att_check_in_status = 1;
-										$mark_Attendance->att_check_out_status = 0;
-										$mark_Attendance->att_shift_start_time = $employee_shift_start;
-										$mark_Attendance->att_shift_end_time = $employee_shift_end;
-										$mark_Attendance->att_check_overall_status = 'Half day';
-										$mark_Attendance->att_for_date = $day;
-										$mark_Attendance->att_for_month = $month;
-										$mark_Attendance->att_for_year = $year;
-										$mark_Attendance->att_check_in_source = 2;
-										$mark_Attendance->att_remote_applicable = $remote_applicable;
-										$process = $mark_Attendance->save();
-
-										if($process == 1){
-
-											return $this->api_response_json(TRUE,"Check In Successfully","",200);
-
-
-										}else{
-
-											return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
-											
-											
-										}
-									}
-								}else{
+					if(!empty($employee_data)){
+						if($employee_data[0]['employee_shift_flexibilty'] != '1'){
+							$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
+							$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
+							$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
+							$exceed_final = date('H:i', $exceed);
+							$check_in_grace_period = HrmSetting::pluck('check_in_flexibility_time')->toArray();
+							if($employee_shift_start_hour == date('H')){
+								if(date('i') <= $employee_shift_start_minute + $check_in_grace_period[0]){
 									$mark_Attendance = new Attendance();
 									$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
 									$mark_Attendance->att_check_in_time = date('H:i:s');
@@ -205,6 +97,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_check_in_source = 2;
 									$mark_Attendance->att_remote_applicable = $remote_applicable;
 									$process = $mark_Attendance->save();
+									
 									if($process == 1){
 
 										return $this->api_response_json(TRUE,"Check In Successfully","",200);
@@ -213,6 +106,90 @@ class MarkAttendanceApiController extends Controller
 
 										return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
 
+									}
+								}else{
+									$mark_Attendance = new Attendance();
+									$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
+									$mark_Attendance->att_check_in_time = date('H:i:s');
+									$mark_Attendance->att_check_out_time = '00:00:00';
+									$mark_Attendance->att_check_in_status = 1;
+									$mark_Attendance->att_check_out_status = 0;
+									$mark_Attendance->att_shift_start_time = $employee_shift_start;
+									$mark_Attendance->att_shift_end_time = $employee_shift_end;
+									$mark_Attendance->att_check_overall_status = 'Late Coming';
+									$mark_Attendance->att_for_date = $day;
+									$mark_Attendance->att_for_month = $month;
+									$mark_Attendance->att_for_year = $year;
+									$mark_Attendance->att_check_in_source = 2;
+									$mark_Attendance->att_remote_applicable = $remote_applicable;
+									$process = $mark_Attendance->save();
+
+									if($process == 1){
+
+										return $this->api_response_json(TRUE,"Check In Successfully","",200);
+
+
+									}else{
+
+										return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
+
+									}
+								}
+							}elseif(date('H') > $employee_shift_start_hour){
+								if(date('H:i') <= $exceed_final ){
+									$mark_Attendance = new Attendance();
+									$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
+									$mark_Attendance->att_check_in_time = date('H:i:s');
+									$mark_Attendance->att_check_out_time = '00:00:00';
+									$mark_Attendance->att_check_in_status = 1;
+									$mark_Attendance->att_check_out_status = 0;
+									$mark_Attendance->att_shift_start_time = $employee_shift_start;
+									$mark_Attendance->att_shift_end_time = $employee_shift_end;
+									$mark_Attendance->att_check_overall_status = 'Late Coming';
+									$mark_Attendance->att_for_date = $day;
+									$mark_Attendance->att_for_month = $month;
+									$mark_Attendance->att_for_year = $year;
+									$mark_Attendance->att_check_in_source = 2;
+									$mark_Attendance->att_remote_applicable = $remote_applicable;
+									$process = $mark_Attendance->save();
+
+									if($process == 1){
+
+										return $this->api_response_json(TRUE,"Check In Successfully","",200);
+										
+
+									}else{
+
+										return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
+
+									}
+								}else{
+									$mark_Attendance = new Attendance();
+									$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
+									$mark_Attendance->att_check_in_time = date('H:i:s');
+									$mark_Attendance->att_check_out_time = '00:00:00';
+									$mark_Attendance->att_check_in_status = 1;
+									$mark_Attendance->att_check_out_status = 0;
+									$mark_Attendance->att_shift_start_time = $employee_shift_start;
+									$mark_Attendance->att_shift_end_time = $employee_shift_end;
+									$mark_Attendance->att_check_overall_status = 'Half day';
+									$mark_Attendance->att_for_date = $day;
+									$mark_Attendance->att_for_month = $month;
+									$mark_Attendance->att_for_year = $year;
+									$mark_Attendance->att_check_in_source = 2;
+									$mark_Attendance->att_remote_applicable = $remote_applicable;
+									$process = $mark_Attendance->save();
+
+									if($process == 1){
+
+										return $this->api_response_json(TRUE,"Check In Successfully","",200);
+
+
+									}else{
+
+										return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
+										
+										
 									}
 								}
 							}else{
@@ -238,27 +215,53 @@ class MarkAttendanceApiController extends Controller
 								}else{
 
 									return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
+
 								}
 							}
 						}else{
+							$mark_Attendance = new Attendance();
+							$mark_Attendance->att_employee_id = $employee_data[0]['employee_id'];
+							$mark_Attendance->att_check_in_time = date('H:i:s');
+							$mark_Attendance->att_check_out_time = '00:00:00';
+							$mark_Attendance->att_check_in_status = 1;
+							$mark_Attendance->att_check_out_status = 0;
+							$mark_Attendance->att_shift_start_time = $employee_shift_start;
+							$mark_Attendance->att_shift_end_time = $employee_shift_end;
+							$mark_Attendance->att_check_overall_status = 'Present';
+							$mark_Attendance->att_for_date = $day;
+							$mark_Attendance->att_for_month = $month;
+							$mark_Attendance->att_for_year = $year;
+							$mark_Attendance->att_check_in_source = 2;
+							$mark_Attendance->att_remote_applicable = $remote_applicable;
+							$process = $mark_Attendance->save();
+							if($process == 1){
 
-							return $this->api_response_json(FALSE,"Unable to mark Attendance. Your shift timings not found.","",200);
-						}    
-					}else{
-						
-						if(in_array($get_attendance[0]['att_check_overall_status'],$manage_leaves) !== false){
+								return $this->api_response_json(TRUE,"Check In Successfully","",200);
 
-							return $this->api_response_json(FALSE,"You can't check in, Your " . $get_attendance[0]['att_check_overall_status'] . " request is marked today","",200);
+							}else{
 
-						}else{
-
-							return $this->api_response_json(FALSE,"You've already checked in for today's shift","",200);
+								return $this->api_response_json(FALSE,Self::SERVER_ERROR,"",500);
+							}
 						}
-					}
-				}else{
+					}else{
 
-					return $this->api_response_json(FALSE,"You can't mark attendance from this device","",200);
+						return $this->api_response_json(FALSE,"Unable to mark Attendance. Your shift timings not found.","",200);
+					}    
+				}else{
+					
+					if(in_array($get_attendance[0]['att_check_overall_status'],$manage_leaves) !== false){
+
+						return $this->api_response_json(FALSE,"You can't check in, Your " . $get_attendance[0]['att_check_overall_status'] . " request is marked today","",200);
+
+					}else{
+
+						return $this->api_response_json(FALSE,"You've already checked in for today's shift","",200);
+					}
 				}
+			}else{
+
+				return $this->api_response_json(FALSE,"You can't mark attendance before your joining date.","",200);
+			}
 			
 			
 		}catch(\Exception $e){
