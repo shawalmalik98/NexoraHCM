@@ -2076,4 +2076,40 @@ class AttendanceController extends Controller
         }
     }
 
+    protected function export_data_into_dat_file(){
+
+        $data = Employees::get(['employee_code','employee_name'])->toArray();
+
+        $filename = "sample.dat";
+
+        $file = fopen($filename, "w");
+
+        if ($file) {
+
+            $data2 = [];
+
+            foreach($data as $data3){
+                // array_push();
+                $pp = $data3['employee_code'] . "\n";
+                fwrite($file, $pp);
+
+            }
+
+            
+            // Close the file
+            fclose($file);
+
+            header('Content-Type: application/octet-stream');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Content-Length: ' . filesize($filename));
+        
+            // Output the file contents to the browser
+            readfile($filename);
+            
+            // echo "Data has been written to $filename.";
+        } else {
+            echo "Unable to open $filename for writing.";
+        }
+    }
+
 }
