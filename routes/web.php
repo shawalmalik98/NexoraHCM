@@ -562,6 +562,8 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::post('/addlocation',[OfficeLocationsController::class,'add_location']);
         Route::post('/updatelocation',[OfficeLocationsController::class,'update_location']);
         Route::post('/deletelocation',[OfficeLocationsController::class,'delete_location_request']);
+        Route::post('/upload-location-information',[OfficeLocationsController::class, 'upload_employee_location_record']);
+        
 
       });
 
@@ -916,16 +918,16 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
 
  
 
-  Route::prefix('/rpl-leaves')->group(function () {
+  // Route::prefix('/rpl-leaves')->group(function () {
 
-    Route::get('/', [RplController::class, 'index']);
-    Route::post('/rplleaveapproverequest', [RplController::class, 'rpl_leave_request']);
+  //   Route::get('/', [RplController::class, 'index']);
+  //   Route::post('/rplleaveapproverequest', [RplController::class, 'rpl_leave_request']);
    
-  });
-  Route::get('/my-rpl-leave', [RplController::class, 'my_rpl_leave']);
-  Route::post('/apply-rpl-leave', [RplController::class, 'apply_rpl_leave_request']);
-  Route::post('/update-rpl-leave-request', [RplController::class, 'update_rpl_leave_request']);
-  Route::post('/delete-rpl-leave-request', [RplController::class, 'delete_rpl_leave_request']);
+  // });
+  // Route::get('/my-rpl-leave', [RplController::class, 'my_rpl_leave']);
+  // Route::post('/apply-rpl-leave', [RplController::class, 'apply_rpl_leave_request']);
+  // Route::post('/update-rpl-leave-request', [RplController::class, 'update_rpl_leave_request']);
+  // Route::post('/delete-rpl-leave-request', [RplController::class, 'delete_rpl_leave_request']);
   
   //Leave Request Controller End
 

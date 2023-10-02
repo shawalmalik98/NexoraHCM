@@ -21,7 +21,7 @@ class LeavesController extends Controller
 
     protected function index(Request $request){
 
-        // try{
+        try{
 
             $title = Self::TITLE_GLOBAL;
 
@@ -38,53 +38,54 @@ class LeavesController extends Controller
                 $where_clause .= ' AND employee_location = "'.$request->employee_location.'"'; 
             }
 
-             $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_id,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location','leaves_id')->get()->toArray();
+             $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location')->get()->toArray();
 
-            //  dd($all_employees);
-          
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
             $leaves = LeaveManagement::get()->toArray();
-
+        
             $leave_name = array_column($leaves, 'leave_name');
-
+            
             foreach($all_employees as $employee){
 
 
                 $get_availed_total_leaves =  Attendance::selectRaw('Count(att_check_overall_status) as total_alloted_leave')->where('att_employee_id', $employee['leaves_employee_id'])->whereIn('att_check_overall_status',$leave_name)->count();
-
+                
                 $all_availed_leaves = array('used_get_availed_leaves' => $get_availed_total_leaves);
-
+                
                 $result[] = array_merge($employee , $all_availed_leaves);
-
+                
             }
            
             if(!empty($all_employees)){
                 $leaves_entitled = $result;
+                
             }else{
                 $leaves_entitled = array();
+                
             }
 
-            // dd($leaves_entitled);
+             
           
             $send_data = compact('title','login_user','leaves_entitled','employee_locations');
             
             return view('leave.leaves-entitled',$send_data);
-        // }
-        // catch(\Exception $e){
-        //     $this->create_error_log('View All Manage Leave', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
-        // }finally{
+        }
+        catch(\Exception $e){
+            $this->create_error_log('View All Manage Leave', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
 
-        //     ActivityTracker::track_activity('Access All Employees Leaves Entitiled Module');
-        // }
+            ActivityTracker::track_activity('Access All Employees Leaves Entitiled Module');
+        }
 
     }
 
     protected function download_manage_leaves(Request $request){
-        try{
+        // try{
 
+           
             $security_variable = FALSE;
 
             $validator = Validator::make($request->all(), [
@@ -113,7 +114,7 @@ class LeavesController extends Controller
                 $where_clause .= ' AND employee_location = "'.$request->employee_location.'"'; 
             }
 
-             $all_employees = Employees::selectRaw('Sum(leave_allotement) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_id,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id')->get()->toArray();
+            $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location')->get()->toArray();
          
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
@@ -145,17 +146,16 @@ class LeavesController extends Controller
                 $pdf = Pdf::loadView('leave.download-leave-entitlement-report',$send_data);
                 return $pdf->setPaper('a3', 'landscape')->stream('All Employee(s) Leave Entitlement'.'.pdf');
             }
-        }
-        catch(\Exception $e){
-            $this->create_error_log('Download All Manage Leave', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-        }finally{
+        // }
+        // catch(\Exception $e){
+        //     $this->create_error_log('Download All Manage Leave', $e)
+        //     return view('errors.500');
+        // }finally{
 
-            ActivityTracker::track_activity('Download All Employees Leaves Entitiled Report Pdf');
+        //     ActivityTracker::track_activity('Download All Employees Leaves Entitiled Report Pdf');
 
         
-        }
+        // }
     }
 
     protected function leave_entitlement_detail($employee_id){
@@ -166,12 +166,11 @@ class LeavesController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
-            $leaves_entitled = LeaveManagement::
-            leftJoin('tbl_leave_entitlement', function($join) use($employee_id){
+            $leaves_entitled = LeaveManagement::leftJoin('tbl_leave_entitlement', function($join) use($employee_id){
                 $join->on('tbl_leave_management.leave_manage_id','=', 'tbl_leave_entitlement.leave_type_id');
                 $join->where('leaves_employee_id',$employee_id);
             })->get()->toArray();
-
+            
             $i =0;
             
             foreach($leaves_entitled as $leaves_entitled_employee){

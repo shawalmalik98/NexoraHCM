@@ -148,7 +148,7 @@
                                     @if (!empty($leaves_entitled))
                                         @foreach ($leaves_entitled as $leaves_entitlement)
                                             <tr>
-                                                <td class="ps-6">{!! CustomHelper::getEmpProfileDiv($leaves_entitlement['employee_id']) !!}</td>
+                                                <td class="ps-6">{{$leaves_entitlement['employee_code']}} - {{$leaves_entitlement['employee_name']}}</td>
                                                 <td class="text-primary font-weight-bold ps-10">{{ $leaves_entitlement['total_alloted_leave'] }}</td>
                                                 <td class="text-danger font-weight-bold ps-10">{{ $leaves_entitlement['used_get_availed_leaves'] }}</td>
                                                 

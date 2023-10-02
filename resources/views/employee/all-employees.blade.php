@@ -221,9 +221,9 @@
                                                         <i class="fas fa-file" aria-hidden="true"></i>
                                                     </a>
 
-                                                    <a  href="{{ url('employees/employee-allotment') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Employee Allotments"> 
+                                                    <!-- <a  href="{{ url('employees/employee-allotment') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Employee Allotments"> 
                                                         <i class="fas fa-car"></i>
-                                                    </a>
+                                                    </a> -->
                                                 </td>
                                             </tr>
                                         @endforeach
