@@ -35,7 +35,7 @@ trait MachineAttendanceTrait {
 					if($employee_data[0]['employee_shift_flexibilty'] != '1'){
 						$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
 						$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
-						$exceed = strtotime("+2 hours", strtotime($employee_shift_start));
+						$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
 						$exceed_final = date('H:i', $exceed);
 						$request_check_in_time = date("H", strtotime($check_in));
 						$check_in_grace_period = HrmSetting::pluck('check_in_flexibility_time')->toArray();
@@ -294,7 +294,7 @@ trait MachineAttendanceTrait {
 		}
 	}
 
-	protected function multiple_check_in_mobile($check_in , $employee_id , $attendance_source = NULL){
+	protected function multiple_check_in_mobile($check_in , $employee_id , $attendance_source = NULL , $attendance_lat = NULL , $attendance_long = NULL){
 		
 		$employee_data = Employees::where('employee_id',$employee_id)->get(['employee_id','employee_shift_flexibilty','employee_doj'])->toArray();
 		
@@ -343,6 +343,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
+								$mark_Attendance->att_ci_lat = $attendance_lat;
+								$mark_Attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -362,6 +364,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
+								$mark_Attendance->att_ci_lat = $attendance_lat;
+								$mark_Attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -382,6 +386,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
+								$mark_Attendance->att_ci_lat = $attendance_lat;
+								$mark_Attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -400,6 +406,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
+								$mark_Attendance->att_ci_lat = $attendance_lat;
+								$mark_Attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -418,6 +426,8 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_for_month = $month;
 							$mark_attendance->att_for_year = $year;
 							$mark_attendance->att_check_in_source = $attendance_source;
+							$mark_Attendance->att_ci_lat = $attendance_lat;
+							$mark_Attendance->att_ci_long = $attendance_long;
 							$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 							$mark_attendance->att_remote_applicable = $remote_applicable;
 							$mark_attendance->save();
@@ -437,6 +447,8 @@ trait MachineAttendanceTrait {
 						$mark_attendance->att_for_month = $month;
 						$mark_attendance->att_for_year = $year;
 						$mark_attendance->att_check_in_source = $attendance_source;
+						$mark_Attendance->att_ci_lat = $attendance_lat;
+						$mark_Attendance->att_ci_long = $attendance_long;
 						$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 						$mark_attendance->att_remote_applicable = $remote_applicable;
 						$mark_attendance->save();
@@ -449,7 +461,7 @@ trait MachineAttendanceTrait {
 		}
 	}
 
-	protected function multiple_check_out_mobile($check_out_time , $employee_id , $attendance_source = NULL){
+	protected function multiple_check_out_mobile($check_out_time , $employee_id , $attendance_source = NULL , $attendance_lat = NULL , $attendance_long = NULL){
 		
 		$employee_data = Employees::where('employee_id',$employee_id)->get(['employee_id','employee_doj'])->toArray();
 		
@@ -513,6 +525,8 @@ trait MachineAttendanceTrait {
 							}
 
 							$check_out->att_check_out_source = $attendance_source;
+							$check_out->att_co_lat = $attendance_lat;
+							$check_out->att_co_long = $attendance_long;
 							
 							$check_out->save();
 
@@ -574,6 +588,9 @@ trait MachineAttendanceTrait {
 								$check_out->att_check_overall_status = "Early out"; 
 								
 							}
+
+							$check_out->att_co_lat = $attendance_lat;
+							$check_out->att_co_long = $attendance_long;
 
 							$check_out->save();
 							

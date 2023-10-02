@@ -39,7 +39,7 @@ trait AttendanceEmployee {
 				if($employee_data[0]['employee_shift_flexibilty'] != '1'){
 					$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
 					$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
-					$exceed = strtotime("+2 hours", strtotime($employee_shift_start));
+					$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
 					$exceed_final = date('H:i', $exceed);
 					$request_check_in_time = date("H", strtotime($check_in));
 					$check_in_grace_period = HrmSetting::pluck('check_in_flexibility_time')->toArray();
@@ -189,7 +189,7 @@ trait AttendanceEmployee {
 				if($employee_data[0]['employee_shift_flexibilty'] != '1'){
 					$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
 					$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
-					$exceed = strtotime("+2 hours", strtotime($employee_shift_start));
+					$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
 					$exceed_final = date('H:i', $exceed);
 					$check_in_grace_period = HrmSetting::pluck('check_in_flexibility_time')->toArray();
 					$request_check_in_time = date("H", strtotime($check_in));

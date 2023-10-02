@@ -95,6 +95,8 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
 									$mark_Attendance->att_check_in_source = 2;
+									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
+									$mark_Attendance->att_ci_long = $request->post('location_longitude');
 									$mark_Attendance->att_remote_applicable = $remote_applicable;
 									$process = $mark_Attendance->save();
 									
@@ -121,6 +123,8 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
 									$mark_Attendance->att_check_in_source = 2;
+									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
+									$mark_Attendance->att_ci_long = $request->post('location_longitude');
 									$mark_Attendance->att_remote_applicable = $remote_applicable;
 									$process = $mark_Attendance->save();
 
@@ -150,6 +154,8 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
 									$mark_Attendance->att_check_in_source = 2;
+									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
+									$mark_Attendance->att_ci_long = $request->post('location_longitude');
 									$mark_Attendance->att_remote_applicable = $remote_applicable;
 									$process = $mark_Attendance->save();
 
@@ -177,6 +183,8 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
 									$mark_Attendance->att_check_in_source = 2;
+									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
+									$mark_Attendance->att_ci_long = $request->post('location_longitude');
 									$mark_Attendance->att_remote_applicable = $remote_applicable;
 									$process = $mark_Attendance->save();
 
@@ -206,6 +214,8 @@ class MarkAttendanceApiController extends Controller
 								$mark_Attendance->att_for_month = $month;
 								$mark_Attendance->att_for_year = $year;
 								$mark_Attendance->att_check_in_source = 2;
+								$mark_Attendance->att_ci_lat = $request->post('location_latitude');
+								$mark_Attendance->att_ci_long = $request->post('location_longitude');
 								$mark_Attendance->att_remote_applicable = $remote_applicable;
 								$process = $mark_Attendance->save();
 								if($process == 1){
@@ -232,6 +242,8 @@ class MarkAttendanceApiController extends Controller
 							$mark_Attendance->att_for_month = $month;
 							$mark_Attendance->att_for_year = $year;
 							$mark_Attendance->att_check_in_source = 2;
+							$mark_Attendance->att_ci_lat = $request->post('location_latitude');
+							$mark_Attendance->att_ci_long = $request->post('location_longitude');
 							$mark_Attendance->att_remote_applicable = $remote_applicable;
 							$process = $mark_Attendance->save();
 							if($process == 1){
@@ -340,6 +352,8 @@ class MarkAttendanceApiController extends Controller
 							}
 
 							$check_out->att_updated_at = date('Y-m-d H:i:s');
+							$check_out->att_co_lat = $request->post('location_latitude');
+							$check_out->att_co_long = $request->post('location_longitude');
 							$check_out->save();
 							
 							return $this->api_response_json(TRUE,"Check Out Successfully","",200);
@@ -404,6 +418,8 @@ class MarkAttendanceApiController extends Controller
 								}
 
 								$check_out->att_updated_at = date('Y-m-d H:i:s');
+								$check_out->att_co_lat = $request->post('location_latitude');
+								$check_out->att_co_long = $request->post('location_longitude');
 								$check_out->save();
 
 								return $this->api_response_json(TRUE,"Check Out Successfully","",200);
@@ -476,12 +492,12 @@ class MarkAttendanceApiController extends Controller
 				
 				foreach($attendance_object as $attendance){
 					if(array_key_exists("checkin",$attendance)){
-						$this->multiple_check_in_mobile($attendance['formatted_date'],$login_user[0]['employee_id'], 2);
+						$this->multiple_check_in_mobile($attendance['formatted_date'],$login_user[0]['employee_id'], 2 , $attendance['location_latitude'] , $attendance['location_longitude']);
 						
 					}
 					if(array_key_exists("checkout",$attendance)){
 						
-						$this->multiple_check_out_mobile($attendance['formatted_date'], $login_user[0]['employee_id'],2);
+						$this->multiple_check_out_mobile($attendance['formatted_date'], $login_user[0]['employee_id'],2 , $attendance['location_latitude'] , $attendance['location_longitude']);
 	
 					}
 				}
