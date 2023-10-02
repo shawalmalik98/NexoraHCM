@@ -28,8 +28,10 @@ return new class extends Migration
                 $table->string('att_for_date', 50);
                 $table->string('att_for_month', 50);
                 $table->string('att_for_year', 50);
-                $table->string('att_marked_lat', 50)->nullable();
-                $table->string('att_marked_long', 50)->nullable();
+                $table->string('att_ci_lat', 50)->nullable();
+                $table->string('att_ci_long', 50)->nullable();
+                $table->string('att_co_lat', 50)->nullable();
+                $table->string('att_co_long', 50)->nullable();
                 $table->integer('att_remote_applicable')->default(0)->comment('0 = Attendence 1 = WFH');
                 $table->integer('att_request_approval')->nullable()->comment('1 = Request Approval Attendance 2 = Request Approval Leave');
                 $table->integer('att_check_in_source')->default(1)->comment('1 = Web Application , 2 = Mobile Application, 3 = Update Attendance, 4 = Biometric Machine');

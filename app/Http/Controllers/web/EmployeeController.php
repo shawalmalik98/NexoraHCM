@@ -5015,7 +5015,7 @@ class EmployeeController extends Controller
                                 // if(empty($employee_location)){
                                 //     $employee_record_insert = "FALSE";
                                 // }
-
+                                $employee_location = 'Temporary Undefined Location';
                                 $locations = OfficeLocation::where('location_title', $employee_location)->get('location_id')->toArray();
 
                                 // if(empty($locations)){
