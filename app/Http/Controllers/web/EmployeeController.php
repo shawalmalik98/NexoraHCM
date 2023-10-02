@@ -5258,7 +5258,7 @@ class EmployeeController extends Controller
                                                 '/deduction-policy',
                                                 '/companies',
                                                 '/funds',
-                                                'funds/employee-fund'
+                                                '/employee-fund'
                                             ];
 
                                             foreach($permissionRecords as $permissionRecord ){

@@ -4,7 +4,7 @@ $("#fund_policy").change(function (e) {
     
     e.preventDefault();
     $.ajax({
-        url: base_url + '/funds/get-source-data',
+        url: base_url + '/employee-fund/get-source-data',
         type: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

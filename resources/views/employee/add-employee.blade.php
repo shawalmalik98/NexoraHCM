@@ -523,35 +523,37 @@
                             </div>
                         </div>
 
-                        <div class="card-header border-0 px-0">
-                            <h3 class="card-title align-items-start flex-column">
-                                <span class="card-label fw-bold fs-3 mb-1">Funds Details</span>
-                            </h3>
-                        </div> 
+                        @if(!empty($manage_funds))
+                            <div class="card-header border-0 px-0">
+                                <h3 class="card-title align-items-start flex-column">
+                                    <span class="card-label fw-bold fs-3 mb-1">Funds Details</span>
+                                </h3>
+                            </div> 
 
-                        <div class="row g-9 mb-8">  
-                            @if(!empty($manage_funds))
-                                @foreach ($manage_funds as $manage_fund)
-                                    <div class="col-md-3 fv-row">
-                                        <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                        <span class="required">{{$manage_fund['fund_name']}}</span></label>
-                                        <input type="hidden" class="form-control " value="{{$manage_fund['fund_id']}}"  name="fund_id[]" required/>
-                                        <input type="number" class="form-control" name="fund_amount[]" value="0" max="99999" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
-                                    </div>
+                            <div class="row g-9 mb-8">  
                                 
-                                @endforeach
-                            @endif
-                            
-                            {{-- <div class="col-md-6 fv-row">
-                                <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
-                                <select class="form-select" data-control="select2" data-hide-search="false"   name="earning_type" required>
-                                    <option value="">Select Employee Earning Type</option>
-                                    <option value="1" selected>Monthly</option>
-                                    <option value="2">Daily Wages</option>
-                                </select>
-                            </div> --}}
-                            
-                        </div>
+                                    @foreach ($manage_funds as $manage_fund)
+                                        <div class="col-md-3 fv-row">
+                                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                            <span class="required">{{$manage_fund['fund_name']}}</span></label>
+                                            <input type="hidden" class="form-control " value="{{$manage_fund['fund_id']}}"  name="fund_id[]" required/>
+                                            <input type="number" class="form-control" name="fund_amount[]" value="0" max="99999" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
+                                        </div>
+                                    
+                                    @endforeach
+                                
+                                
+                                {{-- <div class="col-md-6 fv-row">
+                                    <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
+                                    <select class="form-select" data-control="select2" data-hide-search="false"   name="earning_type" required>
+                                        <option value="">Select Employee Earning Type</option>
+                                        <option value="1" selected>Monthly</option>
+                                        <option value="2">Daily Wages</option>
+                                    </select>
+                                </div> --}}
+                                
+                            </div>
+                        @endif    
                         
                         <div class="card-header border-0 px-0">
                             <h3 class="card-title align-items-start flex-column">

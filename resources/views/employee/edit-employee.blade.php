@@ -556,7 +556,7 @@
                             </div>
 
                         </div>
-
+                        @if(!empty($employee_funds))
                             <div class="card-header border-0 px-0">
                                 <h3 class="card-title align-items-start flex-column">
                                     <span class="card-label fw-bold fs-3 mb-1">Funds Details</span>
@@ -564,34 +564,35 @@
                                 </h3>
                                 
                             </div> 
-                        <div class="row g-9 mb-8">    
-                            @if(!empty($employee_funds))
-                                @foreach ($employee_funds as $manage_fund)
-                                    <div class="col-md-3 fv-row">
-                                        <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                        <span class="required">{{$manage_fund['fund_name']}}</span></label>
-                                        <input type="hidden" value="{{$manage_fund['ef_created_at']}}" name="ef_created_at[]" />
-                                        <input type="hidden" class="form-control " value="{{$manage_fund['fund_id']}}"  name="fund_id[]"  required/>
-                                        <input type="number" class="form-control" name="fund_amount[]" max="99999" value="{{$manage_fund['ef_amount'] ?? '0'}}" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
-                                    </div>
+                            <div class="row g-9 mb-8">    
                                 
-                                @endforeach
-                            @endif
-                            {{-- <div class="col-lg-1 col-md-1 col-2 " style="margin-top: 60px;">
+                                    @foreach ($employee_funds as $manage_fund)
+                                        <div class="col-md-3 fv-row">
+                                            <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                            <span class="required">{{$manage_fund['fund_name']}}</span></label>
+                                            <input type="hidden" value="{{$manage_fund['ef_created_at']}}" name="ef_created_at[]" />
+                                            <input type="hidden" class="form-control " value="{{$manage_fund['fund_id']}}"  name="fund_id[]"  required/>
+                                            <input type="number" class="form-control" name="fund_amount[]" max="99999" value="{{$manage_fund['ef_amount'] ?? '0'}}" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
+                                        </div>
+                                    
+                                    @endforeach
                                 
-                            </div> --}}
-                            
-                            {{-- <div class="col-md-6 ">
-                                <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
-                                <select class="form-select " data-control="select2" data-hide-search="false"   name="earning_type">
-                                    <option value="">Select Employee Earning Type</option>
-                                    <option value="1" @if ($employee_detail[0]['employee_earning_type'] == 1) selected @endif>Monthly</option>
-                                    <option value="2" @if ($employee_detail[0]['employee_earning_type'] == 2) selected @endif>Daily Wages</option>                                                                                                                                         
-                                   
-                                </select>
-                            </div> --}}
+                                {{-- <div class="col-lg-1 col-md-1 col-2 " style="margin-top: 60px;">
+                                    
+                                </div> --}}
+                                
+                                {{-- <div class="col-md-6 ">
+                                    <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
+                                    <select class="form-select " data-control="select2" data-hide-search="false"   name="earning_type">
+                                        <option value="">Select Employee Earning Type</option>
+                                        <option value="1" @if ($employee_detail[0]['employee_earning_type'] == 1) selected @endif>Monthly</option>
+                                        <option value="2" @if ($employee_detail[0]['employee_earning_type'] == 2) selected @endif>Daily Wages</option>                                                                                                                                         
+                                    
+                                    </select>
+                                </div> --}}
 
-                        </div>
+                            </div>
+                        @endif    
                         
                         <div class="card-header border-0 px-0">
                             {{-- --}}

@@ -101,7 +101,7 @@ class SystemModuleSeeder extends Seeder
                 ('Attendance Deduction Policy','/deduction-policy', '1',1),
                 ('Companies','/companies', '1',1),
                 ('All Funds','/funds', '1',1),
-                ('Employee Funds','/funds/employee-fund', '1',1)
+                ('Employee Funds','/employee-fund', '1',1)
             ");
         }
       

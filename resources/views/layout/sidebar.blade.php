@@ -663,7 +663,7 @@
                                 @if(!empty($permission)  && $permission[78]['module_accessibility'] == 1 && $permission[78]['permission_status'] == 1)
                                     <div class="menu-item search-item">
 
-                                        <a class="menu-link nav-link  @if($title == 'employee-funds') active @endif" href="{{ url('/funds/employee-fund') }}">
+                                        <a class="menu-link nav-link  @if($title == 'employee-funds') active @endif" href="{{ url('/employee-fund') }}">
                                             <span class="menu-icon">
                                                 <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Gadgets Inventory.png') }}" />
                                             </span>
