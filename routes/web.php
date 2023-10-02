@@ -670,8 +670,8 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::prefix('/funds')->group(function (){
 
           Route::get('/', [FundController::class, 'index']); 
-          // Route::get('/employee-fund', [FundController::class, 'employee_fund']);
-          // Route::post('/get-source-data', [FundController::class, 'get_employee_fund_data']);
+          Route::get('/employee-fund', [FundController::class, 'employee_fund']);
+          Route::post('/get-source-data', [FundController::class, 'get_employee_fund_data']);
           Route::post('/add-fund', [FundController::class, 'add_fund']);
           Route::post('/update-fund', [FundController::class, 'update_fund']);
           Route::post('/discard-fund', [FundController::class, 'delete_fund']);
@@ -918,8 +918,8 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
     
   });
 
-    Route::get('funds/employee-fund', [FundController::class, 'employee_fund']);
-    Route::post('funds/get-source-data', [FundController::class, 'get_employee_fund_data']);
+    // Route::get('funds/employee-fund', [FundController::class, 'employee_fund']);
+    // Route::post('funds/get-source-data', [FundController::class, 'get_employee_fund_data']);
  
 
   // Route::prefix('/rpl-leaves')->group(function () {

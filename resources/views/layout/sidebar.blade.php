@@ -613,9 +613,9 @@
 
                     @endif
 
-                    @if(!empty($permission) && ($permission[27]['permission_status'] == 1 || $permission[5]['permission_status'] == 1 || $permission[9]['permission_status'] == 1 || $permission[43]['permission_status'] == 1 || $permission[47]['permission_status'] == 1 || $permission[48]['permission_status'] == 1 || $permission[28]['permission_status'] == 1 || $permission[29]['permission_status'] == 1 || $permission[55]['permission_status'] == 1 || $permission[58]['permission_status'] == 1|| $permission[68]['permission_status'] == 1 || $permission[75]['permission_status'] == 1  ) && ($permission[27]['module_accessibility'] == 1 || $permission[5]['module_accessibility'] == 1 || $permission[9]['module_accessibility'] == 1 || $permission[43]['module_accessibility'] == 1 || $permission[47]['module_accessibility'] == 1 || $permission[48]['module_accessibility'] == 1 || $permission[28]['module_accessibility'] == 1 || $permission[29]['module_accessibility'] == 1 || $permission[55]['module_accessibility'] == 1 || $permission[58]['module_accessibility'] == 1 || $permission[68]['module_accessibility'] == 1 || $permission[75]['module_accessibility'] == 1))
+                    @if(!empty($permission) && ($permission[27]['permission_status'] == 1 || $permission[5]['permission_status'] == 1 || $permission[9]['permission_status'] == 1 || $permission[43]['permission_status'] == 1 || $permission[47]['permission_status'] == 1 || $permission[48]['permission_status'] == 1 || $permission[28]['permission_status'] == 1 || $permission[29]['permission_status'] == 1 || $permission[55]['permission_status'] == 1 || $permission[58]['permission_status'] == 1|| $permission[68]['permission_status'] == 1 || $permission[75]['permission_status'] == 1 || $permission[78]['permission_status'] == 1  ) && ($permission[27]['module_accessibility'] == 1 || $permission[5]['module_accessibility'] == 1 || $permission[9]['module_accessibility'] == 1 || $permission[43]['module_accessibility'] == 1 || $permission[47]['module_accessibility'] == 1 || $permission[48]['module_accessibility'] == 1 || $permission[28]['module_accessibility'] == 1 || $permission[29]['module_accessibility'] == 1 || $permission[55]['module_accessibility'] == 1 || $permission[58]['module_accessibility'] == 1 || $permission[68]['module_accessibility'] == 1 || $permission[75]['module_accessibility'] == 1 || $permission[78]['permission_status'] == 1))
                     
-                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'my-payroll' || $title == 'all-salary-request' || $title == 'my-salary-request' || $title == 'Tax Slab' || $title == 'Tax Collection' || $title == 'cash' || $title == 'expense' || $title == 'employee-expense' || $title == 'my-expense' || $title == 'My Payslip' || $title == 'daily-wages' || $title == 'deduction policy') show @endif">
+                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'my-payroll' || $title == 'all-salary-request' || $title == 'my-salary-request' || $title == 'Tax Slab' || $title == 'Tax Collection' || $title == 'cash' || $title == 'expense' || $title == 'employee-expense' || $title == 'my-expense' || $title == 'My Payslip' || $title == 'daily-wages' || $title == 'deduction policy' || $title == 'employee_funds') show @endif">
 
                             <span class="menu-link">
                                 <span class="menu-icon">
@@ -656,6 +656,19 @@
                                             </div>
                                             @endif
                                         </div>
+                                    </div>
+
+                                @endif
+
+                                @if(!empty($permission)  && $permission[78]['module_accessibility'] == 1 && $permission[78]['permission_status'] == 1)
+                                    <div class="menu-item search-item">
+
+                                        <a class="menu-link nav-link  @if($title == 'employee-funds') active @endif" href="{{ url('/funds/employee-fund') }}">
+                                            <span class="menu-icon">
+                                                <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Gadgets Inventory.png') }}" />
+                                            </span>
+                                            <span class="menu-title">Employee Funds</span>
+                                        </a>
                                     </div>
 
                                 @endif
@@ -944,7 +957,7 @@
                         </div>
                     @endif
 
-                    @if(!empty($permission) && ($permission[16]['permission_status'] == 1 || $permission[77]['permission_status'] == 1  || $permission[17]['permission_status'] == 1  || $permission[42]['permission_status'] == 1 || $permission[18]['permission_status'] == 1 || $permission[6]['permission_status'] == 1 || $permission[38]['permission_status'] == 1 || $permission[8]['permission_status'] == 1 || $permission[39]['permission_status'] == 1 || $permission[33]['permission_status'] == 1 || $permission[34]['permission_status'] == 1 || $permission[46]['permission_status'] == 1 || $permission[11]['permission_status'] == 1  || $permission[53]['permission_status'] == 1 || $permission[57]['permission_status'] == 1 || $permission[35]['permission_status'] == 1 || $permission[37]['permission_status'] == 1 || $permission[61]['permission_status'] == 1  || $permission[60]['permission_status'] == 1 || $permission[62]['permission_status'] == 1 ||  $permission[64]['permission_status'] || $permission[69]['permission_status'] == 1 ) && ($permission[16]['module_accessibility'] == 1 || $permission[77]['module_accessibility'] == 1 || $permission[17]['module_accessibility'] == 1  || $permission[42]['module_accessibility'] == 1 || $permission[18]['module_accessibility'] == 1 || $permission[6]['module_accessibility'] == 1 || $permission[38]['module_accessibility'] == 1 || $permission[8]['module_accessibility'] == 1 || $permission[39]['module_accessibility'] == 1 || $permission[33]['module_accessibility'] == 1 || $permission[34]['module_accessibility'] == 1 || $permission[46]['module_accessibility'] == 1 || $permission[11]['module_accessibility'] == 1  || $permission[53]['module_accessibility'] == 1 || $permission[57]['module_accessibility'] == 1 || $permission[35]['module_accessibility'] == 1 || $permission[37]['module_accessibility'] == 1 || $permission[61]['module_accessibility'] == 1  || $permission[60]['module_accessibility'] == 1 || $permission[62]['module_accessibility'] == 1 ||  $permission[64]['module_accessibility'] || $permission[69]['module_accessibility'] == 1))
+                    @if(!empty($permission) && ($permission[16]['permission_status'] == 1 || $permission[77]['permission_status'] == 1 || $permission[17]['permission_status'] == 1  || $permission[42]['permission_status'] == 1 || $permission[18]['permission_status'] == 1 || $permission[6]['permission_status'] == 1 || $permission[38]['permission_status'] == 1 || $permission[8]['permission_status'] == 1 || $permission[39]['permission_status'] == 1 || $permission[33]['permission_status'] == 1 || $permission[34]['permission_status'] == 1 || $permission[46]['permission_status'] == 1 || $permission[11]['permission_status'] == 1  || $permission[53]['permission_status'] == 1 || $permission[57]['permission_status'] == 1 || $permission[35]['permission_status'] == 1 || $permission[37]['permission_status'] == 1 || $permission[61]['permission_status'] == 1  || $permission[60]['permission_status'] == 1 || $permission[62]['permission_status'] == 1 ||  $permission[64]['permission_status'] || $permission[69]['permission_status'] == 1 ) && ($permission[16]['module_accessibility'] == 1 || $permission[77]['module_accessibility'] == 1 || $permission[17]['module_accessibility'] == 1  || $permission[42]['module_accessibility'] == 1 || $permission[18]['module_accessibility'] == 1 || $permission[6]['module_accessibility'] == 1 || $permission[38]['module_accessibility'] == 1 || $permission[8]['module_accessibility'] == 1 || $permission[39]['module_accessibility'] == 1 || $permission[33]['module_accessibility'] == 1 || $permission[34]['module_accessibility'] == 1 || $permission[46]['module_accessibility'] == 1 || $permission[11]['module_accessibility'] == 1  || $permission[53]['module_accessibility'] == 1 || $permission[57]['module_accessibility'] == 1 || $permission[35]['module_accessibility'] == 1 || $permission[37]['module_accessibility'] == 1 || $permission[61]['module_accessibility'] == 1  || $permission[60]['module_accessibility'] == 1 || $permission[62]['module_accessibility'] == 1 ||  $permission[64]['module_accessibility'] || $permission[69]['module_accessibility'] == 1))
                         
                         <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'gadgets-inventory' || $title == 'gadgets-allotment' || $title == 'letters' || $title == 'all-meetings' || $title == 'my-meetings' || $title == 'all-resignation' || $title == 'resignation' || $title == 'Alerts' || $title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-vehicles' || $title == 'help-desk' || $title == 'my-help-desk' || $title == 'link-post' || $title == 'organogram' || $title == 'system-errors' || $title == 'login-history' || $title == 'letter-templates' || $title == 'employee-letters' || $title == 'machine-logs' || $title == 'polling' || $title == 'employment-status' || $title == 'manage-funds') show @endif">
 
@@ -982,18 +995,7 @@
                                     </div>
 
                                 @endif
-                                {{-- @if(!empty($permission)  && $permission[78]['module_accessibility'] == 1 && $permission[78]['permission_status'] == 1) --}}
-                                    <div class="menu-item search-item">
-
-                                        <a class="menu-link nav-link  @if($title == 'employee-funds') active @endif" href="{{ url('/funds/employee-fund') }}">
-                                            <span class="menu-icon">
-                                                <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Gadgets Inventory.png') }}" />
-                                            </span>
-                                            <span class="menu-title">Employee Funds</span>
-                                        </a>
-                                    </div>
-
-                                {{-- @endif --}}
+                               
                                 @if(!empty($permission)  && $permission[16]['module_accessibility'] == 1 && $permission[16]['permission_status'] == 1)
                                     <div class="menu-item search-item">
 

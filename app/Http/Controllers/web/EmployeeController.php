@@ -1421,29 +1421,31 @@ class EmployeeController extends Controller
                         }
 
                     }
+                    if(!empty($employee_data->fund_id)){
 
-                    foreach($employee_data->fund_id as $key=>$fund_detail_id){
+                        foreach($employee_data->fund_id as $key => $fund_detail_id){
 
-                        $funds_name = Fund::where('fund_id', $fund_detail_id)->get('fund_name')->toArray();
+                            $funds_name = Fund::where('fund_id', $fund_detail_id)->get('fund_name')->toArray();
 
-                        if(!empty($funds_name)){
+                            if(!empty($funds_name)){
 
-                            if(!empty($employee_data->ef_created_at[$key])){
-                                $date = $employee_data->ef_created_at[$key];
-                            }else{
-                                $date =  date('Y-m-d H:i:s');
+                                if(!empty($employee_data->ef_created_at[$key])){
+                                    $date = $employee_data->ef_created_at[$key];
+                                }else{
+                                    $date =  date('Y-m-d H:i:s');
+                                }
+
+                                $employee_fund = EmployeeFund::updateOrCreate([
+                                    'ef_employee_id' => $employee_data->input('employee_id'),
+                                    'ef_fund_id' => $fund_detail_id
+                                ], [
+                                    'ef_amount' => $employee_data->fund_amount[$key],
+                                    'ef_created_at' => $date
+                                ]);
                             }
 
-                            $employee_fund = EmployeeFund::updateOrCreate([
-                                'ef_employee_id' => $employee_data->input('employee_id'),
-                                'ef_fund_id' => $fund_detail_id
-                            ], [
-                                'ef_amount' => $employee_data->fund_amount[$key],
-                                'ef_created_at' => $date
-                            ]);
                         }
-
-                    }
+                    }    
 
                     $updateInformation = EmployeeInformation::find($employee_data->input('information_id'));
                     $updateInformation->bankname = $employee_data->input('bank_name');

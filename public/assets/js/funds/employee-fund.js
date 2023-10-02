@@ -26,7 +26,6 @@ $("#fund_policy").change(function (e) {
                             </tr>`;
         
                     })
-                    record += `<input type="hidden" name="fund_id" value="${response.type}" required/> `;
                     $('#responsefundname').append(record)
                 
                 }

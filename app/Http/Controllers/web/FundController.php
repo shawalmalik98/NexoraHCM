@@ -256,7 +256,6 @@ class FundController extends Controller
                         return response()->json([
                             'status' => 'TRUE',
                             'data' => $get_fund_source_data,
-                            'type' =>$get_fund_source,
                         ]);
                     }else{
                         return response()->json([
