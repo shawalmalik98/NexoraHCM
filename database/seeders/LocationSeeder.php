@@ -1138,6 +1138,7 @@ class LocationSeeder extends Seeder
             ['location_alt_id' => '1343','location_title' => 'Qamar Traders Faisalabad' , 'location_latitude' => '31.41409' , 'location_longitude' => '73.122832'],
             ['location_alt_id' => '1354','location_title' => 'Mohan Traders Winder' , 'location_latitude' => '25.3880755' , 'location_longitude' => '66.664548'],
             ['location_alt_id' => '1390','location_title' => 'Tayyab Mart Chakri Road Rwp' , 'location_latitude' => '33.556828' , 'location_longitude' => '73.02072'],
+            ['location_alt_id' => NULL,'location_title' => 'Temporary Undefined Location' , 'location_latitude' => '24.87231137724896' , 'location_longitude' => '67.0907693008022'],
         ];
         
         $get_location = DB::select('SELECT * FROM tbl_office_locations');
