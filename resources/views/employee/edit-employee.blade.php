@@ -555,7 +555,16 @@
                                 </a>
                             </div>
 
+                        </div>
 
+                            <div class="card-header border-0 px-0">
+                                <h3 class="card-title align-items-start flex-column">
+                                    <span class="card-label fw-bold fs-3 mb-1">Funds Details</span>
+                                    <span class="text-muted mt-1 fw-semibold fs-7"></span>
+                                </h3>
+                                
+                            </div> 
+                        <div class="row g-9 mb-8">    
                             @if(!empty($employee_funds))
                                 @foreach ($employee_funds as $manage_fund)
                                     <div class="col-md-3 fv-row">
@@ -563,7 +572,7 @@
                                         <span class="required">{{$manage_fund['fund_name']}}</span></label>
                                         <input type="hidden" value="{{$manage_fund['ef_created_at']}}" name="ef_created_at[]" />
                                         <input type="hidden" class="form-control " value="{{$manage_fund['fund_id']}}"  name="fund_id[]"  required/>
-                                        <input type="number" class="form-control" name="fund_amount[]" value="{{$manage_fund['ef_amount'] ?? '0'}}" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
+                                        <input type="number" class="form-control" name="fund_amount[]" max="99999" value="{{$manage_fund['ef_amount'] ?? '0'}}" placeholder="Enter {{$manage_fund['fund_name']}}" required/>
                                     </div>
                                 
                                 @endforeach

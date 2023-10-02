@@ -201,7 +201,7 @@ class EmployeeController extends Controller
                 'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now',
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
                 'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
-                'fund_amount.*' => 'required|numeric|min:0',
+                'fund_amount.*' => 'required|numeric|min:0|max:99999',
                 'fund_id.*' => 'required|numeric'
 
             ],$messages);
@@ -1119,7 +1119,7 @@ class EmployeeController extends Controller
                 'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now',
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
                 'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
-                'fund_amount.*' => 'required|numeric|min:0',
+                'fund_amount.*' => 'required|numeric|min:0|max:99999',
                 'fund_id.*' => 'required|numeric'
             ], $messages);
             
@@ -5255,7 +5255,8 @@ class EmployeeController extends Controller
                                                 '/leave-policy',
                                                 '/deduction-policy',
                                                 '/companies',
-                                                '/funds'
+                                                '/funds',
+                                                'funds/employee-fund'
                                             ];
 
                                             foreach($permissionRecords as $permissionRecord ){

@@ -100,7 +100,8 @@ class SystemModuleSeeder extends Seeder
                 ('Leave Policy', '/leave-policy', '1',1),
                 ('Attendance Deduction Policy','/deduction-policy', '1',1),
                 ('Companies','/companies', '1',1),
-                ('Employee Funds','/funds', '1',1)
+                ('All Funds','/funds', '1',1),
+                ('Employee Funds','/funds/employee-fund', '1',1)
             ");
         }
       

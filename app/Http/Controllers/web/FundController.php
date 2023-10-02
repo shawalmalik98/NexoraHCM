@@ -5,7 +5,7 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Crypt, Validator};
-use App\Models\{Fund};
+use App\Models\{Fund, EmployeeFund};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
 
@@ -14,6 +14,7 @@ class FundController extends Controller
     use LoginEmployee, LogGenerateTrait;
 
     const TITLE_GLOBAL = 'manage-funds';
+    const TITLE_GLOBAL2 = 'employee_funds';
 
     protected function index(){
 
@@ -208,6 +209,86 @@ class FundController extends Controller
             
         }
     }
+
+    protected function employee_fund(){
+        try{
+            $title = Self::TITLE_GLOBAL2;
+            $login_user = $this->get_login_user_detail();
+        
+            $employee_funds = Fund::get()->toArray();
+
+            $send_data = compact('title','login_user','employee_funds');
+            return view('funds.employee-fund', $send_data);
+        }catch(\Exception $e){
+            $this->create_error_log('Employee Funds Fetch', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
+            ActivityTracker::track_activity('Employee Funds');
+           
+        }
+    }
+        protected function get_employee_fund_data(Request $request){
+            try{
+              
+                $get_fund_source = $request->input('fund_id');
+                
+                $validator = Validator::make($request->all(), [
+                    'fund_id' => 'required',
+                
+                ]);
+    
+                if($validator->fails()) {
+                    foreach($validator->errors()->all() as $error){
+                        return Redirect::back()->with('error', $error);
+                    }
+                }
+                if(!empty($get_fund_source)){
+                   
+                    $get_fund_source_data = EmployeeFund::selectRaw('CONVERT(CHAR(10), [ef_created_at], 112) as ef_created_at, fund_id, ef_id, employee_code, employee_name, fund_name, ef_amount')
+                    ->join('tbl_funds', 'tbl_employees_funds.ef_fund_id', '=', 'tbl_funds.fund_id')
+                    ->join('tbl_employees', 'tbl_employees_funds.ef_employee_id','=','tbl_employees.employee_id')
+                    ->where('ef_amount', '>', 0) 
+                    ->where('fund_id', $get_fund_source)
+                    ->get()->toArray();
+
+                    if(!empty($get_fund_source_data)){
+                        return response()->json([
+                            'status' => 'TRUE',
+                            'data' => $get_fund_source_data,
+                            'type' =>$get_fund_source,
+                        ]);
+                    }else{
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'title' => "No record found for this fund.",
+                        ]);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Fund is required.",
+                    ]);
+                }
+    
+            }catch(\Exception $e){
+                $this->create_error_log('Employee Funds Fetch', $e);
+                if(!env('APP_DEBUG')){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Something went wrong. Please try again.",
+                    ]);
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Something went wrong. Please try again.",
+                        'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                    ]);
+                }
+            }finally{
+                ActivityTracker::track_activity('Employee Funds Fetch');
+            }
+        }
 
 
 }

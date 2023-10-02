@@ -977,11 +977,23 @@
                                             <span class="menu-icon">
                                                 <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Gadgets Inventory.png') }}" />
                                             </span>
-                                            <span class="menu-title">Employee Funds</span>
+                                            <span class="menu-title">All Funds</span>
                                         </a>
                                     </div>
 
                                 @endif
+                                {{-- @if(!empty($permission)  && $permission[78]['module_accessibility'] == 1 && $permission[78]['permission_status'] == 1) --}}
+                                    <div class="menu-item search-item">
+
+                                        <a class="menu-link nav-link  @if($title == 'employee-funds') active @endif" href="{{ url('/funds/employee-fund') }}">
+                                            <span class="menu-icon">
+                                                <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Gadgets Inventory.png') }}" />
+                                            </span>
+                                            <span class="menu-title">Employee Funds</span>
+                                        </a>
+                                    </div>
+
+                                {{-- @endif --}}
                                 @if(!empty($permission)  && $permission[16]['module_accessibility'] == 1 && $permission[16]['permission_status'] == 1)
                                     <div class="menu-item search-item">
 
