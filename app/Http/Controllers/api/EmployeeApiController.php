@@ -15,8 +15,36 @@ class EmployeeApiController extends Controller
 {
     use LoginEmployee, LogGenerateTrait, ApiResponseTrait, NotificationTrait;
 
+    const MAIN_TITLE = "employee";
     const DOCUMENT = 'employee-personal-document';
     const LOCATION = "office-location";
+
+    protected function get_employee_detail(Request $request){
+
+        try{
+
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
+
+            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->where('employee_id' , $login_user[0]['employee_id'])
+            ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','employee_geofencing_enability','employee_offdays'])->toArray();
+
+            return $this->api_response_json(TRUE,"Employee Detail",$employees,200); 
+        
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('View Employee Detail API', $e, $request->header('Bearer-Token'));
+
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+
+        }
+        finally{
+
+            ActivityTracker::track_activity_from_api('View Employee Detail API',  $request->header('Bearer-Token'));
+           
+        }
+
+    }
 
     protected function change_password_function(Request $request){
 		
