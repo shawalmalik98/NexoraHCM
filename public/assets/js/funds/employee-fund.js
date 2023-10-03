@@ -5,7 +5,7 @@ $("#fund_policy").change(function (e) {
     e.preventDefault();
     $.ajax({
         url: base_url + '/employee-fund/get-source-data',
-        type: 'POST',
+        type: 'GET',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
@@ -29,8 +29,9 @@ $("#fund_policy").change(function (e) {
                     $('#responsefundname').append(record)
                 
                 }
-              
-               
+
+            }else{
+                $('#responsefundname').html('');
             } 
         },
         error: function (jqXHR, textStatus) {
@@ -57,4 +58,4 @@ $("#fund_policy").change(function (e) {
             }
         }
     });
-    });
+});

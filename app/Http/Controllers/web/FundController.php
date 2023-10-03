@@ -172,12 +172,26 @@ class FundController extends Controller
             $delete_fund = Fund::find($request->fund_id);
 
             if(!empty($delete_fund)){
-            
-                Fund::where('fund_id', $request->fund_id)->delete();
-                return response()->json([
-                    'status' => 'TRUE',
-                    'msg' => 'Fund has been deleted',
-                ]);
+
+                $check_if_exist_fund = EmployeeFund::where('ef_fund_id', $request->fund_id)
+                ->where('ef_amount', '>', 0)
+                ->limit(1)
+                ->get(['ef_fund_id'])->toArray();
+    
+                if(empty($check_if_exist_fund)){
+
+                    Fund::where('fund_id', $request->fund_id)->delete();
+                    EmployeeFund::where('ef_fund_id', $request->fund_id)->delete();
+                    return response()->json([
+                        'status' => 'TRUE',
+                        'msg' => 'Fund has been deleted',
+                    ]);
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "This fund can't be delete. Multiple employees are paying this fund.",
+                    ]);
+                }   
     
             }else{
                 return response()->json([

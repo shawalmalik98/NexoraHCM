@@ -395,22 +395,23 @@ class EmployeeController extends Controller
                         }
 
                     }
+                    if(!empty($employee_data->fund_id)){
+                        foreach($employee_data->fund_id as $key => $fund_id){
 
-                    foreach($employee_data->fund_id as $key => $fund_id){
+                            $fund_names = Fund::where('fund_id', $fund_id)->get('fund_name')->toArray();
 
-                        $fund_names = Fund::where('fund_id', $fund_id)->get('fund_name')->toArray();
+                            if(!empty($fund_names)){
+                                $add_funds =  new EmployeeFund();
+                                $add_funds->ef_employee_id = $employee_registration_id;
+                                $add_funds->ef_fund_id      = $fund_id;
+                                $add_funds->ef_amount   =  $employee_data->fund_amount[$key];
+                                $add_funds->ef_created_at =  date('Y-m-d H:i:s');
+                                $add_funds->save();
 
-                        if(!empty($fund_names)){
-                            $add_funds =  new EmployeeFund();
-                            $add_funds->ef_employee_id = $employee_registration_id;
-                            $add_funds->ef_fund_id      = $fund_id;
-                            $add_funds->ef_amount   =  $employee_data->fund_amount[$key];
-                            $add_funds->ef_created_at =  date('Y-m-d H:i:s');
-                            $add_funds->save();
+                            }
 
                         }
-
-                    }
+                    }    
 
                     $add_shift = new ShiftManagement();
                     $add_shift->employee_id = $employee_registration_id;

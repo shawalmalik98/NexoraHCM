@@ -678,7 +678,7 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
 
         Route::prefix('/employee-fund')->group(function (){
           Route::get('/', [FundController::class, 'employee_fund']);
-          Route::post('/get-source-data', [FundController::class, 'get_employee_fund_data']);
+          Route::get('/get-source-data', [FundController::class, 'get_employee_fund_data']);
 
         });
 
