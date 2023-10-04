@@ -1050,4 +1050,8 @@ class HomeController extends Controller
         }
 
     }
+
+    protected function privacy_policy(){
+        return view('privacy-policy');
+    }
 }
