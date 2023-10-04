@@ -58,8 +58,9 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         Route::post('generate-mobile-app-log', [GerenalController::class, 'get_error_log_mobile_application']);
         
         // login and basic
-       
-        Route::post('login-process',[LoginController::class, 'login_process'])->withoutMiddleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerification']);
+        Route::middleware('throttle:200,1')->group(function () {
+            Route::post('login-process',[LoginController::class, 'login_process'])->withoutMiddleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerification']);
+        });
   
         
         Route::get('request-manager-status', [CustomController::class, 'request_manager_status']);
