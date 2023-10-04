@@ -68,9 +68,11 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 
         // attendance start
         Route::middleware(['MobileAttendanceBarrier'])->group(function (){
-            Route::post('checkinattendance', [MarkAttendanceController::class, 'check_in']);
-            Route::post('checkoutattendance', [MarkAttendanceController::class, 'check_out']);
-            Route::post('offline-attendance', [MarkAttendanceController::class, 'offline_attendance']);
+            Route::middleware('throttle:200,1')->group(function () {
+                Route::post('checkinattendance', [MarkAttendanceController::class, 'check_in']);
+                Route::post('checkoutattendance', [MarkAttendanceController::class, 'check_out']);
+                Route::post('offline-attendance', [MarkAttendanceController::class, 'offline_attendance']);
+            });
         });
         
         Route::get('my-attendance', [AttendanceController::class, 'personal_attendace']);
