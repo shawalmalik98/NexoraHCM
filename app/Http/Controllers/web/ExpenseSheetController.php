@@ -23,14 +23,16 @@ class ExpenseSheetController extends Controller
             $login_user = $this->get_login_user_detail();
                 
             $where_clause = '1=1 ';
-            if(!empty($request->expense_period)){
+
+            if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause .= 'AND expense_date LIKE  "%'.$expense_period.'%"';
-            }else{
-                $where_clause .= 'AND expense_date LIKE  "%'.date("Y-m").'%"';
+                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . $expense_period . "%'";
+            } else {
+                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . date("Y-m") . "%'";
             }
             
             $expenses = ExpenseSheet::whereRaw($where_clause)->get()->toArray();
+        
             $expenses2 = ExpenseSheet::whereRaw($where_clause)->get();
             
             $total_expense = $expenses2->sum('expense_amount');
@@ -51,7 +53,6 @@ class ExpenseSheetController extends Controller
     protected function download_expense(Request $request){
         try{
             
-        
             $security_variable = FALSE;
 
             $validator = Validator::make($request->all(), [
@@ -70,11 +71,11 @@ class ExpenseSheetController extends Controller
             }
                 
             $where_clause = '1=1 ';
-            if(!empty($request->expense_period)){
+            if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause .= 'AND expense_date LIKE  "%'.$expense_period.'%"';
-            }else{
-                $where_clause .= 'AND expense_date LIKE  "%'.date("Y-m").'%"';
+                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . $expense_period . "%'";
+            } else {
+                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . date("Y-m") . "%'";
             }
             
             $expenses = ExpenseSheet::join('tbl_employees','tbl_expense_sheet.expense_created_by','tbl_employees.employee_id')->whereRaw($where_clause)->get(['employee_id','employee_name','employee_code','expense_id','expense_date','expense_reason','expense_source','expense_attachment','expense_amount', 'expense_created_by', 'expense_created_at'])->toArray();

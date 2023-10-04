@@ -1960,7 +1960,14 @@ class EmployeeController extends Controller
 
             }
 
-            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_isactive', 1)->whereRaw('MONTH(employee_doj) = ?', $current_month)->whereRaw('DATEDIFF(NOW(), employee_doj) >= 365')->orderByRaw('DAY(employee_doj)')->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_doj'])->toArray();
+            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->where('employee_isactive', 1)
+            ->whereRaw('MONTH(employee_doj) = ?', $current_month)
+            ->whereRaw('DATEDIFF(DAY, employee_doj, GETDATE()) >= 365')
+            ->orderByRaw('DAY(employee_doj)')
+            ->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_doj'])
+            ->toArray();
 
             $send_data = compact('login_user','employees');
 
@@ -2457,7 +2464,7 @@ class EmployeeController extends Controller
 
         if(!empty($request->employee_location)){
 
-            $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
+            $where_clause .= " AND employee_location = '".$request->employee_location."'";
         }
 
         if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2 || $login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 3){

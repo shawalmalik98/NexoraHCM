@@ -25,17 +25,19 @@ class PettyCashController extends Controller
             $where_clause = '1=1 ';
             $where_clause_to = '1=1 ';
 
-            if(!empty($request->expense_period)){
+            if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause .= 'AND petty_cash_for_month_and_year LIKE  "%'.$expense_period.'%"';    
-            }else{
-                $where_clause .= 'AND petty_cash_for_month_and_year LIKE  "%'.date("Y-m").'%"'; 
+                $where_clause .= " AND CONVERT(VARCHAR, petty_cash_for_month_and_year, 120) LIKE '%" . $expense_period . "%'";
+            } else {
+                $where_clause .= " AND CONVERT(VARCHAR, petty_cash_for_month_and_year, 120) LIKE '%" . date("Y-m") . "%'";
             }
-            if(!empty($request->expense_period)){
+            
+
+            if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause_to .= 'AND expense_date LIKE  "%'.$expense_period.'%"';    
-            }else{
-                $where_clause_to .= 'AND expense_date LIKE  "%'.date("Y-m").'%"'; 
+                $where_clause_to .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . $expense_period . "%'";
+            } else {
+                $where_clause_to .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . date("Y-m") . "%'";
             }
 
             $all_cash_history = PettyCash::whereRaw($where_clause)->get()->toArray();

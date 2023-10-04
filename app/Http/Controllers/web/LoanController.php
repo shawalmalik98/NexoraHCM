@@ -45,21 +45,21 @@ class LoanController extends Controller
             if(!empty($request->emp_status) || !empty($request->employee_location) || !empty($request->emp_name) || !empty($request->loan_issuance_date || !empty($request->loan_status))){
                
                 if(!empty($request->employee_location)){
-                    $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
-                    $where_clause_to   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                    $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
+                    $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
                 }
                 if(!empty($request->emp_name)){
-                    $where_clause .= ' AND tbl_loans.employee_code = "'.$request->emp_name.'"';
+                    $where_clause .= " AND tbl_loans.employee_code = '".$request->emp_name."'";
                 }
                 if(!empty($request->loan_issuance_date)){
-                    $where_clause .= ' AND loan_issuance_date like "%'.CustomHelper::dateformatDFY($request->loan_issuance_date).'%"';
+                    $where_clause .= " AND loan_issuance_date like '%".CustomHelper::dateformatDFY($request->loan_issuance_date)."%' ";
                 }
                 if(!empty($request->emp_status)){
-                    $where_clause .= ' AND employee_isactive = "'.$status.'"';
-                    $where_clause_to   .= ' AND employee_isactive = "'.$status.'"'; 
+                    $where_clause .= " AND employee_isactive = '".$status."'";
+                    $where_clause_to   .= " AND employee_isactive = '".$status."'"; 
                 }
                 if(!empty($request->loan_status)){
-                    $where_clause .= ' AND loan_status = "'.$request->loan_status.'"';
+                    $where_clause .= " AND loan_status = '".$request->loan_status."'";
                 }
 
             }
@@ -145,21 +145,21 @@ class LoanController extends Controller
             if(!empty($request->emp_status) || !empty($request->employee_location) || !empty($request->emp_name) || !empty($request->loan_issuance_date || !empty($request->loan_status))){
                
                 if(!empty($request->employee_location)){
-                    $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
-                    $where_clause_to   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                    $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
+                    $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
                 }
                 if(!empty($request->emp_name)){
-                    $where_clause .= ' AND tbl_loans.employee_code = "'.$request->emp_name.'"';
+                    $where_clause .= " AND tbl_loans.employee_code = '".$request->emp_name."'";
                 }
                 if(!empty($request->loan_issuance_date)){
-                    $where_clause .= ' AND loan_issuance_date like "%'.CustomHelper::dateformatDFY($request->loan_issuance_date).'%"';
+                    $where_clause .= " AND loan_issuance_date like '%".CustomHelper::dateformatDFY($request->loan_issuance_date)."%' ";
                 }
                 if(!empty($request->emp_status)){
-                    $where_clause .= ' AND employee_isactive = "'.$status.'"';
-                    $where_clause_to   .= ' AND employee_isactive = "'.$status.'"'; 
+                    $where_clause .= " AND employee_isactive = '".$status."'";
+                    $where_clause_to   .= " AND employee_isactive = '".$status."'"; 
                 }
                 if(!empty($request->loan_status)){
-                    $where_clause .= ' AND loan_status = "'.$request->loan_status.'"';
+                    $where_clause .= " AND loan_status = '".$request->loan_status."'";
                 }
 
             }
@@ -175,16 +175,13 @@ class LoanController extends Controller
             ->toArray();
 
             $total_loan = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
-            ->whereRaw($where_clause)
-            ->sum('loan_given_amount');
+            ->whereRaw($where_clause)->sum(DB::raw('CAST(loan_given_amount AS DECIMAL(18, 2))'));
 
             $loan_return = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
-            ->whereRaw($where_clause)
-            ->sum('loan_submitted_amount');
+            ->whereRaw($where_clause)->sum(DB::raw('CAST(loan_submitted_amount AS DECIMAL(18, 2))'));
 
             $loan_reamining = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
-            ->whereRaw($where_clause)
-            ->sum('loan_remaining_amount');
+            ->whereRaw($where_clause)->sum(DB::raw('CAST(loan_remaining_amount AS DECIMAL(18, 2))'));
 
             $all_employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
 

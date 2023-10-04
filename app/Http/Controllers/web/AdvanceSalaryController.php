@@ -45,23 +45,24 @@ class AdvanceSalaryController extends Controller
                     $limit_query = '*';
                 }
 
-                $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
+                $where_clause = '1=1 AND employee_isactive = '.$status.'';
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_created_date) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
+                        $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND tbl_advance_salary_request.employee_id = "'.$request_data->emp_name.'"';
+                        $where_clause .= " AND tbl_advance_salary_request.employee_id = '".$request_data->emp_name."' ";
                     }
                     if(!empty($request_data->request_created_date)){
                         $created_date = date("d-m-Y", strtotime($request_data->request_created_date));
-                        $where_clause .= ' AND request_created_at LIKE "%'.$created_date.'%"';
+                        $where_clause .= " AND request_created_at LIKE  '%" . $created_date . "%'";
+                       
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND tbl_advance_salary_request.request_approved_by_finance = "'.$request_data->req_status.'"';
+                        $where_clause .= " AND tbl_advance_salary_request.request_approved_by_finance = '".$request_data->req_status."'";
                     }
                 
                 }
@@ -90,14 +91,14 @@ class AdvanceSalaryController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
 
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
+                        $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND tbl_advance_salary_request.employee_id = "'.$request_data->emp_name.'"';
+                        $where_clause .= " AND tbl_advance_salary_request.employee_id = '".$request_data->emp_name."' ";
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND tbl_advance_salary_request.request_approved_by_finance = "'.$request_data->req_status.'"';
+                        $where_clause .= " AND tbl_advance_salary_request.request_approved_by_finance = '".$request_data->req_status."'";
                     }
                 }
 
@@ -118,7 +119,6 @@ class AdvanceSalaryController extends Controller
              return view('errors.500');
         }finally{
             ActivityTracker::track_activity('Access All Advance Salary Request Module');
-           
         }
 
     }
@@ -190,9 +190,12 @@ class AdvanceSalaryController extends Controller
             }else {
 
                 $login_user = $this->get_login_user_detail();
+
                 $checking_request = AdvanceSalary::where('employee_id', session('user_session'))->where('effective_payroll_period', $request_data->input('payback_date'))->where('request_approved_by_finance', 1)->get('advance_salary_request_id')->toArray();
                 
-                $payroll_exists = $this->check_if_payroll_exist($request_data->input('payback_date'),session('user_session'),$custom_message = NULL);
+                $convertDate = $request_data->input('payback_date');
+
+                $payroll_exists = $this->check_if_payroll_exist(date('Y-m-d', strtotime($convertDate . '-01')),session('user_session'),$custom_message = NULL);
 
                 if($payroll_exists['status'] == TRUE){
                     return response()->json([
