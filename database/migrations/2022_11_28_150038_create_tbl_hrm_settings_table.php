@@ -44,7 +44,7 @@ return new class extends Migration
                 $table->integer('annual_leave_display')->default(1);
                 $table->integer('total_leave_all_leaves_visibility')->default(1);
                 $table->string('system_currency',100)->default('PKR');
-                $table->float('gross_salary_ratio', 8 , 5)->default(61.850);
+                $table->float('gross_salary_ratio', 8 , 5)->default(62.89);
             });
         }
     }
