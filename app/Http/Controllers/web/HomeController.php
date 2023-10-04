@@ -773,7 +773,8 @@ class HomeController extends Controller
             
                 $where_month = '1 = 1';
             }else{
-                $where_month = 'DATE_FORMAT(STR_TO_DATE(interview_status_created_at,"%d-%m-%Y %H:%i:%s"),"%m") = "'.$month.'"';
+                // $where_month = 'DATE_FORMAT(STR_TO_DATE(interview_status_created_at,"%d-%m-%Y %H:%i:%s"),"%m") = "'.$month.'"';
+                $where_month = 'MONTH(CONVERT(datetime, interview_status_created_at, 120)) = '.$month;
             }
             if($status == 1){
                 $where_clause = 1;
@@ -787,7 +788,9 @@ class HomeController extends Controller
                 $where_clause = $status;
             }
             
-            $interview_status = InterviewStatus::join('tbl_interview_status_level','tbl_interview_status.interview_status_level_id','tbl_interview_status_level.interview_status_level_id')->whereRaw('DATE_FORMAT(STR_TO_DATE(interview_status_created_at,"%d-%m-%Y %H:%i:%s"),"%Y") = "'.$year.'"')->whereRaw($where_month)->whereIn('tbl_interview_status.interview_status_level_id',$where_clause)->count();
+            // $interview_status = InterviewStatus::join('tbl_interview_status_level','tbl_interview_status.interview_status_level_id','tbl_interview_status_level.interview_status_level_id')->whereRaw('DATE_FORMAT(STR_TO_DATE(interview_status_created_at,"%d-%m-%Y %H:%i:%s"),"%Y") = "'.$year.'"')->whereRaw($where_month)->whereIn('tbl_interview_status.interview_status_level_id',$where_clause)->count();
+
+            $interview_status = InterviewStatus::join('tbl_interview_status_level','tbl_interview_status.interview_status_level_id','tbl_interview_status_level.interview_status_level_id')->whereRaw('YEAR(CONVERT(datetime, interview_status_created_at, 120)) = '.$year)->whereRaw($where_month)->whereIn('tbl_interview_status.interview_status_level_id',$where_clause)->count();
             
 
         }catch(\Exception $e){

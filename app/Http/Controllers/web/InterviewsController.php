@@ -332,7 +332,15 @@ class InterviewsController extends Controller
               
                 if($interviewData->input("interview_type") == "Physical"){
                     
-                    $interview_room = DB::select("SELECT ADDTIME(interview_time, SEC_TO_TIME(interview_duration*60)) as total_time FROM tbl_interviews where interview_room_nbr = '".$interviewData->input('room_no')."' && interview_date = '".$interviewData->input("interview_date")."' &&  interview_time <= '".$interviewData->input("interview_time")."' && ADDTIME(interview_time, SEC_TO_TIME(interview_duration*60))  >= '".$interviewData->input("interview_time")."'");
+                    // $interview_room = DB::select("SELECT ADDTIME(interview_time, SEC_TO_TIME(interview_duration*60)) as total_time FROM tbl_interviews where interview_room_nbr = '".$interviewData->input('room_no')."' && interview_date = '".$interviewData->input("interview_date")."' &&  interview_time <= '".$interviewData->input("interview_time")."' && ADDTIME(interview_time, SEC_TO_TIME(interview_duration*60))  >= '".$interviewData->input("interview_time")."'");
+
+                    $interview_room = Interview::selectRaw("DATEADD(SECOND, interview_duration * 60, interview_time) as total_time")
+                    ->where('interview_room_nbr', $interviewData->input('room_no'))
+                    ->where('interview_date', $interviewData->input('interview_date'))
+                    ->where('interview_time', '<=', $interviewData->input('interview_time'))
+                    ->whereRaw("DATEADD(SECOND, interview_duration * 60, interview_time) >= ?", [$interviewData->input('interview_time')])
+                    ->get()->toArray();
+                
 
                     $interview_room_allot = json_decode(json_encode($interview_room), TRUE);
                     

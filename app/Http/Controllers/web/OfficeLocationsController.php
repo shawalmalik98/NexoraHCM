@@ -9,6 +9,7 @@ use Illuminate\Validation\Rules\File;
 use App\Models\{OfficeLocation, Employees, RoomScreen, EmployeeLocation};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
+use Illuminate\Support\Facades\DB;
 
 class OfficeLocationsController extends Controller
 {
@@ -23,13 +24,25 @@ class OfficeLocationsController extends Controller
             
             $login_user = $this->get_login_user_detail();
 
-            $locations = OfficeLocation::get()->toArray();
-
+            $locations = OfficeLocation::selectRaw('tbl_office_locations.*, COUNT(e.employee_id) as total_employees')
+            ->leftJoin('tbl_employees_location as el', 'tbl_office_locations.location_id', '=', 'el.emp_loc_loc_id')
+            ->leftJoin('tbl_employees as e', 'el.emp_loc_employee_id', '=', 'e.employee_id')
+            ->groupBy(
+                'tbl_office_locations.location_id', 'tbl_office_locations.location_title',
+                'tbl_office_locations.location_alt_id', 'tbl_office_locations.location_address',
+                'tbl_office_locations.location_latitude', 'tbl_office_locations.location_longitude',
+                'tbl_office_locations.location_attendance_radius', 'tbl_office_locations.location_added_at',
+                'tbl_office_locations.location_updated_at'
+            )
+            ->orderByRaw('COUNT(e.employee_id) DESC')
+            ->get()
+            ->toArray();        
+            
             $get_employee_location_id = array_column($locations, 'location_id');
 
             $employee_location_id = Employees::whereIn('employee_location', $get_employee_location_id)->pluck('employee_location')->toArray();
 
-            $send_data = compact('title' , 'login_user', 'locations','employee_location_id' );
+            $send_data = compact('title' , 'login_user', 'locations','employee_location_id','locations');
 
             return view('office-locations.location')->with($send_data);
 

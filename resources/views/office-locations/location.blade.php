@@ -80,6 +80,7 @@
                                         <th>Latitude</th>
                                         <th>Longitude</th>
                                         <th>Allowed Range (meters)</th>
+                                        <th>Tagged Employees</th>
                                         {{-- <th>Create date</th> --}}
                                         {{-- <th>Update date</th> --}}
                                         <th>Action</th>
@@ -98,6 +99,7 @@
                                                 <td> {{ $location['location_latitude'] }} </td>
                                                 <td> {{ $location['location_longitude'] }} </td>
                                                 <td> {{ $location['location_attendance_radius'] }}</td>
+                                                <td> {{ $location['total_employees'] }}</td>
                                                 {{-- <td> {{ $location['location_added_at'] }} </td> --}}
                                                 {{-- <td> {{ $location['location_updated_at'] }} </td> --}}
                                                 <td>

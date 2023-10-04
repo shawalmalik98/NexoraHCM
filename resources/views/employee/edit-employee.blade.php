@@ -182,7 +182,7 @@
                                 <span class="required">Date of Birth<span>
                                 </label>
                                 
-                                <input type="date" class="form-control" name="employee_dob" max="{{date('Y-m-d')}}" required="required" value="{{ $employee_bank[0]['dob'] }}"/>
+                                <input type="date" class="form-control" name="employee_dob" max="{{date('Y-m-d')}}" required="required" value="{{ $employee_bank[0]['dob'] ?? date('Y-m-d')}}"/>
                             </div>
                         </div>
 
@@ -685,7 +685,7 @@
                                         <span class="required">{{$manage_leave['leave_name']}}</span></label>
                                         <input type="hidden" value="{{$manage_leave['leave_ent_created_at']}}" name="leave_ent_created_at[]" />
                                         <input type="hidden" class="form-control " value="{{$manage_leave['leave_manage_id']}}"  name="leave_manage_id[]"  required="required" />
-                                        <input type="number" class="form-control " min="0" max="50" name="leave_allotment[]" value="{{$manage_leave['leave_allotement']}}" placeholder="Enter {{$manage_leave['leave_name']}}" required="required" />
+                                        <input type="number" class="form-control " min="0" max="50" name="leave_allotment[]" value="{{$manage_leave['leave_allotement'] ?? '0'}}" placeholder="Enter {{$manage_leave['leave_name']}}" required="required" />
                                     </div>
                                 
                                 @endforeach
