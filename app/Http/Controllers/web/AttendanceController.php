@@ -1003,7 +1003,7 @@ class AttendanceController extends Controller
 
             $where_clause = '1=1';
             if(!empty($request->employee_location)){
-                $where_clause .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause .= " AND employee_location = '".$request->employee_location."'";
             }
             
             if(empty($request->is_active)){

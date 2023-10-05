@@ -5050,239 +5050,245 @@ class EmployeeController extends Controller
                                     // }else{
                                     //     $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
                                     // }
-                                    $add_employee = new Employees();
-                                    $add_employee->employee_name = $employee_name;
-                                    $add_employee->employee_code = $employeeCode;
-                                    // $add_employee->employee_code = $employeeCode;
-                                    $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
-                                    $add_employee->employee_cnic = $employee_nic;
-                                    $add_employee->employee_personal_email = $employee_personal_email;
-                                    $add_employee->employee_work_email = $employee_personal_email;
-                                    $add_employee->employee_contactno = $employee_contact_no;
-                                    $add_employee->employee_gender = $employee_gender;
-                                    $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
-                                    $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
-                                    $add_employee->employee_department = $departments[0]['department_id'];
-                                    $add_employee->employee_jobtitle = $employee_job_title;
-                                    $add_employee->employee_password = Crypt::encryptString($employee_password);
-                                    $add_employee->employee_geofencing_enability = false;
-                                    $add_employee->employee_senior_manager =  '1';
-                                    $add_employee->employee_is_manager = $employee_senior_manager;
-                                    $add_employee->employee_offdays = $employee_Off_day;
-                                    $add_employee->employee_jobtype = $employee_job;
-                                    // $add_employee->employee_location = $locations[0]['location_id'];
-                                    $add_employee->employee_isactive =  1;
-                                    $add_employee->employee_earning_type = $employee_earning;
 
-                                    $employee = $add_employee->save();
-                                    $employee_registration_id = $add_employee->employee_id;
+                                    $check_employee_code = Employees::where('employee_code', '=', $employeeCode)->get('employee_code')->toArray();
 
-                                    if($employee == 1){
+                                    if(empty($all_employee_code)){
+                            
+                                        $add_employee = new Employees();
+                                        $add_employee->employee_name = $employee_name;
+                                        $add_employee->employee_code = $check_employee_code[0]['employee_code'];
+                                        // $add_employee->employee_code = $employeeCode;
+                                        $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
+                                        $add_employee->employee_cnic = $employee_nic;
+                                        $add_employee->employee_personal_email = $employee_personal_email;
+                                        $add_employee->employee_work_email = $employee_personal_email;
+                                        $add_employee->employee_contactno = $employee_contact_no;
+                                        $add_employee->employee_gender = $employee_gender;
+                                        $add_employee->employee_status =  $employement_status[0]['employement_status_id'];
+                                        $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
+                                        $add_employee->employee_department = $departments[0]['department_id'];
+                                        $add_employee->employee_jobtitle = $employee_job_title;
+                                        $add_employee->employee_password = Crypt::encryptString($employee_password);
+                                        $add_employee->employee_geofencing_enability = false;
+                                        $add_employee->employee_senior_manager =  '1';
+                                        $add_employee->employee_is_manager = $employee_senior_manager;
+                                        $add_employee->employee_offdays = $employee_Off_day;
+                                        $add_employee->employee_jobtype = $employee_job;
+                                        // $add_employee->employee_location = $locations[0]['location_id'];
+                                        $add_employee->employee_isactive =  1;
+                                        $add_employee->employee_earning_type = $employee_earning;
 
-                                        $new_employee_location = new EmployeeLocation();
-                                        $new_employee_location->emp_loc_employee_id = $employee_registration_id;
-                                        $new_employee_location->emp_loc_loc_id = $locations[0]['location_id'];
-                                        $new_employee_location->created_at = date('Y-m-d H:i:s');
-                                        $new_employee_location->save();
+                                        $employee = $add_employee->save();
+                                        $employee_registration_id = $add_employee->employee_id;
 
-                                        $emp_salary = new EmployeeSalary();
-                                        $emp_salary->salary_employee_id = $employee_registration_id;
-                                        $emp_salary->salary_amount =  $employee_salary;
-                                        $emp_salary->salary_effected_date = date('Y-m-d',strtotime($joining_date));
-                                        $emp_salary->salary_created_date = date('d-m-Y');
-                                        $emp_salary->salary_earning_type = $employee_earning;
-                                        $emp_salary->save();
+                                        if($employee == 1){
 
-                                        $add_leaves =  new Leave();
-                                        $add_leaves->leaves_employee_id = $employee_registration_id;
-                                        $add_leaves->leave_type_id      = 1;
-                                        $add_leaves->leave_allotement   = 0;
-                                        $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
-                                        $add_leaves->save();
+                                            $new_employee_location = new EmployeeLocation();
+                                            $new_employee_location->emp_loc_employee_id = $employee_registration_id;
+                                            $new_employee_location->emp_loc_loc_id = $locations[0]['location_id'];
+                                            $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                            $new_employee_location->save();
 
-                                        $add_leaves =  new Leave();
-                                        $add_leaves->leaves_employee_id = $employee_registration_id;
-                                        $add_leaves->leave_type_id      = 2;
-                                        $add_leaves->leave_allotement   = 0;
-                                        $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
-                                        $add_leaves->save();
+                                            $emp_salary = new EmployeeSalary();
+                                            $emp_salary->salary_employee_id = $employee_registration_id;
+                                            $emp_salary->salary_amount =  $employee_salary;
+                                            $emp_salary->salary_effected_date = date('Y-m-d',strtotime($joining_date));
+                                            $emp_salary->salary_created_date = date('d-m-Y');
+                                            $emp_salary->salary_earning_type = $employee_earning;
+                                            $emp_salary->save();
 
-                                        $add_leaves =  new Leave();
-                                        $add_leaves->leaves_employee_id = $employee_registration_id;
-                                        $add_leaves->leave_type_id      = 3;
-                                        $add_leaves->leave_allotement   = 0;
-                                        $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
-                                        $add_leaves->save();
+                                            $add_leaves =  new Leave();
+                                            $add_leaves->leaves_employee_id = $employee_registration_id;
+                                            $add_leaves->leave_type_id      = 1;
+                                            $add_leaves->leave_allotement   = 0;
+                                            $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+                                            $add_leaves->save();
 
-                                        $add_shift = new ShiftManagement();
-                                        $add_shift->employee_id = $employee_registration_id;
-                                        $add_shift->shift_start_from_date = date('Y-m-d',strtotime($joining_date));
-                                        $add_shift->shift_start_time = $shift_start_time.':00';
-                                        $add_shift->shift_end_time = $shift_end_time.':00';
-                                        $add_shift->shift_created_by = session('user_session');
-                                        $process = $add_shift->save();
+                                            $add_leaves =  new Leave();
+                                            $add_leaves->leaves_employee_id = $employee_registration_id;
+                                            $add_leaves->leave_type_id      = 2;
+                                            $add_leaves->leave_allotement   = 0;
+                                            $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+                                            $add_leaves->save();
 
-                                        $employment_period = new EmploymentPeriod();
-                                        $employment_period->employement_status_id = 1;
-                                        $employment_period->employee_id = $employee_registration_id;
-                                        $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
-                                        $employment_period->employement_period_created_by = 1;
-                                        $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
-                                        $process = $employment_period->save();
+                                            $add_leaves =  new Leave();
+                                            $add_leaves->leaves_employee_id = $employee_registration_id;
+                                            $add_leaves->leave_type_id      = 3;
+                                            $add_leaves->leave_allotement   = 0;
+                                            $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
+                                            $add_leaves->save();
 
-                                        if($process == 1){
+                                            $add_shift = new ShiftManagement();
+                                            $add_shift->employee_id = $employee_registration_id;
+                                            $add_shift->shift_start_from_date = date('Y-m-d',strtotime($joining_date));
+                                            $add_shift->shift_start_time = $shift_start_time.':00';
+                                            $add_shift->shift_end_time = $shift_end_time.':00';
+                                            $add_shift->shift_created_by = session('user_session');
+                                            $process = $add_shift->save();
 
-                                            $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
+                                            $employment_period = new EmploymentPeriod();
+                                            $employment_period->employement_status_id = 1;
+                                            $employment_period->employee_id = $employee_registration_id;
+                                            $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
+                                            $employment_period->employement_period_created_by = 1;
+                                            $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
+                                            $process = $employment_period->save();
 
-                                            $submitInformation = new EmployeeInformation();
-                                            $submitInformation->employeeid = $employee_registration_id;
-                                            $submitInformation->save();
+                                            if($process == 1){
 
-                                            $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
-                                                $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
-                                                ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
-                                            })
-                                            ->get()->toArray();
+                                                $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
 
-                                            if(!empty($get_holidays)){
-                                                foreach($get_holidays as $get_holiday){
-                                                    $day = date("d", strtotime($get_holiday['holiday_date']));
-                                                    $month = date("m", strtotime($get_holiday['holiday_date']));
-                                                    $year = date("Y", strtotime($get_holiday['holiday_date']));
+                                                $submitInformation = new EmployeeInformation();
+                                                $submitInformation->employeeid = $employee_registration_id;
+                                                $submitInformation->save();
 
-                                                    $mark_attendance = new Attendance();
-                                                    $mark_attendance->att_employee_id =  $employee_registration_id;
-                                                    $mark_attendance->att_check_in_time = '00:00:00';
-                                                    $mark_attendance->att_check_out_time = '00:00:00';
-                                                    $mark_attendance->att_check_in_status = '0';
-                                                    $mark_attendance->att_check_out_status = 0;
-                                                    $mark_attendance->att_shift_start_time = $shift_start_time->input('shift_start_timings').':00';
-                                                    $mark_attendance->att_shift_end_time = $shift_end_time->input('shift_end_timings').':00';
-                                                    $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
-                                                    $mark_attendance->att_for_date = $day;
-                                                    $mark_attendance->att_for_month = $month;
-                                                    $mark_attendance->att_for_year = $year;
-                                                    $mark_attendance->save();
+                                                $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
+                                                    $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
+                                                    ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
+                                                })
+                                                ->get()->toArray();
 
+                                                if(!empty($get_holidays)){
+                                                    foreach($get_holidays as $get_holiday){
+                                                        $day = date("d", strtotime($get_holiday['holiday_date']));
+                                                        $month = date("m", strtotime($get_holiday['holiday_date']));
+                                                        $year = date("Y", strtotime($get_holiday['holiday_date']));
+
+                                                        $mark_attendance = new Attendance();
+                                                        $mark_attendance->att_employee_id =  $employee_registration_id;
+                                                        $mark_attendance->att_check_in_time = '00:00:00';
+                                                        $mark_attendance->att_check_out_time = '00:00:00';
+                                                        $mark_attendance->att_check_in_status = '0';
+                                                        $mark_attendance->att_check_out_status = 0;
+                                                        $mark_attendance->att_shift_start_time = $shift_start_time->input('shift_start_timings').':00';
+                                                        $mark_attendance->att_shift_end_time = $shift_end_time->input('shift_end_timings').':00';
+                                                        $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
+                                                        $mark_attendance->att_for_date = $day;
+                                                        $mark_attendance->att_for_month = $month;
+                                                        $mark_attendance->att_for_year = $year;
+                                                        $mark_attendance->save();
+
+
+                                                    }
+                                                }
+
+                                                $mypermissions = [
+
+                                                    '/dashboard',
+                                                    '/my-attendance',
+                                                    '/my-attendance-request',
+                                                    '/my-leaves',
+                                                    '/my-interviews',
+                                                    '/payslip',
+                                                    '/my-meetings',
+                                                    '/my-wfh-requests',
+                                                    '/employee-resignation',
+                                                    '/my-salary-request',
+                                                    '/my-loan',
+                                                    '/my-tickets',
+                                                    '/my-expense',
+                                                    '/my-shift-time',
+                                                    '/permissions',
+                                                ];
+
+                                                $permissionRecords = [
+                                                    '/dashboard',
+                                                    '/my-attendance',
+                                                    '/my-attendance-request',
+                                                    '/my-leaves',
+                                                    '/my-interviews',
+                                                    '/payslip',
+                                                    '/my-meetings',
+                                                    '/my-wfh-requests',
+                                                    '/employee-resignation',
+                                                    '/my-salary-request',
+                                                    '/my-loan',
+                                                    '/my-tickets',
+                                                    '/employees',
+                                                    '/employees-managers',
+                                                    '/employee-birthdays',
+                                                    '/employee-work-anniversay',
+                                                    '/gadgets-inventory',
+                                                    '/gadgets-allotment',
+                                                    '/meetings',
+                                                    '/attendance',
+                                                    '/attendance-requests',
+                                                    '/daily-attendance-report',
+                                                    '/wfh-requests',
+                                                    '/employees-leaves',
+                                                    '/manage-leaves',
+                                                    '/interviews',
+                                                    '/employee-onboarding',
+                                                    '/payroll',
+                                                    '/petty-cash',
+                                                    '/daily-expense',
+                                                    '/loans',
+                                                    '/holidays',
+                                                    '/departments',
+                                                    '/designations',
+                                                    '/vehicles',
+                                                    '/login-history',
+                                                    '/system-settings',
+                                                    '/system-error-logs',
+                                                    '/resignations',
+                                                    '/alerts',
+                                                    '/requisition',
+                                                    '/my-requisition',
+                                                    '/letters',
+                                                    '/all-salary-request',
+                                                    '/all-loan-request',
+                                                    '/all-tickets',
+                                                    '/permissions',
+                                                    '/tax-slab',
+                                                    '/tax-collection',
+                                                    '/rooms',
+                                                    '/locations',
+                                                    '/candiddate-interviews',
+                                                    '/employee-devices',
+                                                    '/linked-in-post',
+                                                    '/shift-management',
+                                                    '/employee-expense',
+                                                    '/overtime-management',
+                                                    '/organogram',
+                                                    '/my-expense',
+                                                    '/my-shift-time',
+                                                    '/employee-letter',
+                                                    '/letter-template',
+                                                    '/machine-attendance-logs',
+                                                    '/leave-management',
+                                                    '/polling',
+                                                    '/shift-time-request',
+                                                    '/employee-bank',
+                                                    '/monthly-attendance',
+                                                    '/daily-wages-payroll',
+                                                    '/employment-status',
+                                                    '/attendance-devices',
+                                                    '/reports',
+                                                    '/attendance-locker',
+                                                    '/employee-group',
+                                                    '/leave-policy',
+                                                    '/deduction-policy',
+                                                    '/companies',
+                                                    '/funds',
+                                                    '/employee-fund'
+                                                ];
+
+                                                foreach($permissionRecords as $permissionRecord ){
+                                                    $permissions = new Permission();
+                                                    $permissions->module_url = $permissionRecord;
+                                                    $permissions->employee_id = $employee_registration_id;
+                                                    if($employee_permissions == "No"){
+                                                        $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
+                                                    }else{
+                                                        $permissions->permission_status = 1 ;
+                                                    }
+                                                    $permissions->save();
 
                                                 }
-                                            }
-
-                                            $mypermissions = [
-
-                                                '/dashboard',
-                                                '/my-attendance',
-                                                '/my-attendance-request',
-                                                '/my-leaves',
-                                                '/my-interviews',
-                                                '/payslip',
-                                                '/my-meetings',
-                                                '/my-wfh-requests',
-                                                '/employee-resignation',
-                                                '/my-salary-request',
-                                                '/my-loan',
-                                                '/my-tickets',
-                                                '/my-expense',
-                                                '/my-shift-time',
-                                                '/permissions',
-                                            ];
-
-                                            $permissionRecords = [
-                                                '/dashboard',
-                                                '/my-attendance',
-                                                '/my-attendance-request',
-                                                '/my-leaves',
-                                                '/my-interviews',
-                                                '/payslip',
-                                                '/my-meetings',
-                                                '/my-wfh-requests',
-                                                '/employee-resignation',
-                                                '/my-salary-request',
-                                                '/my-loan',
-                                                '/my-tickets',
-                                                '/employees',
-                                                '/employees-managers',
-                                                '/employee-birthdays',
-                                                '/employee-work-anniversay',
-                                                '/gadgets-inventory',
-                                                '/gadgets-allotment',
-                                                '/meetings',
-                                                '/attendance',
-                                                '/attendance-requests',
-                                                '/daily-attendance-report',
-                                                '/wfh-requests',
-                                                '/employees-leaves',
-                                                '/manage-leaves',
-                                                '/interviews',
-                                                '/employee-onboarding',
-                                                '/payroll',
-                                                '/petty-cash',
-                                                '/daily-expense',
-                                                '/loans',
-                                                '/holidays',
-                                                '/departments',
-                                                '/designations',
-                                                '/vehicles',
-                                                '/login-history',
-                                                '/system-settings',
-                                                '/system-error-logs',
-                                                '/resignations',
-                                                '/alerts',
-                                                '/requisition',
-                                                '/my-requisition',
-                                                '/letters',
-                                                '/all-salary-request',
-                                                '/all-loan-request',
-                                                '/all-tickets',
-                                                '/permissions',
-                                                '/tax-slab',
-                                                '/tax-collection',
-                                                '/rooms',
-                                                '/locations',
-                                                '/candiddate-interviews',
-                                                '/employee-devices',
-                                                '/linked-in-post',
-                                                '/shift-management',
-                                                '/employee-expense',
-                                                '/overtime-management',
-                                                '/organogram',
-                                                '/my-expense',
-                                                '/my-shift-time',
-                                                '/employee-letter',
-                                                '/letter-template',
-                                                '/machine-attendance-logs',
-                                                '/leave-management',
-                                                '/polling',
-                                                '/shift-time-request',
-                                                '/employee-bank',
-                                                '/monthly-attendance',
-                                                '/daily-wages-payroll',
-                                                '/employment-status',
-                                                '/attendance-devices',
-                                                '/reports',
-                                                '/attendance-locker',
-                                                '/employee-group',
-                                                '/leave-policy',
-                                                '/deduction-policy',
-                                                '/companies',
-                                                '/funds',
-                                                '/employee-fund'
-                                            ];
-
-                                            foreach($permissionRecords as $permissionRecord ){
-                                                $permissions = new Permission();
-                                                $permissions->module_url = $permissionRecord;
-                                                $permissions->employee_id = $employee_registration_id;
-                                                if($employee_permissions == "No"){
-                                                    $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
-                                                }else{
-                                                    $permissions->permission_status = 1 ;
-                                                }
-                                                $permissions->save();
 
                                             }
-
-                                        }
+                                        }   
                                     }
                                     $success++;
                                 }

@@ -29,7 +29,7 @@
                     <a href="{{url('employee-expense')}}"  class="card bg-body hoverable card-xl-stretch mb-xl-8">
                         
                         <div class="card-body">
-                            <div class="text-gray-900 fw-bold fs-2 mb-2 mt-5" data-kt-countup="true" data-kt-countup-value="{{ (!empty($fetch_expense_total)) ? $fetch_expense_total[0]['total'] : 0}}"></div>
+                            <div class="text-gray-900 fw-bold fs-2 mb-2 mt-5" data-kt-countup="true" data-kt-countup-value="{{ (!empty($fetch_expenses_total)) ? $fetch_expenses_total[0]['total'] : 0}}"></div>
                             <div class="fw-semibold text-gray-400">Total Reimbursement</div>
                         </div>
                         
@@ -42,7 +42,7 @@
                     <a href="{{url('employee-expense?status=2')}}" class="card bg-body hoverable card-xl-stretch mb-xl-8">
                         
                         <div class="card-body">
-                            <div class="text-gray-900 fw-bold fs-2 mb-2 mt-5" data-kt-countup="true" data-kt-countup-value="{{ (!empty($fetch_expense_total_approved)) ? $fetch_expense_total_approved[0]['total'] : 0}}"></div>
+                            <div class="text-gray-900 fw-bold fs-2 mb-2 mt-5" data-kt-countup="true" data-kt-countup-value="{{ (!empty($fetch_expenses_approved)) ? $fetch_expenses_approved[0]['total'] : 0}}"></div>
                             <div class="fw-semibold text-gray-400">Total Approved Reimbursement</div>
                         </div>
                         
@@ -56,7 +56,7 @@
                     <a href="{{url('employee-expense?paid=2')}}" class="card bg-body hoverable card-xl-stretch mb-xl-8">
                         
                         <div class="card-body">
-                            <div class="text-gray-900 fw-bold fs-2 mb-2 mt-5" data-kt-countup="true" data-kt-countup-value="{{ (!empty($fetch_expense_total_paid)) ? $fetch_expense_total_paid[0]['total'] : 0}}"></div>
+                            <div class="text-gray-900 fw-bold fs-2 mb-2 mt-5" data-kt-countup="true" data-kt-countup-value="{{ (!empty($fetch_expenses_paid)) ? $fetch_expenses_paid[0]['total'] : 0}}"></div>
                             <div class="fw-semibold text-gray-400">Total Paid Reimbursement</div>
                         </div>
                         
@@ -237,9 +237,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                     @if(!empty($fetch_expense))
-                                        @foreach ($fetch_expense as $expense)
-                                        <tr @if(request()->get('expense-id') != '' && $expense['emp_expense_id'] == request()->get('expense-id')) style="background-color:bisque;" @endif>
+                                    @if(!empty($fetch_expenses))
+                                       
+                                        @foreach ($fetch_expenses as $expense)
+                                            <tr @if(request()->get('expense-id') != '' && $expense['emp_expense_id'] == request()->get('expense-id')) style="background-color:bisque;" @endif>
                                                 <td class="ps-8">{{ $expense['emp_expense_id'] }}</td>
                                                 <td>{!! CustomHelper::getEmpProfileDiv($expense['emp_expense_employee']) !!}</td>
                                                 <td>{{ date('d-M-Y',strtotime($expense['emp_expense_date'])) }}</td>
