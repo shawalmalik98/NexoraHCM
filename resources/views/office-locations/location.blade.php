@@ -16,6 +16,17 @@
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
 
+                 <div class="m-0">
+                    <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#new_location_upload">
+                         <span class="svg-icon svg-icon-2">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                            </svg>
+                        </span>										
+                        Distributors Location Import
+                    </a>
+                </div>
                 <div class="m-0">
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#location_information_upload">
                          <span class="svg-icon svg-icon-2">
@@ -24,7 +35,7 @@
                                 <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
                             </svg>
                         </span>										
-                        Upload Location Records
+                        Update Location Records
                     </a>
                 </div>
                 
@@ -352,7 +363,7 @@
                         <div class="modal-content rounded">
                         
                             <div class="modal-header">
-                                <h4 class="modal-title pl-4">Upload Location Records</h4>
+                                <h4 class="modal-title pl-4">Update Location Records</h4>
                                 <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
                                     <span class="svg-icon svg-icon-1">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -418,6 +429,89 @@
                             <div class="modal-footer justify-content-center">
                                 <button onclick="locationuploadclose()" type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
                                 <button onclick="locationupload()" type="button"  class="btn btn-primary force_upload">
+                                    <span class="indicator-label">Force Upload</span>
+                                    <span class="indicator-progress">Please wait... 
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <form class="form" id="office_location_upload">
+                @csrf	
+                <div class="modal fade" id="new_location_upload" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable mw-650px">
+                        <div class="modal-content rounded">
+                        
+                            <div class="modal-header">
+                                <h4 class="modal-title pl-4">Upload Distributors Location Records</h4>
+                                <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
+                                    <span class="svg-icon svg-icon-1">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
+                                        <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
+                                    </svg>
+                                </span>
+                                </button>
+                            </div>
+                        
+                            <div class="modal-body">
+                                <div class="row g-8">
+                                    <input type="hidden" name="Location_Approved">
+                                    <div class="col-md-12 fv-row">
+                                        <label class="fs-6 fw-semibold mb-2 required">File Attachment</label>
+                                        <input type="file" class="form-control" accept=".csv" name="file">
+                                        <p class="text-danger mt-1">Please <b>Download Format File</b> and Distributors locations(s) record. All the fields exist in file are required.</p>
+                                        <p class="text-danger mt-0">Only CSV file is supported for distributions location(s) upload process.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" id="upload_location_btn" class="btn btn-primary">
+                                    <span class="indicator-label">Submit</span>
+                                    <span class="indicator-progress">Please wait... 
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                </button>
+                                <a href="/portal_assets/location_excel_document/LocationRecord.zip" id="download_office_btn" class="btn btn-success">Download Format</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <form class="form" id="add_office_location">
+                @csrf	
+                <div class="modal fade" id="office_location_records_upload" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-scrollable mw-650px">
+                        <div class="modal-content rounded">
+                        
+                            <div class="modal-header">
+                                <h4 class="modal-title pl-4">Confirmation Alert !</h4>
+                                <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
+                                    <span class="svg-icon svg-icon-1">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
+                                        <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
+                                    </svg>
+                                </span>
+                                </button>
+                            </div>
+                        
+                            <div class="modal-body">
+                            
+                                <div class="row g-8">
+                                    <input type="hidden" name="Location_Approved">
+                                    <div id="office_location_record_msg">
+                                    </div>
+                    
+                                </div>    
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button onclick="officelocationuploadclose()" type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
+                                <button onclick="officelocationupload()" type="button"  class="btn btn-primary distributor_upload">
                                     <span class="indicator-label">Force Upload</span>
                                     <span class="indicator-progress">Please wait... 
                                     <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>

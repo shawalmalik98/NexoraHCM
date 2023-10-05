@@ -29,7 +29,8 @@ class OfficeLocationsController extends Controller
             ->leftJoin('tbl_employees as e', 'el.emp_loc_employee_id', '=', 'e.employee_id')
             ->groupBy(
                 'tbl_office_locations.location_id', 'tbl_office_locations.location_title',
-                'tbl_office_locations.location_alt_id', 'tbl_office_locations.location_address',
+                'tbl_office_locations.location_alt_id', 'tbl_office_locations.distributor_code',
+                'tbl_office_locations.location_address',
                 'tbl_office_locations.location_latitude', 'tbl_office_locations.location_longitude',
                 'tbl_office_locations.location_attendance_radius', 'tbl_office_locations.location_added_at',
                 'tbl_office_locations.location_updated_at'
@@ -247,7 +248,7 @@ class OfficeLocationsController extends Controller
         }
     }
     
-    protected function upload_employee_location_record(Request $request){
+    protected function update_employee_location_record(Request $request){
 
     
         set_time_limit(18000);
@@ -312,6 +313,97 @@ class OfficeLocationsController extends Controller
                     return response()->json([
                         'status' => 'TRUE',
                         'msg' => 'Upload Location record',
+                        'error_logs' => $error_logs
+                    ]);
+                // }
+                // else{
+                //     $msg = "You have $success valid records and $error invalid records.";
+
+                //     return response()->json([
+                //         'status' => 'FALSE',
+                //         'msg' =>  'Location record upload failed '."<br>".$msg,
+                //         'error_logs' => $error_logs
+                //     ]);
+                // }
+
+            }
+
+
+        }
+    
+    }
+
+    protected function upload_employee_location_record(Request $request){
+
+    
+        set_time_limit(18000);
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:csv'
+        ]);
+        if($validator->fails()) {
+            foreach($validator->errors()->all() as $error){
+                return response()->json([
+                    'msg' => $error,
+                    'status' => 'FALSE',
+                    'validation' => 'TRUE',
+                ]);
+            }
+        }else{
+            $filename = $request->file('file')->getPathName();
+            
+            if($request->file('file')->getSize() > 0)
+            {
+                $error = 0;
+                $success = 0;
+                $file = fopen($filename, "r");
+                $file2 = fopen($filename, "r");
+                $error_logs = array();
+                $count_row = 0;
+
+                OfficeLocation::truncate();
+                
+                
+                // if(empty($error_msg) || $request->input('Location_Approved') == 'TRUE'){
+                    $arrays = [];
+                    $count_row = 0;
+                    while (($getData = fgetcsv($file2)) !== FALSE)
+                    {
+            
+                        // if($count_row != 0){
+
+                            $dist_code = iconv('ISO-8859-1', 'UTF-8', $getData[0]);//$getData[1];
+                            $dist_name = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[2];
+                            $lat = iconv('ISO-8859-1', 'UTF-8', $getData[2]);//$getData[3];
+                            $long = iconv('ISO-8859-1', 'UTF-8', $getData[3]);//$getData[4];
+                            $radius = '1000' . $count_row;
+                            $address = '17 - 0, Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan.' . $count_row;
+
+                            // if(1 == 1){
+                                
+                                $new_employee_location = new OfficeLocation();
+                                $new_employee_location->location_title = $dist_name;
+                                $new_employee_location->location_address = $address;
+                                $new_employee_location->location_latitude = $lat;
+                                $new_employee_location->location_longitude = $long;
+                                $new_employee_location->distributor_code = $dist_code;
+                                $new_employee_location->location_attendance_radius = $radius;
+                                $new_employee_location->location_added_at = date('Y-m-d H:i:s');
+                                $new_employee_location->save();
+                                
+
+                                // $success++;
+                            // }
+                            // 
+                        //  }
+
+                    }
+                    $count_row ++;
+                   
+                    fclose($file2);
+                    
+                    return response()->json([
+                        'status' => 'TRUE',
+                        'msg' => 'Upload Distributor Location record',
                         'error_logs' => $error_logs
                     ]);
                 // }

@@ -339,5 +339,103 @@ $('#employee_location_update, #employee_location_upload').submit(function (e) {
 });
 
 
+function officelocationuploadclose() {
+
+    $('#upload_location_btn').prop('disabled', false);
+    $('#upload_location_btn').removeAttr('data-kt-indicator');
+    $('#upload_location_btn').css('cursor', 'pointer');
+    $('input[name=Location_Approved]').val('FALSE');
+}
+
+function officelocationupload() {
+
+    $('.distributor_upload').prop('disabled', true);
+    $('.distributor_upload').attr('data-kt-indicator', 'on');
+    $('.distributor_upload').css('cursor', 'not-allowed');
+    $('#office_location_upload').submit();
+
+}
+
+$('#office_location_upload, #add_office_location').submit(function (e) {
+
+    $('#upload_location_btn').prop('disabled', true);
+    $('#upload_location_btn').attr('data-kt-indicator', 'on');
+    $('#upload_location_btn').css('cursor', 'not-allowed');
+    e.preventDefault();
+    $.ajax({
+        url: base_url + '/locations/upload-office-location',
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: new FormData(this),
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function (data) {
+
+            if (data.status == 'TRUE') {
+                Toast.fire({
+                    icon: 'success',
+                    title: data.msg,
+                    timer: 3000,
+                })
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            } else {
+                if (data.validation == 'TRUE') {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: data.msg,
+                        timer: 3000,
+                    })
+                    $('#upload_location_btn').prop('disabled', false);
+                    $('#upload_location_btn').removeAttr('data-kt-indicator');
+                    $('#upload_location_btn').css('cursor', 'pointer');
+
+                } else {
+                    $('#office_location_records_upload').modal('show');
+                    $('input[name=Location_Approved]').val('TRUE');
+
+                    var employee = '<div>' +
+                        '<p>' + data.msg + '</p>' +
+                        '<p>' + data.error_logs.join('<br>') + '</p>' +
+                        '</div>';
+                    $('#office_location_record_msg').html(employee);
+                }
+
+            }
+        },
+        error: function (jqXHR, textStatus) {
+            var errorStatus = jqXHR.status;
+            $('#upload_location_btn').prop('disabled', false);
+            $('#upload_location_btn').removeAttr('data-kt-indicator');
+            $('#upload_location_btn').css('cursor', 'pointer');
+            if (errorStatus == 0) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Location upload failed please try again',
+                    timer: 4000,
+                });
+                setTimeout(() => {
+                    location.reload();
+                }, 4000);
+            } else {
+                if (errorStatus == 419) {
+                    location.reload();
+                } else {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Try Again. Error Code ' + errorStatus,
+                        timer: 3000,
+                    })
+                }
+            }
+        }
+    });
+});
+
+
 
 

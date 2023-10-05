@@ -147,18 +147,18 @@ class LoginController extends Controller
     }
 
     protected function login_history(Request $request){
-        // try{
+        try{
            
             $title = Self::MAIN_TITLE;
 
             $login_user = $this->get_login_user_detail();
 
-            // $where_clause = '1=1 ';
+            $where_clause = '1=1 ';
             if(!empty($request->history_date) || !empty($request->history_records) ){
 
                if(!empty($request->history_date) && empty($request->history_records)){
                     $history_date = date("Y-m-d", strtotime($request->history_date));
-                    $where_clause = 'login_history_time LIKE %' . $history_date . '%';
+                    $where_clause .= " AND login_history_time LIKE '%". $history_date ."%'";
                }
 
                if(!empty($request->history_records)){
@@ -170,37 +170,39 @@ class LoginController extends Controller
                         $lastdays = date('Y-m-d', strtotime('-30 days'));
                     }
                     
-                    $where_clause = 'login_history_time >= "'.$lastdays.'"';
+                    $where_clause = "login_history_time >= '" .$lastdays. "'";
                 }
 
                 ($where_clause) ?? '';
  
                 $history = LoginHistory::join('tbl_employees','tbl_employees.employee_id', '=', 'tbl_login_history.login_history_employee_id')
                 ->whereRaw($where_clause)
-                ->orderBy('tbl_login_history.login_history_id', 'DESC')->get()->toArray();
+                ->orderBy('tbl_login_history.login_history_id', 'DESC')
+                ->get(['employee_code','employee_name','login_history_time','login_history_ip','login_history_country','login_history_city','login_history_latitude','login_history_longitude','login_history_source','login_employee_device','login_history_session_token'])->toArray();
 
             }else{
 
-                $where_clause .= 'AND login_history_time LIKE "%'.date("Y-m-d").'%"';
+                $where_clause .= " AND login_history_time LIKE '%".date("Y-m-d")."%'";
 
                 $history = LoginHistory::join('tbl_employees','tbl_employees.employee_id', '=' , 'tbl_login_history.login_history_employee_id')
                 ->whereRaw($where_clause)
                 ->orderBy('tbl_login_history.login_history_id', 'DESC')
-                ->get()->toArray();
+                ->get(['employee_code','employee_name','login_history_time','login_history_ip','login_history_country','login_history_city','login_history_latitude','login_history_longitude','login_history_source','login_employee_device','login_history_session_token'])->toArray();
+            
             }
             $send_data = compact('title','login_user','history');
 
             return view('login-history.login-history', $send_data );
-        // }catch(\Exception $e){
+        }catch(\Exception $e){
 
-        //     $this->create_error_log('View All Employees Login History Page', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
+            $this->create_error_log('View All Employees Login History Page', $e);
+            $send_data = compact('title');
+            return view('errors.500');
 
-        // }finally{
-        //     ActivityTracker::track_activity('View All Employees Login History Page');
+        }finally{
+            ActivityTracker::track_activity('View All Employees Login History Page');
           
-        // }
+        }
     }
 
     protected function login_user_activity($loginID){

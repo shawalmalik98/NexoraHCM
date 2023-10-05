@@ -124,7 +124,7 @@
                             @if(!empty($history))
                                 @foreach ($history as $history)
                                     <tr>
-                                        <td class="ps-4">{!! CustomHelper::getEmpProfileDiv($history['employee_id']) !!}</td>
+                                        <td class="ps-4">{{$history['employee_code']}} - {{$history['employee_name']}}</td>
                                         <td><span class="text-center">{{ date('d, F Y h:i:s A',strtotime($history['login_history_time'])) }}</span></td>
                                         <td><span class="text-center">{{ $history['login_history_ip'] }}</span></td>
                                         <td>{{ $history['login_history_country'] }} - {{ $history['login_history_city'] }}</td>

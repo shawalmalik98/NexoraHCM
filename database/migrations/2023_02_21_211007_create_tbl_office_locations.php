@@ -18,6 +18,7 @@ return new class extends Migration
                 $table->id('location_id');
                 $table->string('location_title', 255);
                 $table->string('location_alt_id', 50)->nullable();
+                $table->string('distributor_code', 255)->nullable();
                 $table->longtext('location_address');
                 $table->string('location_latitude', 255);
                 $table->string('location_longitude', 255);

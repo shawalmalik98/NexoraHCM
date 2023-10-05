@@ -562,7 +562,8 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::post('/addlocation',[OfficeLocationsController::class,'add_location']);
         Route::post('/updatelocation',[OfficeLocationsController::class,'update_location']);
         Route::post('/deletelocation',[OfficeLocationsController::class,'delete_location_request']);
-        Route::post('/upload-location-information',[OfficeLocationsController::class, 'upload_employee_location_record']);
+        Route::post('/upload-location-information',[OfficeLocationsController::class, 'update_employee_location_record']);
+        Route::post('/upload-office-location',[OfficeLocationsController::class, 'upload_employee_location_record']);
         
 
       });
