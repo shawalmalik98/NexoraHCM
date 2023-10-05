@@ -5053,11 +5053,11 @@ class EmployeeController extends Controller
 
                                     $check_employee_code = Employees::where('employee_code', '=', $employeeCode)->get('employee_code')->toArray();
 
-                                    if(empty($all_employee_code)){
+                                    if(empty($check_employee_code)){
                             
                                         $add_employee = new Employees();
                                         $add_employee->employee_name = $employee_name;
-                                        $add_employee->employee_code = $check_employee_code[0]['employee_code'];
+                                        $add_employee->employee_code =  $check_employee_code[0]['employee_code'];
                                         // $add_employee->employee_code = $employeeCode;
                                         $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
                                         $add_employee->employee_cnic = $employee_nic;

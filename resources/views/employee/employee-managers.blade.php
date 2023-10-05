@@ -148,7 +148,7 @@
                                                 </td>
                                                 <td>
 
-                                                    @if (!empty($employee['employee_department']) && $employee['employee_department'] != '')
+                                                    @if (!empty($employee['department_name']) && $employee['department_name'] != '')
                                                         <p class="text-dark fw-bold  d-block mb-1 fs-6"> {{ $employee['department_name'] }}</p>
                                                         <p class="text-muted fw-semibold text-muted d-block fs-7">{{$employee['designation_name'] }}</p>
                                                     @else

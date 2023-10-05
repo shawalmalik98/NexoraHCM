@@ -53,17 +53,7 @@ class ShiftController extends Controller
             if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2){
                 $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], $status);
 
-                if(count($total_team_member) > 2100){
-
-                    $employees = [];
-                    $employee_array = array_chunk($total_team_member , 2000);
-
-                    foreach($employee_array as $employee){
-                        $employee_data = Employees::whereIn('employee_id', $employee)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
-                        $employees = array_merge($employees , $employee_data);
-                    }
-
-                }
+                $employees = Employees::whereIn('employee_id', $total_team_member)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
                 
             }else{
                 $total_team_member = Employees::where('employee_isactive',$status)->whereRaw($where_clause)->pluck('employee_id')->toArray();

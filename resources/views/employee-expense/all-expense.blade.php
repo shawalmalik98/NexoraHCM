@@ -153,8 +153,8 @@
                                                 <select class="form-select" data-kt-select2="true" data-placeholder="Select Name" name="emp_name"
                                                 id="company_emp_name" >
                                                     <option value="">Select Name</option>
-                                                    @if(!empty($employees_data))
-                                                        @foreach($employees_data as $data)
+                                                    @if(!empty($employee))
+                                                        @foreach($employee as $data)
                                                             <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
                                                         @endforeach
                                                     @endif
