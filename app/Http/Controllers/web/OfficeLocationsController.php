@@ -275,7 +275,7 @@ class OfficeLocationsController extends Controller
                 $error_logs = array();
                 $count_row = 0;
 
-                EmployeeLocation::truncate();
+                // EmployeeLocation::truncate();
                 
                 
                 // if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
@@ -286,23 +286,27 @@ class OfficeLocationsController extends Controller
             
                         // if($count_row != 0){
 
-                            $location_id = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
+                            $distributor_code = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
                             $employeeCode = iconv('ISO-8859-1', 'UTF-8', $getData[2]);//$getData[2];
 
-                            $get_employee_data = Employees::where('employee_code' , $employeeCode)->get(['employee_id'])->toArray();
+                            if($distributor_code != '' || $distributor_code != '0' || $distributor_code != NULL){
+                                $get_employee_data = Employees::where('employee_code' , $employeeCode)->get(['employee_id'])->toArray();
                            
-                            $location_data = OfficeLocation::where('location_alt_id', $location_id)->get('location_id')->toArray();
-                            
-                            if(!empty($get_employee_data) && !empty($location_data)){
-                                
-                                $new_employee_location = new EmployeeLocation();
-                                $new_employee_location->emp_loc_employee_id = $get_employee_data[0]['employee_id'];
-                                $new_employee_location->emp_loc_loc_id = $location_data[0]['location_id'];
-                                $new_employee_location->created_at = date('Y-m-d H:i:s');
-                                $new_employee_location->save();
-                                
+                                $location_data = OfficeLocation::where('distributor_code', $distributor_code)->get('location_id')->toArray();
+                                EmployeeLocation::where('emp_loc_employee_id', $get_employee_data[0]['employee_id'])->delete();
+                                if(!empty($get_employee_data) && !empty($location_data)){
+                                    
+                                    $new_employee_location = new EmployeeLocation();
+                                    $new_employee_location->emp_loc_employee_id = $get_employee_data[0]['employee_id'];
+                                    $new_employee_location->emp_loc_loc_id = $location_data[0]['location_id'];
+                                    $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                    $new_employee_location->save();
+                                    
+                                }
+                                $success++;
                             }
-                            $success++;
+
+                            
                         // }
 
                     }
