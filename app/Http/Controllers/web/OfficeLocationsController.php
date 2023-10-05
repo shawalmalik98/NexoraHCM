@@ -379,7 +379,7 @@ class OfficeLocationsController extends Controller
                             $dist_name = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[2];
                             $lat = iconv('ISO-8859-1', 'UTF-8', $getData[2]);//$getData[3];
                             $long = iconv('ISO-8859-1', 'UTF-8', $getData[3]);//$getData[4];
-                            $radius = '1000' . $count_row;
+                            $radius = '100' . $count_row;
                             $address = '17 - 0, Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan.' . $count_row;
 
                             // if(1 == 1){

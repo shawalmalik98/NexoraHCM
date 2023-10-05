@@ -22,7 +22,7 @@ class EmployeeExpenseController extends Controller
 
     protected function index(Request $request){
         
-        try{
+        // try{
 
             $title = Self::MAIN_TITLE;
 
@@ -39,10 +39,10 @@ class EmployeeExpenseController extends Controller
             $where_clause = '1=1' ;
 
             if(!empty($request->emp_name)){
-                $where_clause .= ' AND employee_id = "'.$request->emp_name.'"';
+                $where_clause .= " AND employee_id = '".$request->emp_name."'";
             }
             if(!empty($request->employee_location)){
-                $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
+                $where_clause .= " AND employee_location = '".$request->employee_location."'";
                 
             }
                
@@ -71,69 +71,113 @@ class EmployeeExpenseController extends Controller
             if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 3){
                 
                 $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],  $status);
+
                 $where_clause_to .= ' and emp_expense_employee in ('.implode(",",$total_team_member).')';
                 
                 $responsed_request = RequestApproval::where('request_module_id',7)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
             }
             
-
-            $fetch_expense = EmployeeExpense::
-            selectRaw('emp_expense_employee,emp_expense_id,emp_expense_date,emp_expense_description,emp_expense_type,emp_expense_amount,emp_expense_approved_by_hr,emp_expense_reimbursement,emp_expense_created_at,employee_name,employee_name,employee_code,emp_expense_approved_by_hr_time,emp_expense_attachment,emp_expense_approved_by_hr_reason,(select count(emp_expense_exp_id) from tbl_employee_expense_amount where emp_expense_exp_id = emp_expense_id   ) as update_amount, pc_id, pc_month, pc_year, disburse')
-            ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
-            ->leftjoin('tbl_employees','tbl_employees.employee_id','tbl_employee_expense.emp_expense_approved_by_hr_id')
-            ->leftjoin('tbl_payroll_calculation','tbl_payroll_calculation.pc_id','tbl_employee_expense.emp_expense_payslip_id')
-            ->whereIn('emp_expense_amt_id',function($query){
-                $query->from('tbl_employee_expense_amount')
-                ->selectRaw('MAX(emp_expense_amt_id)')
-                ->groupBy('emp_expense_exp_id');
-            })
-            ->whereRaw($whereRaw)
-            ->whereRaw($where_clause_to)
-            ->whereIn('emp_expense_employee', $employees_data)
-            ->groupBy('emp_expense_exp_id')
-            ->orderBy('emp_expense_id','DESC')
-            ->get()->toArray();
-
-           
-            $fetch_expense_total = EmployeeExpense::selectRaw(' sum(emp_expense_amount) as total')
-            ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
-            ->whereIn('emp_expense_amt_id',function($query){
-                $query->from('tbl_employee_expense_amount')
-                ->selectRaw('MAX(emp_expense_amt_id)')
-                ->groupBy('emp_expense_exp_id');
-            })
-            ->whereRaw($where_clause_to)
-            ->whereIn('emp_expense_employee', $employees_data)
-            ->get()->toArray();
+            $fetch_expenses = [];
+            $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],  $status);
+          
+            $employee_arrays = array_chunk($total_team_member , 2000);
             
-            $fetch_expense_total_approved = EmployeeExpense::selectRaw('sum(emp_expense_amount) as total')
-            ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
-            ->whereIn('emp_expense_amt_id',function($query){
-                $query->from('tbl_employee_expense_amount')
-                ->selectRaw('MAX(emp_expense_amt_id)')
-                ->groupBy('emp_expense_exp_id');
-            })
-            ->whereRaw($where_clause_to)
-            ->whereIn('emp_expense_employee', $employees_data)
-            ->where('emp_expense_approved_by_hr',2)
-            ->get()->toArray();
+            foreach($employee_arrays as $employee){
 
-            $fetch_expense_total_paid = EmployeeExpense::selectRaw('sum(emp_expense_amount) as total')
-            ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
-            ->whereIn('emp_expense_amt_id',function($query){
-                $query->from('tbl_employee_expense_amount')
-                ->selectRaw('MAX(emp_expense_amt_id)')
-                ->groupBy('emp_expense_exp_id');
-            })
-            ->whereRaw($where_clause_to)
-            ->whereIn('emp_expense_employee', $employees_data)
-            ->where('emp_expense_reimbursement',2)
-            ->get()->toArray();
+                $fetch_expense = EmployeeExpense::
+                selectRaw('emp_expense_employee,emp_expense_id,emp_expense_date,emp_expense_description,emp_expense_type,emp_expense_amount,emp_expense_approved_by_hr,emp_expense_reimbursement,emp_expense_created_at,employee_name,employee_name,employee_code,emp_expense_approved_by_hr_time,emp_expense_attachment,emp_expense_approved_by_hr_reason,(select count(emp_expense_exp_id) from tbl_employee_expense_amount where emp_expense_exp_id = emp_expense_id   ) as update_amount, pc_id, pc_month, pc_year, disburse')
+                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
+                ->leftjoin('tbl_employees','tbl_employees.employee_id','tbl_employee_expense.emp_expense_approved_by_hr_id')
+                ->leftjoin('tbl_payroll_calculation','tbl_payroll_calculation.pc_id','tbl_employee_expense.emp_expense_payslip_id')
+                ->whereIn('emp_expense_amt_id',function($query){
+                    $query->from('tbl_employee_expense_amount')
+                    ->selectRaw('MAX(emp_expense_amt_id)')
+                    ->groupBy('emp_expense_exp_id');
+                })
+                ->whereRaw($where_clause_to)
+                ->whereRaw($whereRaw)
+                ->whereIn('emp_expense_employee', $employee)
+                // ->whereIn('emp_expense_employee', $employees_data)
+                ->groupBy('emp_expense_exp_id','emp_expense_employee','emp_expense_id','emp_expense_date','emp_expense_description','emp_expense_type','emp_expense_amount','emp_expense_approved_by_hr','emp_expense_reimbursement','emp_expense_created_at','employee_name','employee_code','emp_expense_approved_by_hr_time','emp_expense_attachment','emp_expense_approved_by_hr_reason','pc_id','pc_month','pc_year','disburse')
+                ->orderBy('emp_expense_id','DESC')
+                ->get()->toArray();
+
+                $fetch_expenses = array_merge($fetch_expenses , $fetch_expense);    
+            }    
+            // dd($fetch_expenses);
+
+            $fetch_expenses_total = [];
+            $expense_arrays = array_chunk($total_team_member , 2000);
+            foreach($expense_arrays as $employee_expense){
+                $fetch_expense_total = EmployeeExpense::selectRaw(' sum(emp_expense_amount) as total')
+                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
+                ->whereIn('emp_expense_amt_id',function($query){
+                    $query->from('tbl_employee_expense_amount')
+                    ->selectRaw('MAX(emp_expense_amt_id)')
+                    ->groupBy('emp_expense_exp_id');
+                })
+                ->whereRaw($where_clause_to)
+                ->whereIn('emp_expense_employee', $employee_expense)
+                // ->whereIn('emp_expense_employee', $employees_data)
+                ->get()->toArray();
+
+                $fetch_expenses_total = array_merge($fetch_expenses_total , $fetch_expense_total);    
+            }        
+            // dd($fetch_expenses);
+            $fetch_expenses_approved  = [];
+            $expense_approved_arrays = array_chunk($total_team_member , 2000);
+            foreach($expense_approved_arrays as $employee_approved){
+                $fetch_expense_total_approved = EmployeeExpense::selectRaw('sum(emp_expense_amount) as total')
+                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
+                ->whereIn('emp_expense_amt_id',function($query){
+                    $query->from('tbl_employee_expense_amount')
+                    ->selectRaw('MAX(emp_expense_amt_id)')
+                    ->groupBy('emp_expense_exp_id');
+                })
+                ->whereRaw($where_clause_to)
+                ->whereIn('emp_expense_employee', $employee_approved)
+                // ->whereIn('emp_expense_employee', $employees_data)
+                ->where('emp_expense_approved_by_hr',2)
+                ->get()->toArray();
+
+                $fetch_expenses_approved = array_merge($fetch_expenses_approved , $fetch_expense_total_approved);    
+            }        
+
+            $fetch_expenses_paid  = [];
+            $expense_paid_arrays = array_chunk($total_team_member , 2000);
+            foreach($expense_paid_arrays as $employee_paid){
+                $fetch_expense_total_paid = EmployeeExpense::selectRaw('sum(emp_expense_amount) as total')
+                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
+                ->whereIn('emp_expense_amt_id',function($query){
+                    $query->from('tbl_employee_expense_amount')
+                    ->selectRaw('MAX(emp_expense_amt_id)')
+                    ->groupBy('emp_expense_exp_id');
+                })
+                ->whereRaw($where_clause_to)
+                ->whereIn('emp_expense_employee', $employee_paid)
+                // ->whereIn('emp_expense_employee', $employees_data)
+                ->where('emp_expense_reimbursement',2)
+                ->get()->toArray();
+            
+                $fetch_expenses_paid = array_merge($fetch_expenses_paid , $fetch_expense_total_paid);    
+            }         
             $expense_type_list = $this->expense_type_list;
 
             if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 3){
+                $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], $status);
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                if(count($total_team_member) > 2100){
+
+                    $employees = [];
+                    $employee_array = array_chunk($total_team_member , 2000);
+
+                    foreach($employee_array as $employee){
+                        $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $employee)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
+                        $employees = array_merge($employees , $employees_data);
+                    }
+
+                }
+                // $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
             }else{
 
@@ -141,20 +185,20 @@ class EmployeeExpenseController extends Controller
 
             }
             
-            $send_data = compact('title','login_user','fetch_expense','fetch_expense_total','fetch_expense_total_approved','fetch_expense_total_paid','expense_type_list','responsed_request','employees_data','employee_locations');
+            $send_data = compact('title','login_user','fetch_expenses','fetch_expenses_total','fetch_expenses_approved','fetch_expenses_paid','expense_type_list','responsed_request','employees_data','employee_locations');
             
             return view('employee-expense.all-expense',$send_data);
-        }catch(\Exception $e){
+        // }catch(\Exception $e){
 
-            $this->create_error_log('All Employee Expense', $e);
-            $send_data = compact('title');
-            return view('errors.500');
+        //     $this->create_error_log('All Employee Expense', $e);
+        //     $send_data = compact('title');
+        //     return view('errors.500');
 
-        }finally{
+        // }finally{
 
-            ActivityTracker::track_activity('All Employee Expense');
+        //     ActivityTracker::track_activity('All Employee Expense');
         
-        }
+        // }
     }
 
     protected function my_expense(Request $request){
@@ -187,7 +231,8 @@ class EmployeeExpenseController extends Controller
                 ->groupBy('emp_expense_exp_id');
             })
             ->whereRaw($whereRaw)
-            ->groupBy('emp_expense_exp_id')
+            ->groupBy('emp_expense_exp_id','emp_expense_employee','emp_expense_id','emp_expense_date','emp_expense_description','emp_expense_type','emp_expense_amount','emp_expense_approved_by_hr','emp_expense_reimbursement','emp_expense_created_at','employee_name','employee_code','emp_expense_approved_by_hr_time','emp_expense_attachment','emp_expense_approved_by_hr_reason','pc_id','pc_month','pc_year','disburse')
+            // ->groupBy('emp_expense_exp_id')
             ->orderBy('emp_expense_id','DESC')
             ->get()->toArray();
 
