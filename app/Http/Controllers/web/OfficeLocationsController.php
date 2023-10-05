@@ -286,24 +286,26 @@ class OfficeLocationsController extends Controller
             
                         // if($count_row != 0){
 
-                            $distributor_code = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
-                            $employeeCode = iconv('ISO-8859-1', 'UTF-8', $getData[2]);//$getData[2];
+                            $distributor_code = iconv('ISO-8859-1', 'UTF-8', $getData[0]);//$getData[1];
+                            $employeeCode = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[2];
 
                             if($distributor_code != '' || $distributor_code != '0' || $distributor_code != NULL){
                                 $get_employee_data = Employees::where('employee_code' , $employeeCode)->get(['employee_id'])->toArray();
                            
                                 $location_data = OfficeLocation::where('distributor_code', $distributor_code)->get('location_id')->toArray();
-                                EmployeeLocation::where('emp_loc_employee_id', $get_employee_data[0]['employee_id'])->delete();
-                                if(!empty($get_employee_data) && !empty($location_data)){
-                                    
-                                    $new_employee_location = new EmployeeLocation();
-                                    $new_employee_location->emp_loc_employee_id = $get_employee_data[0]['employee_id'];
-                                    $new_employee_location->emp_loc_loc_id = $location_data[0]['location_id'];
-                                    $new_employee_location->created_at = date('Y-m-d H:i:s');
-                                    $new_employee_location->save();
-                                    
+                                if(!empty($get_employee_data)){
+                                    EmployeeLocation::where('emp_loc_employee_id', $get_employee_data[0]['employee_id'])->delete();
+                                    if(!empty($get_employee_data) && !empty($location_data)){
+                                        
+                                        $new_employee_location = new EmployeeLocation();
+                                        $new_employee_location->emp_loc_employee_id = $get_employee_data[0]['employee_id'];
+                                        $new_employee_location->emp_loc_loc_id = $location_data[0]['location_id'];
+                                        $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                        $new_employee_location->save();
+                                        
+                                    }
+                                    $success++;
                                 }
-                                $success++;
                             }
 
                             
