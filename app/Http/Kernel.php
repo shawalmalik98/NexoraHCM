@@ -72,5 +72,6 @@ class Kernel extends HttpKernel
         'userStatusChecker' =>  \App\Http\Middleware\EmployeeStatusChecker::class,
         'payrollVerification' =>  \App\Http\Middleware\PayrollVerification::class,
         'MobileAttendanceBarrier' =>  \App\Http\Middleware\MobileAttendanceBarrier::class,
+        'VerifyAppVersion' =>  \App\Http\Middleware\VerifyAppVersion::class,
     ];
 }

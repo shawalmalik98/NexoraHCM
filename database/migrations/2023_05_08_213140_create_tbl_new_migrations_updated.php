@@ -24,6 +24,16 @@ return new class extends Migration
             }
             
         }
+
+        if(Schema::hasTable('tbl_hrm_settings')){
+            
+            if (!Schema::hasColumn('tbl_hrm_settings', 'mobile_app_version')) {
+                Schema::table('tbl_hrm_settings', function (Blueprint $table) {
+                    $table->string('mobile_app_version', 50)->nullable();
+                });
+            }
+            
+        }
        
     }
     /**
