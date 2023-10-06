@@ -138,6 +138,7 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
 
         Route::get('/',[AttendanceController::class, 'get_employee_daily_attendance']);
         Route::post('/attendance-report-download', [AttendanceController::class, 'download_employee_daily_attendance']);
+        Route::post('/upload-attendance-report',[AttendanceController::class, 'upload_attendance_record']);
       });
 
       //AttendanceController End

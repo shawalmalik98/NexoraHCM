@@ -995,6 +995,43 @@ class AttendanceController extends Controller
 
         try{
             
+            // $data = [
+            //     "31202308260701000200010015200004",
+            //     "31202308260702000100010093580003",
+            // ];
+            
+            // $records = [];
+            
+            // foreach ($data as $item) {
+            //     $firststatic = substr($item, 0, 2);
+            //     $date = substr($item, 2, 4) . '' . substr($item, 6, 2) . '' . substr($item, 8, 2);
+            //     $sixstandard = substr($item, 10, 6);
+            //     $checkinout = substr($item, 16, 2);
+            //     $threestandard = substr($item, 18, 3);
+            //     $employeeCode = substr($item, 21, 7);
+            //     $twostandard = substr($item, 28, 2);
+            //     $machineID = substr($item, 30, 2);
+        
+            
+            //     $record = [
+            //         'start' => $firststatic,
+            //         'date' => $date,
+            //         'six' =>  $sixstandard,
+            //         'checkinout' => $checkinout,
+            //         'three' => $threestandard,
+            //         'employee_code' => $employeeCode,
+            //         'two' => $twostandard,
+            //         'machine_id' => $machineID,
+            //     ];
+            
+            //     $records[] = $record;
+            // }
+            
+    
+            
+            // dd($records);
+            
+            
             $title = Self::TITLE_GLOBAL3;
       
             $login_user = $this->get_login_user_detail();
@@ -1162,7 +1199,6 @@ class AttendanceController extends Controller
         join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')
         ->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')
         ->whereRaw($where_clause)
-        ->limit(10)
         ->get(['employee_id','employee_code','employee_name','employee_offdays','department_name','designation_name'])->toArray();
 		
        
@@ -2111,6 +2147,66 @@ class AttendanceController extends Controller
         } else {
             echo "Unable to open $filename for writing.";
         }
+    }
+
+    protected function upload_attendance_record(Request $request)
+    {
+        set_time_limit(18000);
+        // $validator = Validator::make($request->all(), [
+        //     'file' => 'required|file|mimes:dat',
+        // ]);
+
+        // if ($validator->fails()) {
+        //     foreach ($validator->errors()->all() as $error) {
+        //         return response()->json([
+        //             'msg' => $error,
+        //             'status' => 'FALSE',
+        //             'validation' => 'TRUE',
+        //         ]);
+        //     }
+        // } else {
+            $filename = $request->file('file')->getPathName();
+
+            $dataArray = array();
+
+            if ($request->file('file')->getSize() > 0) {
+                $error_logs = [];
+                $count_row = 0;
+
+                while (($line = fgets(fopen($filename, "r"))) !== false) {
+                    $data = trim($line); // Assuming each line of the .dat file contains a record
+
+                    $firststatic = substr($data, 0, 2);
+                    $date = substr($data, 2, 4) . '' . substr($data, 6, 2) . '' . substr($data, 8, 2);
+                    $sixstandard = substr($data, 10, 6);
+                    $checkinout = substr($data, 16, 2);
+                    $threestandard = substr($data, 18, 3);
+                    $employeeCode = substr($data, 21, 7);
+                    $twostandard = substr($data, 28, 2);
+                    $machineID = substr($data, 30, 2);
+
+                    $dataArray[] = array(
+                        'firststatic' => $firststatic,
+                        'date' => $date,
+                        'sixstandard' => $sixstandard,
+                        'checkinout' => $checkinout,
+                        'threestandard' => $threestandard,
+                        'employeeCode' => $employeeCode,
+                        'twostandard' => $twostandard,
+                        'machineID' => $machineID
+                    );
+
+                    $count_row++;
+                }
+                dd($dataArray);
+
+                return response()->json([
+                    'status' => 'TRUE',
+                    'msg' => 'Attendance records uploaded successfully',
+                    'error_logs' => $error_logs,
+                ]);
+            }
+        // }
     }
 
 }
