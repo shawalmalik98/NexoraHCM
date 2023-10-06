@@ -142,7 +142,7 @@ class LoginApiController extends Controller
 
                                     }
                                 }else{
-                                    return $this->api_response_json(FALSE,"You can't login from this device.","",200);
+                                    return $this->api_response_json(FALSE,"You can't login from this device. It's already in use by another user.","",200);
                                 }
     
                                 

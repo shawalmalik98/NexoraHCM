@@ -13,19 +13,13 @@ class LeavesApiController extends Controller
 {
     use LoginEmployee, LogGenerateTrait, ApiResponseTrait;
 
-    const TITLE_GLOBAL = "manage-leaves";
-    const TITLE_GLOBAL1 = "leave-management";
-
     protected function get_leave_names(Request $request){
        
         try{
-            $title = Self::TITLE_GLOBAL1;
 
             $leave_names = LeaveManagement::where('leave_visibilty',1)->get(['leave_manage_id','leave_name'])->toArray();
-           
-            $data = compact('title','leave_names');
 
-            return $this->api_response_json(TRUE,"All Leave Names",$data,200);
+            return $this->api_response_json(TRUE,"All Leave Names",$leave_names,200);
         }
         catch(\Exception $e){
 
