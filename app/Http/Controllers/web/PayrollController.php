@@ -119,15 +119,72 @@ class PayrollController extends Controller
         
             $login_user = $this->get_login_user_detail();
             
-            $fetch_employee_payroll = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`,`disburse`,pc_year,pc_month,pc_created_at FROM `tbl_payroll_calculation` 
-                left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 1 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_payroll_calculation.pc_id 
-                left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 1 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_payroll_calculation.pc_id 
-                where pc_employee_id = ".session('user_session')." AND disburse = '2' group by pc_id ,pc_deduction_pc_id,pc_earning_pc_id ");
+            // $fetch_employee_payroll = DB::select("SELECT sum(IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`,`disburse`,pc_year,pc_month,pc_created_at FROM `tbl_payroll_calculation` 
+            //     left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 1 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_payroll_calculation.pc_id 
+            //     left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 1 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_payroll_calculation.pc_id 
+            //     where pc_employee_id = ".session('user_session')." AND disburse = '2' group by pc_id ,pc_deduction_pc_id,pc_earning_pc_id ");
 
-            $fetch_employee_wages = DB::select("SELECT sum(( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ))) as dw_employee_extra_daily_wages  ,sum(dw_employee_gross_daily_wages) as dw_employee_gross_daily_wages, sum( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as dw_employee_deduction , sum((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as dw_employee_net_daily_wages,`dw_id`, `dw_employee_id`,`dw_disburse`,dw_of_date,dw_created_at, count(dw_id) as wage_count FROM `tbl_daily_wages` 
-                left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-                left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-                where dw_employee_id = ".session('user_session')." AND dw_disburse = '2' group by dw_employee_id, date_format(dw_of_date,'%m-%Y')");
+                $fetch_employee_payroll = Payroll::
+                select(
+                    DB::raw('CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END as pc_employee_extra_salary'),
+                    'pc_employee_gross_salary',
+                    DB::raw('(CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction) as pc_employee_deduction'),
+                    DB::raw('((CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END + pc_employee_gross_salary) - (CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_net_salary'),
+                    'pc_id',
+                    'pc_employee_id',
+                    'disburse',
+                    'pc_year',
+                    'pc_month',
+                    'pc_created_at'
+                )
+                ->leftJoin(DB::raw('(SELECT pc_earning_pc_id, SUM(pc_earning_amount) as sum_pc_earning_amount FROM tbl_payroll_calculation_earning WHERE pc_earning_type = 1 GROUP BY pc_earning_pc_id) as payroll_earning'), 'payroll_earning.pc_earning_pc_id', '=', 'tbl_payroll_calculation.pc_id')
+                ->leftJoin(DB::raw('(SELECT pc_deduction_pc_id, SUM(pc_deduction_amount) as sum_pc_deduction_amount FROM tbl_payroll_calculation_deduction WHERE pc_deduction_type = 1 GROUP BY pc_deduction_pc_id) as payroll_deduction'), 'payroll_deduction.pc_deduction_pc_id', '=', 'tbl_payroll_calculation.pc_id')
+                ->where('pc_employee_id', '=', session('user_session'))
+                ->where('disburse', '=', '2')
+                ->groupBy(
+                    'pc_id',
+                    'pc_employee_id',
+                    'disburse',
+                    'pc_year',
+                    'pc_month',
+                    'pc_created_at',
+                    'payroll_earning.sum_pc_earning_amount',
+                    'payroll_deduction.sum_pc_deduction_amount',
+                    'pc_absent_deduction',
+                    'pc_late_early_deduction',
+                    'pc_half_day_deduction',
+                    'pc_employee_gross_salary'
+                )
+                ->get()->toArray();
+
+
+                // dd($fetch_employee_payroll);
+
+            // $fetch_employee_wages = DB::select("SELECT sum(( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ))) as dw_employee_extra_daily_wages  ,sum(dw_employee_gross_daily_wages) as dw_employee_gross_daily_wages, sum( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as dw_employee_deduction , sum((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as dw_employee_net_daily_wages,`dw_id`, `dw_employee_id`,`dw_disburse`,dw_of_date,dw_created_at, count(dw_id) as wage_count FROM `tbl_daily_wages` 
+            //     left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
+            //     left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
+            //     where dw_employee_id = ".session('user_session')." AND dw_disburse = '2' group by dw_employee_id, date_format(dw_of_date,'%m-%Y')");
+
+            $fetch_employee_wages = DB::table('tbl_daily_wages')
+            ->selectRaw('
+                SUM(CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END) AS dw_employee_extra_daily_wages,
+                SUM(dw_employee_gross_daily_wages) AS dw_employee_gross_daily_wages,
+                SUM(CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction) AS dw_employee_deduction,
+                SUM(CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END + dw_employee_gross_daily_wages) - SUM(CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction) AS dw_employee_net_daily_wages,
+                dw_id,
+                dw_employee_id,
+                dw_disburse,
+                dw_of_date,
+                dw_created_at,
+                COUNT(dw_id) AS wage_count
+            ')
+            ->leftJoin(DB::raw('(SELECT pc_earning_pc_id, SUM(pc_earning_amount) AS sum_pc_earning_amount FROM tbl_payroll_calculation_earning WHERE pc_earning_type = 2 GROUP BY pc_earning_pc_id) AS payroll_earning'), 'payroll_earning.pc_earning_pc_id', '=', 'tbl_daily_wages.dw_id')
+            ->leftJoin(DB::raw('(SELECT pc_deduction_pc_id, SUM(pc_deduction_amount) AS sum_pc_deduction_amount FROM tbl_payroll_calculation_deduction WHERE pc_deduction_type = 2 GROUP BY pc_deduction_pc_id) AS payroll_deduction'), 'payroll_deduction.pc_deduction_pc_id', '=', 'tbl_daily_wages.dw_id')
+            ->where('dw_employee_id', session('user_session'))
+            ->where('dw_disburse', '2')
+            ->groupBy('dw_employee_id','tbl_daily_wages.dw_id','tbl_daily_wages.dw_disburse','tbl_daily_wages.dw_of_date','tbl_daily_wages.dw_created_at' ,DB::raw("FORMAT(dw_of_date, '%m-%Y')"))
+            ->get()->toArray();
+
 
             $fetch_employee_wages = json_decode(json_encode($fetch_employee_wages), true);
 
