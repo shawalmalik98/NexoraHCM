@@ -28,6 +28,7 @@ class VerifyAppVersion
                     ], 403);
                 }
             }
+            return $next($request);
         }
         return $next($request);
     }
