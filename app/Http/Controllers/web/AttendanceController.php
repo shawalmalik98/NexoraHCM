@@ -1046,7 +1046,7 @@ class AttendanceController extends Controller
                     ->orWhere('att_check_overall_status','RPL');
                 })->count();
                 $attendance =  $this->daily_attendance_all_employee($date,$month,$year,$where_clause);
-                
+
             }
             
             $leave_name = implode(',',$manage_leaves);
@@ -1098,13 +1098,13 @@ class AttendanceController extends Controller
             }
             
             if(empty($request->is_active)){
-                $where_clause   .= ' AND employee_isactive = "1"';
+                $where_clause   .= " AND employee_isactive = '1'";
             }else{
                 if(!empty($request->is_active) && $request->is_active == 1){
-                    $where_clause   .= ' AND employee_isactive = "1"'; 
+                    $where_clause   .= " AND employee_isactive = '1'";
                 }
                 elseif(!empty($request->is_active) && $request->is_active == 2){
-                    $where_clause   .= ' AND employee_isactive = "0"'; 
+                    $where_clause   .= " AND employee_isactive = '0'";
                 }
             }
             
@@ -1162,6 +1162,7 @@ class AttendanceController extends Controller
         join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')
         ->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')
         ->whereRaw($where_clause)
+        ->limit(10)
         ->get(['employee_id','employee_code','employee_name','employee_offdays','department_name','designation_name'])->toArray();
 		
        

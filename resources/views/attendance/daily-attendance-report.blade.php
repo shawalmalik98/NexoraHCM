@@ -47,7 +47,7 @@
                     <div class="card">
                         <div class="p-3">
                             <div class="text-gray-900 fw-bold fs-2" id="present">0</div>
-                            <div class="fw-semibold text-gray-400">Present</div>
+                            <div class="fw-semibold text-gray-400">On Time</div>
                         </div>
                     </div>
                 </div>
@@ -271,7 +271,7 @@
                                                     <td  class="text-center"> 
                                                     
                                                         @foreach ($attendances['attendance'] as $daily_atty)
-                                                                
+ 
                                                             @php $absent = false; @endphp
                                                         
                                                             @if ($daily_atty['att_check_overall_status'] == 'Present')
@@ -281,15 +281,15 @@
                                                             @elseif($daily_atty['att_check_overall_status'] == 'Late Coming')
                                                                 {{ $daily_atty['att_check_in_time'] }}
                                                             @elseif(in_array($daily_atty['att_check_overall_status'],$manage_leaves) || $daily_atty['att_check_overall_status'] == 'RPL')
-                                                                    00:00:00       
+                                                                    -      
                                                             @elseif($daily_atty['att_check_overall_status'] == 'Absent')
-                                                                    00:00:00
+                                                                    -
                                                             @elseif($daily_atty['att_check_overall_status'] == 'Early out')
                                                              {{ $daily_atty['att_check_in_time'] }}
                                                             @elseif(substr($daily_atty['att_check_overall_status'] , 0, 7) == 'Holiday')
-                                                                    00:00:00
+                                                                    -
                                                             @endif
-                                                            
+                                                        
                                                         @endforeach
 
                                                         @php
@@ -302,9 +302,9 @@
                                                             @if(in_array($name_of_day,$attendances['employee_offdays']) )
                                                             00:00:00
                                                             @elseif($date_filter< $today)
-                                                                00:00:00
+                                                                -
                                                             @else
-                                                                00:00:00    
+                                                                - 
                                                             @endif
                                                         @endif
                                                     
@@ -316,20 +316,22 @@
                                                 
                                                             @php $absent = false; @endphp
 
-                                                            @if ($today_atty['att_check_overall_status'] == 'Present')
-                                                                {{ $today_atty['att_check_out_time'] }}
+                                                            @if ($today_atty['att_check_out_status'] == 0)
+                                                                -
+                                                            @elseif ($today_atty['att_check_overall_status'] == 'Present')
+                                                                {{ $today_atty['att_check_out_time']}}
                                                             @elseif($today_atty['att_check_overall_status'] == 'Half day')
                                                                 {{ $today_atty['att_check_out_time'] }}
                                                             @elseif($today_atty['att_check_overall_status'] == 'Late Coming')
                                                                 {{ $today_atty['att_check_out_time'] }}
                                                             @elseif(in_array($today_atty['att_check_overall_status'],$manage_leaves) || $today_atty['att_check_overall_status'] == 'RPL')
-                                                                00:00:00 
+                                                                    - 
                                                             @elseif($today_atty['att_check_overall_status'] == 'Absent')
-                                                                    00:00:00
+                                                                    -
                                                             @elseif($today_atty['att_check_overall_status'] == 'Early out')
                                                                 {{ $today_atty['att_check_out_time'] }}
                                                             @elseif(substr($today_atty['att_check_overall_status'] , 0, 7) == 'Holiday')
-                                                                    00:00:00
+                                                                -
                                                             @endif
                                                             
                                                         @endforeach
@@ -344,9 +346,9 @@
                                                                 00:00:00
 
                                                             @elseif($date_filter< $today)
-                                                                00:00:00
+                                                                - 
                                                             @else
-                                                                00:00:00    
+                                                                - 
                                                             @endif
                                                         @endif
                                                     
@@ -364,14 +366,14 @@
                                                             @elseif($atty_hours['att_check_overall_status'] == 'Late Coming')
                                                                 {{ CustomHelper::calculate_working_hour($atty_hours['att_check_out_status'],$atty_hours['att_check_in_time'],$atty_hours['att_check_out_time'],$atty_hours['att_created_at'],$atty_hours['att_updated_at'])}}
                                                             @elseif(in_array($atty_hours['att_check_overall_status'],$manage_leaves) || $atty_hours['att_check_overall_status'] == 'RPL')
-                                                                00:00:00 
+                                                                -
                                                             
                                                             @elseif($atty_hours['att_check_overall_status'] == 'Absent')
-                                                            00:00:00
+                                                                 -
                                                             @elseif($atty_hours['att_check_overall_status'] == 'Early out')
                                                             {{ CustomHelper::calculate_working_hour($atty_hours['att_check_out_status'],$atty_hours['att_check_in_time'],$atty_hours['att_check_out_time'],$atty_hours['att_created_at'],$atty_hours['att_updated_at'])}}
                                                             @elseif(substr($atty_hours['att_check_overall_status'] , 0, 7) == 'Holiday')
-                                                                00:00:00
+                                                                -
                                                             @endif
                                                         
                                                         @endforeach
@@ -386,9 +388,9 @@
                                                             @if(in_array($name_of_day,$attendances['employee_offdays']) )
                                                                 00:00:00
                                                             @elseif($date_filter< $today)
-                                                                00:00:00
+                                                                -
                                                             @else
-                                                                00:00:00
+                                                                -
                                                             @endif
                                                         @endif
 

@@ -44,7 +44,7 @@
                     <div class="card" >
                         <div class="p-3">
                             <div class="text-gray-900 fw-bold fs-2" id="present">0</div>
-                            <div class="fw-semibold text-gray-400 ">Present</div>
+                            <div class="fw-semibold text-gray-400 ">On Time</div>
                         </div>
                     </div>
                 </div>
@@ -285,65 +285,69 @@
                                                                 @elseif($attendances['att_check_overall_status'] == 'Late Coming')
                                                                     {{ $attendances['att_check_in_time'] }}
                                                                 @elseif(in_array($attendances['att_check_overall_status'],$manage_leaves) || $attendances['att_check_overall_status'] == 'RPL')
-                                                                        00:00:00       
+                                                                        -       
                                                                 @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                        00:00:00
+                                                                        -
                                                                 @elseif($attendances['att_check_overall_status'] == 'Early out')
                                                                 {{ $attendances['att_check_in_time'] }}
                                                                 @elseif(substr($attendances['att_check_overall_status'] , 0, 7) == 'Holiday')
-                                                                        00:00:00
+                                                                        -
                                                                 @endif
                                                             @endif  
                                                         @endforeach
                                                     @endif
 
                                                     @php
-                                                    
+                                                
                                                         $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
                                                         $today = strtotime(date("d-m-Y"));
-                                                        @endphp
-                                                        
-                                                        @if($absent )
-                                                        
-                                                            @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
-                                                            00:00:00
-
-                                                            @elseif($date_filter< $today)
-                                                                00:00:00
-                                                            @endif
-                                                        @endif
-                                                
+                                                    @endphp
                                                     
+                                                    @if($absent )
+                                                    
+                                                        @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
+                                                            00:00:00
+                                                        @elseif($date_filter< $today)
+                                                            -
+                                                        @else
+                                                            -    
+                                                        @endif
+                                                    @endif
+                                                
                                                 </td> 
 
                                                 <td  class="text-center"> 
                                                     @if (!empty($attendance))
+                                                    
                                                         @foreach ($attendance as $attendances)
-                                                
-                                                       @if ($attendances['att_for_date'].'-'.$attendances['att_for_month'].'-'.$attendances['att_for_year'] == $dates[$month_count])
-                                                            @php $absent = false; @endphp
-                                                            @if ($attendances['att_check_overall_status'] == 'Present')
-                                                                {{ $attendances['att_check_out_time'] }}
-                                                            @elseif($attendances['att_check_overall_status'] == 'Half day')
-                                                                {{ $attendances['att_check_out_time'] }}
-                                                            @elseif($attendances['att_check_overall_status'] == 'Late Coming')
-                                                                {{ $attendances['att_check_out_time'] }}
-                                                            @elseif(in_array($attendances['att_check_overall_status'],$manage_leaves) || $attendances['att_check_overall_status'] == 'RPL')
-                                                                00:00:00    
-                                                            @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                    00:00:00
-                                                            @elseif($attendances['att_check_overall_status'] == 'Early out')
-                                                                {{ $attendances['att_check_out_time'] }}
-                                                            @elseif(substr($attendances['att_check_overall_status'] , 0, 7) == 'Holiday')
-                                                                    00:00:00
-                                                            @endif
-                                                        @endif 
+
+                                                            @if ($attendances['att_for_date'].'-'.$attendances['att_for_month'].'-'.$attendances['att_for_year'] == $dates[$month_count])
+                                                                @php $absent = false; @endphp
+                                                                @if($attendances['att_check_out_status'] == 0)
+                                                                    -
+                                                                @elseif ($attendances['att_check_overall_status'] == 'Present')
+                                                                    {{ $attendances['att_check_out_time'] }}
+                                                                @elseif($attendances['att_check_overall_status'] == 'Half day')
+                                                                    {{ $attendances['att_check_out_time'] }}
+                                                                @elseif($attendances['att_check_overall_status'] == 'Late Coming')
+                                                                    {{ $attendances['att_check_out_time'] }}
+                                                                @elseif(in_array($attendances['att_check_overall_status'],$manage_leaves) || $attendances['att_check_overall_status'] == 'RPL')
+                                                                        -    
+                                                                @elseif($attendances['att_check_overall_status'] == 'Absent')
+                                                                        -
+                                                                @elseif($attendances['att_check_overall_status'] == 'Early out')
+                                                                    {{ $attendances['att_check_out_time'] }}
+                                                                @elseif(substr($attendances['att_check_overall_status'] , 0, 7) == 'Holiday')
+                                                                        -
+                                                                @endif
+                                                            @endif 
+                                                                
                                                         @endforeach
+                                                        
                                                     @endif
 
                                                     @php
                                                     
-                                                        
                                                         $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
                                                         $today = strtotime(date("d-m-Y"));
                                                     @endphp
@@ -353,7 +357,9 @@
                                                             00:00:00
 
                                                         @elseif($date_filter< $today)
-                                                            00:00:00
+                                                            -
+                                                        @else
+                                                            -    
                                                         @endif
                                                     @endif
                                                 
@@ -377,17 +383,17 @@
                                                                     {{ CustomHelper::calculate_shift_timings_shift_management($attendances['att_shift_start_time'],$attendances['att_shift_end_time']); }}
                                                                 
                                                                 @elseif(in_array($attendances['att_check_overall_status'],$manage_leaves) || $attendances['att_check_overall_status'] == 'RPL')
-                                                                    00:00:00     
+                                                                    -     
                                                                                     
                                                                 @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                    00:00:00
+                                                                    -
                                                                     
                                                                 @elseif($attendances['att_check_overall_status'] == 'Early out')
                                                                     {{ CustomHelper::calculate_shift_timings_shift_management($attendances['att_shift_start_time'],$attendances['att_shift_end_time']); }}
                                                                 
                                                                 @elseif(substr($attendances['att_check_overall_status'] , 0, 7) == 'Holiday')
                                                                 @php $holiday_count++; @endphp
-                                                                        00:00:00
+                                                                        -
                                                                 @endif
                                                             @endif 
                                                         @endforeach
@@ -397,7 +403,9 @@
                                                             @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
                                                                 00:00:00
                                                             @elseif($date_filter < $today)
-                                                                00:00:00
+                                                                -
+                                                            @else
+                                                                -    
                                                             @endif
                                                         @endif
 
@@ -477,13 +485,13 @@
                                                             @elseif($attendances['att_check_overall_status'] == 'Late Coming')
                                                             {{ CustomHelper::calculate_working_hour($attendances['att_check_out_status'],$attendances['att_check_in_time'],$attendances['att_check_out_time'],$attendances['att_created_at'],$attendances['att_updated_at'])}}
                                                             @elseif(in_array($attendances['att_check_overall_status'],$manage_leaves) || $attendances['att_check_overall_status'] == 'RPL' )
-                                                                00:00:00
+                                                                -
                                                             @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                00:00:00
+                                                                -
                                                             @elseif($attendances['att_check_overall_status'] == 'Early out')
                                                             {{ CustomHelper::calculate_working_hour($attendances['att_check_out_status'],$attendances['att_check_in_time'],$attendances['att_check_out_time'],$attendances['att_created_at'],$attendances['att_updated_at'])}}
                                                             @elseif(substr($attendances['att_check_overall_status'] , 0, 7) == 'Holiday')
-                                                                00:00:00
+                                                                -
                                                             @endif
                                                         @endif 
                                                         @endforeach
@@ -499,7 +507,9 @@
                                                         @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
                                                             00:00:00
                                                         @elseif($date_filter < $today)
-                                                        00:00:00
+                                                            -
+                                                        @else
+                                                            -
                                                         @endif
                                                     @endif
 

@@ -27,7 +27,7 @@ class TaxSlabController extends Controller
                     
             $login_user = $this->get_login_user_detail();
 
-            $tax_slab_filter = TaxSlab::groupBy('ts_fiscal_start')->orderBy('ts_fiscal_start','DESC')->get(['ts_fiscal_start','ts_fiscal_end'])->toArray();
+            $tax_slab_filter = TaxSlab::groupBy('ts_fiscal_start','ts_fiscal_end')->orderBy('ts_fiscal_start','DESC')->get(['ts_fiscal_start','ts_fiscal_end'])->toArray();
 
 
             $fetch_tax_slab = [];
@@ -44,7 +44,7 @@ class TaxSlabController extends Controller
             }
             
 
-            $tax_slab_filter = TaxSlab::groupBy('ts_fiscal_start')->get(['ts_fiscal_start','ts_fiscal_end'])->toArray();
+            $tax_slab_filter = TaxSlab::groupBy('ts_fiscal_start','ts_fiscal_end')->get(['ts_fiscal_start','ts_fiscal_end'])->toArray();
 
             $fiscal_date  = HrmSetting::get(['fiscal_date'])->toArray();
             
