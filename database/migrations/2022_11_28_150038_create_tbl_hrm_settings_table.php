@@ -45,6 +45,7 @@ return new class extends Migration
                 $table->integer('total_leave_all_leaves_visibility')->default(1);
                 $table->string('system_currency',100)->default('PKR');
                 $table->float('gross_salary_ratio', 8 , 5)->default(62.89);
+                $table->string('mobile_app_version', 50)->nullable();
             });
         }
     }
