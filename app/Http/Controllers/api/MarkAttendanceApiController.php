@@ -487,18 +487,16 @@ class MarkAttendanceApiController extends Controller
 			if(count($attendance_object) > 0 ){
 				DB::table('tbl_offline_attendance_object')->insert([
 					'att_offline_object' => $request->post('attendance_object'),
-					
+					'att_offline_emp_id' => $login_user[0]['employee_id'],
+					'att_created_at' => date('Y-m-d H:i:s'),
 				]);
 				
 				foreach($attendance_object as $attendance){
 					if(array_key_exists("checkin",$attendance)){
-						$this->multiple_check_in_mobile($attendance['formatted_date'],$login_user[0]['employee_id'], 2 , $attendance['location_latitude'] , $attendance['location_longitude']);
-						
+						$this->multiple_check_in_mobile($attendance['formatted_date'],$login_user[0]['employee_id'], 2 , ($attendance['location_latitude']) ?? NULL , ($attendance['location_longitude']) ?? NULL);
 					}
 					if(array_key_exists("checkout",$attendance)){
-						
-						$this->multiple_check_out_mobile($attendance['formatted_date'], $login_user[0]['employee_id'],2 , $attendance['location_latitude'] , $attendance['location_longitude']);
-	
+						$this->multiple_check_out_mobile($attendance['formatted_date'], $login_user[0]['employee_id'],2 , ($attendance['location_latitude']) ?? NULL , ($attendance['location_longitude']) ?? NULL);
 					}
 				}
 				

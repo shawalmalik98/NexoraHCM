@@ -343,8 +343,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
-								$mark_Attendance->att_ci_lat = $attendance_lat;
-								$mark_Attendance->att_ci_long = $attendance_long;
+								$mark_attendance->att_ci_lat = $attendance_lat;
+								$mark_attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -364,8 +364,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
-								$mark_Attendance->att_ci_lat = $attendance_lat;
-								$mark_Attendance->att_ci_long = $attendance_long;
+								$mark_attendance->att_ci_lat = $attendance_lat;
+								$mark_attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -386,8 +386,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
-								$mark_Attendance->att_ci_lat = $attendance_lat;
-								$mark_Attendance->att_ci_long = $attendance_long;
+								$mark_attendance->att_ci_lat = $attendance_lat;
+								$mark_attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -406,8 +406,8 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
 								$mark_attendance->att_check_in_source = $attendance_source;
-								$mark_Attendance->att_ci_lat = $attendance_lat;
-								$mark_Attendance->att_ci_long = $attendance_long;
+								$mark_attendance->att_ci_lat = $attendance_lat;
+								$mark_attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
@@ -426,8 +426,8 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_for_month = $month;
 							$mark_attendance->att_for_year = $year;
 							$mark_attendance->att_check_in_source = $attendance_source;
-							$mark_Attendance->att_ci_lat = $attendance_lat;
-							$mark_Attendance->att_ci_long = $attendance_long;
+							$mark_attendance->att_ci_lat = $attendance_lat;
+							$mark_attendance->att_ci_long = $attendance_long;
 							$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 							$mark_attendance->att_remote_applicable = $remote_applicable;
 							$mark_attendance->save();
@@ -447,8 +447,8 @@ trait MachineAttendanceTrait {
 						$mark_attendance->att_for_month = $month;
 						$mark_attendance->att_for_year = $year;
 						$mark_attendance->att_check_in_source = $attendance_source;
-						$mark_Attendance->att_ci_lat = $attendance_lat;
-						$mark_Attendance->att_ci_long = $attendance_long;
+						$mark_attendance->att_ci_lat = $attendance_lat;
+						$mark_attendance->att_ci_long = $attendance_long;
 						$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 						$mark_attendance->att_remote_applicable = $remote_applicable;
 						$mark_attendance->save();
