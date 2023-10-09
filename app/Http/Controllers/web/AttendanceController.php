@@ -995,43 +995,6 @@ class AttendanceController extends Controller
 
         try{
             
-            // $data = [
-            //     "31202308260701000200010015200004",
-            //     "31202308260702000100010093580003",
-            // ];
-            
-            // $records = [];
-            
-            // foreach ($data as $item) {
-            //     $firststatic = substr($item, 0, 2);
-            //     $date = substr($item, 2, 4) . '' . substr($item, 6, 2) . '' . substr($item, 8, 2);
-            //     $sixstandard = substr($item, 10, 6);
-            //     $checkinout = substr($item, 16, 2);
-            //     $threestandard = substr($item, 18, 3);
-            //     $employeeCode = substr($item, 21, 7);
-            //     $twostandard = substr($item, 28, 2);
-            //     $machineID = substr($item, 30, 2);
-        
-            
-            //     $record = [
-            //         'start' => $firststatic,
-            //         'date' => $date,
-            //         'six' =>  $sixstandard,
-            //         'checkinout' => $checkinout,
-            //         'three' => $threestandard,
-            //         'employee_code' => $employeeCode,
-            //         'two' => $twostandard,
-            //         'machine_id' => $machineID,
-            //     ];
-            
-            //     $records[] = $record;
-            // }
-            
-    
-            
-            // dd($records);
-            
-            
             $title = Self::TITLE_GLOBAL3;
       
             $login_user = $this->get_login_user_detail();
@@ -2183,32 +2146,66 @@ class AttendanceController extends Controller
                     while (($line = fgets($handle)) !== false) {
                         $data = trim($line);
 
-                        $firststatic = substr($data, 0, 2);
-                        $date = substr($data, 2, 4) . '' . substr($data, 6, 2) . '' . substr($data, 8, 2);
-                        $sixstandard = substr($data, 10, 6);
+                        $first_two_static = substr($data, 0, 2);
+                        $date = substr($data, 2, 4) . '-' . substr($data, 6, 2) . '-' . substr($data, 8, 2);
+                        $time = substr($data, 10, 2) . ':' . substr($data, 12, 2);
+                        $second_two_standard = substr($data, 14, 2);
                         $checkinout = substr($data, 16, 2);
-                        $threestandard = substr($data, 18, 3);
-                        $employeeCode = substr($data, 21, 7);
-                        $twostandard = substr($data, 28, 2);
+                        $three_standard = substr($data, 18, 3);
+                        $employee_Code = substr($data, 21, 7);
+                        $two_standard = substr($data, 28, 2);
                         $machineID = substr($data, 30, 2);
+                        
+                        $check_in_time = '';
+                        $check_out_time = '';
+
+                        $check_in = '';
+                        $check_out= '';
+
+                        if($checkinout == '01') {
+                            $check_in_time = $time;
+                            $check_in = $checkinout;
+                        }else{
+                            $check_out_time = $time;
+                            $check_out = $checkinout;
+                        }  
 
                         $dataArray[] = [
-                            'firststatic' => $firststatic,
+                            'firststatic' => $first_two_static,
                             'date' => $date,
-                            'sixstandard' => $sixstandard,
-                            'checkinout' => $checkinout,
-                            'threestandard' => $threestandard,
-                            'employeeCode' => $employeeCode,
-                            'twostandard' => $twostandard,
+                            'in_time' => $check_in_time,
+                            'out_time' => $check_out_time,
+                            'twostandard' => $second_two_standard,
+                            'checkin' => $check_in,
+                            'checkout' => $check_out,
+                            'threestandard' => $three_standard,
+                            'employeeCode' => $employee_Code,
+                            'twostandard' => $two_standard,
                             'machineID' => $machineID,
                         ];
-
+                            
+                        DB::table('tbl_attendance_object')->insert([
+                            'first_standard' => $first_two_static,
+                            'attendance_date' => $date,
+                            'attendance_time' => $check_in_time,
+                            'second_two_static' => $second_two_standard,
+                            'check_in_out' => $check_in,
+                            'three_standard' => $three_standard,
+                            'employee_Code' => $employee_Code,
+                            'two_standard' => $two_standard,
+                            'machine_id' => $machineID,
+                            'attendance_out_time' => $check_out_time,
+                            'check_out' => $check_out
+                        ]);
+                        
+                            
                         $count_row++;
                     }
 
                     fclose($handle);
 
-                    dd($dataArray);
+                
+                     dd($dataArray);
 
                     return response()->json([
                         'status' => 'TRUE',
@@ -2224,7 +2221,7 @@ class AttendanceController extends Controller
             } catch (Exception $e) {
                 return response()->json([
                     'status' => 'FALSE',
-                    'msg' => 'Error reading the file: ' . $e->getMessage(),
+                    'msg' => 'Error reading the file: '.$e->getLine().' '.$e->getMessage(),
                 ]);
             }
         } else {
