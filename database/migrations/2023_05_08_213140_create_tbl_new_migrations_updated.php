@@ -34,6 +34,26 @@ return new class extends Migration
             }
             
         }
+
+        if(Schema::hasTable('tbl_offline_attendance_object')){
+            
+            if (!Schema::hasColumn('tbl_offline_attendance_object', 'att_offline_emp_id')) {
+                Schema::table('tbl_offline_attendance_object', function (Blueprint $table) {
+                    $table->string('att_offline_emp_id', 50)->nullable();
+                });
+            }
+            
+        }
+
+        if(Schema::hasTable('tbl_offline_attendance_object')){
+            
+            if (!Schema::hasColumn('tbl_offline_attendance_object', 'att_created_at')) {
+                Schema::table('tbl_offline_attendance_object', function (Blueprint $table) {
+                    $table->string('att_created_at', 50)->nullable();
+                });
+            }
+            
+        }
        
     }
     /**

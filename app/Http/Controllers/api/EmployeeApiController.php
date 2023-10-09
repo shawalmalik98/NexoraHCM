@@ -53,9 +53,9 @@ class EmployeeApiController extends Controller
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
             $validator = Validator::make($request->post(), [
-                'current_password' => 'required',
-                'new_password' => 'required',
-                'confirm_new_password' => 'required',
+                'current_password' => 'required|max:10',
+                'new_password' => 'required|max:10',
+                'confirm_new_password' => 'required|max:10',
             ]);
 
             if($validator->fails()) {

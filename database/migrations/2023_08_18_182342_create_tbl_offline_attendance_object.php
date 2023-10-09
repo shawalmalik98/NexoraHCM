@@ -17,7 +17,8 @@ return new class extends Migration
             Schema::create('tbl_offline_attendance_object', function (Blueprint $table) {
                 $table->id('att_offline_id');
                 $table->longText('att_offline_object');
-
+                $table->string('att_offline_emp_id',50)->nullable();
+                $table->string('att_created_at',50)->nullable();
             });
         }
       
