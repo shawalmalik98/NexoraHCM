@@ -2115,35 +2115,35 @@ class AttendanceController extends Controller
 
     protected function export_data_into_dat_file(){
 
-        $data = Employees::get(['employee_code','employee_name'])->toArray();
+        $get_attendance_data = Attendance::join('tbl_employees','tbl_attendance.att_employee_id','=','tbl_employees.employee_id')->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_for_date','att_for_month','att_for_year','tbl_employees.employee_code'])->toArray();
 
-        $filename = "sample.dat";
+        $filename = "attendancelist.dat";
 
         $file = fopen($filename, "w");
 
         if ($file) {
 
-            $data2 = [];
+            foreach($get_attendance_data as $attendance_date){
+                if($attendance_date['att_check_in_status'] == '1'){
+                    $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0001000'.$attendance_date['employee_code'] .'0063'. "\n";
+                    fwrite($file, $record);
+                }
 
-            foreach($data as $data3){
-                // array_push();
-                $pp = $data3['employee_code'] . "\n";
-                fwrite($file, $pp);
-
+                if($attendance_date['att_check_out_status'] == '1'){
+                    $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0002000'.$attendance_date['employee_code'] .'0063'. "\n";
+                    fwrite($file, $record);
+                }
             }
 
             
-            // Close the file
             fclose($file);
 
             header('Content-Type: application/octet-stream');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Content-Length: ' . filesize($filename));
         
-            // Output the file contents to the browser
             readfile($filename);
             
-            // echo "Data has been written to $filename.";
         } else {
             echo "Unable to open $filename for writing.";
         }
