@@ -2204,9 +2204,6 @@ class AttendanceController extends Controller
 
                     fclose($handle);
 
-                
-                     dd($dataArray);
-
                     return response()->json([
                         'status' => 'TRUE',
                         'msg' => 'Attendance records uploaded successfully',
