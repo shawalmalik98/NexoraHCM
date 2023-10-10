@@ -122,3 +122,58 @@ $('#attendance_update, #attendance_upload').submit(function (e) {
         }
     });
 });
+
+$('#to_date,#from_date').change(function () {
+
+    var start = moment($('#from_date').val());
+    $('#to_date').attr('min', $('#from_date').val());
+    var end = moment($('#to_date').val());
+    total_days = end.diff(start, "days");
+    if (isNaN(total_days)) {
+        $('#days').val('');
+    } else if (total_days < 0) {
+        $('#to_date').val('');
+        $('#days').val('');
+    } else {
+        $('#days').val(total_days + 1);
+    }
+
+});
+
+$('#from_date').change(function () {
+    var from_selected_date = $(this).val();
+    var currentDate = new Date().toISOString().split('T')[0];
+    var maxDate = get_ten_day_future_date(from_selected_date);
+
+    if (from_selected_date != '') {
+        $('#to_date').prop('disabled', false);
+        $('#to_date').prop('required', true);
+        $('#to_date').attr('min', from_selected_date);
+        if (maxDate > currentDate) {
+            maxDate = currentDate; 
+        }
+        $('#to_date').attr('max', maxDate);
+    } else {
+        $('#to_date').prop('disabled', true);
+        $('#to_date').removeAttr('min');
+        $('#to_date').prop('required', false);
+        $('#to_date').val('');
+    }
+});
+
+function get_ten_day_future_date(from_date) {
+    var date = new Date(from_date);
+    date.setDate(date.getDate() + 10);
+    var future_date = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
+    return future_date;
+}
+
+$('#attendance_record_download').submit(function () {
+    $('#attendance_download_btn').prop('disabled', true);
+    $('#attendance_download_btn').attr('data-kt-indicator', 'on');
+    $('#attendance_download_btn').css('cursor', 'not-allowed');
+    // setTimeout(() => {
+    //     $('#attendance_dat_download').modal('hide');
+    //     location.reload();
+    // }, 15000);
+});
