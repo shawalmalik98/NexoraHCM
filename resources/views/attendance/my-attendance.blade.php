@@ -580,13 +580,14 @@
                                       
                                         <td class="text-center"> 
                                             @if (!empty($month) && !empty($year))
-                                                @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,$from_date=NUll,$to_date=Null); @endphp
+                                                {{-- @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,$from_date=NUll,$to_date=Null); @endphp --}}
                                             @else
-                                                 @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,Request::get('from_date'),Request::get('to_date')); @endphp
+                                                 {{-- @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,Request::get('from_date'),Request::get('to_date')); @endphp --}}
                                             @endif
                                             @php 
                                              
-                                                $total_shift_calculation =  $calculate_absent_shift + $total_working_hours_actual;
+                                                // $total_shift_calculation =  $calculate_absent_shift + $total_working_hours_actual;
+                                                $total_shift_calculation =  $total_working_hours_actual;
                                                 $total_working_hours_actual = CustomHelper::calculate_total_overtime($total_shift_calculation); @endphp
                                                 {{$total_working_hours_actual['overtime']}}
                                         </td>

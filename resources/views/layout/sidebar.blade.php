@@ -186,7 +186,7 @@
                     
                     @if(!empty($permission) && ($permission[19]['permission_status'] == 1 || $permission[20]['permission_status'] == 1 || $permission[21]['permission_status'] == 1 || $permission[1]['permission_status'] == 1 || $permission[2]['permission_status'] == 1 || $permission[54]['permission_status'] == 1 || $permission[22]['permission_status'] == 1 || $permission[22]['permission_status'] == 1 ||  $permission[59]['permission_status'] == 1 || $permission[65]['permission_status'] == 1 || $permission[67]['permission_status'] == 1 || $permission[70]['permission_status'] == 1 || $permission[72]['permission_status'] == 1) && ($permission[19]['module_accessibility'] == 1 || $permission[20]['module_accessibility'] == 1 || $permission[21]['module_accessibility'] == 1 || $permission[1]['module_accessibility'] == 1 || $permission[2]['module_accessibility'] == 1 || $permission[54]['module_accessibility'] == 1 || $permission[22]['module_accessibility'] == 1 || $permission[22]['module_accessibility'] == 1 ||  $permission[59]['module_accessibility'] == 1 || $permission[65]['module_accessibility'] == 1 ||  $permission[67]['module_accessibility'] == 1 ||  $permission[70]['module_accessibility'] == 1 ||  $permission[72]['module_accessibility'] == 1)) 
                     
-                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-attendance' || $title == 'daily-attendance' || $title == 'overtime-management' || $title == 'my-attendance' || $title == 'attendance-request' || $title == 'my-attendance-request' || $title == 'wfh-request' || $title == 'my-wfh-requests' || $title == 'shift-management' || $title == 'my-shift-time' || $title == 'shift-time-request' || $title == 'monthy-attendance' || $title == 'manage-attendance-devices' || $title == 'monthly-attendance' || $title == 'add-shift' || $title == 'attendance-locker') show @endif">
+                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-attendance' || $title == 'daily-attendance' || $title == 'overtime-management' || $title == 'my-attendance' || $title == 'attendance-request' || $title == 'my-attendance-request' || $title == 'wfh-request' || $title == 'my-wfh-requests' || $title == 'shift-management' || $title == 'my-shift-time' || $title == 'shift-time-request' || $title == 'monthy-attendance' || $title == 'manage-attendance-devices' || $title == 'monthly-attendance' || $title == 'add-shift' || $title == 'attendance-locker' || $title == 'bisconni-report') show @endif">
 
                             <span class="menu-link">
                                 <span class="menu-icon">
@@ -248,6 +248,21 @@
                                     </div>
 
                                 @endif
+
+                                {{-- @if(!empty($permission) && $permission[21]['module_accessibility'] == 1 && $permission[21]['permission_status'] == 1) --}}
+
+                                    <div class="menu-item search-item">
+                                        <a class="menu-link nav-link @if($title == 'bisconni-report') active @endif" href="{{url('bisconni-attendance-report')}}">
+                                            <span class="menu-icon">
+
+                                                <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Daily Attendance Report.png') }}" />
+                                            </span>
+                                            <span class="menu-title">Bisconni Attendance Report</span>
+                                        </a>
+                                    </div>
+
+                                {{-- @endif --}}
+                                
                                 @if(!empty($permission) && $permission[72]['module_accessibility'] == 1 && $permission[72]['permission_status'] == 1)
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'attendance-locker') active @endif" href="{{url('attendance-locker')}}">

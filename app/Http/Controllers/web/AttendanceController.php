@@ -203,9 +203,15 @@ class AttendanceController extends Controller
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
                  
-                    $attendance = Attendance::where('att_employee_id',session('user_session'))->whereRaw("STR_TO_DATE(CONCAT(att_for_year,'-',att_for_month,'-',att_for_date),'%Y-%m-%d') >= '".$from_date ."' and STR_TO_DATE(CONCAT(att_for_year,'-',att_for_month,'-',att_for_date),'%Y-%m-%d') <= '".$to_date."'  ")->get()->toArray();
+                    $attendance = Attendance::where('att_employee_id',session('user_session'))
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->get()->toArray();
 
-                    $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))->whereRaw("STR_TO_DATE(CONCAT(att_for_year,'-',att_for_month,'-',att_for_date),'%Y-%m-%d') >= '".$from_date ."' and STR_TO_DATE(CONCAT(att_for_year,'-',att_for_month,'-',att_for_date),'%Y-%m-%d') <= '".$to_date."'  ")->where(function($query) use($manage_leaves){
+                    $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->where(function($query) use($manage_leaves){
                         $query->whereIn('att_check_overall_status' ,$manage_leaves)
                         ->orWhere('att_check_overall_status','RPL');
                     })->count();
@@ -252,7 +258,145 @@ class AttendanceController extends Controller
         }finally{
         
             ActivityTracker::track_activity('View My Personal Attendance');
+
+        }
+    }
+
+    protected function bisconni_employee_report(Request $request){
+        try{
+        
+            $title = 'bisconni-report';
+      
+            $login_user = $this->get_login_user_detail();
+
+            $dynamic_years = $this->dynamic_year_drop_down();
+            
+            $month = '';
+            $year = '';
+            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+            $flag = true;
+            if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12 && $request->input('y') != '' && is_numeric($request->input('y')) && $request->input('y') >= 1900 && $request->input('y') <= 3000 && $request->input('from_date') == '' && $request->input('to_date') == ''){
+                $flag = false;
+                $month_count = 1;
+                $month_days = cal_days_in_month(CAL_MONTH_GREGORIAN_LONG, $request->input('m'),$request->input('y'));
+                $month = $request->input('m');
+                $year =  $request->input('y');
+
+                $dates = $this->get_all_date_from_month($month,$year,$format=Null);
+                array_unshift($dates, $dates[0]);
+                unset($dates[0]);
+
+            }
+            if($request->input('from_date') && $request->input('to_date')){
+                $validator = Validator::make($request->all(), [
+                    'from_date' => 'required|date_format:Y-m-d|before:to_date',
+                    'to_date' => 'required|date_format:Y-m-d|after:from_date',
+                ]);
+
+                $validator->after(function ($validator) use ($request) {
+                    if ($this->if_to_date_greater_than_today($request->input('to_date'))) {
+                        $validator->errors()->add('to_date', 'The to date must not be greater than today\'s date.');
+                    }
+                });
+        
+                if($validator->fails()) {
+                    foreach($validator->errors()->all() as $error){
+                        
+                        return Redirect::back()->with('error', $error);
+                    }
+                }else {
+
+                    // if($request->input('from_date') < $login_user[0]['employee_doj']){
+
+                    //     return Redirect::back()->with('error', 'You can\'t apply filter before your joining date');
+                    // }
+                    $start_date = new DateTime($request->input('from_date'));
+                    $end_date = new DateTime($request->input('to_date'));
+
+                    $interval =  $start_date->diff($end_date);
+                      
+                    $daysDifference = $interval->days;
+                   
+                    if($daysDifference < 40){
+                        $from_date =  $request->input('from_date');
+                        $to_date =  $request->input('to_date');
+
+                        $month_count = 0;
+                        $period = new DatePeriod(
+                            new DateTime($request->input('from_date')),
+                            new DateInterval('P1D'),
+                            new DateTime($request->input('to_date'))
+                        );
+
+                        $month_days = 0;
+                        foreach ($period as $key => $value) {
+                            $dates[] = $value->format('d-m-Y');
+                            $month_days++;
+                        }
+
+                        if (!in_array($to_date, $dates)){
+                                
+                            $dates[] = date('d-m-Y', strtotime($to_date));
+                        }
+                        if($month_days == 0){
+                            $month_days = date('t', strtotime($request->input('from_date')));
+                        }
+                 
+                    $attendance = Attendance::where('att_employee_id',$request->emp_id)
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->get()->toArray();
+
+                    $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$request->emp_id)
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->where(function($query) use($manage_leaves){
+                        $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                        ->orWhere('att_check_overall_status','RPL');
+                    })->count();
+                   }else{
+
+                    return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
+                    
+                   }  
+
+                }
+            }else{
+
+                if($flag){
+                    $month_days = date('t');
+                    $month = date('m');
+                    $year =  date('Y');
+                    $dates = $this->get_all_date_from_month($month,$year,$format=Null);
+                    array_unshift($dates, $dates[0]);
+                    unset($dates[0]);
+                    $month_count = 1;
+                   
+                }
+              
+                $attendance = Attendance::where(['att_employee_id'=>$request->emp_id,'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
+    
+                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_employee_id'=>$request->emp_id,'att_for_month'=>$month,'att_for_year'=>$year])->where(function($query) use($manage_leaves){
+                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                    ->orWhere('att_check_overall_status','RPL');
+                })->count();
+            
+            }
           
+            $leave_name = implode(',',$manage_leaves);
+
+            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','month','year','leave_name','manage_leaves','dynamic_years','dates','month_count');
+
+            return view('attendance.bisconni-employee-wise-attendance',$send_data); 
+        }catch(\Exception $e){
+
+            $this->create_error_log('View My Personal Attendance', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+
+        }finally{
+        
+            ActivityTracker::track_activity('View My Personal Attendance');
 
         }
     }
@@ -1503,7 +1647,61 @@ class AttendanceController extends Controller
 
         }
        
-    } 
+    }
+    
+    
+    protected function bisconni_attendace_report(Request $request){
+        $from_date = ($request->from_date) ?? '2023-09-26'; //date('Y-m-d');
+        $to_date = ($request->to_date) ?? date('Y-m-d');
+        $title = 'bisconni-report';
+        $login_user = $this->get_login_user_detail();
+        $attendance = DB::select("
+        SELECT 
+        e.employee_id,e.employee_code , e.employee_name, e.employee_offdays,
+        SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) AS total_present,
+        SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) AS total_late,
+        SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS total_halfday,
+        SUM(CASE WHEN att_check_overall_status = 'leaves' 
+        OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
+        (SELECT COUNT(*) 
+        FROM (
+            SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
+            FROM master.dbo.spt_values
+            WHERE TYPE = 'P'
+            AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+        ) AS DateRange
+        WHERE 
+          e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
+         ) as off_days_count,
+         (
+            (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
+            (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+            SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+            SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+            SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+            (SELECT COUNT(*) 
+        FROM (
+            SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
+            FROM master.dbo.spt_values
+            WHERE TYPE = 'P'
+            AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+        ) AS DateRange
+        WHERE 
+          e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+        
+         ) AS absent,
+         DATEDIFF(DAY, '$from_date', '$to_date') + 1 AS total_days
+        FROM tbl_attendance a
+        LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
+        INNER JOIN tbl_employees e ON a.att_employee_id = e.employee_id 
+        WHERE CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date'
+        AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date'
+        GROUP BY e.employee_code, e.employee_name , e.employee_offdays,e.employee_id
+        ");
+        $attendance = json_decode(json_encode($attendance), TRUE);
+        $send_data = compact('login_user','title','attendance');
+        return view('attendance.bisconni-attendance-report', $send_data);
+    }
 
 
     protected function attendance_calender(Request $request_data){

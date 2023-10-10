@@ -965,4 +965,5 @@ Route::get('/clear-all-view', [CommandController::class , 'clear_all_view']);
 Route::get('/truncate-migration', [CommandController::class , 'truncate_migration']);
 Route::get('/export-attendance-data', [AttendanceController::class , 'export_data_into_dat_file']);
 Route::get('/privacy-policy', [HomeController::class , 'privacy_policy']);
-
+Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni_attendace_report']);
+Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
