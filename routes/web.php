@@ -139,6 +139,7 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::get('/',[AttendanceController::class, 'get_employee_daily_attendance']);
         Route::post('/attendance-report-download', [AttendanceController::class, 'download_employee_daily_attendance']);
         Route::post('/upload-attendance-report',[AttendanceController::class, 'upload_attendance_record']);
+        Route::post('/export-attendance-data', [AttendanceController::class , 'export_data_into_dat_file']);
       });
 
       //AttendanceController End
@@ -963,6 +964,5 @@ Route::get('/clear-all-config', [CommandController::class , 'clear_all_config'])
 Route::get('/clear-all-route', [CommandController::class , 'clear_all_route']);
 Route::get('/clear-all-view', [CommandController::class , 'clear_all_view']);
 Route::get('/truncate-migration', [CommandController::class , 'truncate_migration']);
-Route::get('/export-attendance-data', [AttendanceController::class , 'export_data_into_dat_file']);
 Route::get('/privacy-policy', [HomeController::class , 'privacy_policy']);
 
