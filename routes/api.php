@@ -58,9 +58,9 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         Route::post('generate-mobile-app-log', [GerenalController::class, 'get_error_log_mobile_application']);
         
         // login and basic
-        Route::middleware('throttle:200,1')->group(function () {
+        // Route::middleware('throttle:200,1')->group(function () {
             Route::post('login-process',[LoginController::class, 'login_process'])->withoutMiddleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerification']);
-        });
+        // });
   
         
         Route::get('request-manager-status', [CustomController::class, 'request_manager_status']);
@@ -68,11 +68,11 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 
         // attendance start
         Route::middleware(['MobileAttendanceBarrier'])->group(function (){
-            Route::middleware('throttle:200,1')->group(function () {
+            // Route::middleware('throttle:200,1')->group(function () {
                 Route::post('checkinattendance', [MarkAttendanceController::class, 'check_in']);
                 Route::post('checkoutattendance', [MarkAttendanceController::class, 'check_out']);
                 Route::post('offline-attendance', [MarkAttendanceController::class, 'offline_attendance']);
-            });
+            // });
         });
         
         Route::get('my-attendance', [AttendanceController::class, 'personal_attendace']);

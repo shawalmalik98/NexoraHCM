@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Helpers\CustomHelper;
 use DatePeriod,DateTime,DateInterval;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\File;
 
 class AttendanceController extends Controller
 {   
@@ -1306,6 +1307,7 @@ class AttendanceController extends Controller
         join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')
         ->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')
         ->whereRaw($where_clause)
+        ->limit(10)
         ->get(['employee_id','employee_code','employee_name','employee_offdays','department_name','designation_name'])->toArray();
 		
        
@@ -2342,7 +2344,9 @@ class AttendanceController extends Controller
                 header('Content-Length: ' . filesize($filename));
             
                 readfile($filename);
-               
+
+                File::delete($filename);
+                
             } else {
                 echo "Unable to open $filename for writing.";
             }
