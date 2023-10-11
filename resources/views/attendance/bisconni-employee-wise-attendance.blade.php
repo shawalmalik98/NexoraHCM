@@ -13,22 +13,21 @@
                 <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
                  
                     @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')))
-                        My Attendance ({{date('F Y',strtotime($year . '-' . $month . '-01')) }})
+                        {{ $employee_data[0]['employee_name'] }} Attendance ({{date('F Y',strtotime($year . '-' . $month . '-01')) }})
                     @else
-                        
-                        My Attendance ({{date('d-F', strtotime(Request::get('from_date'))) .' to ' .date('d-F-Y', strtotime(Request::get('to_date')))}})
+                        {{ $employee_data[0]['employee_name'] }} Attendance ( {{date('d-M-Y', strtotime(Request::get('from_date'))) .' to ' .date('d-M-Y', strtotime(Request::get('to_date')))}} )
                     @endif
                 </h1>   
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                <div class="d-flex align-items-center gap-2 gap-lg-3">
+                {{-- <div class="d-flex align-items-center gap-2 gap-lg-3">
                     @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')))
                         <a href="{{ url('my-attendance-report?m='.$month.'&y='.$year.'&from_date='.Request::get('from_date').'&to_date='.Request::get('to_date'))}}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
                     @else
                         <a href="{{ url('my-attendance-report?m='.$month.'&y='.$year.'&from_date='.Request::get('from_date').'&to_date='.Request::get('to_date')) }}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
                     @endif
                   
-                </div>
+                </div> --}}
             </div>
             
         </div>

@@ -270,6 +270,8 @@ class AttendanceController extends Controller
       
             $login_user = $this->get_login_user_detail();
 
+            $employee_data = Employees::where('employee_id', $request->emp_id)->get(['employee_name'])->toArray();
+
             $dynamic_years = $this->dynamic_year_drop_down();
             
             $month = '';
@@ -386,7 +388,7 @@ class AttendanceController extends Controller
           
             $leave_name = implode(',',$manage_leaves);
 
-            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','month','year','leave_name','manage_leaves','dynamic_years','dates','month_count');
+            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','month','year','leave_name','manage_leaves','dynamic_years','dates','month_count','employee_data');
 
             return view('attendance.bisconni-employee-wise-attendance',$send_data); 
         }catch(\Exception $e){
