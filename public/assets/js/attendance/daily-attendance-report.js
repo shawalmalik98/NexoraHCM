@@ -172,8 +172,4 @@ $('#attendance_record_download').submit(function () {
     $('#attendance_download_btn').prop('disabled', true);
     $('#attendance_download_btn').attr('data-kt-indicator', 'on');
     $('#attendance_download_btn').css('cursor', 'not-allowed');
-    // setTimeout(() => {
-    //     $('#attendance_dat_download').modal('hide');
-    //     location.reload();
-    // }, 15000);
 });
