@@ -219,7 +219,7 @@
                         
                         <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                             <div class="table-responsive popup-visible ">
-                                <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable">
+                                <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="">
                                                             
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
@@ -582,7 +582,7 @@
                                                    
                                                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4" data-kt-menu="true">
                                                         <div class="menu-item px-3">
-                                                            <a href="javascript:void(0)" class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#attendance_adjustment">	
+                                                            <a href="javascript:void(0)" class="menu-link px-3"  onclick="editAttendanceadjustment('{{$attendances['attendance_id']}}', '{{$attendances['att_for_date']}}', '{{$attendances['att_for_month']}}','{{$attendances['att_for_year']}}')">
                                                                 Adjustment
                                                             </a>
                                                             <a href="#" class="menu-link px-3" data-bs-toggle="tooltip">
@@ -704,7 +704,7 @@
                                     <label class="required fs-6 fw-semibold mb-2">Attendance Date</label>
                                     <div class="position-relative d-flex align-items-center">
 
-                                        <input type="date" class="form-control" name="" id="" max="{{ date('Y-m-d') }}" value="" required/>
+                                        <input type="date" class="form-control" name="update_date" id="update_dated" required/>
                                     </div>
                                 </div>
 
@@ -765,22 +765,22 @@
 
 
 @push('js-link')
-<script src="{{url('assets/js/attendance/my-attendance.js')}}"></script>
+{{-- <script src="{{url('assets/js/attendance/my-attendance.js')}}"></script> --}}
 <script>
-var present_attendance = {{ $present }};
-var absent_count_attendance = {{ $absent_count }};
-var late_coming_attendance = {{ $late_coming }};
-var early_out_attendance = {{ $early_out }};
-var halfday_attendance = {{ $halfday }};
-var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
+// var present_attendance = {{ $present }};
+// var absent_count_attendance = {{ $absent_count }};
+// var late_coming_attendance = {{ $late_coming }};
+// var early_out_attendance = {{ $early_out }};
+// var halfday_attendance = {{ $halfday }};
+// var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
 
 function editAttendanceadjustment(attendance_id, att_for_date, att_for_month, att_for_year) {
     $('input[name=attendance_id]').val(attendance_id);
-    $('input[name=att_for_date]').val(att_for_date);
-    $('input[name=att_for_month]').val(att_for_month);
-    $('input[name=att_for_year]').val(att_for_year);
+    var concat_date = att_for_year + '-' + att_for_month + '-' + att_for_date;
+    $('#update_dated').val(concat_date);
     $('#attendance_adjustment').modal('show');
 }
+
 </script>
 
     
