@@ -582,10 +582,10 @@
                                                    
                                                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4" data-kt-menu="true">
                                                         <div class="menu-item px-3">
-                                                            <a href="#" class="menu-link px-3" data-bs-toggle="tooltip" title="View detail">
+                                                            <a href="javascript:void(0)" class="menu-link px-3" data-bs-toggle="modal" data-bs-target="#attendance_adjustment">	
                                                                 Adjustment
                                                             </a>
-                                                            <a href="#" class="menu-link px-3" data-bs-toggle="tooltip" title="View detail">
+                                                            <a href="#" class="menu-link px-3" data-bs-toggle="tooltip">
                                                                 Exemption
                                                             </a>
                                                         </div>    
@@ -641,6 +641,121 @@
             </div>
         
         </div>
+
+        <form id="add_new_adjustment" class="form">
+            @csrf
+            <div class="modal fade" id="attendance_adjustment" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable mw-650px">
+                    <div class="modal-content rounded">
+                        <div class="modal-content rounded">
+                            <div class="modal-header">
+                                <h4 class="modal-title pl-4">Attendance Adjustment </h4>
+                                <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
+                                    <span class="svg-icon svg-icon-1">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
+                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
+                            <div class="modal-body scroll-y">
+                                <input type="hidden" name="attendance_id" />
+                                
+                                {{-- <div class="d-flex flex-column mb-8 fv-row">
+                                    <label class="required fs-6 fw-semibold mb-2">Attendance Day(s)</label>
+                                    <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select Attendance Days" name="days_assign" id="days_assign" required>
+                                        <option value="">Select Attendance Day(s)</option>
+                                        <option value="single">Single Day Request</option>
+                                        <option value="multiple">Multiple Days Requests</option>
+                                    </select>
+                                </div>
+
+                                <div class="from_to_date_input row g-9 mb-8 d-none">
+
+                                    <div class="col-md-4">
+                                        <label class="required fs-6 fw-semibold mb-2">From Date</label>
+                                        <div class="position-relative d-flex align-items-center">
+                                            <input type="date" class="form-control date-control" name="from_date" id="from_date"  max="{{date('Y-m-d')}}" required/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="required fs-6 fw-semibold mb-2">To Date</label>
+                                        <div class="position-relative d-flex align-items-center">
+                                            <input type="date" class="form-control date-control" name="to_date" id="to_date" max="{{ date('Y-m-d') }}" required disabled/>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4 fv-row">
+                                        <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                            <span>Total Days</span>
+                                        </label>
+                                       
+                            
+                                        <input type="text" class="form-control" placeholder="Total Days" id="days" readonly  />
+                                    </div>
+                                
+                                
+                                </div> --}}
+                                
+
+                                <div class="d-flex flex-column mb-8 fv-row">
+                                    <label class="required fs-6 fw-semibold mb-2">Attendance Date</label>
+                                    <div class="position-relative d-flex align-items-center">
+
+                                        <input type="date" class="form-control" name="" id="" max="{{ date('Y-m-d') }}" value="" required/>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-column mb-8 fv-row">
+                                    <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
+                                        <span class="required">Update Attendance</span>
+                                        <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Please select the option below which you are willing to mark your attendance."></i>
+                                    </label>
+                                    <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Attendance type" id="" name="" required> 
+                                        <option value="" >Select Attendance Type</option>
+                                        <option value="Official Tour">Official Tour</option>
+                                        <option value="On Time Check In">Update My Check In Time</option>
+                                        <option value="On Time Check Out">Update My Check Out Time</option>
+                                    </select>
+                                </div>
+
+                                {{-- <div class="main-check-in-div col-md-12 mb-8 fv-row d-none">
+                                    <label class="required fs-6 fw-semibold mb-2">Check In Time</label>
+                                    <div class="position-relative d-flex align-items-center">
+                                        <input type="time" step="1" class="form-control" name="check_in_time" placeholder="Enter in Time" id="check_in_time">
+                                    </div>
+                                </div>
+
+                                <div class="main-check-out-div col-md-12 mb-8 fv-row d-none">
+                                    <label class="required fs-6 fw-semibold mb-2">Check Out Time</label>
+                                    <div class="position-relative d-flex align-items-center">
+                                       
+                                        <input type="time" step="1" class="form-control" name="check_out_time"
+                                                placeholder="Enter out Time"  id="check_out_time"  >
+                                    </div>
+                                </div>
+
+
+                                <div class="d-flex flex-column mb-8">
+                                    <label class="fs-6 fw-semibold mb-2 required">Enter Reason</label>
+                                    <textarea class="form-control " rows="3" name="attendance_message" id="kt_docs_maxlength_threshold3" maxlength="500" placeholder="Message" required></textarea>
+                                </div>
+                            </div> --}}
+                            <div class="modal-footer justify-content-center">
+                                <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" id="submit_btn" class="btn btn-primary">
+                                    <span class="indicator-label">Submit</span>
+                                    <span class="indicator-progress">Please wait 
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     
     </div>
 </div>
@@ -658,6 +773,14 @@ var late_coming_attendance = {{ $late_coming }};
 var early_out_attendance = {{ $early_out }};
 var halfday_attendance = {{ $halfday }};
 var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
+
+function editAttendanceadjustment(attendance_id, att_for_date, att_for_month, att_for_year) {
+    $('input[name=attendance_id]').val(attendance_id);
+    $('input[name=att_for_date]').val(att_for_date);
+    $('input[name=att_for_month]').val(att_for_month);
+    $('input[name=att_for_year]').val(att_for_year);
+    $('#attendance_adjustment').modal('show');
+}
 </script>
 
     

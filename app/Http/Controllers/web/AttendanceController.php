@@ -264,7 +264,7 @@ class AttendanceController extends Controller
     }
 
     protected function bisconni_employee_report(Request $request){
-        try{
+        // try{
         
             $title = 'bisconni-report';
       
@@ -378,7 +378,7 @@ class AttendanceController extends Controller
                 }
               
                 $attendance = Attendance::where(['att_employee_id'=>$request->emp_id,'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
-    
+
                 $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_employee_id'=>$request->emp_id,'att_for_month'=>$month,'att_for_year'=>$year])->where(function($query) use($manage_leaves){
                     $query->whereIn('att_check_overall_status' ,$manage_leaves)
                     ->orWhere('att_check_overall_status','RPL');
@@ -391,17 +391,17 @@ class AttendanceController extends Controller
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','month','year','leave_name','manage_leaves','dynamic_years','dates','month_count','employee_data');
 
             return view('attendance.bisconni-employee-wise-attendance',$send_data); 
-        }catch(\Exception $e){
+        // }catch(\Exception $e){
 
-            $this->create_error_log('View My Personal Attendance', $e);
-            $send_data = compact('title');
-            return view('errors.500');
+        //     $this->create_error_log('View My Personal Attendance', $e);
+        //     $send_data = compact('title');
+        //     return view('errors.500');
 
-        }finally{
+        // }finally{
         
-            ActivityTracker::track_activity('View My Personal Attendance');
+        //     ActivityTracker::track_activity('View My Personal Attendance');
 
-        }
+        // }
     }
 
 
