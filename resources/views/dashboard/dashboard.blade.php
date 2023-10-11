@@ -424,11 +424,11 @@
                                 </div>
                             </div>
 
-                            {{--<div class="col-xl-4">
+                            {{-- <div class="col-xl-4">
                                 <div class="card card-flush" style="height: 500px;">
                                     <div class="card-header pt-7" >
                                         <h3 class="card-title align-items-start flex-column">
-                                            <span class="card-label fw-bold text-dark">MegaHCM Mobile App</span>
+                                            <span class="card-label fw-bold text-dark">IIL HCM Mobile App</span>
                                             <span class="text-gray-400 mt-1 fw-semibold fs-6">Launching our newly built HCM Mobile app. Click here to download.</span>
                                         </h3>
                                     </div>
@@ -441,7 +441,7 @@
                                             <a target="_blank" href="https://play.google.com/store/apps/details?id=com.iil.hcm" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
                                     </div>
                                 </div>
-                            </div>--}}
+                            </div> --}}
                             @if(!empty($my_team_mates))
                                 <div class="col-xl-4">
                                     <div class="card card-flush" style="height: 500px;" >
@@ -584,7 +584,7 @@
                                 <div class="card card-flush" style="height: 500px;">
                                     <div class="card-header pt-7" >
                                         <h3 class="card-title align-items-start flex-column">
-                                            <span class="card-label fw-bold text-dark">MegaHCM Mobile App</span>
+                                            <span class="card-label fw-bold text-dark">IIL HCM Mobile App</span>
                                             <span class="text-gray-400 mt-1 fw-semibold fs-6">Launching our newly built HCM Mobile app. Click here to download.</span>
                                         </h3>
                                     </div>

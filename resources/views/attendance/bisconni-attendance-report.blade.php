@@ -137,7 +137,7 @@
                         </span>
                         Filter</a>
                        
-                            <div class="menu menu-sub menu-sub-dropdown w-550px w-md-550px" data-kt-menu="true" id="kt_menu_63347db386dd1" >
+                            <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_63347db386dd1" >
                                 <form action="{{ url('bisconni-attendance-report') }}" method="GET">
                                     <div class="px-7 py-5">
                                         <div class="fs-5 text-dark fw-bold">Filter Options</div>
@@ -146,8 +146,8 @@
                                     <div class="separator border-gray-200"></div>
                                     <div class="px-7 py-5">
 
-                                        <div class="row">
-                                            <div class="col-md-6">
+                                        {{-- <div class="row"> --}}
+                                            {{-- <div class="col-md-6"> --}}
                                                 {{-- <div class="mb-3">
                                             
                                                     <label class="form-label fw-semibold">
@@ -223,8 +223,8 @@
                                                     </div>
                                                     
                                                 </div>
-                                            </div>
-                                        </div>
+                                            {{-- </div> --}}
+                                        {{-- </div> --}}
 
                                         
                                         
