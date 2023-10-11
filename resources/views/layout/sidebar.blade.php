@@ -198,14 +198,14 @@
 
                             <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                                <div class="menu-item search-item">
+                                {{-- <div class="menu-item search-item">
                                     <a class="menu-link nav-link @if($title == 'mark-attendance') active @endif" href="{{ url('mark-attendance') }}" target="blank">
                                         <span class="menu-icon">
                                             <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Mark Attendance.png') }}" />
                                         </span>
                                         <span class="menu-title">Mark Attendance</span>
                                     </a>
-                                </div>
+                                </div> --}}
                             
                                 @if(!empty($permission) && $permission[67]['module_accessibility'] == 1 && $permission[67]['permission_status'] == 1)
 

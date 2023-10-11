@@ -28,6 +28,7 @@
                     @endif
                   
                 </div> --}}
+                <a href="{{url()->previous()}}" class="btn btn-sm fw-bold btn-primary" >Go Back</a>
             </div>
             
         </div>
@@ -109,7 +110,7 @@
                         
                       
                     </div>
-                    <div class="card-toolbar" >
+                    {{-- <div class="card-toolbar" >
                          @php $filter = 'btn-color-primary'; @endphp
                         
                         <a href="#" class="btn btn-sm btn-flex btn-light fw-bold {{ !empty(Request::get('m')) ? $filter : '' }} {{ !empty(Request::get('y')) ? $filter : '' }}" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
@@ -207,7 +208,7 @@
                                  </form>
                             </div>
                        
-                    </div>
+                    </div> --}}
                 </div>
                 @if(Session::has('error'))
                     <script>

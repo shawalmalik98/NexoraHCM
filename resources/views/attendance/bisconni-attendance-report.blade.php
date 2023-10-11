@@ -214,7 +214,7 @@
                                                     
                                                 </div>
         
-                                                <div class="mb-10">
+                                                <div class="mb-3">
                                                     
                                                     <label class="form-label fw-semibold">To Date</label>
                                                     
@@ -237,7 +237,7 @@
                                         </div>
                                         
                                     </div>
-                                 </form>
+                                </form>
                             </div>
                        
                     </div>
