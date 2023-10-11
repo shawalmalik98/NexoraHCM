@@ -87,7 +87,7 @@
                                     <tr class="fw-bold text-muted bg-light">
                                         <th class="ps-4">Ref ID</th>
                                         <th>Title</th>
-                                        <th>Address</th>
+                                        {{--<th>Address</th>--}}
                                         <th>Latitude</th>
                                         <th>Longitude</th>
                                         <th>Allowed Range (meters)</th>
@@ -103,7 +103,7 @@
                                             <tr>
                                                 <td class="ps-4">{{ $location['location_id'] }}</td>
                                                 <td> {{ $location['location_title'] }} </td>
-                                                <td> {{ $location['location_address'] }} </td>
+                                                {{--<td> {{ $location['location_address'] }} </td>--}}
                                                  {{-- <td>
                                                     <span class="badge badge-light-success fs-7 fw-bold">{{ $location['location_latitude'] }} & {{ $location['location_longitude'] }}</span>
                                                 </td> --}}
