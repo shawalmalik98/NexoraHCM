@@ -2336,7 +2336,7 @@ class AttendanceController extends Controller
                     }
                 }
 
-                fclose($file);     
+                fclose($file);
 
                 header('Content-Type: application/octet-stream');
                 header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -2354,7 +2354,7 @@ class AttendanceController extends Controller
                 'msg' => 'No Records Found',
                 'status' => 'FALSE',
             ]);
-        }   
+        }
     }
 
     protected function upload_attendance_record(Request $request)

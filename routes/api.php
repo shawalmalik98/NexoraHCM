@@ -46,10 +46,6 @@ use App\Http\Controllers\api\RplControllerApi as RplController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerification','VerifyAppVersion'])->group(function (){
 
     Route::prefix('v1/')->group(function(){
@@ -243,7 +239,4 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 
 });
 
-Route::get('fetchallemployees', [EmployeeController::class, 'get_all_employees_for_crm_api']);
-Route::get('fetchemployee', [EmployeeController::class, 'get_employee_by_id_for_crm_api']);
-Route::get('authenticationprocess', [EmployeeController::class, 'login_process_for_crm_api']);
 Route::post('insert-machine-attendance', [MachineAttendanceController::class, 'pull_attendance_from_machine_into_portal']);

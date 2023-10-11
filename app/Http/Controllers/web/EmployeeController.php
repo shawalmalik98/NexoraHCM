@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\File;
-use Illuminate\Support\Facades\Http;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
 use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation, Fund, EmployeeFund};
@@ -3138,120 +3137,6 @@ class EmployeeController extends Controller
             ActivityTracker::track_activity('Employee Reporting Manager Updated');
         }
     }
-
-
-    protected function get_all_employees_for_crm_api(Request $RequestData){
-		$accessToken = $RequestData->input('access-token');
-		if(!empty($accessToken) && $accessToken == 'PoRtAlCrMkEy'){
-            $get_all_employees = Employees::join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->join('tbl_personal_informations','tbl_employees.employee_id','=','tbl_personal_informations.employeeid')->whereIn('employee_department', [1, 2, 3, 7, 10, 11, 12, 13, 15])->get(['employee_id','employee_code','employee_name','employee_contactno','employee_personal_email','employee_department','employee_designation','department_name as employee_department_name','designation_name as employee_designation_name','employee_jobtitle','profile_avatar','employee_isactive'])->toArray();
-			if(!empty($get_all_employees)){
-                $i=0;
-                foreach($get_all_employees as $employee){
-                    $get_all_employees[$i]['employee_shift_start'] = $this->get_employee_today_shift($employee['employee_id'],"in",date('Y-m-d'));
-					$get_all_employees[$i]['employee_shift_end'] = $this->get_employee_today_shift($employee['employee_id'],"out",date('Y-m-d'));
-                    $i++;
-                }
-
-				return response([
-					'message' => 'Employee records..',
-					'status' => 200,
-					'total_employees' => count($get_all_employees),
-					'data' => $get_all_employees
-				]);
-			}else{
-				return response([
-					'message' => 'Employee records not found.',
-					'status' => 400
-				]);
-			}
-		}else{
-			return response([
-				'message' => 'Access token not available',
-				'status' => 400
-			]);
-		}
-	}
-
-	protected function get_employee_by_id_for_crm_api(Request $RequestData){
-		$accessToken = $RequestData->input('access-token');
-		$employeeCode = $RequestData->input('employee-id');
-		if(!empty($accessToken) && $accessToken == 'PoRtAlCrMkEy'){
-			if(!empty($employeeCode)){
-                $get_employee_record = Employees::join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->join('tbl_personal_informations','tbl_employees.employee_id','=','tbl_personal_informations.employeeid')->where('employee_isactive', 1)->whereIn('employee_department', [1, 2, 3, 7, 10, 11, 12, 13])->where('employee_id',$employeeCode)->get(['employee_id','employee_code','employee_name','employee_contactno','employee_personal_email','employee_department','employee_designation','department_name as employee_department_name','designation_name as employee_designation_name','employee_jobtitle','profile_avatar'])->toArray();
-				if(!empty($get_employee_record)){
-					return response([
-						'message' => 'Employee record',
-						'status' => 200,
-						'data' => $get_employee_record
-					]);
-				}else{
-					return response([
-						'message' => 'Employee record not found.',
-						'status' => 400
-					]);
-				}
-			}else{
-				return response([
-					'message' => 'Employee id not available.',
-					'status' => 400
-				]);
-			}
-
-		}else{
-			return response([
-				'message' => 'Access token not available',
-				'status' => 400
-			]);
-		}
-	}
-
-	protected function login_process_for_crm_api(Request $RequestData){
-		$accessToken = $RequestData->input('access-token');
-		$employeeCode = $RequestData->input('employee-code');
-		$employeePassword = $RequestData->input('employee-password');
-		if(!empty($accessToken) && $accessToken == 'PoRtAlCrMkEy'){
-			if(!empty($employeeCode) && !empty($employeePassword)){
-                $get_employee = Employees::where('employee_isactive', 1)->where('employee_code',$employeeCode)->get()->toArray();
-				if(!empty($get_employee)){
-					if($get_employee[0]['employee_department'] == '1' || $get_employee[0]['employee_department'] == '2' || $get_employee[0]['employee_department'] == '3' || $get_employee[0]['employee_department'] == '7' || $get_employee[0]['employee_department'] == '10' || $get_employee[0]['employee_department'] == '11' || $get_employee[0]['employee_department'] == '12' || $get_employee[0]['employee_department'] == '13' || $get_employee[0]['employee_department'] == '15'){
-						if($employeePassword == Crypt::decryptString($get_employee[0]['employee_password'])){
-							$result_array = array(['employee_id' => $get_employee[0]['employee_id'] , 'employee_code' => $get_employee[0]['employee_code'] , 'employee_name' => $get_employee[0]['employee_name'] , 'employee_personal_email' => $get_employee[0]['employee_personal_email'] , 'employee_department' => $get_employee[0]['employee_department'] , 'employee_designation' => $get_employee[0]['employee_designation']]);
-							return response([
-								'message' => 'Login successfully',
-								'status' => 200,
-								'data' => $result_array
-							]);
-						}else{
-							return response([
-								'message' => 'Incorrect password entered',
-								'status' => 400
-							]);
-						}
-					}else{
-						return response([
-							'message' => "You don't have rights to access CRM. Kindly contact HR.",
-							'status' => 400
-						]);
-					}
-				}else{
-					return response([
-						'message' => 'Employee not found with this employee-id',
-						'status' => 400
-					]);
-				}
-			}else{
-				return response([
-					'message' => 'Employee id and password not available',
-					'status' => 400
-				]);
-			}
-		}else{
-			return response([
-				'message' => 'Access token not available',
-				'status' => 400
-			]);
-		}
-	}
 
     protected function employee_devices(){
 
