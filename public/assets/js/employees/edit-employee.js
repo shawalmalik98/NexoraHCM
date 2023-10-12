@@ -52,6 +52,7 @@ $('#manager_rights').change(function(){
         $('#manager_right_div').removeClass('col-md-6').addClass('col-md-6');
         $('#attendance_access_div').removeClass('d-none');
         $('#attendance_access').attr('required','required');
+       
     }else{
         $('#manager_right_div').removeClass('col-md-6').addClass('col-md-6');
         $('.checked').prop('checked', false);

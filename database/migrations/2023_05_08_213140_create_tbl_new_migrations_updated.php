@@ -15,15 +15,7 @@ return new class extends Migration
     public function up()
     {
 
-        if(Schema::hasTable('tbl_employees')){
-            
-            if (!Schema::hasColumn('tbl_employees', 'business_unit')) {
-                Schema::table('tbl_employees', function (Blueprint $table) {
-                    $table->string('business_unit', 255)->nullable();
-                });
-            }
-            
-        }
+       
        
     }
     /**

@@ -1047,7 +1047,7 @@ class EmployeeController extends Controller
             $employement_status_history = EmploymentPeriod::join('tbl_employees','tbl_employees.employee_id','=','tbl_employement_period.employee_id')->join('tbl_employement_status','tbl_employement_status.employement_status_id','=','tbl_employement_period.employement_status_id')->where('tbl_employement_period.employee_id',$employee_id)->orderBy('employement_period_id','ASC')->get(['employee_name','employement_status_name','effective_date'])->toArray();
 
             $get_attendance_access = AttendanceAccess::where('access_employee_id', $employee_id)->get()->toArray();
-
+           
             $employee_groups = EmployeeGroup::get()->toArray();
 
             $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies','employee_locations','no_of_employees','employee_funds');
@@ -1705,9 +1705,10 @@ class EmployeeController extends Controller
                     }
 
                     if($employee_data->input('make_ra') == '1'){
-                        AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => $employee_data->input('attendance_access') ]);
+                       $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => $employee_data->input('attendance_access') ]);
                     }elseif($employee_data->input('make_ra') == '0'){
-                        AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => 0 ]);
+                        $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => 0 ]);
+                      
                     }
 
                     if($process == 1){
