@@ -1699,7 +1699,7 @@ class AttendanceController extends Controller
         INNER JOIN tbl_employees e ON a.att_employee_id = e.employee_id 
         WHERE CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date'
         AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date'
-        GROUP BY e.employee_code, e.employee_name , e.employee_offdays,e.employee_id
+        GROUP BY e.employee_code, e.employee_name , e.business_unit, e.employee_offdays,e.employee_id
         ");
         $attendance = json_decode(json_encode($attendance), TRUE);
         $send_data = compact('login_user','title','attendance');
