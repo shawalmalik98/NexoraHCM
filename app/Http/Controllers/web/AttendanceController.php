@@ -1660,7 +1660,7 @@ class AttendanceController extends Controller
         $login_user = $this->get_login_user_detail();
         $attendance = DB::select("
         SELECT 
-        e.employee_id,e.employee_code , e.employee_name, e.employee_offdays,
+        e.employee_id,e.employee_code , e.employee_name, e.business_unit,e.employee_offdays,
         SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) AS total_present,
         SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) AS total_late,
         SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS total_halfday,
