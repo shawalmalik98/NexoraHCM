@@ -173,6 +173,7 @@
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Depart &amp; Desig</th>
+                                        <th>Business Unit</th>
                                         <th>Manager Rights</th>
                                         <th class="text-center">Action</th>
                                     </tr>
@@ -195,6 +196,7 @@
                                                     @endif
                                                     
                                                 </td>
+                                                <td>{{ $employee['business_unit'] }}</td>
                                                 <td>
                                                     @if($employee['employee_is_manager'] != '' && $employee['employee_is_manager'] == 1)
                                                         <span class="badge badge-light-success font-weight-bold">Yes, Given</span>
