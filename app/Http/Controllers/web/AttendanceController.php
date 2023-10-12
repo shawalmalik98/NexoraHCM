@@ -344,6 +344,7 @@ class AttendanceController extends Controller
                         if($month_days == 0){
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
+
                  
                     $attendance = Attendance::where('att_employee_id',$request->emp_id)
                     ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
@@ -2038,7 +2039,8 @@ class AttendanceController extends Controller
                         $query->where('employee_senior_manager',session('user_session'));
                         $query->orWhere('employee_junior_manager',session('user_session'));
                     })
-                    ->whereRaw($where_clause)->whereRaw($emp_name)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                    ->whereRaw($where_clause)->whereRaw($emp_name)
+                    ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
                     $employee_id =  array_column($all_employees,'employee_id');
                     
@@ -2136,7 +2138,8 @@ class AttendanceController extends Controller
             
             if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 3){
             
-                $all_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause)->whereRaw($emp_name)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $all_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause)->whereRaw($emp_name)
+                ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
                 $employee_id =  array_column($all_employees,'employee_id');
                 
@@ -2150,7 +2153,8 @@ class AttendanceController extends Controller
                         $query->where('employee_senior_manager',session('user_session'));
                         $query->orWhere('employee_junior_manager',session('user_session'));
                     })
-                    ->whereRaw($where_clause)->whereRaw($emp_name)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                    ->whereRaw($where_clause)->whereRaw($emp_name)
+                    ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
                     $employee_id =  array_column($all_employees,'employee_id');
                     
@@ -2159,7 +2163,8 @@ class AttendanceController extends Controller
                     $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
                    
                 }else{
-                    $all_employees = Employees::where('employee_isactive',$employement_status)->where('employee_id',session('user_session'))->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                    $all_employees = Employees::where('employee_isactive',$employement_status)->where('employee_id',session('user_session'))
+                    ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
                     
                     $where_clause_two = 'AND employee_id IN('.$all_employees[0]['employee_id'].')'; 
                    

@@ -53,11 +53,23 @@ class EmployeeController extends Controller
 
             }
 
-            if(!empty($request->input('employee_status'))){
+            if(!empty($request->input('business_unit'))){
 
-                $where_clause .= " and employee_status= '".$request->input('employee_status')."'";
+                $where_clause .= " and business_unit= '".$request->input('business_unit')."'";
 
             }
+
+            if(!empty($request->input('employee_department'))){
+
+                $where_clause .= " and employee_department= '".$request->input('employee_department')."'";
+
+            }
+
+            // if(!empty($request->input('employee_status'))){
+
+            //     $where_clause .= " and employee_status= '".$request->input('employee_status')."'";
+
+            // }
 
             $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->orderBy('employee_id','ASC')->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit'])->toArray();
 
@@ -65,9 +77,11 @@ class EmployeeController extends Controller
 
             $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
 
+            $departments_status = Department::get(['department_id','department_name'])->toArray();
+
             $employee_active = Employees::where('employee_isactive', 1)->count();
 
-            $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status');
+            $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status');
 
             return view('employee.all-employees',$send_data);
         }catch(\Exception $e){

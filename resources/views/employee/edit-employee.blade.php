@@ -222,10 +222,10 @@
                                     <option value="Bisconni" @if ($employee_detail[0]['business_unit'] == 'Bisconni') selected @endif>Bisconni</option>
                                     <option value="Snackcity" @if ($employee_detail[0]['business_unit'] == 'Snackcity') selected @endif>Snackcity</option>
                                     <option value="Hudson Pharma" @if ($employee_detail[0]['business_unit'] == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
-                                    <option value="Astro Films" @if ($employee_detail[0]['business_unit'] == 'Astro Films') selected @endif>Astro Films</option>  
+                                    <option value="Astro" @if ($employee_detail[0]['business_unit'] == 'Astro') selected @endif>Astro</option>  
                                     <option value="Act Group" @if ($employee_detail[0]['business_unit'] == 'Act Group') selected @endif>Act Group</option>  
                                     <option value="Ismail Nutrition" @if ($employee_detail[0]['business_unit'] == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>   
-                                    <option value="Ghiza Flour" @if ($employee_detail[0]['business_unit'] == 'Ghiza Flour') selected @endif>Ghiza Flour</option>                                 
+                                    <option value="Flour" @if ($employee_detail[0]['business_unit'] == 'Flour') selected @endif>Flour</option>                                 
                                 </select>
                             </div>
                             

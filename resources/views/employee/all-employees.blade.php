@@ -131,6 +131,42 @@
 
                                     <div class="mb-3">
                                         
+                                        <label class="form-label fw-semibold">Employee Business Unit </label>
+                                        
+                                        <div>
+                                            <select class="form-select " data-kt-select2="true" data-placeholder="Select business unit" name="business_unit">
+                                                <option value="">Select Business Unit</option>
+                                                <option value="Candyland" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
+                                                <option value="Bisconni" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
+                                                <option value="Snackcity" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
+                                                <option value="Hudson Pharma" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
+                                                <option value="Astro" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
+                                                <option value="Act Group" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
+                                                <option value="Ismail Nutrition" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>   
+                                                <option value="Flour" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Flour') selected @endif>Flour</option>                              
+                                            </select>
+                                        </div> 
+                                    </div>
+
+                                    <div class="mb-3">
+                                        
+                                        <label class="form-label fw-semibold">Employee Department </label>
+                                        
+                                        <div>
+                                            <select class="form-select " data-kt-select2="true" data-placeholder="Select Employee Department" name="employee_department">
+                                                <option value="">Select Employee Department</option>
+                                                @if(!empty($departments_status))
+                                                    @foreach ($departments_status as $department_status)
+                                                        <option value="{{$department_status['department_id']}}" @if(!empty(Request::get('employee_department')) && Request::get('employee_department') == $department_status['department_id']) selected @endif>{{$department_status['department_name']}}</option>
+                                                    @endforeach
+                                            
+                                                @endif  
+                                            </select>
+                                        </div> 
+                                    </div>
+
+                                    {{-- <div class="mb-3">
+                                        
                                         <label class="form-label fw-semibold">Employment Status </label>
                                         
                                         <div>
@@ -144,7 +180,7 @@
                                                 @endif  
                                             </select>
                                         </div> 
-                                    </div>
+                                    </div> --}}
 
                                     <div class="d-flex justify-content-end">
                                         @if(!empty(Request::get('employee_isactive')))
