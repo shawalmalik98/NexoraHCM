@@ -232,6 +232,21 @@
                                     @endif                                        
                                 </select>
                             </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="required fs-6 fw-semibold mb-2">Business Unit</label>
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Business Unit" name="business_unit" required="required">
+                                    <option value="">Select Business Unit</option>
+                                    <option value="Candyland">CandyLand</option>
+                                    <option value="Bisconni">Bisconni</option>
+                                    <option value="Snackcity">Snackcity</option>
+                                    <option value="Hudson Pharma">Hudson Pharma</option>
+                                    <option value="Astro Films">Astro Films</option>  
+                                    <option value="Act Group">Act Group</option>  
+                                    <option value="Ismail Nutrition">Ismail Nutrition</option>   
+                                    <option value="Ghiza Flour">Ghiza Flour</option>                                 
+                                </select>
+                            </div>
                             
                             <div class="col-md-4 fv-row">
                                 <label class="required fs-6 fw-semibold mb-2">Department</label>

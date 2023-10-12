@@ -31,6 +31,7 @@ return new class extends Migration
                 $table->integer('employee_department');
                 $table->integer('employee_company')->default(1);
                 $table->integer('employee_group')->default(1);
+                $table->string('business_unit', 255)->nullable();
                 $table->string('employee_jobtitle', 255);
                 $table->string('employee_offdays', 255)->nullable();
                 $table->string('employee_shift_flexibilty', 5)->nullable();

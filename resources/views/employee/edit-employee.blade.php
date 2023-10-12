@@ -213,6 +213,21 @@
                                     @endif
                                 </select>
                             </div>
+
+                            <div class="col-md-4 fv-row">
+                                <label class="required fs-6 fw-semibold mb-2">Business Unit</label>
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Business Unit" name="business_unit" required="required">
+                                    <option value="">Select Business Unit</option>
+                                    <option value="Candyland" @if ($employee_detail[0]['business_unit'] == 'Candyland') selected @endif>CandyLand</option>
+                                    <option value="Bisconni" @if ($employee_detail[0]['business_unit'] == 'Bisconni') selected @endif>Bisconni</option>
+                                    <option value="Snackcity" @if ($employee_detail[0]['business_unit'] == 'Snackcity') selected @endif>Snackcity</option>
+                                    <option value="Hudson Pharma" @if ($employee_detail[0]['business_unit'] == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
+                                    <option value="Astro Films" @if ($employee_detail[0]['business_unit'] == 'Astro Films') selected @endif>Astro Films</option>  
+                                    <option value="Act Group" @if ($employee_detail[0]['business_unit'] == 'Act Group') selected @endif>Act Group</option>  
+                                    <option value="Ismail Nutrition" @if ($employee_detail[0]['business_unit'] == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>   
+                                    <option value="Ghiza Flour" @if ($employee_detail[0]['business_unit'] == 'Ghiza Flour') selected @endif>Ghiza Flour</option>                                 
+                                </select>
+                            </div>
                             
                             <div class="col-md-4 ">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Department</label>
@@ -403,8 +418,6 @@
                             </div>
                             
                         </div>
-
-                        
 
                         <div class="row g-9 mb-8">
                             

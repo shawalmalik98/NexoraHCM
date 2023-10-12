@@ -201,7 +201,8 @@ class EmployeeController extends Controller
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
                 'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
                 'fund_amount.*' => 'required|numeric|min:0|max:99999',
-                'fund_id.*' => 'required|numeric'
+                'fund_id.*' => 'required|numeric',
+                'business_unit' => 'required'
 
             ],$messages);
 
@@ -311,6 +312,7 @@ class EmployeeController extends Controller
                 $add_employee->employee_designation = $employee_data->input('employee_designation');
                 $add_employee->employee_department = $employee_data->input('employee_department');
                 $add_employee->employee_company = $employee_data->input('employee_company');
+                $add_employee->business_unit = $employee_data->input('business_unit');
                 $add_employee->employee_jobtitle = $employee_data->input('employee_jobtitle');
                 $add_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
                 $add_employee->employee_geofencing_enability = ($employee_data->input('employee_geofencing_enability') == '1') ? true : false;
@@ -1120,7 +1122,8 @@ class EmployeeController extends Controller
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
                 'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
                 'fund_amount.*' => 'required|numeric|min:0|max:99999',
-                'fund_id.*' => 'required|numeric'
+                'fund_id.*' => 'required|numeric',
+                'business_unit' => 'required'
             ], $messages);
             
             if($validator->fails()) {
@@ -1263,6 +1266,7 @@ class EmployeeController extends Controller
                     $update_employee->employee_designation = $employee_data->input('employee_designation');
                     $update_employee->employee_department = $employee_data->input('employee_department');
                     $update_employee->employee_company = $employee_data->input('employee_company');
+                    $update_employee->business_unit = $employee_data->input('business_unit');
                     $update_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
                     $update_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
                     $update_employee->employee_geofencing_enability = ($employee_data->input('employee_geofencing_enability') == '1') ? true : false;
