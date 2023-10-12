@@ -843,15 +843,26 @@ class CustomHelper
         try{
             $date = date('Y-m-d',strtotime($date));
 
+            // $fetch_employee_today_shift = ShiftManagement::
+            // where('employee_id',$employee_id)
+            // ->whereIn('shift_start_from_date',function($query) use($date) {
+            //         $query->fromRaw('tbl_shift_management as sub_table')
+            //         ->selectRaw('MAX(STR_TO_DATE(shift_start_from_date,"%Y-%m-%d"))')
+            //         ->whereRaw('STR_TO_DATE(shift_start_from_date,"%Y-%m-%d") <= "'.$date.'"')
+            //         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
+            // })
+            // ->get('shift_start_time')->toArray();
+
             $fetch_employee_today_shift = ShiftManagement::
-            where('employee_id',$employee_id)
-            ->whereIn('shift_start_from_date',function($query) use($date) {
+                where('employee_id', $employee_id)
+                ->whereIn('shift_start_from_date', function($query) use($date) {
                     $query->fromRaw('tbl_shift_management as sub_table')
-                    ->selectRaw('MAX(STR_TO_DATE(shift_start_from_date,"%Y-%m-%d"))')
-                    ->whereRaw('STR_TO_DATE(shift_start_from_date,"%Y-%m-%d") <= "'.$date.'"')
-                    ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
-            })
-            ->get('shift_start_time')->toArray();
+                        ->selectRaw('MAX(CONVERT(datetime, shift_start_from_date, 120))')
+                        ->whereRaw('CONVERT(datetime, shift_start_from_date, 120) <= ?', [$date])
+                        ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
+                })
+                ->get('shift_start_time')
+                ->toArray();
 
             if(!empty($fetch_employee_today_shift)){
                 return $fetch_employee_today_shift[0]['shift_start_time'];
