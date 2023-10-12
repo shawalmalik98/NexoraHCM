@@ -251,6 +251,8 @@
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
                                             <th class="ps-8">Employee Code & Name</th>
+                                            <th class="text-center">Depart &amp; Desig</th>
+                                            <th class="text-center">Business Unit</th>
                                             <th class="text-center">On Time</th>
                                             <th class="text-center">Late / Early Out</th>
                                             <th class="text-center">Half Day</th>
@@ -268,6 +270,11 @@
                                             @foreach ($attendance as $attendances)
                                                 <tr>
                                                     <td class="ps-8">{{ $attendances['employee_code'] }} - {{ $attendances['employee_name'] }} </td>
+                                                    <td class="text-center">
+                                                        <p class="text-dark fw-bold mb-1 fs-6"> {{ $attendances['department_name'] }}</p>
+                                                        <p class="text-muted fw-semibold text-muted fs-7">{{$attendances['designation_name'] }}</p>
+                                                    </td>
+                                                    <td class="text-center">{{ $attendances['business_unit'] }}</td>
                                                     <td class="text-center">{{ $attendances['total_present'] }}</td>
                                                     <td class="text-center">{{ $attendances['total_late'] }}</td>
                                                     <td class="text-center">{{ $attendances['total_halfday'] }}</td>

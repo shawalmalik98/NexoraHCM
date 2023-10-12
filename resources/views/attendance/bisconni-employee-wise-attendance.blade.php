@@ -716,8 +716,8 @@
                                     <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Attendance type" id="" name="" required> 
                                         <option value="" >Select Attendance Type</option>
                                         <option value="Official Tour">Official Tour</option>
-                                        <option value="On Time Check In">Update My Check In Time</option>
-                                        <option value="On Time Check Out">Update My Check Out Time</option>
+                                        <option value="On Time Check In">Update Check In Time</option>
+                                        <option value="On Time Check Out">Update Check Out Time</option>
                                     </select>
                                 </div>
 

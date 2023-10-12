@@ -222,15 +222,10 @@
                                                 <td class="ps-4">{{ $employee['employee_code'] }}</td>
                                                 <td>{{ $employee['employee_name'] }}</td>
                                             
-                                                <td>{{ ($employee['employee_personal_email']) ?? 'N/A' }}</td>
+                                                <td>{{ $employee['employee_personal_email'] }}</td>
                                                 <td>
-                                                    @if($employee['employee_department'] != '')
-                                                        <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee['department_name'] }}</p>
-                                                        <p class="text-muted fw-semibold text-muted fs-7">{{$employee['designation_name'] }}</p>
-                                                    @else
-                                                        Not Available
-                                                    @endif
-                                                    
+                                                    <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee['department_name'] }}</p>
+                                                    <p class="text-muted fw-semibold text-muted fs-7">{{$employee['designation_name'] }}</p>
                                                 </td>
                                                 <td>{{ $employee['business_unit'] }}</td>
                                                 <td>
@@ -251,17 +246,17 @@
                                                         </span>
                                                     </a>
 
-                                                    <a href="{{ url('view-employee-information-form') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Information Form" > 
+                                                    {{-- <a href="{{ url('view-employee-information-form') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Information Form" > 
                                                         <i class="fas fa-user" aria-hidden="true"></i>
-                                                    </a>
+                                                    </a> --}}
                                                     
-                                                    <a  href="{{ url('employees/employee-documents') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Document"> 
+                                                    {{-- <a  href="{{ url('employees/employee-documents') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Document"> 
                                                         <i class="fas fa-file" aria-hidden="true"></i>
-                                                    </a>
+                                                    </a> --}}
 
-                                                    <!-- <a  href="{{ url('employees/employee-allotment') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Employee Allotments"> 
+                                                    {{-- <a  href="{{ url('employees/employee-allotment') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Employee Allotments"> 
                                                         <i class="fas fa-car"></i>
-                                                    </a> -->
+                                                    </a> --}}
                                                 </td>
                                             </tr>
                                         @endforeach

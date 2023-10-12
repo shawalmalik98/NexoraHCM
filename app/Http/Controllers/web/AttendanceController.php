@@ -1661,7 +1661,7 @@ class AttendanceController extends Controller
         $login_user = $this->get_login_user_detail();
         $attendance = DB::select("
         SELECT 
-        e.employee_id,e.employee_code , e.employee_name, e.employee_offdays,
+        e.employee_id,e.employee_code , e.employee_name, e.business_unit, dep.department_name, des.designation_name,e.employee_offdays,
         SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) AS total_present,
         SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) AS total_late,
         SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS total_halfday,
@@ -1698,9 +1698,11 @@ class AttendanceController extends Controller
         FROM tbl_attendance a
         LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
         INNER JOIN tbl_employees e ON a.att_employee_id = e.employee_id 
+        INNER JOIN tbl_departments dep ON e.employee_department = dep.department_id 
+        INNER JOIN tbl_designations des ON e.employee_designation = des.designation_id 
         WHERE CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date'
-        AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date'
-        GROUP BY e.employee_code, e.employee_name , e.employee_offdays,e.employee_id
+        AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' AND e.business_unit = 'Bisconni'
+        GROUP BY e.employee_code, e.employee_name , e.business_unit, dep.department_name , des.designation_name , e.employee_offdays,e.employee_id
         ");
         $attendance = json_decode(json_encode($attendance), TRUE);
         $send_data = compact('login_user','title','attendance');
