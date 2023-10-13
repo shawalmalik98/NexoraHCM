@@ -46,6 +46,8 @@ trait NotificationTrait {
 
 	public static function get_all_notifications($limit = NULL, $login_user = NULL){
 
+		return [];
+
 		if(empty($login_user)){
 			$login_employee_id = session('user_session');
 		}else{
