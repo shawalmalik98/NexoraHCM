@@ -219,7 +219,7 @@
                         
                         <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                             <div class="table-responsive popup-visible ">
-                                <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="">
+                                <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable">
                                                             
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
@@ -571,27 +571,29 @@
                                                 </td> 
 
                                                 <td class="text-center">
-                                                    <a href="#" class="btn btn-sm btn-light btn-active-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions 
-                                                   
-                                                        <span class="svg-icon svg-icon-5 m-0">
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
-                                                            </svg>
-                                                        </span>
-                                                    </a>
-                                                   
-                                                    <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4" data-kt-menu="true">
-                                                        <div class="menu-item px-3">
-                                                            <a href="javascript:void(0)" class="menu-link px-3"  onclick="editAttendanceadjustment('{{$attendances['attendance_id']}}', '{{$attendances['att_employee_id']}}','{{date('Y-m-d', strtotime($current_date))}}')">
-                                                                Adjustment
-                                                            </a>
-                                                            {{-- <a href="#" class="menu-link px-3" data-bs-toggle="tooltip">
-                                                                Exemption
-                                                            </a> --}}
-                                                        </div>    
-                                                       
-                                                    </div>
-
+                                                    @if (!empty($attendance))
+                                                        <a href="#" class="btn btn-sm btn-light btn-active-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions 
+                                                    
+                                                            <span class="svg-icon svg-icon-5 m-0">
+                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
+                                                                </svg>
+                                                            </span>
+                                                        </a>
+                                                    
+                                                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4" data-kt-menu="true">
+                                                            <div class="menu-item px-3">
+                                                                <a href="javascript:void(0)" class="menu-link px-3"  onclick="editAttendanceadjustment('{{$attendances['attendance_id']}}', '{{$attendances['att_employee_id']}}','{{date('Y-m-d', strtotime($current_date))}}')">
+                                                                    Adjustment
+                                                                </a>
+                                                                {{-- <a href="#" class="menu-link px-3" data-bs-toggle="tooltip">
+                                                                    Exemption
+                                                                </a> --}}
+                                                            </div>    
+                                                        
+                                                        </div>
+                                                    @endif    
+                                                         
                                                 </td>
                                             </tr>
                                         
@@ -677,7 +679,7 @@
                                         <span class="required">Update Attendance</span>
                                         <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Please select the option below which you are willing to mark your attendance."></i>
                                     </label>
-                                    <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Attendance type" id="" name="attendance_status" required> 
+                                    <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Attendance type" id="" name="attendance_type" required> 
                                         <option value="" >Select Attendance Type</option>
                                         <option value="Official Tour">Official Tour</option>
                                         <option value="On Time Check In">Update Check In Time</option>
@@ -740,18 +742,79 @@
 
 function editAttendanceadjustment(attendance_id, att_employee_id ,att_for_date) {
     $('input[name=attendance_id]').val(attendance_id);
-    $('input[name=att_employee_id]').val(att_employee_id);
+    $('input[name=employee_code]').val(att_employee_id);
     $("#update_dated").val(att_for_date);
     $('#attendance_adjustment').modal('show');
 }
 
-// $('#update_attendance').submit(function (e) {
-//     $('#mark_attendance_btn').prop('disabled', true);
-//     $('#mark_attendance_btn').attr('data-kt-indicator', 'on');
-//     $('#mark_attendance_btn').css('cursor', 'not-allowed');
+$('#add_new_adjustment').submit(function (e) {
+    $('#submit_btn').prop('disabled', true);
+    $("#submit_btn").attr('data-kt-indicator', 'on');
+    $('#submit_btn').css('cursor', 'pointer');
+
+    e.preventDefault();
+    $.ajax({
+        url: base_url + '/update-bisconni-employee-report',
+        type: 'POST',
+        data: new FormData(this),
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function (data) {
+
+            if (data.status == 'TRUE') {
+                Toast.fire({
+                    icon: 'success',
+                    title: data.msg,
+                    timer: 3000,
+                })
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            } else {
+                Toast.fire({
+                    icon: 'warning',
+                    title: data.msg,
+                    timer: 5000,
+                })
+                $('#submit_btn').prop('disabled', false);
+                $('#submit_btn').css('cursor', 'pointer');
+                $("#submit_btn").removeAttr('data-kt-indicator');
+            }
+        },
+        error: function (jqXHR, textStatus) {
+            var errorStatus = jqXHR.status;
+            $('#submit_btn').prop('disabled', false);
+            $('#submit_btn').css('cursor', 'pointer');
+            $("#submit_btn").removeAttr('data-kt-indicator');
+            if (errorStatus == 0) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Internet Connection Problem',
+                    timer: 3000,
+                })
+            } else {
+                if (errorStatus == 419) {
+                    location.reload();
+                } else {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Try Again. Error Code ' + errorStatus,
+                        timer: 3000,
+                    })
+                }
+            }
+        }
+    });
+});
+
+// $('#add_new_adjustment').submit(function (e) {
+//     $('#submit_btn').prop('disabled', true);
+//     $('#submit_btn').attr('data-kt-indicator', 'on');
+//     $('#submit_btn').css('cursor', 'not-allowed');
 //     e.preventDefault();
 //     $.ajax({
-//         url: base_url + '/attendance/update_attendance',
+//         url: base_url + 'update-bisconni-employee-report',
 //         type: 'POST',
 //         headers: {
 //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -778,9 +841,9 @@ function editAttendanceadjustment(attendance_id, att_employee_id ,att_for_date) 
 //                     title: data.msg,
 //                     timer: 5000,
 //                 })
-//                 $('#mark_attendance_btn').prop('disabled', false);
-//                 $('#mark_attendance_btn').removeAttr('data-kt-indicator');
-//                 $('#mark_attendance_btn').css('cursor', 'pointer');
+//                 $('#submit_btn').prop('disabled', false);
+//                 $('#submit_btn').removeAttr('data-kt-indicator');
+//                 $('#submit_btn').css('cursor', 'pointer');
 //             }
 //         },
 //         error: function (jqXHR, textStatus) {
@@ -790,9 +853,9 @@ function editAttendanceadjustment(attendance_id, att_employee_id ,att_for_date) 
 //             } else {
 //                 alert("Try Again. Error Code " + errorStatus);
 //             }
-//             $('#mark_attendance_btn').prop('disabled', false);
-//             $('#mark_attendance_btn').removeAttr('data-kt-indicator');
-//             $('#mark_attendance_btn').css('cursor', 'pointer');
+//             $('#submit_btn').prop('disabled', false);
+//             $('#submit_btn').removeAttr('data-kt-indicator');
+//             $('#submit_btn').css('cursor', 'pointer');
 //         }
 //     });
 // });

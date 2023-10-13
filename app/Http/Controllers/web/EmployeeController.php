@@ -215,9 +215,8 @@ class EmployeeController extends Controller
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
                 'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
                 'fund_amount.*' => 'required|numeric|min:0|max:99999',
-                'fund_id.*' => 'required|numeric',
-                'business_unit' => 'required'
-
+                'fund_id.*' => 'required|numeric'
+               
             ],$messages);
 
             if($validator->fails()) {
@@ -1136,8 +1135,8 @@ class EmployeeController extends Controller
                 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
                 'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
                 'fund_amount.*' => 'required|numeric|min:0|max:99999',
-                'fund_id.*' => 'required|numeric',
-                'business_unit' => 'required'
+                'fund_id.*' => 'required|numeric'
+                
             ], $messages);
             
             if($validator->fails()) {

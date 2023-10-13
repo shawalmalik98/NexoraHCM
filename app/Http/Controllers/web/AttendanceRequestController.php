@@ -614,18 +614,21 @@ class AttendanceRequestController extends Controller
                                 }
 
                                 if($get_attendance->request_attendance_status == "On Time Check In"){
-                                
+
                                     $check_in_time = $get_attendance->request_attendance_date.' '.$attendance_req_time[0]['attendance_checkin_time'];
                                     
-                                    $process = $this->multiple_check_in($check_in_time,$get_attendance->request_employee_id, 1, 1);
-                                
+                                    $this->multiple_check_in($check_in_time,$get_attendance->request_employee_id, 3, 1);
+                                    
+                                    $process = 1;
+                            
                                 }
 
-                                if($get_attendance->request_attendance_status == "Half day" || $get_attendance->request_attendance_status == "Present" || $get_attendance->request_attendance_status == "Late Coming"  ){
+                                if($get_attendance->request_attendance_status == "Half day" || $get_attendance->request_attendance_status == "Official Tour" || $get_attendance->request_attendance_status == "Late Coming" || $get_attendance->request_attendance_status == "Present"
+                                ){
     
                                     $create_attendance = new Attendance();
                                     $create_attendance->att_employee_id = $get_attendance->request_employee_id;
-                                    $create_attendance->att_check_in_time = $employee_shift_start ;
+                                    $create_attendance->att_check_in_time = $employee_shift_start;
                                     $create_attendance->att_check_out_time =  $employees_shift_end_time;
                                     $create_attendance->att_check_in_status = 1;
                                     $create_attendance->att_check_out_status = 1;
@@ -633,13 +636,18 @@ class AttendanceRequestController extends Controller
                                     $create_attendance->att_check_out_source = 3;
                                     $create_attendance->att_shift_start_time = $employee_shift_start;
                                     $create_attendance->att_shift_end_time = $employee_shift_end;
-                                    $create_attendance->att_check_overall_status = $get_attendance->request_attendance_status;
+                                    if($get_attendance->request_attendance_status == "Official Tour"){
+                                        $create_attendance->att_check_overall_status = 'Present';
+                                    }else{
+                                        $create_attendance->att_check_overall_status = $get_attendance->request_attendance_status;
+                                    }
                                     $create_attendance->att_for_date = $day;
                                     $create_attendance->att_for_month = $month;
                                     $create_attendance->att_for_year = $year;
                                     $create_attendance->att_request_approval = 1;
                                     $process = $create_attendance->save();
                                 }
+
                                 if($process == 1 || $process == null){
                 
                                     $this->send_notification('Attendance Request Approval ', ' HR approved your attendance request(s) for the date of '. $day . '-'. $month .'-'.$year.'. Please click here to view. ', 'my-attendance-request?request-id='. $get_attendance->attendance_request_id .'',$get_attendance->request_employee_id,NULL,NULL,'no');
@@ -669,18 +677,22 @@ class AttendanceRequestController extends Controller
                                 if($get_attendance->request_attendance_status == "On Time Check In"){
                                     
                                     $check_in_time = $get_attendance->request_attendance_date.' '.$attendance_req_time[0]['attendance_checkin_time'];
-                                    $process = $this->multiple_check_in_update($check_in_time,$get_attendance->request_employee_id);
-                                    
+                                    $this->multiple_check_in_update($check_in_time,$get_attendance->request_employee_id);
+
+                                    $process = 1;
                                 }
 
                                 if($get_attendance->request_attendance_status == "On Time Check Out"){
                                     $check_out_time = $get_attendance->request_attendance_date.' '.$attendance_req_time[0]['attendance_checkout_time'];
                                 
-                                    $process = $this->multiple_check_out($check_out_time,$update_attendance->att_check_out_time,$get_attendance->request_employee_id);
+                                    $this->multiple_check_out($check_out_time,$update_attendance->att_check_out_time,$get_attendance->request_employee_id);
+
+                                    $process = 1;
                                 
                                 }
 
-                                if($get_attendance->request_attendance_status == "Half day" || $get_attendance->request_attendance_status == "Present" || $get_attendance->request_attendance_status == "Late Coming" ){
+                                if($get_attendance->request_attendance_status == "Half day" || $get_attendance->request_attendance_status == "Official Tour" || $get_attendance->request_attendance_status == "Late Coming" ||$get_attendance->request_attendance_status == "Present" 
+                                ){
                                     
                                     $update_attendance->att_check_in_time = $employee_shift_start;
                                     $update_attendance->att_check_out_time =  $employees_shift_end_time;
@@ -690,7 +702,11 @@ class AttendanceRequestController extends Controller
                                     $update_attendance->att_check_in_status = 1;
                                     $update_attendance->att_check_out_status = 1;
                                     $update_attendance->att_request_approval = 1;
-                                    $update_attendance->att_check_overall_status = $get_attendance->request_attendance_status;
+                                    if($get_attendance->request_attendance_status == "Official Tour"){
+                                        $update_attendance->att_check_overall_status = 'Present';
+                                    }else{
+                                        $update_attendance->att_check_overall_status = $get_attendance->request_attendance_status;
+                                    }
                                     $process = $update_attendance->save();
                                 }
                                     

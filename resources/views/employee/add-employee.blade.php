@@ -234,8 +234,8 @@
                             </div>
 
                             <div class="col-md-4 fv-row">
-                                <label class="required fs-6 fw-semibold mb-2">Business Unit</label>
-                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Business Unit" name="business_unit" required="required">
+                                <label class="fs-6 fw-semibold mb-2">Business Unit</label>
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Business Unit" name="business_unit">
                                     <option value="">Select Business Unit</option>
                                     <option value="Candyland">CandyLand</option>
                                     <option value="Bisconni">Bisconni</option>

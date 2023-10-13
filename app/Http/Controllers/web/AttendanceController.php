@@ -5,7 +5,7 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\{Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation,ShareAttReport, LeaveManagement, AttendanceLocker};
+use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation,ShareAttReport, LeaveManagement, AttendanceLocker};
 use Illuminate\Support\Facades\DB;
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee};
 use App\Helpers\ActivityTracker;
@@ -26,7 +26,7 @@ class AttendanceController extends Controller
     const SERVER_ERROR = 'Unknown error occured on server. Please try again after some time.';
     
     protected function all_attendance(Request $request){
-        // try{
+        try{
             set_time_limit(1800);
 
             $title = Self::TITLE_GLOBAL;
@@ -109,19 +109,17 @@ class AttendanceController extends Controller
 
            
             $send_data = compact('title','login_user','all_attendances','month_days','all_department','all_employees','month','year','employee_locations','active_employees','manage_leaves','leaves_name','dynamic_years','attendance_access');
-
-            // dd($all_attendances);
             
             return view('attendance.all-employees-attendance',$send_data);
-        // }catch(\Exception $e){
-        //     $this->create_error_log('View All Employees Attendance', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
-        // }finally{
+        }catch(\Exception $e){
+            $this->create_error_log('View All Employees Attendance', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
 
-        //     ActivityTracker::track_activity('View All Employees Attendance');
+            ActivityTracker::track_activity('View All Employees Attendance');
          
-        // }
+        }
     }
 
     protected function personal_attendace(Request $request){
@@ -264,7 +262,7 @@ class AttendanceController extends Controller
     }
 
     protected function bisconni_employee_report(Request $request){
-        // try{
+        try{
         
             $title = 'bisconni-report';
       
@@ -392,184 +390,27 @@ class AttendanceController extends Controller
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','month','year','leave_name','manage_leaves','dynamic_years','dates','month_count','employee_data');
 
             return view('attendance.bisconni-employee-wise-attendance',$send_data); 
-        // }catch(\Exception $e){
+        }catch(\Exception $e){
 
-        //     $this->create_error_log('View My Personal Attendance', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
+            $this->create_error_log('View My Personal Attendance', $e);
+            $send_data = compact('title');
+            return view('errors.500');
 
-        // }finally{
+        }finally{
         
-        //     ActivityTracker::track_activity('View My Personal Attendance');
+            ActivityTracker::track_activity('View My Personal Attendance');
 
-        // }
+        }
     }
 
-    // protected function update_bisconni_employee_attendance(Request $attendance_data){
-      
-	// 	try{
-    //         $login_user = $this->get_login_user_detail();
-
-    //         $validator = Validator::make($attendance_data->all(), [
-    //             'attendance_date' => 'required|date_format:Y-m-d|before:tomorrow',
-    //             'employee_code' => 'required',
-    //             'attendance_status' => 'required',
-    //         ]);
-
-    //         if($validator->fails()) {
-    //             foreach($validator->errors()->all() as $error){
-    //                 return response()->json([
-    //                     'msg' => $error,
-    //                     'status' => 'FALSE'
-    //                 ]);
-    //             }
-    //         }else{
-                
-    //             $attendance_access = AttendanceAccess::where('access_employee_id',session('user_session'))->get('attendance_access')->toArray();
-    //             if(!empty($attendance_access) && $attendance_access[0]['attendance_access'] == 1){
-    //                 $request_approve_permission = $this->hr_employees_activity_blocker($login_user[0]['employee_id'],$attendance_data->input('employee_code'));
-                            
-    //                 if($request_approve_permission != null){
-    //                     return response()->json([
-    //                         'msg' => $request_approve_permission['msg'],
-    //                         'status' => 'FALSE'
-    //                     ]);
-    //                 }
-
-    //                 $payroll_exists = $this->check_if_payroll_exist($attendance_data->input('attendance_date'),$attendance_data->input('employee_code'),$custom_message = 'msg');
-
-    //                 if($payroll_exists['status'] == TRUE){
-    //                     return response()->json([
-    //                         'msg' => $payroll_exists['msg'],
-    //                         'status' => 'FALSE'
-    //                     ]);
-    //                 }
-
-    //                 $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($attendance_data->input('attendance_date'));
-
-    //                 if($check_attendance_sheet_availability['status'] == FALSE){
-    //                     return response()->json([
-    //                         'msg' => $check_attendance_sheet_availability['msg'],
-    //                         'status' => 'FALSE'
-    //                     ]);
-    //                 }
-
-
-    //                 $get_employee_decoded = Employees::where('employee_id',$attendance_data->input('employee_code'))->get(['employee_name','employee_doj'])->toArray();
-    //                 $att_applying_date  = strtotime($attendance_data->input('attendance_date'));
-    //                 $doj  = strtotime($get_employee_decoded[0]['employee_doj']);
-
-                
-    //                 if($att_applying_date >=  $doj){
-    //                     $day = date("d", strtotime($attendance_data->input('attendance_date')));
-
-    //                     $month = date("m", strtotime($attendance_data->input('attendance_date')));
-                        
-    //                     $year = date("Y", strtotime($attendance_data->input('attendance_date')));
-                
-    //                     $get_attendance = Attendance::where('att_employee_id',$attendance_data->input('employee_code'))->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['attendance_id'])->toArray();
-                
-    //                     $employee_shift_start = $this->get_employee_today_shift($attendance_data->input('employee_code'),"in",$attendance_data->input('attendance_date'));
-    //                     $employees_shift_end_time = $this->get_employee_today_shift($attendance_data->input('employee_code'),"out",$attendance_data->input('attendance_date'));
-
-    //                     if($attendance_data->input('attendance_status') == "Half day"){
-                        
-    //                         $shift_time =   CustomHelper::calculate_shift_timings_shift_management($employee_shift_start,$employees_shift_end_time);
-                            
-    //                         $employees_shift_end_time = $this->employee_half_day_shift_time($employee_shift_start, $shift_time);
-            
-    //                     }
-    //                     if(empty($get_attendance)){
-                
-    //                         $update_attendance = new Attendance();
-    //                         $update_attendance->att_employee_id = $attendance_data->input('employee_code');
-    //                         $update_attendance->att_check_in_time =$employee_shift_start;
-    //                         $update_attendance->att_check_out_time = $employees_shift_end_time;
-    //                         $update_attendance->att_check_in_status = 1;
-    //                         $update_attendance->att_check_out_status = 1;
-    //                         $update_attendance->att_shift_start_time = $employee_shift_start;
-    //                         $update_attendance->att_shift_end_time = $employees_shift_end_time;
-    //                         $update_attendance->att_check_overall_status = $attendance_data->input('attendance_status');
-    //                         $update_attendance->att_for_date = $day;
-    //                         $update_attendance->att_for_month = $month;
-    //                         $update_attendance->att_for_year = $year;
-    //                         $update_attendance->att_check_in_source = 3;
-    //                         $update_attendance->att_check_out_source = 3;
-    //                         $process = $update_attendance->save();
-    //                         if($process == 1){
-
-    //                             $this->send_notification('Attendance Update','HR marked your attendance as '.$attendance_data->input('attendance_status').' for '. $day . '-'. $month .'-'. $year .'. Please click here to view.','my-attendance',$attendance_data->input('employee_code'),NULL,NULL,'no');
-
-    //                             $this->send_push_notification_mobile_app($attendance_data->input('employee_code'), 'Attendance Update','HR marked your attendance as '.$attendance_data->input('attendance_status').' for '. $day . '-'. $month .'-'. $year.'.');
-                                
-    //                             return response()->json([
-    //                                 'status' => 'TRUE',
-    //                                 'msg' => "Attendance marked successfully. Please wait",
-    //                             ]);
-                            
-    //                         }else{
-    //                             return response()->json([
-    //                                 'status' => 'FALSE',
-    //                                 'msg' => "Something went wrong. Please try again.",
-    //                             ]);
-    //                         }
-    //                     }else{
-                            
-    //                         return response()->json([
-    //                             'status' => 'FALSE',
-    //                             'msg' =>'Attendance already marked. Please edit from table.',
-    //                         ]);
-    //                     }
-    //                 }  return response()->json([
-    //                     'status' => 'FALSE',
-    //                     'msg' =>  "You can't update attendance of ".$get_employee_decoded[0]['employee_name']." before their joining date",
-    //                 ]);
-    //             }else{
-    //                 return response()->json([
-    //                     'status' => 'FALSE',
-    //                     'msg' => "You don't have access to update attendance.",
-                    
-    //                 ]);
-    //             } 
-    //         }   
-                
-    //     }catch(\Exception $e){
-
-    //         $this->create_error_log('Mark Employee Attendance', $e);
-    //         if(!env('APP_DEBUG')){
-    //             return response()->json([
-    //                 'status' => 'FALSE',
-    //                 'msg' => "Something went wrong. Please try again.",
-                   
-    //             ]);
-    //         }else{
-    //             return response()->json([
-    //                 'status' => 'FALSE',
-    //                 'msg' => "Something went wrong. Please try again.",
-    //                 'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-    //             ]);
-               
-    //         }
-               
-    //     }finally{
-
-    //         ActivityTracker::track_activity('Mark Employee Attendance');
-        
-    //     }
-		
-    // }
-
     protected function update_bisconni_employee_attendance(Request $request_data){
+
         try{
           
-            $login_user = $this->get_login_user_detail();
             $process = '';
             $validator = Validator::make($request_data->all(), [
                 'attendance_date' => 'required|date_format:Y-m-d|before_or_equal:now' ,
                 'attendance_type' => 'required',
-                'check_in_time' => ($request_data->input('attendance_type') == 'On Time Check In' ) ? 'required' : '' ,
-                'check_out_time' => ($request_data->input('attendance_type') == 'On Time Check Out' ) ? 'required' : '' ,
-                'attendance_message' => 'required',
             ]);
               
             if($validator->fails()) {
@@ -584,214 +425,123 @@ class AttendanceController extends Controller
                 
                 $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
 
-                if(!empty($request_data->input('from_date')) && !empty($request_data->input('to_date'))){
-                    $attendance_date = $request_data->input('from_date').'  '.$request_data->input('to_date');
+                $get_employee_decoded = Employees::where('employee_id',$request_data->input('employee_code'))->get(['employee_name','employee_doj','employee_senior_manager','employee_junior_manager'])->toArray();
 
-                    if($request_data->input('from_date') < $login_user[0]['employee_doj']){
-                        return response()->json([
-                            'msg' => 'You can\'t apply attendance request before your joining date.',
-                            'status' => 'FALSE'
-                        ]);
-                    }
-                    
-                    $no_of_days = $this->count_days($request_data->input('from_date'),$request_data->input('to_date'));
-                  
-                    if(!empty($no_of_days) &&  $no_of_days > 30){
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "You can't apply request for more than 30 days at a time",
-                        ]);
-                    }
-                    for($i = 0; $i<$no_of_days; $i++){
-                    
-                        $request_attendance_date = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request_data->input('from_date'))));
+                $doj  = strtotime($get_employee_decoded[0]['employee_doj']);
 
-                        $checking_request = AttendanceRequest::where('request_employee_id', session('user_session'))->whereIn('request_attendance_date',[$request_attendance_date])->get(['request_attendance_date'])->toArray();
-                        
-                        $payroll_exists = $this->check_if_payroll_exist($request_attendance_date,session('user_session'),$custom_message = NULL);
+                if($request_data->input('attendance_date') < $doj){
+                    return response()->json([
+                        'msg' => 'You can\'t apply attendance request before your joining date.',
+                        'status' => 'FALSE'
+                    ]);
+                }
 
-                        if($payroll_exists['status'] == TRUE){
-                            return response()->json([
-                                'msg' => $payroll_exists['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
+                $payroll_exists = $this->check_if_payroll_exist($request_data->input('attendance_date'),$request_data->input('employee_code'),$custom_message = NULL);
 
-                        $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_attendance_date);
+                if($payroll_exists['status'] == TRUE){
+                    return response()->json([
+                        'msg' => $payroll_exists['msg'],
+                        'status' => 'FALSE'
+                    ]);
+                }
 
-                        if($check_attendance_sheet_availability['status'] == FALSE){
-                            return response()->json([
-                                'msg' => $check_attendance_sheet_availability['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
+                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('attendance_date'));
 
-                        foreach($checking_request as $request_date){
-                            
-                            $attendance_request_apply_date[] =  $request_date['request_attendance_date'];
-                        }
-                    
-                    }
-    
-                    if(!empty($checking_request)){
-
-                        $attendance_date = implode(' , ',$attendance_request_apply_date);
-
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "You've already applied requests for these dates ".$attendance_date,
-                        ]);
-                    }
-                   
-                }else{
-
-                    if($request_data->input('attendance_date') < $login_user[0]['employee_doj']){
-                        return response()->json([
-                            'msg' => 'You can\'t apply attendance request before your joining date.',
-                            'status' => 'FALSE'
-                        ]);
-                    }
-
-                    $payroll_exists = $this->check_if_payroll_exist($request_data->input('attendance_date'),session('user_session'),$custom_message = NULL);
-
-                    if($payroll_exists['status'] == TRUE){
-                        return response()->json([
-                            'msg' => $payroll_exists['msg'],
-                            'status' => 'FALSE'
-                        ]);
-                    }
-
-                    $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('attendance_date'));
-
-                    if($check_attendance_sheet_availability['status'] == FALSE){
-                        return response()->json([
-                            'msg' => $check_attendance_sheet_availability['msg'],
-                            'status' => 'FALSE'
-                        ]);
-                    }
-
-                    $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('attendance_date'));
-
-                    if($check_attendance_sheet_availability['status'] == FALSE){
-                        return response()->json([
-                            'msg' => $check_attendance_sheet_availability['msg'],
-                            'status' => 'FALSE'
-                        ]);
-                    }
-                  
-                    $attendance_date = $request_data->input('attendance_date');
-                   
-                    $checking_request = AttendanceRequest::where('request_employee_id', $request_data->input('employee_code'))->where('request_attendance_date', $request_data->input('attendance_date'))->where('request_approved_by_hr', '!=', 3)->get('attendance_request_id')->toArray();   
-                    
-                    if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
-                            
-                        $date = explode('-',$request_data->input('attendance_date'));
-                    
-                        $get_attendance_check_out_time = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$date[2])->where('att_for_month',$date[1])->where('att_for_year',$date[0])->get('attendance_id')->toArray();
-                        if(empty($get_attendance_check_out_time)){
-                            return response()->json([
-                                'status' => 'False',
-                                'msg' => "You can't request for check out on ". $request_data->input('attendance_date') ." beacuse you didn't mark the attendance.",
-                            ]);
-                        }
-
-                       
-                        $get_attendances = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where(function($query) use($manage_leaves){
-                        $query->where('att_check_overall_status','LIKE', '%Holiday%')
-                        ->orwhereIn('att_check_overall_status',$manage_leaves);
-                        })
-                        ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = "'.$request_data->input('attendance_date').'"')
-                        ->get(['attendance_id','att_check_overall_status'])->toArray();
-
-                        if(!empty($get_attendances)){
-                            return response()->json([
-                                'status' => 'False',
-                                'msg' => "You can't request on this date ". $request_data->input('attendance_date')." beacuse your attendanced already marked as " .$get_attendances[0]['att_check_overall_status'],
-                            ]);
-                        }   
-                    }
-                    
+                if($check_attendance_sheet_availability['status'] == FALSE){
+                    return response()->json([
+                        'msg' => $check_attendance_sheet_availability['msg'],
+                        'status' => 'FALSE'
+                    ]);
                 }
                 
-                if(empty($checking_request)){
-                   
-                    $get_employee_decoded = Employees::where('employee_id',$request_data->input('employee_code'))->get(['employee_name','employee_doj'])->toArray();
-                    $att_applying_date  = strtotime($request_data->input('attendance_date'));
-                    $doj  = strtotime($get_employee_decoded[0]['employee_doj']);
-
+                $attendance_date = $request_data->input('attendance_date');
                 
-                    if($att_applying_date >=  $doj){
-                        $day = date("d", strtotime($request_data->input('attendance_date')));
+                $checking_request = AttendanceRequest::where('request_employee_id', $request_data->input('employee_code'))->where('request_attendance_date', $attendance_date)->where('request_approved_by_hr', '!=', 3)->get('attendance_request_id')->toArray();   
 
-                        $month = date("m", strtotime($request_data->input('attendance_date')));
+                $day = date("d", strtotime($attendance_date));
+
+                $month = date("m", strtotime($attendance_date));
+                
+                $year = date("Y", strtotime($attendance_date));
+        
+                $attendance = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['attendance_id'])->toArray();
+
+                $employee_shift_start = $this->get_employee_today_shift($request_data->input('employee_code'),"in",$attendance_date);
+                $employees_shift_end_time = $this->get_employee_today_shift($request_data->input('employee_code'),"out",$attendance_date);
+                
+                if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
                         
-                        $year = date("Y", strtotime($request_data->input('attendance_date')));
+                    $date = explode('-',$request_data->input('attendance_date'));
                 
-                        $get_attendance = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['attendance_id'])->toArray();
-                
-                        $employee_shift_start = $this->get_employee_today_shift($request_data->input('employee_code'),"in",$request_data->input('attendance_date'));
-                        $employees_shift_end_time = $this->get_employee_today_shift($request_data->input('employee_code'),"out",$request_data->input('attendance_date'));
-
-                        if(empty($get_attendance)){
-                
-                            $update_attendance = new Attendance();
-                            $update_attendance->att_employee_id = $request_data->input('employee_code');
-                            $update_attendance->att_check_in_time =$employee_shift_start;
-                            $update_attendance->att_check_out_time = $employees_shift_end_time;
-                            $update_attendance->att_check_in_status = 1;
-                            $update_attendance->att_check_out_status = 1;
-                            $update_attendance->att_shift_start_time = $employee_shift_start;
-                            $update_attendance->att_shift_end_time = $employees_shift_end_time;
-                            $update_attendance->att_check_overall_status = $request_data->input('attendance_status');
-                            $update_attendance->att_for_date = $day;
-                            $update_attendance->att_for_month = $month;
-                            $update_attendance->att_for_year = $year;
-                            $update_attendance->att_check_in_source = 3;
-                            $update_attendance->att_check_out_source = 3;
-                            $process = $update_attendance->save();
-                        
-                             $attendance_req_time = new AttRequestTime();
-
-                            if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check In'){
-                                $attendance_req_time->attendance_req_id  = $attendance_request->attendance_request_id;
-                                $attendance_req_time->attendance_req_emp_id  = $login_user[0]['employee_id'];
-                                $attendance_req_time->attendance_checkin_time  = $request_data->input('check_in_time');
-                                $attendance_req_time->att_req_time_created_at  = date('h:i:s a d F, Y');
-
-                                $attendance_req_time->save();
-                            
-                            }
-                            if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
-                                $attendance_req_time->attendance_req_id  = $attendance_request->attendance_request_id;
-                                $attendance_req_time->attendance_req_emp_id  = $login_user[0]['employee_id'];
-                                $attendance_req_time->attendance_checkout_time  = $request_data->input('check_out_time');
-                                $attendance_req_time->att_req_time_created_at  = date('h:i:s a d F, Y');
-
-                                $attendance_req_time->save();
-                            }
-                        }
+                    $get_attendance_check_out_time = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$date[2])->where('att_for_month',$date[1])->where('att_for_year',$date[0])->get('attendance_id')->toArray();
+                    if(empty($get_attendance_check_out_time)){
+                        return response()->json([
+                            'status' => 'False',
+                            'msg' => "You can't request for check out on ". $request_data->input('attendance_date') ." beacuse you didn't mark the attendance.",
+                        ]);
                     }
+                    
+                    $get_attendances = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where(function($query) use($manage_leaves){
+                    $query->where('att_check_overall_status','LIKE', '%Holiday%')
+                    ->orwhereIn('att_check_overall_status',$manage_leaves);
+                    })
+                    ->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)
+                    ->get(['attendance_id','att_check_overall_status'])->toArray();
+
+                    if(!empty($get_attendances)){
+                        return response()->json([
+                            'status' => 'False',
+                            'msg' => "You can't request on this date ". $request_data->input('attendance_date')." beacuse your attendanced already marked as " .$get_attendances[0]['att_check_overall_status'],
+                        ]);
+                    }   
+                }
+              
+                if(empty($checking_request)){
+                        
+                    $attendance_request = new AttendanceRequest();
+                    $attendance_request->request_employee_id = $request_data->input('employee_code');
+                    $attendance_request->request_attendance_date = $request_data->input('attendance_date');
+                    $attendance_request->request_attendance_status = $request_data->input('attendance_type');
+                    $attendance_request->request_attendance_message = 'N/A';
+                    $attendance_request->request_approved_by_hr = '1';
+                    $attendance_request->request_submition_date = date('h:i:s a d F, Y');
+
+                    $process = $attendance_request->save();
+                    
+                    $attendance_req_time = new AttRequestTime();
+
+                    if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check In'){
+                        $attendance_req_time->attendance_req_id  = $attendance_request->attendance_request_id;
+                        $attendance_req_time->attendance_req_emp_id  = $request_data->input('employee_code');
+                        $attendance_req_time->attendance_checkin_time  = $employee_shift_start;
+                        $attendance_req_time->att_req_time_created_at  = date('h:i:s a d F, Y');
+
+                        $attendance_req_time->save();
+                    
+                    }
+                    if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
+                        $attendance_req_time->attendance_req_id  = $attendance_request->attendance_request_id;
+                        $attendance_req_time->attendance_req_emp_id  = $request_data->input('employee_code');
+                        $attendance_req_time->attendance_checkout_time  =  $employees_shift_end_time;
+                        $attendance_req_time->att_req_time_created_at  = date('h:i:s a d F, Y');
+
+                        $attendance_req_time->save();
+                    }
+                    
+                 
                     if($process == 1){
 
-                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
-                            $to_mngr1 = $login_user[0]['employee_senior_manager'];
+                        if(!empty($get_employee_decoded[0]['employee_senior_manager']) || $get_employee_decoded[0]['employee_senior_manager'] != ''){
+                            $to_mngr1 = $get_employee_decoded[0]['employee_senior_manager'];
                         }
-                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
-                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
-                        }
-                        
-                        if(!empty($request_data->input('from_date')) && !empty($request_data->input('to_date'))){
-                            $this->send_notification('New Attendance Request ', '' . $login_user[0]['employee_name']. ' applied for attendance request(s) as ('. $request_data->input('attendance_type') .') from '. $request_data->input('from_date').' to '.$request_data->input('to_date').'. Please click here to view.','attendance-requests?employee_id='.session('user_session').'&from_date='.$request_data->input('from_date').'&to_date='.$request_data->input('to_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
-
-                            $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Attendance Request','You\'ve successfully applied attendance request(s) and has been forwarded to your reporting authorities.');
-
-                        }else{
-                            $this->send_notification('New Attendance Request ', '' . $login_user[0]['employee_name']. ' applied for an attendance request as ('. $request_data->input('attendance_type') .') for the date of '. $request_data->input('attendance_date').'. Please click here to view.','attendance-requests?employee_id='.session('user_session').'&date='.$request_data->input('attendance_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
-
-                            $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Attendance Request','You\'ve successfully applied an attendance request and has been forwarded to your reporting authorities.');
-
+                        if(!empty($get_employee_decoded[0]['employee_junior_manager']) || $get_employee_decoded[0]['employee_junior_manager'] != ''){
+                            $to_mngr2 = $get_employee_decoded[0]['employee_junior_manager'];
                         }
                         
+                        $this->send_notification('New Attendance Request ', '' . $get_employee_decoded[0]['employee_name']. ' applied for an attendance request as ('. $request_data->input('attendance_type') .') for the date of '. $request_data->input('attendance_date').'. Please click here to view.','attendance-requests?employee_id='.$request_data->input('employee_code').'&date='.$request_data->input('attendance_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+
+                        $this->send_push_notification_mobile_app($get_employee_decoded, 'Attendance Request','You\'ve successfully applied an attendance request and has been forwarded to your reporting authorities.');
+
                         return response()->json([
                             'status' => 'TRUE',
                             'msg' => "Attendance request has been submitted. Please wait for response",
@@ -833,6 +583,7 @@ class AttendanceController extends Controller
         finally{
             ActivityTracker::track_activity('Create an Attendance Request');
         }
+
 		
     }
 
