@@ -17,7 +17,7 @@
             <div class="d-flex align-items-center gap-2 gap-lg-3">
                 @if(!empty($all_devices))
                     <div class="m-0">
-                        <a href="javascript:void(0)" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#download_modal_pdf">
+                        <a href="{{ url('employee-devices') }}?download=TRUE" class="btn btn-sm btn-success" method="GET">
                             <span class="svg-icon svg-icon-2">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
@@ -76,33 +76,33 @@
                                     @if(!empty($all_devices))
                                         @foreach($all_devices as $all_device)
                                             <tr>
-                                                <td class="ps-4">{{$all_device['employee_code']}} - {{$all_device['employee_name']}}</td>
-                                                <td> {{ $all_device['device_name']}}</td>
-                                                <td> {{ $all_device['device_token']}}</td>
+                                                <td class="ps-4">{{$all_device['Employee Code']}} - {{$all_device['Employee Name']}}</td>
+                                                <td> {{ $all_device['Device Name']}}</td>
+                                                <td> {{ $all_device['Device Token']}}</td>
                                                 <td>
-                                                    @if( $all_device['device_status'] == 1)
+                                                    @if( $all_device['Device Status'] == 1)
                                                         <span class="badge badge-light-success font-weight-bold">Active</span>
                                                     @else
                                                         <span class="badge badge-light-danger font-weight-bold">De-active</span>
 
                                                     @endif
                                                 </td>
-                                                <td> {{ $all_device['device_created_at']}}</td>
-                                                <td> {{ $all_device['device_updated_at']}}</td>
+                                                <td> {{ $all_device['Device Created At']}}</td>
+                                                <td> {{ $all_device['Deviced Updated At'] ?? 'N/A'}}</td>
 
                                                 <td>
 
-                                                    @if ($all_device['device_status'] == 1 )
+                                                    @if ($all_device['Device Status'] == 1 )
                                                         <i class="fa-regular fa-circle-check  text-success mx-2" style="font-size: 20px; cursor: not-allowed;" disabled></i>
                                                     @else
-                                                            <a href="#."  data-bs-toggle="modal" data-bs-target="#approverequest" onclick="deviceEditModel({{$all_device['device_id']}})">  <i class="fa-regular fa-circle-check  text-info mx-2" style="font-size: 20px; cursor: pointer;" data-bs-toggle="tooltip" data-bs-placement="top"  data-bs-title="Approve device" ></i>
+                                                            <a href="#."  data-bs-toggle="modal" data-bs-target="#approverequest" onclick="deviceEditModel({{$all_device['Device ID']}})">  <i class="fa-regular fa-circle-check  text-info mx-2" style="font-size: 20px; cursor: pointer;" data-bs-toggle="tooltip" data-bs-placement="top"  data-bs-title="Approve device" ></i>
                                                         </a>
                                                     @endif
 
-                                                    @if ($all_device['device_status'] == 2)
+                                                    @if ($all_device['Device Status'] == 2)
                                                         <i class="fa-regular fa-circle-xmark  text-danger mx-2" style="font-size: 20px; cursor: not-allowed;" disabled></i>
                                                     @else
-                                                        <a href="#." data-bs-toggle="modal"  data-bs-target="#disapproverequest" onclick="deviceModel({{$all_device['device_id']}})"><i class="fa-regular fa-circle-xmark   text-warning mx-2" style="font-size: 20px;cursor: pointer;" data-bs-toggle="tooltip" data-bs-placement="top"  data-bs-title="Disapprove device"></i></a>
+                                                        <a href="#." data-bs-toggle="modal"  data-bs-target="#disapproverequest" onclick="deviceModel({{$all_device['Device ID']}})"><i class="fa-regular fa-circle-xmark   text-warning mx-2" style="font-size: 20px;cursor: pointer;" data-bs-toggle="tooltip" data-bs-placement="top"  data-bs-title="Disapprove device"></i></a>
 
                                                     @endif
                                                 </td>
@@ -124,55 +124,6 @@
         </div>
 
     </div>
-
-    <form class="form" id="downloadbutton" action="{{ url('employee-devices/employee-devices-download') }}" method="POST">
-        @csrf
-        <div class="modal fade" id="download_modal_pdf"uploaddex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-scrollable mw-650px">
-                <div class="modal-content rounded">
-
-                    <div class="modal-header">
-                        <h4 class="modal-title pl-4">Download Employee Device Details</h4>
-                        <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
-                            <span class="svg-icon svg-icon-1">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
-                            </svg>
-                        </span>
-                        </button>
-                    </div>
-
-                    <div class="modal-body">
-
-                        <div class="row g-8">
-
-                            <div class="col-md-12 mt-3 fv-row">
-                                <p onselectstart="javascript:return false;" >This action required a security check. If you want to download employee(s) device detail,
-                                Please type <b>TODP-ID</b> (case sensitive) to confirm.</p>
-                                <input type="text" class="form-control " name="confirmation_code" placeholder="Enter Confirmation Code" required="required" autocomplete="off" onpaste="return false" >
-                            </div>
-
-                            <div class="col-md-12 mt-3 fv-row text-center">
-                                <span class="d-none text-danger" id="download_message">
-                                    Please wait, PDF file generation is in process. It may take a while.
-                                </span>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="modal-footer justify-content-center">
-                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" id="download_btn" class="btn btn-primary">
-                            <span class="indicator-label">Download</span>
-                            <span class="indicator-progress">Please wait...
-                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
 </div>
 
       {{----Approve Request Modal--}}

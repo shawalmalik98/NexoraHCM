@@ -41,9 +41,9 @@
                     </a>
                 </div> --}}
                 
-               {{-- @if(!empty($attendance))
+                @if(!empty($attendance))
                     <div class="m-0">
-                        <a href="javascript:void(0)" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#download_modal_pdf">											
+                        <a href="{{ url('download-daily-attendance') }}" class="btn btn-sm btn-success" method="GET">											
                             <span class="svg-icon svg-icon-2">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
@@ -53,7 +53,7 @@
                             Download Daily Attendance Report
                         </a>  
                     </div>
-                @endif --}} 
+                @endif 
             
             </div>
             
@@ -261,22 +261,22 @@
                                         @if (!empty($attendance))
                                         
                                             @foreach ($attendance as $attendances)
-                                                @php $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[]; @endphp
+                                                @php $attendances['Employee Offdays'] = (!empty($attendances['Employee Offdays'])) ? explode(",",$attendances['Employee Offdays']):[]; @endphp
                                                 @php $absent = true;@endphp
 
                                                 <tr>
-                                                    <td class="ps-8">{{ $attendances['employee_code'] }} - {{ $attendances['employee_name'] }} </td>
+                                                    <td class="ps-8">{{ $attendances['Employee Code'] }} - {{ $attendances['Employee Name'] }} </td>
                                                     <td class="text-center">
-                                                        @if($attendances['department_name'] != '')
-                                                            <p class="text-dark fw-bold mb-1 fs-6"> {{ $attendances['department_name'] }}</p>
-                                                            <p class="text-muted fw-semibold text-muted fs-7">{{$attendances['designation_name'] }}</p>
+                                                        @if($attendances['Department Name'] != '')
+                                                            <p class="text-dark fw-bold mb-1 fs-6"> {{ $attendances['Department Name'] }}</p>
+                                                            <p class="text-muted fw-semibold text-muted fs-7">{{$attendances['Designation Name'] }}</p>
                                                         @else
                                                             Not Available
                                                         @endif
                                                     
                                                     </td>
                                                     <td class="text-center"> 
-                                                        {{ $attendances['business_unit'] ?? '-' }}
+                                                        {{ $attendances['Business Unit'] ?? '-' }}
                                                     </td>
 
                                                     <td  class="text-center"> 
@@ -310,7 +310,7 @@
                                                         @endphp
                                                         
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
+                                                            @if(in_array($name_of_day,$attendances['Employee Offdays']) )
                                                             00:00:00
                                                             @elseif($date_filter< $today)
                                                                 -
@@ -353,7 +353,7 @@
                                                         @endphp
                                                         
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
+                                                            @if(in_array($name_of_day,$attendances['Employee Offdays']) )
                                                                 00:00:00
                                                             @elseif($date_filter< $today)
                                                                 - 
@@ -394,7 +394,7 @@
                                                         @endphp
                                                         
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
+                                                            @if(in_array($name_of_day,$attendances['Employee Offdays']) )
                                                                 00:00:00
                                                             @elseif($date_filter< $today)
                                                                 -
@@ -445,7 +445,7 @@
                                                         @endphp
                                                 
                                                         @if($absent )
-                                                            @if(in_array($name_of_day,$attendances['employee_offdays']) )
+                                                            @if(in_array($name_of_day,$attendances['Employee Offdays']) )
                                                                 @php $offdays++; @endphp
                                                                 <p class="text-warning">
                                                                 <i class="fa-solid fa-sun text-warning marked-attendance" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Off Day"></i> -- Off Day</p>

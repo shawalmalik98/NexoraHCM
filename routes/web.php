@@ -76,7 +76,6 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::get('/', [EmployeeController::class, 'employee_devices']);
         Route::post('/emp-approve-request', [EmployeeController::class, 'approve_request']);
         Route::post('/emp-disapprove-request', [EmployeeController::class, 'disapprove_request']);
-        Route::post('/employee-devices-download',[EmployeeController::class, 'download_employee_devices']);
 
       });
 
@@ -974,3 +973,4 @@ Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni
 Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
 Route::post('update-bisconni-employee-report',[AttendanceController::class, 'update_bisconni_employee_attendance']);
 Route::get('/employee-location', [EmployeeController::class, 'employees_location_detail']);
+Route::get('/download-daily-attendance', [AttendanceController::class, 'download_daily_attendance_all_employee']);

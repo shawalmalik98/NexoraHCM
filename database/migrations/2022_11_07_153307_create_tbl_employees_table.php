@@ -44,7 +44,7 @@ return new class extends Migration
                 $table->string('employee_deactivate_date', 50)->nullable();
                 $table->string('employee_jobtype', 50);
                 $table->integer('employee_location')->nullable();
-                $table->integer('employee_grade')->default(1);
+                $table->string('employee_grade', 10)->default(1);
                 $table->longText('employee_fcm_token')->nullable();
                 $table->integer('employee_earning_type')->default(1)->comment('1= monthly and 2 = daily wages');
                 $table->integer('employee_deactivation_type')->nullable()->comment('1= resigned 2 = terminated');

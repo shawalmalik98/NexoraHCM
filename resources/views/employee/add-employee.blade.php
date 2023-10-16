@@ -141,6 +141,7 @@
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_marital_status">
                                     <option value="">Select Marital Status</option>
                                     <option value="Single">Single</option>
+                                    <option value="Engaged">Engaged</option>
                                     <option value="Married">Married</option>
                                     <option value="Widowed">Widowed</option>
                                     <option value="Separated">Separated</option>

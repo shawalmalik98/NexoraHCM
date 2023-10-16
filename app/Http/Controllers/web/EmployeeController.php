@@ -3157,7 +3157,7 @@ class EmployeeController extends Controller
         }
     }
 
-    protected function employee_devices(){
+    protected function employee_devices(Request $request){
 
         try{
 
@@ -3165,11 +3165,24 @@ class EmployeeController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
-            $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')->where('device_status','!=','2')->get(['device_id','device_employee_id','device_name','device_token','device_status','device_created_at','device_updated_at','employee_code','employee_name'])->toArray();
+            $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
+            ->where('device_status','!=','2')
+            ->get(['device_id as Device ID','device_name as Device Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name'])->toArray();
         
             $send_data = compact('title','login_user','all_devices');
 
-            return view('employee.employee-devices', $send_data);
+            if($request->download == 'TRUE'){
+
+                $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->where('device_status','!=','2')
+                ->get(['employee_code as Employee Code','employee_name as Employee Name','department_name as Department Name','designation_name as Designation Name','business_unit as Business Unit','device_name as Device Name / Model','device_token as Device Unique ID','device_created_at as App Download Time'])->toArray();
+
+                return (new FastExcel($all_devices))->download('Employee-devices.xlsx');
+            }else{
+                return view('employee.employee-devices', $send_data);
+            }
+
         }catch(\Exception $e){
 
             $this->create_error_log('Employee devices', $e);
@@ -3184,47 +3197,47 @@ class EmployeeController extends Controller
 
     }
 
-    protected function download_employee_devices(Request $request){
+    // protected function download_employee_devices(Request $request){
 
-        try{
+    //     try{
 
-            $security_variable = FALSE;
+    //         $security_variable = FALSE;
 
-            $validator = Validator::make($request->all(), [
-                'confirmation_code' => ['required']
-            ]);
+    //         $validator = Validator::make($request->all(), [
+    //             'confirmation_code' => ['required']
+    //         ]);
 
-            $login_user = $this->get_login_user_detail();
+    //         $login_user = $this->get_login_user_detail();
 
-            $confirmation_code = 'TODP-'.$login_user[0]['employee_code'];
+    //         $confirmation_code = 'TODP-'.$login_user[0]['employee_code'];
 
-            if($confirmation_code === $request->input('confirmation_code') && $validator->fails() == FALSE){
-                $security_variable = TRUE;
-            }
-            else{
-                return "<script>alert('You have enterd incorrect information. Please try again.'); window.location.href = '/employee-devices';</script>";
-            }
-            $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_employees_devices.device_employee_id')->get(['employee_id','employee_code','employee_name','device_id','device_employee_id','device_name','device_token','device_status','device_created_at','device_updated_at'])->toArray();
+    //         if($confirmation_code === $request->input('confirmation_code') && $validator->fails() == FALSE){
+    //             $security_variable = TRUE;
+    //         }
+    //         else{
+    //             return "<script>alert('You have enterd incorrect information. Please try again.'); window.location.href = '/employee-devices';</script>";
+    //         }
+    //         $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_employees_devices.device_employee_id')->get(['employee_id','employee_code','employee_name','device_id','device_employee_id','device_name','device_token','device_status','device_created_at','device_updated_at'])->toArray();
 
-            $send_data = compact('login_user','all_devices');
+    //         $send_data = compact('login_user','all_devices');
 
-            if($security_variable == TRUE){
+    //         if($security_variable == TRUE){
 
-                $pdf = Pdf::loadView('employee.download-employee-devices-pdf',$send_data);
-                return $pdf->setPaper('a3', 'landscape')->stream('All Employee(s) Device details'.'.pdf');
-            }
-        }catch(\Exception $e){
+    //             $pdf = Pdf::loadView('employee.download-employee-devices-pdf',$send_data);
+    //             return $pdf->setPaper('a3', 'landscape')->stream('All Employee(s) Device details'.'.pdf');
+    //         }
+    //     }catch(\Exception $e){
 
-            $this->create_error_log('Download Employee devices pdf', $e);
-            return view('errors.500');
+    //         $this->create_error_log('Download Employee devices pdf', $e);
+    //         return view('errors.500');
 
-        }finally{
+    //     }finally{
 
-            ActivityTracker::track_activity('Download Employee devices Report pdf');
+    //         ActivityTracker::track_activity('Download Employee devices Report pdf');
 
-        }
+    //     }
 
-    }
+    // }
 
     protected function approve_request(Request $request){
 

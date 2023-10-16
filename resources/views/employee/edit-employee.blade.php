@@ -135,6 +135,7 @@
                                 <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_marital_status">
                                     <option value="">Select Marital Status</option>
                                     <option value="Single" @if($employee_bank[0]['maritalstatus'] == 'Single') selected @endif>Single</option>
+                                    <option value="Engaged" @if($employee_bank[0]['maritalstatus'] == 'Engaged') selected @endif>Engaged</option>
                                     <option value="Married" @if($employee_bank[0]['maritalstatus'] == 'Married') selected @endif>Married</option>
                                     <option value="Widowed" @if($employee_bank[0]['maritalstatus'] == 'Widowed') selected @endif>Widowed</option>
                                     <option value="Separated" @if($employee_bank[0]['maritalstatus'] == 'Separated') selected @endif>Separated</option>
