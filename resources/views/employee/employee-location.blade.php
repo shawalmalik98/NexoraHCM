@@ -130,7 +130,7 @@
 
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="location_datatable" aria-describedby="tableEmployee_info">
 
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -151,7 +151,7 @@
                                                     <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee_location['Department'] }}</p>
                                                     <p class="text-muted fw-semibold text-muted fs-7">{{$employee_location['Designation'] }}</p>
                                                 </td>
-                                                <td>{{ $employee_location['Business unit'] }}</td>
+                                                <td>{{ $employee_location['Business unit'] ?? '-' }}</td>
                                                 <td>{{ $employee_location['Location title'] }}</td>
                                                 <td>{{ $employee_location['Location latitude'] }}</td>
                                                 <td>{{ $employee_location['Location longitude'] }}</td>
@@ -165,8 +165,6 @@
 
                     </div>
 
-
-
                 </div>
             </div>
 
@@ -176,3 +174,21 @@
 </div>
 
 @endsection
+
+@push('js-link')
+<script>
+    $(function () {
+        dataTable = $('#location_datatable').DataTable({
+            order: false,
+            search: { regex: true },
+            aLengthMenu: [
+                [10, 25, 50, 100, -1],
+                [10, 25, 50, 100, "All"]
+            ],
+            iDisplayLength: 100
+
+        });
+    });    
+</script>
+@endpush
+
