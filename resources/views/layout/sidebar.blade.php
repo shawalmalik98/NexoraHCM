@@ -69,7 +69,7 @@
                         </a>
                     </div>
                    
-                    @if(!empty($permission) && ($permission[12]['permission_status'] == 1 || $permission[13]['permission_status'] == 1 || $permission[14]['permission_status'] == 1  ||  $permission[15]['permission_status'] == 1 ||  $permission[52]['permission_status'] == 1 || $permission[66]['permission_status'] == 1 || $permission[73]['permission_status'] == 1) && ($permission[12]['module_accessibility'] == 1 || $permission[13]['module_accessibility'] == 1 || $permission[14]['module_accessibility'] == 1  ||  $permission[15]['module_accessibility'] == 1 ||  $permission[52]['module_accessibility'] == 1 || $permission[66]['module_accessibility'] == 1 || $permission[73]['module_accessibility'] == 1))
+                    @if(!empty($permission) && ($permission[12]['permission_status'] == 1 || $permission[79]['permission_status'] == 1 || $permission[13]['permission_status'] == 1 || $permission[14]['permission_status'] == 1  ||  $permission[15]['permission_status'] == 1 ||  $permission[52]['permission_status'] == 1 || $permission[66]['permission_status'] == 1 || $permission[73]['permission_status'] == 1) && ($permission[12]['module_accessibility'] == 1 || $permission[79]['module_accessibility'] == 1|| $permission[13]['module_accessibility'] == 1 || $permission[14]['module_accessibility'] == 1  ||  $permission[15]['module_accessibility'] == 1 ||  $permission[52]['module_accessibility'] == 1 || $permission[66]['module_accessibility'] == 1 || $permission[73]['module_accessibility'] == 1))
 
                         <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'employee' || $title == 'employee-managers' || $title == 'birthdays' || $title == 'work-anniversay' || $title == 'employee-devices' || $title == 'employee-bank' || $title == 'employment-group') show @endif">
 
@@ -109,6 +109,20 @@
                                     </div>
 
                                 @endif
+
+                                {{-- @if(!empty($permission) && $permission[79]['module_accessibility'] == 1 && $permission[79]['permission_status'] == 1) --}}
+
+                                    <div class="menu-item search-item">
+                                        <a class="menu-link @if($title == 'employee-location') active @endif" href="{{ url('/employee-location') }}">
+                                            <span class="menu-bullet">
+                                                <i class="far fa-circle nav-icon"></i>
+                                            </span>
+
+                                            <span class="menu-title ">Employees Location</span>
+                                        </a>
+                                    </div>
+
+                                 {{-- @endif --}}
 
 
 
@@ -628,7 +642,7 @@
 
                     @endif
 
-                    @if(!empty($permission) && ($permission[27]['permission_status'] == 1 || $permission[5]['permission_status'] == 1 || $permission[9]['permission_status'] == 1 || $permission[43]['permission_status'] == 1 || $permission[47]['permission_status'] == 1 || $permission[48]['permission_status'] == 1 || $permission[28]['permission_status'] == 1 || $permission[29]['permission_status'] == 1 || $permission[55]['permission_status'] == 1 || $permission[58]['permission_status'] == 1|| $permission[68]['permission_status'] == 1 || $permission[75]['permission_status'] == 1 || $permission[78]['permission_status'] == 1  ) && ($permission[27]['module_accessibility'] == 1 || $permission[5]['module_accessibility'] == 1 || $permission[9]['module_accessibility'] == 1 || $permission[43]['module_accessibility'] == 1 || $permission[47]['module_accessibility'] == 1 || $permission[48]['module_accessibility'] == 1 || $permission[28]['module_accessibility'] == 1 || $permission[29]['module_accessibility'] == 1 || $permission[55]['module_accessibility'] == 1 || $permission[58]['module_accessibility'] == 1 || $permission[68]['module_accessibility'] == 1 || $permission[75]['module_accessibility'] == 1 || $permission[78]['permission_status'] == 1))
+                    @if(!empty($permission) && ($permission[27]['permission_status'] == 1 || $permission[5]['permission_status'] == 1 || $permission[9]['permission_status'] == 1 || $permission[43]['permission_status'] == 1 || $permission[47]['permission_status'] == 1 || $permission[48]['permission_status'] == 1 || $permission[28]['permission_status'] == 1 || $permission[29]['permission_status'] == 1 || $permission[55]['permission_status'] == 1 || $permission[58]['permission_status'] == 1|| $permission[68]['permission_status'] == 1 || $permission[75]['permission_status'] == 1 || $permission[78]['permission_status'] == 1  ) && ($permission[27]['module_accessibility'] == 1 || $permission[5]['module_accessibility'] == 1 || $permission[9]['module_accessibility'] == 1 || $permission[43]['module_accessibility'] == 1 || $permission[47]['module_accessibility'] == 1 || $permission[48]['module_accessibility'] == 1 || $permission[28]['module_accessibility'] == 1 || $permission[29]['module_accessibility'] == 1 || $permission[55]['module_accessibility'] == 1 || $permission[58]['module_accessibility'] == 1 || $permission[68]['module_accessibility'] == 1 || $permission[75]['module_accessibility'] == 1 || $permission[78]['module_accessibility'] == 1))
                     
                         <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'my-payroll' || $title == 'all-salary-request' || $title == 'my-salary-request' || $title == 'Tax Slab' || $title == 'Tax Collection' || $title == 'cash' || $title == 'expense' || $title == 'employee-expense' || $title == 'my-expense' || $title == 'My Payslip' || $title == 'daily-wages' || $title == 'deduction policy' || $title == 'employee_funds') show @endif">
 

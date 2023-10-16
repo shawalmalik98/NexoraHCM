@@ -31,6 +31,7 @@ class EmployeeController extends Controller
     const EMP_STATUS = 'employment-status';
     const EMP_GROUP = 'employment-group';
     const PERSONAL_ASSETS = 'employee-company-assets';
+    const EMP_LOCATION = 'employee-location';
 
 
     protected function index(Request $request){
@@ -5235,6 +5236,58 @@ class EmployeeController extends Controller
 
         // }
     }
+
+    protected function employees_location_detail(Request $request){
+
+        try{
+            $title = Self::EMP_LOCATION;
+
+            $login_user = $this->get_login_user_detail();
+
+            $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
+
+            if($request->emp_status == "2"){
+                $status = 0;
+            }else{
+                $status = 1;
+            }
+
+            $where_clause = '1=1' ;
+
+            if(!empty($request->employee_location)){
+                $where_clause .= " AND location_id = '".$request->employee_location."'";
+
+            }
+
+            $employee_location_detail = Employees::where('employee_isactive','=',$status)
+            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->join('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+            ->join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
+            ->whereRaw($where_clause)
+            ->get(['employee_code as Employee ID','employee_name as Employee Name', 'department_name as Department', 'designation_name as Designation', 'business_unit as Business unit', 'location_title as Location title', 'location_latitude as Location latitude', 'location_longitude as Location longitude'])->toArray();
+
+            $send_data = compact('title','login_user','employee_location_detail','employee_locations');
+
+            if($request->download == 'TRUE'){
+                return (new FastExcel($employee_location_detail))->download('Employee-locations.xlsx');
+            }else{
+                return view('employee.employee-location', $send_data);
+            }
+
+        }
+        catch(\Exception $e){
+
+            $this->create_error_log('View All Employees Location Details', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+
+        }finally{
+
+            ActivityTracker::track_activity('View All Employees Location Details');
+
+        }
+	}
 
     protected function employees_bank_detail(Request $request){
 

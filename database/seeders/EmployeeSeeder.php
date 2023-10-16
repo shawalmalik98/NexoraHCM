@@ -188,7 +188,8 @@ class EmployeeSeeder extends Seeder
                 '/deduction-policy',
                 '/companies',
                 '/funds',
-                '/employee-fund'
+                '/employee-fund',
+                '/employee-location'
             ];
             foreach($permissionRecords as $permission){
                 DB::table('tbl_employee_permission')->insert([
