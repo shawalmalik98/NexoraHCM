@@ -15,6 +15,7 @@ use DatePeriod,DateTime,DateInterval;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\File;
 use Rap2hpoutre\FastExcel\FastExcel;
+use OpenSpout\Common\Entity\Style\Style;
 
 class AttendanceController extends Controller
 {   
@@ -1424,16 +1425,18 @@ class AttendanceController extends Controller
                 'department_name as Department Name',
                 'designation_name as Designation Name',
                 'business_unit as Business Unit',
-                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN 'absent' ELSE att_check_overall_status END as AttendanceStatus"),
-                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_in_time END as CheckinTime"),
-                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_out_time END as CheckoutTime"),
-                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE CONCAT(tbl_attendance.att_for_year, '-', tbl_attendance.att_for_month, '-', tbl_attendance.att_for_date) END as date"),
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN 'absent' ELSE att_check_overall_status END as 'Attendance Status' "),
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_in_time END as 'Checkin Time' "),
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_out_time END as 'Checkout Time' "),
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE CONCAT(tbl_attendance.att_for_year, '-', tbl_attendance.att_for_month, '-', tbl_attendance.att_for_date) END as 'Attendance Date' "),
             ])
             ->orderBy('Employee Code')
             ->get()
             ->toArray();
 
-            return (new FastExcel($all_employees))->download('Download-Daily-attendance-report.xlsx');
+            $header_style = (new Style())->setFontBold();
+
+            return (new FastExcel($all_employees))->headerStyle($header_style)->download('Download-Daily-attendance-report.xlsx');
 
         }catch(\Exception $e){
 

@@ -14,6 +14,7 @@ use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDoc
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee, MailTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
+use OpenSpout\Common\Entity\Style\Style;
 use DateTime;
 
 class EmployeeController extends Controller
@@ -3178,7 +3179,9 @@ class EmployeeController extends Controller
                 ->where('device_status','!=','2')
                 ->get(['employee_code as Employee Code','employee_name as Employee Name','department_name as Department Name','designation_name as Designation Name','business_unit as Business Unit','device_name as Device Name / Model','device_token as Device Unique ID','device_created_at as App Download Time'])->toArray();
 
-                return (new FastExcel($all_devices))->download('Employee-devices.xlsx');
+                $header_style = (new Style())->setFontBold();
+
+                return (new FastExcel($all_devices))->headerStyle($header_style)->download('Employee-devices.xlsx');
             }else{
                 return view('employee.employee-devices', $send_data);
             }
@@ -5241,7 +5244,8 @@ class EmployeeController extends Controller
             $send_data = compact('title','login_user','employee_location_detail','employee_locations');
 
             if($request->download == 'TRUE'){
-                return (new FastExcel($employee_location_detail))->download('Employee-locations.xlsx');
+                $header_style = (new Style())->setFontBold();
+                return (new FastExcel($employee_location_detail))->headerStyle($header_style)->download('Employee-locations.xlsx');
             }else{
                 return view('employee.employee-location', $send_data);
             }
