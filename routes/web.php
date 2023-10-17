@@ -141,9 +141,10 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
       Route::prefix('/daily-attendance-report')->group(function () {
 
         Route::get('/',[AttendanceController::class, 'get_employee_daily_attendance']);
-        Route::post('/attendance-report-download', [AttendanceController::class, 'download_employee_daily_attendance']);
         Route::post('/upload-attendance-report',[AttendanceController::class, 'upload_attendance_record']);
         Route::post('/export-attendance-data', [AttendanceController::class , 'export_data_into_dat_file']);
+        Route::get('/download-daily-attendance', [AttendanceController::class, 'download_daily_attendance_all_employee']);
+
       });
 
       //AttendanceController End
@@ -973,4 +974,3 @@ Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni
 Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
 Route::post('update-bisconni-employee-report',[AttendanceController::class, 'update_bisconni_employee_attendance']);
 Route::get('/employee-location', [EmployeeController::class, 'employees_location_detail']);
-Route::get('/download-daily-attendance', [AttendanceController::class, 'download_daily_attendance_all_employee']);

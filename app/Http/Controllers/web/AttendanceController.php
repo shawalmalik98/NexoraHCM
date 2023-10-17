@@ -1400,123 +1400,44 @@ class AttendanceController extends Controller
         }   
     }
 
-    // protected function download_employee_daily_attendance(Request $request){
-
-    //     try{
-
-    //         $security_variable = FALSE;
-
-    //         $validator = Validator::make($request->all(), [
-    //             'confirmation_code' => ['required']
-    //         ]);
-
-    //         $login_user = $this->get_login_user_detail();
-
-    //         $confirmation_code = 'TODP-'.$login_user[0]['employee_code'];
-
-    //         if($confirmation_code === $request->input('confirmation_code') && $validator->fails() == FALSE){
-    //             $security_variable = TRUE;
-    //         }
-    //         else{
-    //             return "<script>alert('You have enterd incorrect information. Please try again.'); window.location.href = '/daily-attendance-report';</script>";
-    //         }
-
-    //         $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
-
-    //         $where_clause = '1=1';
-    //         if(!empty($request->employee_location)){
-    //             $where_clause   .= ' AND employee_location = "'.$request->employee_location.'"'; 
-    //         }
-            
-    //         if(empty($request->is_active)){
-    //             $where_clause   .= " AND employee_isactive = '1'";
-    //         }else{
-    //             if(!empty($request->is_active) && $request->is_active == 1){
-    //                 $where_clause   .= " AND employee_isactive = '1'";
-    //             }
-    //             elseif(!empty($request->is_active) && $request->is_active == 2){
-    //                 $where_clause   .= " AND employee_isactive = '0'";
-    //             }
-    //         }
-            
-
-    //         $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-    //         array_push($manage_leaves,'RPL');
-    //         if(!empty($request->input('d'))){
-                
-    //             $date = date('d', strtotime($request->input('d')));
-    //             $month = date('m', strtotime($request->input('d')));
-    //             $year = date('Y', strtotime($request->input('d')));
-
-               
-    //             $t_employee_leaves = Employees::join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_for_date'=>$date,'att_for_month'=>$month,'att_for_year'=>$year])->whereRaw($where_clause)->whereIn('att_check_overall_status',$manage_leaves)->count();
-               
-    //             $attendance =  $this->daily_attendance_all_employee($date,$month,$year,$where_clause);
-                
-    //         }else{
-                
-    //             $date = date('d');
-    //             $month = date('m');
-    //             $year = date('Y');
-
-    //             $t_employee_leaves = Employees::join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_for_date'=>date('d'),'att_for_month'=>date('m'),'att_for_year'=>date('Y')])->whereRaw($where_clause)->whereIn('att_check_overall_status' , $manage_leaves)->count();
-                
-    //             $attendance =  $this->daily_attendance_all_employee($date,$month,$year,$where_clause);
-                
-    //         }
-            
-    //         $leave_name = implode(',',$manage_leaves);
-           
-    //         $send_data = compact('attendance','t_employee_leaves','manage_leaves');
-
-    //         if($security_variable == TRUE){
-               
-    //             $pdf = Pdf::loadView('attendance.download-daily-attendance-report-pdf', $send_data);
-    //             return $pdf->setPaper('a3', 'potrait')->stream('All Employee(s) daily attendance'.'.pdf');
-    //         }
-            
-    //     }catch(\Exception $e){
-
-    //         $this->create_error_log('Download Daily Attendance Report All Employee pdf', $e);
-    //         return view('errors.500');
-    //     }finally{
-
-    //         ActivityTracker::track_activity('Download Daily Attendance Report All Employee pdf');
- 
-    //     }
-
-    // }
-
-    protected function download_daily_attendance_all_employee(){
+    protected function download_daily_attendance_all_employee(Request $request){
         try{
-
             
+            if(!empty($request->input('d'))){
+                $date = date('d', strtotime($request->input('d')));
+            }else{
+                $date = date('d');
+            } 
+
             $all_employees = Employees::
-            leftjoin('tbl_attendance','tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
-            ->leftjoin('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')
-            ->leftjoin('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')
-            ->where('att_for_date',date('d'))
-            // ->where('att_for_month',date('m'))
-            // ->where('att_for_year',date('Y'))
-            ->get([
-                'employee_id as Employee ID',
+            leftJoin('tbl_attendance', function($join) use ($date) {
+                $join->on('tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id');
+                $join->where('tbl_attendance.att_for_date', $date);
+               
+            })
+            ->leftjoin('tbl_departments', 'tbl_employees.employee_department', '=', 'tbl_departments.department_id')
+            ->leftjoin('tbl_designations', 'tbl_employees.employee_designation', '=', 'tbl_designations.designation_id')
+            ->select([
                 'employee_code as Employee Code',
                 'employee_name as Employee Name',
                 'employee_offdays as Employee Offdays',
                 'department_name as Department Name',
                 'designation_name as Designation Name',
                 'business_unit as Business Unit',
-                // 'att_check_in_time as Checkin Time',
-                // 'att_check_out_time as Checkout Time',
-                // 'att_check_overall_status as Attendance Status'
-            ])->toArray();
-            // dd($all_employees);
-        
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN 'absent' ELSE att_check_overall_status END as AttendanceStatus"),
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_in_time END as CheckinTime"),
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_out_time END as CheckoutTime"),
+                DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE CONCAT(tbl_attendance.att_for_year, '-', tbl_attendance.att_for_month, '-', tbl_attendance.att_for_date) END as date"),
+            ])
+            ->orderBy('Employee Code')
+            ->get()
+            ->toArray();
+
             return (new FastExcel($all_employees))->download('Download-Daily-attendance-report.xlsx');
 
         }catch(\Exception $e){
 
-            $this->create_error_log('download Attendance Report All Employee ', $e);
+            $this->create_error_log('download Attendance Report All Employee', $e);
            
             return view('errors.500');
 
@@ -1534,7 +1455,6 @@ class AttendanceController extends Controller
         join('tbl_departments','tbl_employees.employee_department','=','tbl_departments.department_id')
         ->join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')
         ->whereRaw($where_clause)
-        ->limit(600)
         ->get(['employee_id as Employee ID','employee_code as Employee Code','employee_name as Employee Name','employee_offdays as Employee Offdays','department_name as Department Name','designation_name as Designation Name','business_unit as Business Unit'])->toArray();
 		
        

@@ -227,7 +227,7 @@
                                                     <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee['department_name'] }}</p>
                                                     <p class="text-muted fw-semibold text-muted fs-7">{{$employee['designation_name'] }}</p>
                                                 </td>
-                                                <td>{{ $employee['business_unit'] }}</td>
+                                                <td>{{ $employee['business_unit'] ?? '-' }}</td>
                                                 <td>
                                                     @if($employee['employee_is_manager'] != '' && $employee['employee_is_manager'] == 1)
                                                         <span class="badge badge-light-success font-weight-bold">Yes, Given</span>

@@ -3197,48 +3197,6 @@ class EmployeeController extends Controller
 
     }
 
-    // protected function download_employee_devices(Request $request){
-
-    //     try{
-
-    //         $security_variable = FALSE;
-
-    //         $validator = Validator::make($request->all(), [
-    //             'confirmation_code' => ['required']
-    //         ]);
-
-    //         $login_user = $this->get_login_user_detail();
-
-    //         $confirmation_code = 'TODP-'.$login_user[0]['employee_code'];
-
-    //         if($confirmation_code === $request->input('confirmation_code') && $validator->fails() == FALSE){
-    //             $security_variable = TRUE;
-    //         }
-    //         else{
-    //             return "<script>alert('You have enterd incorrect information. Please try again.'); window.location.href = '/employee-devices';</script>";
-    //         }
-    //         $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_employees_devices.device_employee_id')->get(['employee_id','employee_code','employee_name','device_id','device_employee_id','device_name','device_token','device_status','device_created_at','device_updated_at'])->toArray();
-
-    //         $send_data = compact('login_user','all_devices');
-
-    //         if($security_variable == TRUE){
-
-    //             $pdf = Pdf::loadView('employee.download-employee-devices-pdf',$send_data);
-    //             return $pdf->setPaper('a3', 'landscape')->stream('All Employee(s) Device details'.'.pdf');
-    //         }
-    //     }catch(\Exception $e){
-
-    //         $this->create_error_log('Download Employee devices pdf', $e);
-    //         return view('errors.500');
-
-    //     }finally{
-
-    //         ActivityTracker::track_activity('Download Employee devices Report pdf');
-
-    //     }
-
-    // }
-
     protected function approve_request(Request $request){
 
 		try{
