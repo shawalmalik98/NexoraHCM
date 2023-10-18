@@ -27,7 +27,7 @@
                         Distributors Location Import
                     </a>
                 </div>
-                {{-- <div class="m-0">
+                <div class="m-0">
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#location_information_upload">
                          <span class="svg-icon svg-icon-2">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -35,9 +35,9 @@
                                 <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
                             </svg>
                         </span>										
-                        Update Location Records
+                        Update Employee Location Records
                     </a>
-                </div> --}}
+                </div>
                 
                 <div class="m-0">
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addlocation">											
@@ -356,7 +356,7 @@
                 </div>
             </div>
 
-            {{-- <form class="form" id="employee_location_update">
+            <form class="form" id="employee_location_update">
                 @csrf	
                 <div class="modal fade" id="location_information_upload" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-scrollable mw-650px">
@@ -397,9 +397,9 @@
                         </div>
                     </div>
                 </div>
-            </form> --}}
+            </form>
 
-            {{-- <form class="form" id="employee_location_upload">
+            <form class="form" id="employee_location_upload">
                 @csrf	
                 <div class="modal fade" id="location_records_upload" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-scrollable mw-650px">
@@ -437,7 +437,7 @@
                         </div>
                     </div>
                 </div>
-            </form> --}}
+            </form>
 
             <form class="form" id="office_location_upload">
                 @csrf	
