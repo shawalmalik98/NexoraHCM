@@ -27,7 +27,7 @@
                         Distributors Location Import
                     </a>
                 </div>
-                <div class="m-0">
+                {{-- <div class="m-0">
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#location_information_upload">
                          <span class="svg-icon svg-icon-2">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -37,7 +37,7 @@
                         </span>										
                         Update Employee Location Records
                     </a>
-                </div>
+                </div> --}}
                 
                 <div class="m-0">
                     <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addlocation">											

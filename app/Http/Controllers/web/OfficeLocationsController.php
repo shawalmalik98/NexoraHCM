@@ -248,99 +248,99 @@ class OfficeLocationsController extends Controller
         }
     }
     
-    protected function update_employee_location_record(Request $request){
+    // protected function update_employee_location_record(Request $request){
 
     
-        set_time_limit(18000);
-        $validator = Validator::make($request->all(), [
-            'file' => 'required|file|mimes:csv'
-        ]);
-        if($validator->fails()) {
-            foreach($validator->errors()->all() as $error){
-                return response()->json([
-                    'msg' => $error,
-                    'status' => 'FALSE',
-                    'validation' => 'TRUE',
-                ]);
-            }
-        }else{
-            $filename = $request->file('file')->getPathName();
+    //     set_time_limit(18000);
+    //     $validator = Validator::make($request->all(), [
+    //         'file' => 'required|file|mimes:csv'
+    //     ]);
+    //     if($validator->fails()) {
+    //         foreach($validator->errors()->all() as $error){
+    //             return response()->json([
+    //                 'msg' => $error,
+    //                 'status' => 'FALSE',
+    //                 'validation' => 'TRUE',
+    //             ]);
+    //         }
+    //     }else{
+    //         $filename = $request->file('file')->getPathName();
             
-            if($request->file('file')->getSize() > 0)
-            {
-                $error = 0;
-                $success = 0;
-                $file = fopen($filename, "r");
-                $file2 = fopen($filename, "r");
-                $error_logs = array();
-                $count_row = 0;
+    //         if($request->file('file')->getSize() > 0)
+    //         {
+    //             $error = 0;
+    //             $success = 0;
+    //             $file = fopen($filename, "r");
+    //             $file2 = fopen($filename, "r");
+    //             $error_logs = array();
+    //             $count_row = 0;
 
-                // EmployeeLocation::truncate();
+    //             // EmployeeLocation::truncate();
                 
                 
-                // if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
-                    $arrays = [];
-                    $count_row = 0;
-                    while (($getData = fgetcsv($file2)) !== FALSE)
-                    {
+    //             // if(empty($error_msg) || $request->input('Force_Approved') == 'TRUE'){
+    //                 $arrays = [];
+    //                 $count_row = 0;
+    //                 while (($getData = fgetcsv($file2)) !== FALSE)
+    //                 {
             
-                        // if($count_row != 0){
+    //                     // if($count_row != 0){
                             
-                            $employeeCode = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[0]));//$getData[0];
-                            $location_title = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[1]));//$getData[1];
-                            $location_latitude = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[2]));//$getData[3];
+    //                         $employeeCode = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[0]));//$getData[0];
+    //                         $location_title = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[1]));//$getData[1];
+    //                         $location_latitude = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[2]));//$getData[3];
             
-                            // if($distributor_code != '' || $distributor_code != '0' || $distributor_code != NULL){
-                                $get_employee_data = Employees::where('employee_code' , $employeeCode)->get(['employee_id'])->toArray();
+    //                         // if($distributor_code != '' || $distributor_code != '0' || $distributor_code != NULL){
+    //                             $get_employee_data = Employees::where('employee_code' , $employeeCode)->get(['employee_id'])->toArray();
                            
-                                $location_data = OfficeLocation::where('location_title', $location_title)->where('location_latitude', $location_latitude)->get('location_id')->toArray();
-                                if(!empty($get_employee_data)){
+    //                             $location_data = OfficeLocation::where('location_title', $location_title)->where('location_latitude', $location_latitude)->get('location_id')->toArray();
+    //                             if(!empty($get_employee_data)){
                                     
-                                    // EmployeeLocation::where('emp_loc_employee_id', $get_employee_data[0]['employee_id'])->delete();
-                                    if(!empty($get_employee_data) && !empty($location_data)){
+    //                                 // EmployeeLocation::where('emp_loc_employee_id', $get_employee_data[0]['employee_id'])->delete();
+    //                                 if(!empty($get_employee_data) && !empty($location_data)){
                                         
-                                        $new_employee_location = new EmployeeLocation();
-                                        $new_employee_location->emp_loc_employee_id = $get_employee_data[0]['employee_id'];
-                                        $new_employee_location->emp_loc_loc_id = $location_data[0]['location_id'];
-                                        $new_employee_location->created_at = date('Y-m-d H:i:s');
-                                        $new_employee_location->save();
+    //                                     $new_employee_location = new EmployeeLocation();
+    //                                     $new_employee_location->emp_loc_employee_id = $get_employee_data[0]['employee_id'];
+    //                                     $new_employee_location->emp_loc_loc_id = $location_data[0]['location_id'];
+    //                                     $new_employee_location->created_at = date('Y-m-d H:i:s');
+    //                                     $new_employee_location->save();
                                         
-                                    }
-                                    $success++;
+    //                                 }
+    //                                 $success++;
                                     
-                                }
-                            // }
+    //                             }
+    //                         // }
 
                             
-                        // }
+    //                     // }
 
-                    }
-                    $count_row ++;
+    //                 }
+    //                 $count_row ++;
                    
-                    fclose($file2);
+    //                 fclose($file2);
                     
-                    return response()->json([
-                        'status' => 'TRUE',
-                        'msg' => 'Upload Location record',
-                        'error_logs' => $error_logs
-                    ]);
-                // }
-                // else{
-                //     $msg = "You have $success valid records and $error invalid records.";
+    //                 return response()->json([
+    //                     'status' => 'TRUE',
+    //                     'msg' => 'Upload Location record',
+    //                     'error_logs' => $error_logs
+    //                 ]);
+    //             // }
+    //             // else{
+    //             //     $msg = "You have $success valid records and $error invalid records.";
 
-                //     return response()->json([
-                //         'status' => 'FALSE',
-                //         'msg' =>  'Location record upload failed '."<br>".$msg,
-                //         'error_logs' => $error_logs
-                //     ]);
-                // }
+    //             //     return response()->json([
+    //             //         'status' => 'FALSE',
+    //             //         'msg' =>  'Location record upload failed '."<br>".$msg,
+    //             //         'error_logs' => $error_logs
+    //             //     ]);
+    //             // }
 
-            }
+    //         }
 
 
-        }
+    //     }
     
-    }
+    // }
 
     protected function upload_employee_location_record(Request $request){
 
