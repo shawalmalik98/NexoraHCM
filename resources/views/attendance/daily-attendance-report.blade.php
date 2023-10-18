@@ -10,9 +10,9 @@
                 
                 <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
                     @if (empty(Request::get('d')))
-                        <h1>Daily Attendance Report ({{ date('d') .  '-' . date('F') . '-' . date('Y') }})</h1>
+                        <h1>Daily Attendance Report ({{ date('d') .  '-' . date('M') . '-' . date('Y') }})</h1>
                     @else
-                        <h1>Daily Attendance Report ({{  date('d-F-Y', strtotime(Request::get('d'))) }})</h1>
+                        <h1>Daily Attendance Report ({{  date('d-M-Y', strtotime(Request::get('d'))) }})</h1>
                     @endif
                 </h1>
             </div>
@@ -26,7 +26,7 @@
                                 <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
                             </svg>
                         </span>										
-                        Attendance Export
+                        Attendance Export (.DAT)
                     </a>
                 </div>
                 {{-- <div class="m-0">
@@ -51,7 +51,7 @@
                                         <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
                                     </svg>
                                 </span>
-                                Download Daily Attendance Report
+                                Download Attendance Report ({{  date('d-M-Y', strtotime(Request::get('d'))) }})
                             </a>  
                         </div>
                     @else
@@ -63,7 +63,7 @@
                                         <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
                                     </svg>
                                 </span>
-                                Download Daily Attendance Report
+                                Download Attendance Report ({{ date('d') .  '-' . date('M') . '-' . date('Y') }})
                             </a>  
                         </div>
                     @endif    
