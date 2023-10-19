@@ -85,7 +85,22 @@ class EmployeeController extends Controller
 
             $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status');
 
-            return view('employee.all-employees',$send_data);
+            if($request->download == "TRUE"){
+                $employees  = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->where('employee_isactive','=', 1)
+                ->orderBy('employee_id', 'asc')
+                ->get(['employee_code as Employee ID','employee_name as Employee Name','department_name as Department','designation_name as Designation', 'employee_grade as Employee Grade' ,'employee_jobtitle as Employee Job Title', 'business_unit as Business Unit'])
+                ->toArray();
+
+                $header_style = (new Style())->setFontBold();
+
+                return (new FastExcel($employees))->headerStyle($header_style)->download('Employee-Information.xlsx');
+            }else{
+
+                return view('employee.all-employees',$send_data);
+            }
+
         }catch(\Exception $e){
             $this->create_error_log('View All Employees', $e);
             $send_data = compact('title');
@@ -3317,132 +3332,140 @@ class EmployeeController extends Controller
 
     }
 
-    protected function download_employee_detail(Request $request){
-        try{
+    // protected function download_employee_detail(Request $request){
+    //     try{
 
-            $security_variable = FALSE;
+    //         $security_variable = FALSE;
 
-            $validator = Validator::make($request->all(), [
-                'download_type' => ['required'],
-                'confirmation_code' => ['required']
-            ]);
+    //         $validator = Validator::make($request->all(), [
+    //             'download_type' => ['required'],
+    //             'confirmation_code' => ['required']
+    //         ]);
 
-            $login_user = $this->get_login_user_detail();
+    //         $login_user = $this->get_login_user_detail();
 
-            $confirmation_code = 'TODP-'.$login_user[0]['employee_code'];
+    //         $confirmation_code = 'TODP-'.$login_user[0]['employee_code'];
 
-            if($confirmation_code === $request->input('confirmation_code') && $validator->fails() == FALSE){
-                $security_variable = TRUE;
-            }
-            else{
-                return "<script>alert('You have enterd incorrect information. Please try again.'); window.location.href = '/employees';</script>";
-            }
+    //         if($confirmation_code === $request->input('confirmation_code') && $validator->fails() == FALSE){
+    //             $security_variable = TRUE;
+    //         }
+    //         else{
+    //             return "<script>alert('You have enterd incorrect information. Please try again.'); window.location.href = '/employees';</script>";
+    //         }
 
-            if($request->emp_status == "2"){
-                $status = 0;
-            }else{
-                $status = 1;
-            }
+    //         if($request->emp_status == "2"){
+    //             $status = 0;
+    //         }else{
+    //             $status = 1;
+    //         }
 
-            $employees_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->join('tbl_employement_status','tbl_employement_status.employement_status_id','=','tbl_employees.employee_status')
-            ->leftjoin('tbl_resignation_letters', function($join){
-                $join->on('tbl_resignation_letters.resignation_employee','=','tbl_employees.employee_id');
-                $join->where('resignation_status', '=', '2');
-            })
-            ->where('employee_isactive','=',$status)
-            ->orderBy('employee_id', 'asc')
-            ->get(['employee_id as Employee ID','employee_name as Employee Name','employee_code as Employee Code','department_name as Department','designation_name as Designation','employee_jobtype as Employee Job Type','employement_status_name as Employee Status','employee_doj as Employee DOJ','employee_cnic as Salary Increment Date','employee_cnic as Employee Cnic','employee_cnic as Increment','employee_cnic as Gross Salary' ,'resignation_from_date as Resignation Date'])->toArray();
+    //         $employees_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+    //         ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+    //         ->join('tbl_employement_status','tbl_employement_status.employement_status_id','=','tbl_employees.employee_status')
+    //         ->leftjoin('tbl_resignation_letters', function($join){
+    //             $join->on('tbl_resignation_letters.resignation_employee','=','tbl_employees.employee_id');
+    //             $join->where('resignation_status', '=', '2');
+    //         })
+    //         ->where('employee_isactive','=',$status)
+    //         ->orderBy('employee_id', 'asc')
+    //         ->get(['employee_id as Employee ID','employee_name as Employee Name','employee_code as Employee Code','department_name as Department','designation_name as Designation','employee_jobtype as Employee Job Type','employement_status_name as Employee Status','employee_doj as Employee DOJ','employee_cnic as Salary Increment Date','employee_cnic as Employee Cnic','employee_cnic as Increment','employee_cnic as Gross Salary' ,'resignation_from_date as Resignation Date'])->toArray();
 
-            $i = 0;
-            foreach($employees_details as $employees_detail){
+    //         $i = 0;
+    //         foreach($employees_details as $employees_detail){
 
-                $employees_details[$i]['Salary Increment Date'] = '';
-                $employees_details[$i]['Increment'] = '';
-                $employees_details[$i]['Gross Salary'] = '';
+    //             $employees_details[$i]['Salary Increment Date'] = '';
+    //             $employees_details[$i]['Increment'] = '';
+    //             $employees_details[$i]['Gross Salary'] = '';
 
-                $employee_attendance = Attendance::where('att_employee_id',$employees_detail['Employee ID'] )
-                ->where('att_check_overall_status', '!=', 'Absent')
-                ->orderByRaw('STR_TO_DATE(CONCAT(att_for_year,"-",att_for_month,"-",att_for_date),"%Y-%m-%d") desc')
-                ->get(['att_for_date', 'att_for_month', 'att_for_year'])
-                ->toArray();
-                if(!empty($employee_attendance)){
-                    $employees_details[$i]['Last Working Day'] = $employee_attendance[0]['att_for_year'].'-'.$employee_attendance[0]['att_for_month'].'-'.$employee_attendance[0]['att_for_date'];
-                }else{
-                    $employees_details[$i]['Last Working Day'] = '';
-                }
+    //             $employee_attendance = Attendance::where('att_employee_id',$employees_detail['Employee ID'] )
+    //             ->where('att_check_overall_status', '!=', 'Absent')
+    //             ->orderByRaw('STR_TO_DATE(CONCAT(att_for_year,"-",att_for_month,"-",att_for_date),"%Y-%m-%d") desc')
+    //             ->get(['att_for_date', 'att_for_month', 'att_for_year'])
+    //             ->toArray();
+    //             if(!empty($employee_attendance)){
+    //                 $employees_details[$i]['Last Working Day'] = $employee_attendance[0]['att_for_year'].'-'.$employee_attendance[0]['att_for_month'].'-'.$employee_attendance[0]['att_for_date'];
+    //             }else{
+    //                 $employees_details[$i]['Last Working Day'] = '';
+    //             }
 
-                $employee_Salary = EmployeeSalary::where('salary_employee_id', $employees_detail['Employee ID'])
-                ->whereRaw('date_format(STR_TO_DATE(salary_effected_date,"%Y-%m-%d"),"%Y-%m-%d") <= "'.date('Y-m-d').'"')
-                ->orderByRaw('STR_TO_DATE(salary_effected_date,"%Y-%m-%d") desc')
-                ->get(['salary_effected_date', 'salary_amount'])
-                ->toArray();
+    //             $employee_Salary = EmployeeSalary::where('salary_employee_id', $employees_detail['Employee ID'])
+    //             ->whereRaw('date_format(STR_TO_DATE(salary_effected_date,"%Y-%m-%d"),"%Y-%m-%d") <= "'.date('Y-m-d').'"')
+    //             ->orderByRaw('STR_TO_DATE(salary_effected_date,"%Y-%m-%d") desc')
+    //             ->get(['salary_effected_date', 'salary_amount'])
+    //             ->toArray();
 
-                if(!empty($employee_Salary)){
-                    $employees_details[$i]['Gross Salary'] = $employee_Salary[0]['salary_amount'];
-                    $employees_details[$i]['Salary Increment Date'] = $employee_Salary[0]['salary_effected_date'];
-                }else{
-                    $employees_details[$i]['Gross Salary'] = '';
-                    $employees_details[$i]['Salary Increment Date'] = '';
-                }
+    //             if(!empty($employee_Salary)){
+    //                 $employees_details[$i]['Gross Salary'] = $employee_Salary[0]['salary_amount'];
+    //                 $employees_details[$i]['Salary Increment Date'] = $employee_Salary[0]['salary_effected_date'];
+    //             }else{
+    //                 $employees_details[$i]['Gross Salary'] = '';
+    //                 $employees_details[$i]['Salary Increment Date'] = '';
+    //             }
 
-                $employee_Salary = EmployeeSalary::where('salary_employee_id', $employees_detail['Employee ID'])
+    //             $employee_Salary = EmployeeSalary::where('salary_employee_id', $employees_detail['Employee ID'])
 
-                ->whereRaw('date_format(salary_effected_date,"%m") = "'.date('m').'"')
-                ->whereRaw('date_format(salary_effected_date,"%Y") = "'.date('Y').'"')
-                ->whereRaw('date_format(STR_TO_DATE(salary_effected_date,"%Y-%m-%d"),"%Y-%m-%d") <= "'.date('Y-m-d').'"')
-                ->orderByRaw('STR_TO_DATE(salary_effected_date,"%Y-%m-%d") desc')
-                ->get(['salary_effected_date', 'salary_amount'])
-                ->toArray();
+    //             ->whereRaw('date_format(salary_effected_date,"%m") = "'.date('m').'"')
+    //             ->whereRaw('date_format(salary_effected_date,"%Y") = "'.date('Y').'"')
+    //             ->whereRaw('date_format(STR_TO_DATE(salary_effected_date,"%Y-%m-%d"),"%Y-%m-%d") <= "'.date('Y-m-d').'"')
+    //             ->orderByRaw('STR_TO_DATE(salary_effected_date,"%Y-%m-%d") desc')
+    //             ->get(['salary_effected_date', 'salary_amount'])
+    //             ->toArray();
 
-                if(!empty($employee_Salary)){
+    //             if(!empty($employee_Salary)){
 
-                    $employee_Salary_increment = EmployeeSalary::where('salary_employee_id', $employees_detail['Employee ID'])
-                    ->whereRaw('date_format(STR_TO_DATE(salary_effected_date,"%Y-%m-%d"),"%Y-%m-%d") < "'.date('Y-m-d',strtotime($employee_Salary[0]['salary_effected_date'])).'"')
-                    ->orderByRaw('STR_TO_DATE(salary_effected_date,"%Y-%m-%d") desc')
-                    ->get(['salary_effected_date', 'salary_amount'])
-                    ->toArray();
+    //                 $employee_Salary_increment = EmployeeSalary::where('salary_employee_id', $employees_detail['Employee ID'])
+    //                 ->whereRaw('date_format(STR_TO_DATE(salary_effected_date,"%Y-%m-%d"),"%Y-%m-%d") < "'.date('Y-m-d',strtotime($employee_Salary[0]['salary_effected_date'])).'"')
+    //                 ->orderByRaw('STR_TO_DATE(salary_effected_date,"%Y-%m-%d") desc')
+    //                 ->get(['salary_effected_date', 'salary_amount'])
+    //                 ->toArray();
 
-                    if(!empty($employee_Salary_increment)){
-                        $employees_details[$i]['Increment'] = $employee_Salary[0]['salary_amount'] - $employee_Salary_increment[0]['salary_amount'];
-                    }else{
-                        $employees_details[$i]['Increment'] = '';
-                    }
+    //                 if(!empty($employee_Salary_increment)){
+    //                     $employees_details[$i]['Increment'] = $employee_Salary[0]['salary_amount'] - $employee_Salary_increment[0]['salary_amount'];
+    //                 }else{
+    //                     $employees_details[$i]['Increment'] = '';
+    //                 }
 
 
-                }else{
-                    $employees_details[$i]['Increment'] = '';
-                }
+    //             }else{
+    //                 $employees_details[$i]['Increment'] = '';
+    //             }
 
-                unset($employees_details[$i]['Employee ID']);
+    //             unset($employees_details[$i]['Employee ID']);
 
-                $i++;
-            }
+    //             $i++;
+    //         }
 
-            $pdf_file_access = 'True'; 
-            $send_data = compact('employees_details','pdf_file_access');
+    //         $pdf_file_access = 'True'; 
+    //         $send_data = compact('employees_details','pdf_file_access');
 
-            if($security_variable == TRUE){
-                if($request->download_type == "pdf"){
-                    $pdf = Pdf::loadView('employee.all-employee-pdf',$send_data);
-                    return $pdf->setPaper('a3', 'landscape')->stream('All Employee(s) Information'.'.pdf');
-                }else{
-                    return (new FastExcel($employees_details))->download('Employee-Information.xlsx');
-                }
-            }
+    //         if($security_variable == TRUE){
+    //             if($request->download_type == "pdf"){
+    //                 $pdf = Pdf::loadView('employee.all-employee-pdf',$send_data);
+    //                 return $pdf->setPaper('a3', 'landscape')->stream('All Employee(s) Information'.'.pdf');
+    //             }else{
 
-        }catch(\Exception $e){
+    //                 $employees_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+    //                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+    //                 ->join('tbl_employement_status','tbl_employement_status.employement_status_id','=','tbl_employees.employee_status')
+    //                 ->where('employee_isactive','=',$status)
+    //                 ->orderBy('employee_id', 'asc')
+    //                 ->get(['employee_code as Employee ID','employee_name as Employee Name','department_name as Department','designation_name as Designation','employee_jobtitle as Employee Job Title', 'business_unit as Business Unit'])->toArray();
 
-            $this->create_error_log('Employee information download', $e);
-            return view('errors.500');
+    //                 return (new FastExcel($employees_details))->download('Employee-Information.xlsx');
+    //             }
+    //         }
 
-        }finally{
+    //     }catch(\Exception $e){
 
-            ActivityTracker::track_activity('Employee information download');
+    //         $this->create_error_log('Employee information download', $e);
+    //         return view('errors.500');
 
-        }
-    }
+    //     }finally{
+
+    //         ActivityTracker::track_activity('Employee information download');
+
+    //     }
+    // }
 
     // protected function upload_employee_record(Request $request){
 
