@@ -1348,8 +1348,12 @@ class EmployeeController extends Controller
                     
 
                     if(!empty($employee_data->input('employee_location'))){
+
+                        EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->whereNotIn('emp_loc_loc_id',$employee_data->input('employee_location'))->delete();
+
                         foreach($employee_data->input('employee_location') as $location){
                             $check_if_emp_location_exists = EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->where('emp_loc_loc_id',$location)->get()->toArray();
+                            
                             if(empty($check_if_emp_location_exists)){
                                 $new_employee_location = new EmployeeLocation();
                                 $new_employee_location->emp_loc_employee_id = $employee_data->input('employee_id');
