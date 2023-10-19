@@ -86,6 +86,7 @@ class EmployeeController extends Controller
             $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status');
 
             if($request->download == "TRUE"){
+                
                 $employees  = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->where('employee_isactive','=', 1)
@@ -95,7 +96,7 @@ class EmployeeController extends Controller
 
                 $header_style = (new Style())->setFontBold();
 
-                return (new FastExcel($employees))->headerStyle($header_style)->download('Employee-Information.xlsx');
+                return (new FastExcel($employees))->headerStyle($header_style)->download('Employee-Records.xlsx');
             }else{
 
                 return view('employee.all-employees',$send_data);

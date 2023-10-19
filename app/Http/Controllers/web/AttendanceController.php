@@ -2433,85 +2433,104 @@ class AttendanceController extends Controller
     }
 
     protected function export_data_into_dat_file(Request $request){
+        try{
+            $from_date = $request->input('from_date');
 
-        $from_date = $request->input('from_date');
+            $to_date = $request->input('to_date');
 
-        $to_date = $request->input('to_date');
+            $validator = Validator::make($request->all(), [
+                'from_date' => 'required|date_format:Y-m-d|before_or_equal:now',
+                'to_date' => [
+                    'required',
+                    'date_format:Y-m-d',
+                    'before_or_equal:now',
+                    function ($attribute, $value, $fail) use ($request) {
+                        $fromDate = $request->input('from_date');
+                        $toDate = $request->input('to_date');
+            
+                        if ($toDate != $fromDate && strtotime($toDate) > strtotime($fromDate . ' +10 days')) {
+                            $fail('The to date must be equal to from date or within 10 days after from date.');
+                        }
+                    },
+                ],
+            ]);
 
-        $validator = Validator::make($request->all(), [
-            'from_date' => 'required|date_format:Y-m-d|before_or_equal:now',
-            'to_date' => [
-                'required',
-                'date_format:Y-m-d',
-                'before_or_equal:now',
-                function ($attribute, $value, $fail) use ($request) {
-                    $fromDate = $request->input('from_date');
-                    $toDate = $request->input('to_date');
+            if ($validator->fails()) {
+                foreach ($validator->errors()->all() as $error) {
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE',
+                        'validation' => 'TRUE',
+                    ]);
+                }
+            }
         
-                    if ($toDate != $fromDate && strtotime($toDate) > strtotime($fromDate . ' +10 days')) {
-                        $fail('The to date must be equal to from date or within 10 days after from date.');
-                    }
-                },
-            ],
-        ]);
+            $get_attendance_data = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+            ->whereBetween(
+                DB::raw("CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)"),
+                [$from_date, $to_date]
+            )
+            ->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_for_date','att_for_month','att_for_year','tbl_employees.employee_code'])
+            ->toArray();
+                
+            if(!empty($get_attendance_data)) {
+                
+                $filename = "attendancelist.dat";
 
-        if ($validator->fails()) {
-            foreach ($validator->errors()->all() as $error) {
+                $file = fopen($filename, "w");
+
+                if ($file) {
+
+                    foreach($get_attendance_data as $attendance_date){
+                        if($attendance_date['att_check_in_status'] == '1'){
+                            $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0001000'.$attendance_date['employee_code'] .'0063'. "\n";
+                            fwrite($file, $record);
+                        }
+                    
+                        if($attendance_date['att_check_out_status'] == '1'){
+                            $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0002000'.$attendance_date['employee_code'] .'0063'. "\n";
+                            fwrite($file, $record);
+                        }
+                    }
+
+                    fclose($file);
+
+                    header('Content-Type: application/octet-stream');
+                    header('Content-Disposition: attachment; filename="' . $filename . '"');
+                    header('Content-Length: ' . filesize($filename));
+                
+                    readfile($filename);
+
+                    File::delete($filename);
+                    
+                } else {
+                    echo "Unable to open $filename for writing.";
+                }
+            } else {
                 return response()->json([
-                    'msg' => $error,
+                    'msg' => 'No Records Found',
                     'status' => 'FALSE',
-                    'validation' => 'TRUE',
                 ]);
             }
-        }
-    
-        $get_attendance_data = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-        ->whereBetween(
-            DB::raw("CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)"),
-            [$from_date, $to_date]
-        )
-        ->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_for_date','att_for_month','att_for_year','tbl_employees.employee_code'])
-        ->toArray();
-            
-        if(!empty($get_attendance_data)) {
-            
-            $filename = "attendancelist.dat";
-
-            $file = fopen($filename, "w");
-
-            if ($file) {
-
-                foreach($get_attendance_data as $attendance_date){
-                    if($attendance_date['att_check_in_status'] == '1'){
-                        $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0001000'.$attendance_date['employee_code'] .'0063'. "\n";
-                        fwrite($file, $record);
-                    }
-                
-                    if($attendance_date['att_check_out_status'] == '1'){
-                        $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0002000'.$attendance_date['employee_code'] .'0063'. "\n";
-                        fwrite($file, $record);
-                    }
-                }
-
-                fclose($file);
-
-                header('Content-Type: application/octet-stream');
-                header('Content-Disposition: attachment; filename="' . $filename . '"');
-                header('Content-Length: ' . filesize($filename));
-            
-                readfile($filename);
-
-                File::delete($filename);
-                
-            } else {
-                echo "Unable to open $filename for writing.";
+        }catch(\Exception $e){
+            $this->create_error_log('Download Attendance Dat file', $e);
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                   
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+               
             }
-        } else {
-            return response()->json([
-                'msg' => 'No Records Found',
-                'status' => 'FALSE',
-            ]);
-        }
+        }finally{
+            ActivityTracker::track_activity('Download Attendance Dat file');
+        }    
     }
 
     protected function upload_attendance_record(Request $request)
