@@ -10,6 +10,8 @@ use App\Models\{OfficeLocation, Employees, RoomScreen, EmployeeLocation};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
+use Rap2hpoutre\FastExcel\FastExcel;
+use OpenSpout\Common\Entity\Style\Style;
 
 class OfficeLocationsController extends Controller
 {
@@ -17,7 +19,7 @@ class OfficeLocationsController extends Controller
 
     const TITLE_GLOBAL = 'manage-locations';
 
-    protected function index(){
+    protected function index(Request $request){
 
         try{
             $title = SELF::TITLE_GLOBAL;
@@ -32,7 +34,8 @@ class OfficeLocationsController extends Controller
                 'tbl_office_locations.location_alt_id', 'tbl_office_locations.distributor_code',
                 'tbl_office_locations.location_address',
                 'tbl_office_locations.location_latitude', 'tbl_office_locations.location_longitude',
-                'tbl_office_locations.location_attendance_radius', 'tbl_office_locations.location_added_at',
+                'tbl_office_locations.location_attendance_radius', 
+                'tbl_office_locations.location_added_at',
                 'tbl_office_locations.location_updated_at'
             )
             ->orderByRaw('COUNT(e.employee_id) DESC')
@@ -45,8 +48,37 @@ class OfficeLocationsController extends Controller
 
             $send_data = compact('title' , 'login_user', 'locations','employee_location_id','locations');
 
-            return view('office-locations.location')->with($send_data);
+            if($request->download == 'TRUE'){
 
+                $locations = OfficeLocation::selectRaw("
+                    location_title as 'Location Title',
+                    location_address as 'Location Address',
+                    location_latitude as 'Latitude',
+                    location_longitude as 'Longitude',
+                    location_attendance_radius as 'Allowed Range (meters)',
+                    location_added_at as 'Location Created At',
+                    COUNT(e.employee_id) as 'Tagged Employees'
+                ")
+                ->leftJoin('tbl_employees_location as el', 'tbl_office_locations.location_id', '=', 'el.emp_loc_loc_id')
+                ->leftJoin('tbl_employees as e', 'el.emp_loc_employee_id', '=', 'e.employee_id')
+                ->groupBy(
+                    'location_title',
+                    'location_address',
+                    'location_latitude',
+                    'location_longitude',
+                    'location_attendance_radius',
+                    'location_added_at'
+                )
+                ->orderByRaw('COUNT(e.employee_id) DESC')
+                ->get()
+                ->toArray();
+
+                $header_style = (new Style())->setFontBold();
+
+                return (new FastExcel($locations))->headerStyle($header_style)->download('Office-Locations.xlsx');
+            }else{
+                return view('office-locations.location')->with($send_data);
+            }
         
         }catch(\Exception $e){
 

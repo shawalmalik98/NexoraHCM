@@ -16,7 +16,21 @@
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
 
-                 <div class="m-0">
+                @if(!empty($locations))
+                    <div class="m-0">
+                        <a href="{{ url('locations') }}?download=TRUE" class="btn btn-sm btn-success" method="GET">
+                            <span class="svg-icon svg-icon-2">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                    <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                                </svg>
+                            </span>
+                            Download Office Locations
+                        </a>
+                    </div>
+                @endif
+
+                {{-- <div class="m-0">
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#new_location_upload">
                          <span class="svg-icon svg-icon-2">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -26,7 +40,7 @@
                         </span>										
                         Distributors Location Import
                     </a>
-                </div>
+                </div> --}}
                 {{-- <div class="m-0">
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#location_information_upload">
                          <span class="svg-icon svg-icon-2">
