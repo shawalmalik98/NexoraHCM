@@ -936,7 +936,7 @@ class CustomHelper
 
         }
         finally{
-            return $notification_alerts;
+            // return $notification_alerts;
         }
     }
 
