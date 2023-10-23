@@ -470,6 +470,22 @@
                             </div>
                             
                         </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6 fv-row">
+                                <div class="d-flex align-items-center">
+                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_web_access" value="1" @if ($employee_detail[0]['employee_web_access'] == '1') checked="" @endif/>
+                                        <span class="form-check-label fw-semibold">Web Access</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has access for web application."></i>
+                                    </label>
+                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_mobile_access" value="1" @if ($employee_detail[0]['employee_mobile_access'] == '1') checked="" @endif/>
+                                        <span class="form-check-label fw-semibold">Mobile Access</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has access for mobile application."></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row  g-9 mb-8" id="append_row_date">
                             <div class="col-md-6" >
                                 <div class="form-group">

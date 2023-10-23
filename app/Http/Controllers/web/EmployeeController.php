@@ -359,7 +359,8 @@ class EmployeeController extends Controller
                 $add_employee->employee_group = $employee_data->input('employee_group');
                 $add_employee->employee_deactivate_date = $employee_data->input('employee_deactivate_date');
                 $add_employee->employee_deactivation_type = $employee_data->input('employee_deactive_type');
-
+                $add_employee->employee_web_access = $employee_data->input('employee_web_access');
+                $add_employee->employee_mobile_access = $employee_data->input('employee_mobile_access');
                 
                 $employee = $add_employee->save();
                 $employee_registration_id = $add_employee->employee_id;
@@ -1313,6 +1314,8 @@ class EmployeeController extends Controller
                     $update_employee->employee_grade = $employee_data->input('employee_grade');
                     $update_employee->employee_group = $employee_data->input('employee_group');
                     $update_employee->employee_deactivation_type = $employee_data->input('employee_deactive_type');
+                    $update_employee->employee_web_access = $employee_data->input('employee_web_access');
+                    $update_employee->employee_mobile_access = $employee_data->input('employee_mobile_access');
                     
                     if($employee_data->input('employee_isactive') == 0){
 

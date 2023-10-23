@@ -444,8 +444,8 @@
 
                             <div class="col-md-6 fv-row ">
                                 <label class="required fs-6 fw-semibold mb-2">Location</label>
-                                <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select location" name="employee_location[]" required multiple>
-                                    <option value="">Select Bank Name</option>
+                                <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Employee location" name="employee_location[]" required multiple>
+                                    <option value="">Select Employee Location</option>
                                     @if(!empty($all_locations))
                                         @foreach ($all_locations as $location)
                                             <option value="{{ $location['location_id'] }}">{{ $location['location_title'] }}</option>
@@ -455,6 +455,22 @@
                             </div>
                            
                         </div>
+
+                        <div class="row g-9 mb-8">
+                            <div class="col-md-6 fv-row">
+                                <div class="d-flex align-items-center">
+                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_web_access" value="1"/>
+                                        <span class="form-check-label fw-semibold">Web Access</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has access for web application."></i>
+                                    </label>
+                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                        <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_mobile_access" value="1" />
+                                        <span class="form-check-label fw-semibold">Mobile Access</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has access for mobile application."></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row  g-9 mb-8" id="append_row_date">
                             <div class="col-md-6" >
                                 <div class="form-group" >

@@ -15,6 +15,21 @@ return new class extends Migration
     public function up()
     {
 
+        if(Schema::hasTable('tbl_employees')){
+
+            if (!Schema::hasColumn('tbl_employees', 'employee_web_access')) {
+                Schema::table('tbl_employees', function (Blueprint $table) {
+                    $table->integer('employee_web_access')->nullable()->comment('0 = deactive  1 = active');
+                });
+            }
+
+            if (!Schema::hasColumn('tbl_employees', 'employee_mobile_access')) {
+                Schema::table('tbl_employees', function (Blueprint $table) {
+                    $table->integer('employee_mobile_access')->nullable()->comment('0 = deactive 1 = active');
+                });
+            }
+
+        }
        
        
     }
