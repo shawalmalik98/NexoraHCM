@@ -963,6 +963,9 @@ Route::get('/set-attendance-access', [CustomController::class, 'add_attendance_a
 Route::get('/set-recipient-type', [CustomController::class, 'add_recipient_type']);
 Route::get('/set-room-location', [CustomController::class, 'add_room_location']);
 
+Route::get('/set-employee-location', [CustomController::class, 'employee_location_insert']);
+Route::get('/set-employee-geofencing', [CustomController::class, 'update_geofencing_enability']);
+
 
 Route::get('/clear-all-cache', [CommandController::class , 'clear_all_cache']);
 Route::get('/clear-all-config', [CommandController::class , 'clear_all_config']);
