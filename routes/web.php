@@ -964,7 +964,6 @@ Route::get('/set-recipient-type', [CustomController::class, 'add_recipient_type'
 Route::get('/set-room-location', [CustomController::class, 'add_room_location']);
 
 Route::get('/set-employee-location', [CustomController::class, 'employee_location_insert']);
-Route::get('/set-employee-geofencing', [CustomController::class, 'update_geofencing_enability']);
 
 
 Route::get('/clear-all-cache', [CommandController::class , 'clear_all_cache']);

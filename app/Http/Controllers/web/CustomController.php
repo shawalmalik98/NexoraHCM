@@ -282,14 +282,6 @@ class CustomController extends Controller
         ]);
     }
 
-    protected function update_geofencing_enability(){
-        Employees::where('employee_geofencing_enability', '=', 0)->update(['employee_geofencing_enability'=> 1]);
-        return response()->json([
-            'status' => 'TRUE',
-            'msg' => 'Job executed successfully.'
-        ]);
-    }
-
     public function employee_location_insert(Request $request)
     {
         // $employee_locations = DB::select('SELECT * FROM tbl_employees_location');
@@ -554,6 +546,9 @@ class CustomController extends Controller
                         'emp_loc_loc_id' => $get_location[0]['location_id'],
                         'created_at' => date('Y-m-d H:i:s'),
                     ]);
+
+                    Employees::where('employee_id', $get_employee[0]['employee_id'])
+                    ->where('employee_geofencing_enability', '=', 0)->update(['employee_geofencing_enability'=> 1]);
                 }
             }
         }
