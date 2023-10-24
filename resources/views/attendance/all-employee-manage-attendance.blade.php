@@ -207,17 +207,20 @@
                             <table class="table gs-0 gy-4 dataTable table-row-bordered" id="tableAllEmployeeAttendance">
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
-                                        <th class="ps-3">Employee</th>
-                                        <th class="text-center">Month Days</th>
-                                        <th class="text-center">Present</th>
-                                        <th class="text-center">Late / Early</th>
-                                        <th class="text-center">Half Days</th>
+                                        <th class="ps-3">Employee Code</th>
+                                        <th class="text-center">Employee Name</th>
+                                        <th class="text-center">Date of Joining</th>
+                                        <th class="text-center">Department</th>
+                                        <th class="text-center">Designation</th>
+                                        <th class="text-center">Business Unit</th>
+                                        <th class="text-center">Shift</th>
                                         <th class="text-center">Absent</th>
-                                        <th class="text-center">Leaves</th>
-                                        <th class="text-center">Holidays</th>
+                                        <th class="text-center">DA</th>
+                                        <th class="text-center">Leave Days</th>
                                         <th class="text-center">Off Days</th>
-                                        {{-- <th class="text-center">Actual Work Hours</th>
-                                        <th class="text-center">Hours Worked</th> --}}
+                                        <th class="text-center">Patrol</th>
+                                        <th class="text-center">Salary Days</th>
+                                        <th class="text-center">Extra Working</th>
                                         <th class="ps-4">Action</th>
                                     </tr>
                                 </thead>
@@ -226,22 +229,22 @@
                                     @if(!empty($all_attendances))
                                         @foreach($all_attendances as $all_attendance)
                                             <tr>
-                                                <td class="ps-3">{!! CustomHelper::getEmpProfileDiv($all_attendance['employee_id']) !!}</td>
-                                                <td class="text-center">{{$all_attendance['total_month_days']}}</td>
-                                                <td class="text-center">{{$all_attendance['total_present']}}</td>
-                                                <td class="text-center">{{$all_attendance['total_late_early']}}</td>
-                                                <td class="text-center">{{$all_attendance['total_half_day']}}</td>
-                                                <td class="text-center">{{$all_attendance['total_absent']}}</td>
-                                                <td class="text-center">{{$all_attendance['total_leave']}}</td>
-                                                <td class="text-center">{{$all_attendance['total_holiday']}}</td>
-                                                <td class="text-center">{{$all_attendance['total_offdays']}}</td>
-                                                {{-- <td class="text-center">
-                                                    N\A
-                                                </td>
-                                                <td class="text-center">N\A</td> --}}
-
+                                                <td class="ps-3">{{ $all_attendance['employee_code'] }}</td>
+                                                <td class="text-center">{{$all_attendance['employee_name']}}</td>
+                                                <td class="text-center">{{$all_attendance['employee_doj']}}</td>
+                                                <td class="text-center">{{$all_attendance['department_name']}}</td>
+                                                <td class="text-center">{{$all_attendance['designation_name']}}</td>
+                                                <td class="text-center">{{$all_attendance['business_unit']}}</td>
+                                                <td class="text-center">{{$all_attendance['Shift']}}</td>
+                                                <td class="text-center">{{$all_attendance['absent']}}</td>
+                                                <td class="text-center">{{$all_attendance['DA']}}</td>
+                                                <td class="text-center">{{$all_attendance['total_leaves']}}</td>
+                                                <td class="text-center">{{$all_attendance['off_days_count']}}</td>
+                                                <td class="text-center">{{$all_attendance['Patrol']}}</td>
+                                                <td class="text-center">{{$all_attendance['salary_days']}}</td>
+                                                <td class="text-center">{{$all_attendance['salary_days']}}</td>
                                                 <td class="ps-4">
-                                                    <a class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" href="{{ url('attendance?employee_location='.$all_attendance['employee_location'].'&is_active='.$all_attendance['employee_isactive'].'&emp_name='.$all_attendance['employee_id'].'&m='.$month.'&y='.$year) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="View Attendance">
+                                                    <a class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="View Attendance">
                                                         <i class="fa fa-eye"></i>
                                                     </a>
                                                 </td>

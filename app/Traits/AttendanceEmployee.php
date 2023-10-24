@@ -482,6 +482,95 @@ trait AttendanceEmployee {
 			  
 	}
 
+	protected function get_monthly_attendance_all_employees(){
+		DB::select("
+		SELECT 
+		e.employee_id,
+		e.employee_code, 
+		e.employee_name,
+		FORMAT(CAST(e.employee_doj AS DATE), 'dd MMM, yyyy') as 'employee_doj',
+		dep.department_name, 
+		des.designation_name,
+		e.business_unit,
+		CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
+		
+		(
+			(DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+			(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+			SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+			SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+			SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+			(SELECT COUNT(*) 
+		FROM (
+			SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+			FROM master.dbo.spt_values
+			WHERE TYPE = 'P'
+			AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+		) AS DateRange
+		WHERE 
+			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+				
+			) AS absent,
+		
+			SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'DA',
+		
+			SUM(CASE WHEN att_check_overall_status = 'leaves' 
+		OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
+		
+		(SELECT COUNT(*) 
+		FROM (
+			SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+			FROM master.dbo.spt_values
+			WHERE TYPE = 'P'
+			AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+		) AS DateRange
+		WHERE 
+			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
+			) as off_days_count,
+		
+		SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
+		
+		(DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - (
+			(DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+			(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+			SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+			SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+			SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+			(SELECT COUNT(*) 
+		FROM (
+			SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+			FROM master.dbo.spt_values
+			WHERE TYPE = 'P'
+			AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+		) AS DateRange
+		WHERE 
+			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+				
+			) AS salary_days
+		FROM tbl_employees e
+		LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '2023-09-26' 
+		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '2023-10-25' 
+		LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
+		LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
+		LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+		LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+		GROUP BY 
+		e.employee_code, 
+		e.employee_name, 
+		e.business_unit, 
+		dep.department_name, 
+		des.designation_name, 
+		e.employee_offdays,
+		e.employee_id,
+		rep.employee_code,
+		rep.employee_name,
+		e.employee_doj
+		");
+	}
+
 	protected function remote_work_request_attendance($employee_id,$date){
 		
 		$get_wfh_request = WFH::where('wfh_employee_id','=',$employee_id)->where('wfh_request_date','=',$date)->get(['wfh_request_id','wfh_request_approved_by_hr'])->toArray();

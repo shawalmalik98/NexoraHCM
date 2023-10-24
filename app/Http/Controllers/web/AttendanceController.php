@@ -2206,7 +2206,8 @@ class AttendanceController extends Controller
                 }
             }
            
-            $all_attendances = $this->get_monthly_attendance($leave_name,$last_date,$year,$month,$employement_status,$where_clause_two);
+            // $all_attendances = $this->get_monthly_attendance($leave_name,$last_date,$year,$month,$employement_status,$where_clause_two);
+            $all_attendances = $this->get_monthly_attendance_all_employees();
             $all_attendances = json_decode(json_encode($all_attendances), true);
          
             $send_data = compact('title','login_user','month','year','employee_locations','dynamic_years','all_attendances','all_employees');
