@@ -228,7 +228,7 @@
                                             <span class="menu-icon">
                                                 <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Manage Attendance.png') }}" />
                                             </span>
-                                            <span class="menu-title">Monthly Attendance</span>
+                                            <span class="menu-title">Payroll Attendance Report</span>
                                         </a>
                                     </div>
 

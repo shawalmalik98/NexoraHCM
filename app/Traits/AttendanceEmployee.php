@@ -483,7 +483,7 @@ trait AttendanceEmployee {
 	}
 
 	protected function get_monthly_attendance_all_employees(){
-		DB::select("
+		$all_attendances = DB::select("
 		SELECT 
 		e.employee_id,
 		e.employee_code, 
@@ -569,6 +569,8 @@ trait AttendanceEmployee {
 		rep.employee_name,
 		e.employee_doj
 		");
+
+		return $all_attendances;
 	}
 
 	protected function remote_work_request_attendance($employee_id,$date){

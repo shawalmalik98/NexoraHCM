@@ -31,7 +31,7 @@
                                 <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
                             </svg>
                         </span>
-                        Download Month Attendance
+                        Download Payroll Attendance Report
                     </a>
                 </div>
             @endif    
@@ -77,14 +77,14 @@
                                     <div class="mb-3">
                                     
                                         <label class="form-label fw-semibold">
-                                            <span>Office Location</span>
+                                            <span>Departments</span>
                                         </label>
                                         <div>
-                                            <select class="form-select" data-control="select2" data-hide-search="false" name="employee_location" id="employee_location">
-                                                <option value="">Select Office Location</option>
-                                                @if(!empty($employee_locations))
-                                                    @foreach ($employee_locations as $location)
-                                                        <option value="{{ $location['location_id'] }}" @if (Request::get('employee_location') == $location['location_id']) selected @endif>{{ $location['location_title'] }}</option>
+                                            <select class="form-select" data-control="select2" data-hide-search="false" name="department_id" id="employee_location">
+                                                <option value="">Select Departments</option>
+                                                @if(!empty($departments))
+                                                    @foreach ($departments as $department)
+                                                        <option value="{{ $department['department_id'] }}" @if (Request::get('department_') == $department['department_id']) selected @endif>{{ $department['department_name'] }}</option>
                                                     @endforeach
                                                 @endif                                                             
                                             </select>
@@ -93,21 +93,26 @@
                                     <div class="mb-3 row" >
                                         <div class="mb-3">
                                         
-                                            <label class="form-label fw-semibold">Employee Status</label>
+                                            <label class="form-label fw-semibold">Business Unit</label>
                                             
                                             <div>
                                                 <select class="form-select " data-kt-select2="true" data-placeholder="Select Name" name="is_active"
                                                 required="" id="employee_data">
-                                                <option value="1" @if (!empty(Request::get('is_active')) && Request::get('is_active') == '1') selected @endif>Active
-                                                    Employees</option>
-                                                <option value="2" @if (!empty(Request::get('is_active')) && Request::get('is_active') == '2') selected @endif>De-active
-                                                    Employees</option>
+                                                <option value="">Select Business Unit</option>
+                                                <option value="Candyland">CandyLand</option>
+                                                <option value="Bisconni">Bisconni</option>
+                                                <option value="Snackcity">Snackcity</option>
+                                                <option value="Hudson Pharma">Hudson Pharma</option>
+                                                <option value="Astro">Astro</option>  
+                                                <option value="Act Group">Act Group</option>  
+                                                <option value="Ismail Nutrition">Ismail Nutrition</option>   
+                                                <option value="Flour">Flour</option>
                                             </select>
                                             </div>
                                             
                                         </div>
 
-                                        <div class="mb-3">
+                                        {{-- <div class="mb-3">
                                             
                                             <label class="form-label fw-semibold">
                                                 <span>By Name</span>  
@@ -125,41 +130,15 @@
                                                 </select>
                                             </div>
                                             
-                                        </div>
+                                        </div> --}}
                                     </div>
                                     <div class="mb-3 row" >
                                         <div class="col-6">
                                         
-                                            <label class="form-label fw-semibold">Select Month</label>
-                                            
+                                            <label class="form-label fw-semibold">From Date</label>
+                                                <input type="date" class="form-control">
                                             <div>
-                                                <select class="form-select " data-kt-select2="true" data-placeholder="Select Month" name="m" required="required">
-                                                    <option value="">Select Month</option>
-                                                    <option value="01" @if (!empty($month) && $month == '01') selected  @elseif(empty($month) && date('m') == '01') selected  @endif>January
-                                                    </option>
-                                                    <option value="02" @if (!empty($month) && $month == '02') selected @elseif(empty($month) && date('m') == '02') selected  @endif>February
-                                                    </option>
-                                                    <option value="03" @if (!empty($month) && $month == '03') selected @elseif(empty($month) && date('m') == '03') selected  @endif>March
-                                                    </option>
-                                                    <option value="04" @if (!empty($month) && $month == '04') selected @elseif(empty($month) && date('m') == '04') selected @endif>April
-                                                    </option>
-                                                    <option value="05" @if (!empty($month) && $month == '05') selected @elseif(empty($month) && date('m') == '05') selected @endif>May
-                                                    </option>
-                                                    <option value="06" @if (!empty($month) && $month == '06') selected @elseif(empty($month) && date('m') == '06') selected @endif>June
-                                                    </option>
-                                                    <option value="07" @if (!empty($month) && $month == '07') selected @elseif(empty($month) && date('m') == '07') selected  @endif>July
-                                                    </option>
-                                                    <option value="08" @if (!empty($month) && $month == '08') selected @elseif(empty($month) && date('m') == '08') selected  @endif>August
-                                                    </option>
-                                                    <option value="09" @if (!empty($month) && $month == '09') selected @elseif(empty($month) && date('m') == '09') selected  @endif>September
-                                                    </option>
-                                                    <option value="10" @if (!empty($month) && $month == '10') selected  @elseif(empty($month) && date('m') == '10') selected @endif>October
-                                                    </option>
-                                                    <option value="11" @if (!empty($month) && $month == '11') selected  @elseif(empty($month) && date('m') == '11') selected @endif>November
-                                                    </option>
-                                                    <option value="12" @if (!empty($month) && $month == '12') selected @elseif(empty($month) && date('m') == '12') selected @endif>December
-                                                    </option>
-                                                </select>
+                                                
                                             </div>
 
                                             
@@ -167,19 +146,10 @@
                                     
                                         <div class="col-6">
                                             
-                                            <label class="form-label fw-semibold">Select Year</label>
+                                            <label class="form-label fw-semibold">To Date</label>
                                             
                                             <div>
-                                                <select class="form-select " data-kt-select2="true" data-placeholder="Select Year"  name="y" required="required">
-                                                    <option value="">Select Year</option>
-                                                    @if(!empty($dynamic_years))
-                                                        @foreach ($dynamic_years as $year_list)
-                                                        <option value="{{$year_list}}" @if (!empty($year) && $year == $year_list) selected @elseif(empty($year) && date('Y') == $year_list) selected  @endif>{{$year_list}}
-                                                        </option>
-                                                        @endforeach
-                                                    @endif
-                                                    
-                                                </select>
+                                                <input type="date" class="form-control">
                                             </div>
 
                                         </div>

@@ -2115,7 +2115,7 @@ class AttendanceController extends Controller
     }
 
     protected function monthly_attendance(Request $request){
-        // try{
+        try{
         
             $title = Self::TITLE_GLOBAL4;
       
@@ -2123,7 +2123,7 @@ class AttendanceController extends Controller
 
             $dynamic_years = $this->dynamic_year_drop_down();
 
-            $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
+            // $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
             if(!empty($request->is_active == "2")){
                 $employement_status = 0;
@@ -2185,12 +2185,12 @@ class AttendanceController extends Controller
             }
             else{
                 if($login_user[0]['employee_is_manager'] == 1){
-                    $all_employees = Employees::where('employee_isactive',$employement_status)->where(function($query){
-                        $query->where('employee_senior_manager',session('user_session'));
-                        $query->orWhere('employee_junior_manager',session('user_session'));
-                    })
-                    ->whereRaw($where_clause)->whereRaw($emp_name)
-                    ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                    // $all_employees = Employees::where('employee_isactive',$employement_status)->where(function($query){
+                    //     $query->where('employee_senior_manager',session('user_session'));
+                    //     $query->orWhere('employee_junior_manager',session('user_session'));
+                    // })
+                    // ->whereRaw($where_clause)->whereRaw($emp_name)
+                    // ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
                     $employee_id =  array_column($all_employees,'employee_id');
                     
@@ -2199,31 +2199,35 @@ class AttendanceController extends Controller
                     $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
                    
                 }else{
-                    $all_employees = Employees::where('employee_isactive',$employement_status)->where('employee_id',session('user_session'))->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                    // $all_employees = Employees::where('employee_isactive',$employement_status)->where('employee_id',session('user_session'))->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
                     
                     $where_clause_two = 'AND employee_id IN('.$all_employees[0]['employee_id'].')'; 
                    
                 }
             }
+
+            $departments = Department::get()->toArray();
            
             // $all_attendances = $this->get_monthly_attendance($leave_name,$last_date,$year,$month,$employement_status,$where_clause_two);
             $all_attendances = $this->get_monthly_attendance_all_employees();
             $all_attendances = json_decode(json_encode($all_attendances), true);
+
+            // dd($all_attendances);
          
-            $send_data = compact('title','login_user','month','year','employee_locations','dynamic_years','all_attendances','all_employees');
+            $send_data = compact('title','login_user','month','year','dynamic_years','all_attendances','departments');
 
             return view('attendance.all-employee-manage-attendance',$send_data);
           
-        // }catch(\Exception $e){
-        //     $this->create_error_log('View All Employees Monthly Attendance', $e);
-        //     $send_data = compact('title');
-        //     return $e->getMessage();
-        //     // return view('errors.500');
-        // }finally{
+        }catch(\Exception $e){
+            $this->create_error_log('View All Employees Monthly Attendance', $e);
+            $send_data = compact('title');
+            return $e->getMessage();
+            // return view('errors.500');
+        }finally{
 
-        //     ActivityTracker::track_activity('View All Employees Monthly  Attendance');
+            ActivityTracker::track_activity('View All Employees Monthly  Attendance');
           
-        // }
+        }
     }
 
     protected function download_monthly_attendance(Request $request){
