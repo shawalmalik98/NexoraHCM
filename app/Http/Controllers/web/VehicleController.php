@@ -156,6 +156,7 @@ class VehicleController extends Controller
                 $add_vehicle->vehicle_chassis_number = $vehicleData->input('vehicle_chassis_number');
                 $add_vehicle->vehicle_amount = $vehicleData->input('vehicle_amount');
                 // $add_vehicle->vehicle_status = $vehicleData->input('vehicle_status');
+                $add_vehicle->vehicle_status = '1';
                 $add_vehicle->vehicle_ownership = $vehicleData->input('vehicle_ownership');
                 // $add_vehicle->vehicle_installment = $vehicleData->input('vehicle_installment');
                 // $add_vehicle->vehicle_installment_date = $vehicleData->input('vehicle_installment_date');

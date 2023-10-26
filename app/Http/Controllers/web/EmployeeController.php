@@ -122,29 +122,29 @@ class EmployeeController extends Controller
             $login_user = $this->get_login_user_detail();
 
             $all_departments = Department::get()->toArray();
-
+           
             $all_companies = Company::get()->toArray();
-
+            
             $all_locations = OfficeLocation::get()->toArray();
-
+          
             $all_banks = Bank::get()->toArray();
-
+           
             $no_of_employees = HrmSetting::get(['no_of_employees','gross_salary_ratio'])->toArray();
-
+           
             $employee_active = Employees::where('employee_isactive', '=', 1)->count();
 
             $reporting_managers = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_is_manager', 1)->where('employee_isactive',1)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
-
+            
             $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
 
             $get_modules = SystemModule::orderBy('module_type','ASC')->get()->toArray();
-
+           
             $randomPassword = Str::random(5);
 
             $manage_leaves = LeaveManagement::get()->toArray();
 
             $manage_funds = Fund::get()->toArray();
-            
+           
             $employee_group = EmployeeGroup::get()->toArray();
 
             $email_config = EmailConfiguration::get(['email_config_id'])->toArray();
@@ -160,6 +160,7 @@ class EmployeeController extends Controller
             }
 
             return view('employee.add-employee', $send_data);
+            // return view('employee.add-employee-new', $send_data);
         }catch(\Exception $e){
 
             $this->create_error_log('Open Add Employee Page', $e);
