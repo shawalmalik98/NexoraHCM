@@ -2121,70 +2121,100 @@ class AttendanceController extends Controller
       
             $login_user = $this->get_login_user_detail();
 
-            $dynamic_years = $this->dynamic_year_drop_down();
+            // $dynamic_years = $this->dynamic_year_drop_down();
 
             // $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            if(!empty($request->is_active == "2")){
-                $employement_status = 0;
-            }elseif(!empty($request->is_active == "0")){
-                $employement_status = 0;
-            }else{
-                $employement_status = 1;
+            // if(!empty($request->is_active == "2")){
+            //     $employement_status = 0;
+            // }elseif(!empty($request->is_active == "0")){
+            //     $employement_status = 0;
+            // }else{
+            //     $employement_status = 1;
+            // }
+
+            // dd(date('d'));
+
+            if(empty($request->from_date) && empty($request->to_date)){
+                if(date('d') >= '26'){
+                    $from_date = date('Y-m-26');
+                    $to_date = date('Y-m-d');
+                }else{
+                    $today = new DateTime();
+                    $today->modify('first day of previous month');
+                    $today->modify('+25 days');
+                    $from_date = $today->format('Y-m-d');
+                    $to_date = date('Y-m-25');
+                }
             }
         
             $where_clause = '1=1';
-            if(!empty($request->employee_location)){
-                $where_clause   = ' AND employee_location = '.$request->employee_location;  
+
+            if(!empty($request->department_id)){
+                $where_clause .= ' AND e.employee_department = '.$request->department_id;
             }
-            $emp_name = '1=1';
-            if($request->input('emp_name') != '' && is_numeric($request->input('emp_name'))){
-                $emp_name  .= ' AND employee_id = "'. $request->input('emp_name').'"';  
+
+            if(!empty($request->business_unit)){
+                $where_clause .= " AND e.business_unit = '".$request->business_unit."'";
             }
+
+            if(!empty($request->from_date)){
+                $from_date = $request->from_date;
+            }
+
+            if(!empty($request->to_date)){
+                $to_date = $request->to_date;
+            }
+
+
+            // $emp_name = '1=1';
+            // if($request->input('emp_name') != '' && is_numeric($request->input('emp_name'))){
+            //     $emp_name  .= ' AND employee_id = "'. $request->input('emp_name').'"';  
+            // }
           
-            if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12){
-                $month = $request->input('m');
+            // if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12){
+            //     $month = $request->input('m');
                
-            }else{
-                $month = date('m');
+            // }else{
+            //     $month = date('m');
              
-            }
+            // }
             
-            if($request->input('y') != '' && is_numeric($request->input('y')) && $request->input('y') >= 1900 && $request->input('y') <= 3000){
-                $year = $request->input('y');
-            }else{
-                $year = date('Y');
-            }
-            $monthdays  = date('t',strtotime($year.'-'.$month.'-01'));
-            $last_date = $year.'-'.$month.'-'.$monthdays;
+            // if($request->input('y') != '' && is_numeric($request->input('y')) && $request->input('y') >= 1900 && $request->input('y') <= 3000){
+            //     $year = $request->input('y');
+            // }else{
+            //     $year = date('Y');
+            // }
+            // $monthdays  = date('t',strtotime($year.'-'.$month.'-01'));
+            // $last_date = $year.'-'.$month.'-'.$monthdays;
            
-            $leave_name = LeaveManagement::get('leave_name')->pluck('leave_name')->toArray();
-            array_push($leave_name,"RPL");
-            $leave_name = "'" . implode("', '", $leave_name) . "'";
+            // $leave_name = LeaveManagement::get('leave_name')->pluck('leave_name')->toArray();
+            // array_push($leave_name,"RPL");
+            // $leave_name = "'" . implode("', '", $leave_name) . "'";
             
-            if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 3){
+            // if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 3){
 
-                $all_employees = Employees::where('employee_isactive', $employement_status);
-                if ($where_clause != '1=1') {
-                    $all_employees->whereRaw(substr($where_clause, 5));
-                }
-                if ($emp_name != '1=1') {
-                    $all_employees->whereRaw($emp_name);
-                }
-                $all_employees_data = $all_employees
-                    ->get(['employee_id', 'employee_code', 'employee_name', 'employee_location'])
-                    ->toArray();
+            //     $all_employees = Employees::where('employee_isactive', $employement_status);
+            //     if ($where_clause != '1=1') {
+            //         $all_employees->whereRaw(substr($where_clause, 5));
+            //     }
+            //     if ($emp_name != '1=1') {
+            //         $all_employees->whereRaw($emp_name);
+            //     }
+            //     $all_employees_data = $all_employees
+            //         ->get(['employee_id', 'employee_code', 'employee_name', 'employee_location'])
+            //         ->toArray();
 
-                $employee_id =  array_column($all_employees_data,'employee_id');
+            //     $employee_id =  array_column($all_employees_data,'employee_id');
 
-                $all_employees = $all_employees_data;
+            //     $all_employees = $all_employees_data;
                 
-                $employee_id = "'" . implode("', '", $employee_id) . "'";
+            //     $employee_id = "'" . implode("', '", $employee_id) . "'";
                 
-                $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
-            }
-            else{
-                if($login_user[0]['employee_is_manager'] == 1){
+            //     $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
+            // }
+            // else{
+                // if($login_user[0]['employee_is_manager'] == 1){
                     // $all_employees = Employees::where('employee_isactive',$employement_status)->where(function($query){
                     //     $query->where('employee_senior_manager',session('user_session'));
                     //     $query->orWhere('employee_junior_manager',session('user_session'));
@@ -2192,29 +2222,31 @@ class AttendanceController extends Controller
                     // ->whereRaw($where_clause)->whereRaw($emp_name)
                     // ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
-                    $employee_id =  array_column($all_employees,'employee_id');
+                    // $employee_id =  array_column($all_employees,'employee_id');
                     
-                    $employee_id = "'" . implode("', '", $employee_id) . "'";
+                    // $employee_id = "'" . implode("', '", $employee_id) . "'";
                 
-                    $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
+                    // $where_clause_two = 'AND employee_id IN('.$employee_id.')'; 
                    
-                }else{
+                // }else{
                     // $all_employees = Employees::where('employee_isactive',$employement_status)->where('employee_id',session('user_session'))->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
                     
-                    $where_clause_two = 'AND employee_id IN('.$all_employees[0]['employee_id'].')'; 
+                    // $where_clause_two = 'AND employee_id IN('.$all_employees[0]['employee_id'].')'; 
                    
-                }
-            }
+                // }
+            // }
+
+            // dd($where_clause);
 
             $departments = Department::get()->toArray();
            
             // $all_attendances = $this->get_monthly_attendance($leave_name,$last_date,$year,$month,$employement_status,$where_clause_two);
-            $all_attendances = $this->get_monthly_attendance_all_employees();
+            $all_attendances = $this->get_monthly_attendance_all_employees($from_date , $to_date , $where_clause);
             $all_attendances = json_decode(json_encode($all_attendances), true);
 
             // dd($all_attendances);
          
-            $send_data = compact('title','login_user','month','year','dynamic_years','all_attendances','departments');
+            $send_data = compact('title','login_user','all_attendances','departments','from_date','to_date');
 
             return view('attendance.all-employee-manage-attendance',$send_data);
           
