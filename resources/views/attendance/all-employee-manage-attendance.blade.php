@@ -101,7 +101,7 @@
                                                 <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
                                                 <option value="">Select Business Unit</option>
                                                 <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
-                                                <option value="Candyland" @if (Request::get('business_unit') == 'CandyLand') selected @endif>CandyLand</option>
+                                                <option value="Candyland" @if (Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
                                                 <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
                                                 <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
                                                 <option value="Hudson Pharma" @if (Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
