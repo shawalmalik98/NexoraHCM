@@ -81,8 +81,9 @@
                                             <span>Department</span>
                                         </label>
                                         <div>
-                                            <select class="form-select" data-kt-select2="true" name="department_id" data-placeholder="Select Department" id="employee_location">
+                                            <select class="form-select" data-kt-select2="true" name="department_id" data-placeholder="Select Department">
                                                 <option value="">Select Department</option>
+                                                <option value="All" @if (Request::get('department_id') == 'All') selected @endif>All Departments</option>
                                                 @if(!empty($departments))
                                                     @foreach ($departments as $department)
                                                         <option value="{{ $department['department_id'] }}" @if (Request::get('department_id') == $department['department_id']) selected @endif>{{ $department['department_name'] }}</option>
@@ -97,8 +98,9 @@
                                             <label class="form-label fw-semibold">Business Unit</label>
                                             
                                             <div>
-                                                <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit" id="employee_data">
+                                                <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
                                                 <option value="">Select Business Unit</option>
+                                                <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
                                                 <option value="Candyland" @if (Request::get('business_unit') == 'CandyLand') selected @endif>CandyLand</option>
                                                 <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
                                                 <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>

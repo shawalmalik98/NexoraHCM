@@ -2150,11 +2150,11 @@ class AttendanceController extends Controller
         
             $where_clause = '1=1';
 
-            if(!empty($request->department_id)){
+            if(!empty($request->department_id) && $request->business_unit != 'All'){
                 $where_clause .= ' AND e.employee_department = '.$request->department_id;
             }
 
-            if(!empty($request->business_unit)){
+            if(!empty($request->business_unit) && $request->business_unit != 'All'){
                 $where_clause .= " AND e.business_unit = '".$request->business_unit."'";
             }
 
