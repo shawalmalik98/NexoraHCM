@@ -506,6 +506,13 @@ trait AttendanceEmployee {
 			FROM master.dbo.spt_values
 			WHERE TYPE = 'P'
 			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+			AND NOT EXISTS (
+				SELECT 1 FROM tbl_attendance WHERE 
+				att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+				att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+				att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+				att_employee_id = e.employee_id
+			)
 		) AS DateRange
 		WHERE 
 			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
@@ -544,6 +551,13 @@ trait AttendanceEmployee {
 			FROM master.dbo.spt_values
 			WHERE TYPE = 'P'
 			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+			AND NOT EXISTS (
+				SELECT 1 FROM tbl_attendance WHERE 
+				att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+				att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+				att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+				att_employee_id = e.employee_id
+			)
 		) AS DateRange
 		WHERE 
 			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
