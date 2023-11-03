@@ -347,7 +347,7 @@ class MarkAttendanceApiController extends Controller
 		
 							}elseif(abs($diff) >= 300 ){
 								
-								return $this->api_response_json(FALSE,"You are not allowed to checkout because you exceed 5 Hours from your shift.","",200);
+								// return $this->api_response_json(FALSE,"You are not allowed to checkout because you exceed 5 Hours from your shift.","",200);
 
 							}
 
@@ -413,7 +413,7 @@ class MarkAttendanceApiController extends Controller
 			
 								}elseif(abs($diff) >= 300 ){
 									
-									return $this->api_response_json(FALSE,"You are not allowed to checkout because you exceed 5 Hours from your shift.","",200);
+									// return $this->api_response_json(FALSE,"You are not allowed to checkout because you exceed 5 Hours from your shift.","",200);
 
 								}
 
