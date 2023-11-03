@@ -2144,7 +2144,7 @@ class AttendanceController extends Controller
                     $today->modify('first day of previous month');
                     $today->modify('+25 days');
                     $from_date = $today->format('Y-m-d');
-                    $to_date = date('Y-m-25');
+                    $to_date = date('Y-m-d');
                 }
             }
         

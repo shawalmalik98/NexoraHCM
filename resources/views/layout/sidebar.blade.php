@@ -895,7 +895,7 @@
                                             
                     @if(!empty($permission) && ($permission[32]['permission_status'] == 1 || $permission[33]['permission_status'] == 1 || $permission[49]['permission_status'] == 1 || $permission[50]['permission_status'] == 1 || $permission[36]['permission_status'] == 1 ) && ($permission[32]['module_accessibility'] == 1 || $permission[33]['module_accessibility'] == 1 || $permission[49]['module_accessibility'] == 1 || $permission[50]['module_accessibility'] == 1 || $permission[36]['module_accessibility'] == 1 ))
                         
-                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-rooms' || $title == 'manage-locations' || $title == 'system-settings' || $title == 'manage-companies') show @endif">
+                        <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-rooms' || $title == 'manage-locations' || $title == 'system-settings' || $title == 'manage-companies' || $title == 'appflow-detail') show @endif">
 
                             <span class="menu-link">
                                 <span class="menu-icon">
@@ -981,6 +981,19 @@
                                     </div>
 
                                 @endif
+
+                                {{-- @if(!empty($permission)  && $permission[36]['module_accessibility'] == 1 && $permission[36]['permission_status'] == 1) --}}
+
+                                    <div class="menu-item search-item">
+                                        <a class="menu-link @if($title == 'appflow' || $title == 'appflow-detail') active @endif" href="{{url('appflow')}}">
+                                            <span class="menu-icon">
+                                                <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/System Settings.png') }}" />
+                                            </span>
+                                            <span class="menu-title">Approval Flow</span>
+                                        </a>
+                                    </div>
+
+                                {{-- @endif --}}
                                 
                             </div>
                         </div>

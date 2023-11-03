@@ -159,8 +159,8 @@ class EmployeeController extends Controller
                 }
             }
 
-            return view('employee.add-employee', $send_data);
-            // return view('employee.add-employee-new', $send_data);
+            // return view('employee.add-employee', $send_data);
+            return view('employee.add-employee-new', $send_data);
         }catch(\Exception $e){
 
             $this->create_error_log('Open Add Employee Page', $e);
