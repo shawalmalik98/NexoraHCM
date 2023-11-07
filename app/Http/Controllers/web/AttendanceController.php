@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\File;
 use Rap2hpoutre\FastExcel\FastExcel;
 use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Common\Entity\Style\Color;
+
 
 class AttendanceController extends Controller
 {   
@@ -2216,7 +2218,123 @@ class AttendanceController extends Controller
          
             $send_data = compact('title','login_user','month','year','dynamic_years','all_attendances','departments');
 
-            return view('attendance.all-employee-manage-attendance',$send_data);
+            if($request->download == 'TRUE'){
+
+                $all_attendances = DB::select("
+                SELECT 
+                e.employee_code as 'Employee Code', 
+                e.employee_name as 'Employee Name',
+                FORMAT(CAST(e.employee_doj AS DATE), 'dd MMM, yyyy') as 'Employee Doj',
+                dep.department_name as 'Department Name', 
+                des.designation_name as 'Designation Name',
+                e.business_unit as 'Business Unit',
+                CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
+                
+                (
+                    (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+                    (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+                    (SELECT COUNT(*) 
+                FROM (
+                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+                    FROM master.dbo.spt_values
+                    WHERE TYPE = 'P'
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+                ) AS DateRange
+                WHERE 
+                    e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+                        
+                    ) AS 'Absent',
+                
+                    SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+                OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'DA',
+                
+                    SUM(CASE WHEN att_check_overall_status = 'leaves' 
+                OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS 'Total Leaves',
+                
+                (SELECT COUNT(*) 
+                FROM (
+                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+                    FROM master.dbo.spt_values
+                    WHERE TYPE = 'P'
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+                ) AS DateRange
+                WHERE 
+                    e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
+                    ) as 'Off Days Count',
+                
+                SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+                OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
+                
+                (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - (
+                    (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+                    (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+                    (SELECT COUNT(*) 
+                FROM (
+                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+                    FROM master.dbo.spt_values
+                    WHERE TYPE = 'P'
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+                ) AS DateRange
+                WHERE 
+                    e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))     
+                    ) AS 'Salary Days',
+
+                (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - (
+                    (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+                    (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+                    (SELECT COUNT(*) 
+                FROM (
+                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+                    FROM master.dbo.spt_values
+                    WHERE TYPE = 'P'
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+                ) AS DateRange
+                WHERE 
+                e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))      
+                ) AS 'Extra Working'
+
+                FROM tbl_employees e
+                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '2023-09-26' 
+                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '2023-10-25' 
+                LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
+                LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
+                LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+                LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+                GROUP BY 
+                e.employee_code, 
+                e.employee_name, 
+                e.business_unit, 
+                dep.department_name, 
+                des.designation_name, 
+                e.employee_offdays,
+                rep.employee_code,
+                rep.employee_name,
+                e.employee_doj
+                ");
+
+                $all_attendance = json_decode(json_encode($all_attendances), true);
+
+                // $header_style = (new Style())->setFontBold();
+                $header_style = (new Style())
+                ->setFontBold(true)
+                ->setBackgroundColor(Color::YELLOW);
+
+                return (new FastExcel($all_attendance))->headerStyle($header_style)->download('payroll-Attendance.xlsx');
+            }else{
+                return view('attendance.all-employee-manage-attendance',$send_data);
+            }
+
+            
           
         }catch(\Exception $e){
             $this->create_error_log('View All Employees Monthly Attendance', $e);
