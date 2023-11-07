@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\File;
 use Rap2hpoutre\FastExcel\FastExcel;
 use OpenSpout\Common\Entity\Style\Style;
-use OpenSpout\Common\Entity\Style\Color;
 
 
 class AttendanceController extends Controller
@@ -2356,10 +2355,7 @@ class AttendanceController extends Controller
 
                 $all_attendance = json_decode(json_encode($all_attendances), true);
 
-                // $header_style = (new Style())->setFontBold();
-                $header_style = (new Style())
-                ->setFontBold(true)
-                ->setBackgroundColor(Color::YELLOW);
+                $header_style = (new Style())->setFontBold();
 
                 return (new FastExcel($all_attendance))->headerStyle($header_style)->download('payroll-Attendance.xlsx');
             }else{
