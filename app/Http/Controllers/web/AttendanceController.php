@@ -2251,37 +2251,6 @@ class AttendanceController extends Controller
 
             if($request->download == 'TRUE'){
 
-                if(empty($request->from_date) && empty($request->to_date)){
-                    if(date('d') >= '26'){
-                        $from_date = date('Y-m-26');
-                        $to_date = date('Y-m-d');
-                    }else{
-                        $today = new DateTime();
-                        $today->modify('first day of previous month');
-                        $today->modify('+25 days');
-                        $from_date = $today->format('Y-m-d');
-                        $to_date = date('Y-m-d');
-                    }
-                }
-            
-                $where_clause = '1=1';
-    
-                if(!empty($request->department_id) && $request->department_id != 'All'){
-                    $where_clause .= ' AND e.employee_department = '.$request->department_id;
-                }
-    
-                if(!empty($request->business_unit) && $request->business_unit != 'All'){
-                    $where_clause .= " AND e.business_unit = '".$request->business_unit."'";
-                }
-    
-                if(!empty($request->from_date)){
-                    $from_date = $request->from_date;
-                }
-    
-                if(!empty($request->to_date)){
-                    $to_date = $request->to_date;
-                }
-
                 $all_attendances = DB::select("
                 SELECT 
                 e.employee_code as 'Employee Code', 

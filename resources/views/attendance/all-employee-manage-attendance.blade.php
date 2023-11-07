@@ -176,7 +176,7 @@
                                         <th class="text-center">Patrol</th>
                                         <th class="text-center">Salary Days</th>
                                         <th class="text-center">Extra Working</th>
-                                        <th class="ps-4">Action</th>
+                                        {{-- <th class="ps-4">Action</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -198,11 +198,11 @@
                                                 <td class="text-center">{{$all_attendance['Patrol']}}</td>
                                                 <td class="text-center">{{$all_attendance['salary_days']}}</td>
                                                 <td class="text-center">{{$all_attendance['salary_days']}}</td>
-                                                <td class="ps-4">
+                                                {{-- <td class="ps-4">
                                                     <a class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="View Attendance">
                                                         <i class="fa fa-eye"></i>
                                                     </a>
-                                                </td>
+                                                </td> --}}
                                             </tr>
                                         @endforeach
                                     @endif
