@@ -143,7 +143,7 @@
                                     </div>
 
                                     <div class="d-flex justify-content-end">
-                                        @if (!empty(Request::get('employee_location')) || !empty(Request::get('is_active')) || !empty(Request::get('emp_name')) ||  !empty(Request::get('m')) || !empty(Request::get('y')))
+                                        @if (!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) ||  !empty(Request::get('from_date')) || !empty(Request::get('to_date')))
                                             <a href="{{ url('monthly-attendance') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
                                         @endif
                                         <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" >Close</button>

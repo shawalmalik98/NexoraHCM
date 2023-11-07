@@ -2251,6 +2251,37 @@ class AttendanceController extends Controller
 
             if($request->download == 'TRUE'){
 
+                if(empty($request->from_date) && empty($request->to_date)){
+                    if(date('d') >= '26'){
+                        $from_date = date('Y-m-26');
+                        $to_date = date('Y-m-d');
+                    }else{
+                        $today = new DateTime();
+                        $today->modify('first day of previous month');
+                        $today->modify('+25 days');
+                        $from_date = $today->format('Y-m-d');
+                        $to_date = date('Y-m-d');
+                    }
+                }
+            
+                $where_clause = '1=1';
+    
+                if(!empty($request->department_id) && $request->department_id != 'All'){
+                    $where_clause .= ' AND e.employee_department = '.$request->department_id;
+                }
+    
+                if(!empty($request->business_unit) && $request->business_unit != 'All'){
+                    $where_clause .= " AND e.business_unit = '".$request->business_unit."'";
+                }
+    
+                if(!empty($request->from_date)){
+                    $from_date = $request->from_date;
+                }
+    
+                if(!empty($request->to_date)){
+                    $to_date = $request->to_date;
+                }
+
                 $all_attendances = DB::select("
                 SELECT 
                 e.employee_code as 'Employee Code', 
@@ -2262,17 +2293,24 @@ class AttendanceController extends Controller
                 CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
                 
                 (
-                    (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+                    (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
                     (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
                     SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
                     SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
                     SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
                     (SELECT COUNT(*) 
                 FROM (
-                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+                    SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
                     FROM master.dbo.spt_values
                     WHERE TYPE = 'P'
-                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                    AND NOT EXISTS (
+                        SELECT 1 FROM tbl_attendance WHERE 
+                        att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+                        att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+                        att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                        att_employee_id = e.employee_id
+                    )
                 ) AS DateRange
                 WHERE 
                     e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
@@ -2287,10 +2325,10 @@ class AttendanceController extends Controller
                 
                 (SELECT COUNT(*) 
                 FROM (
-                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+                    SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
                     FROM master.dbo.spt_values
                     WHERE TYPE = 'P'
-                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
                 ) AS DateRange
                 WHERE 
                     e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
@@ -2299,48 +2337,65 @@ class AttendanceController extends Controller
                 SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
                 OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
                 
-                (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - (
-                    (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+                (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - (
+                    (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
                     (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
                     SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
                     SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
                     SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
                     (SELECT COUNT(*) 
                 FROM (
-                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+                    SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
                     FROM master.dbo.spt_values
                     WHERE TYPE = 'P'
-                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                    AND NOT EXISTS (
+                        SELECT 1 FROM tbl_attendance WHERE 
+                        att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+                        att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+                        att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                        att_employee_id = e.employee_id
+                    )
                 ) AS DateRange
                 WHERE 
-                    e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))     
+                    e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+                        
                     ) AS 'Salary Days',
 
-                (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - (
-                    (DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
-                    (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
-                    SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
-                    SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
-                    SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
-                    (SELECT COUNT(*) 
-                FROM (
-                    SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
-                    FROM master.dbo.spt_values
-                    WHERE TYPE = 'P'
-                    AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
-                ) AS DateRange
-                WHERE 
-                e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))      
-                ) AS 'Extra Working'
+                    (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - (
+                        (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
+                        (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+                        (SELECT COUNT(*) 
+                    FROM (
+                        SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
+                        FROM master.dbo.spt_values
+                        WHERE TYPE = 'P'
+                        AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                        AND NOT EXISTS (
+                            SELECT 1 FROM tbl_attendance WHERE 
+                            att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+                            att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+                            att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                            att_employee_id = e.employee_id
+                        )
+                    ) AS DateRange
+                    WHERE 
+                        e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+                            
+                        ) AS 'Extra Working'
 
                 FROM tbl_employees e
                 LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
-                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '2023-09-26' 
-                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '2023-10-25' 
+                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
+                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
                 LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
                 LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
                 LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
                 LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+                WHERE $where_clause
                 GROUP BY 
                 e.employee_code, 
                 e.employee_name, 
@@ -2348,6 +2403,7 @@ class AttendanceController extends Controller
                 dep.department_name, 
                 des.designation_name, 
                 e.employee_offdays,
+                e.employee_id,
                 rep.employee_code,
                 rep.employee_name,
                 e.employee_doj
