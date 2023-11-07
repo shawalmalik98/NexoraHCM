@@ -482,7 +482,7 @@ trait AttendanceEmployee {
 			  
 	}
 
-	protected function get_monthly_attendance_all_employees(){
+	protected function get_monthly_attendance_all_employees($from_date , $to_date , $where_clause){
 		$all_attendances = DB::select("
 		SELECT 
 		e.employee_id,
@@ -495,17 +495,24 @@ trait AttendanceEmployee {
 		CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
 		
 		(
-			(DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+			(DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
 			(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
 			(SELECT COUNT(*) 
 		FROM (
-			SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+			SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
 			FROM master.dbo.spt_values
 			WHERE TYPE = 'P'
-			AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+			AND NOT EXISTS (
+				SELECT 1 FROM tbl_attendance WHERE 
+				att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+				att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+				att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+				att_employee_id = e.employee_id
+			)
 		) AS DateRange
 		WHERE 
 			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
@@ -520,10 +527,10 @@ trait AttendanceEmployee {
 		
 		(SELECT COUNT(*) 
 		FROM (
-			SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+			SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
 			FROM master.dbo.spt_values
 			WHERE TYPE = 'P'
-			AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
 		) AS DateRange
 		WHERE 
 			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
@@ -532,18 +539,25 @@ trait AttendanceEmployee {
 		SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
 		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
 		
-		(DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - (
-			(DATEDIFF(DAY, '2023-09-26', '2023-10-25') + 1) - 
+		(DATEDIFF(DAY, '$from_date', '$to_date') + 1) - (
+			(DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
 			(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
 			(SELECT COUNT(*) 
 		FROM (
-			SELECT DATEADD(DAY, number, '2023-09-26') AS DateInMonth
+			SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
 			FROM master.dbo.spt_values
 			WHERE TYPE = 'P'
-			AND number BETWEEN 0 AND DATEDIFF(DAY, '2023-09-26', '2023-10-25')
+			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+			AND NOT EXISTS (
+				SELECT 1 FROM tbl_attendance WHERE 
+				att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+				att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+				att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+				att_employee_id = e.employee_id
+			)
 		) AS DateRange
 		WHERE 
 			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
@@ -551,12 +565,13 @@ trait AttendanceEmployee {
 			) AS salary_days
 		FROM tbl_employees e
 		LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
-		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '2023-09-26' 
-		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '2023-10-25' 
+		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
+		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
 		LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
 		LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
 		LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
 		LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+		WHERE $where_clause
 		GROUP BY 
 		e.employee_code, 
 		e.employee_name, 

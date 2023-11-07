@@ -159,8 +159,8 @@ class EmployeeController extends Controller
                 }
             }
 
-            return view('employee.add-employee', $send_data);
-            // return view('employee.add-employee-new', $send_data);
+            // return view('employee.add-employee', $send_data);
+            return view('employee.add-employee-new', $send_data);
         }catch(\Exception $e){
 
             $this->create_error_log('Open Add Employee Page', $e);
@@ -998,7 +998,7 @@ class EmployeeController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
-            $employee_detail = Employees::join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->where('employee_id', $employee_id)->get()->toArray();
+            $employee_detail = Employees::leftJoin('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->where('employee_id', $employee_id)->get()->toArray();
 
             $employee_bank =  Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')->where('employee_id', $employee_id)->get(['employee_id','employee_name','employee_code','information_id','bankname','bankcode','accountno','accounttitle','ibannumber','permanentaddress','currentaddress','emergency_contact_no','emergency_name','employee_relation','citizenship','maritalstatus','dob','pob','religion'])->toArray();
 
