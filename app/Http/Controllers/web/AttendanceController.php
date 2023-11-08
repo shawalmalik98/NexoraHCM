@@ -2674,7 +2674,7 @@ class AttendanceController extends Controller
                         }
                     
                         if($attendance_date['att_check_out_status'] == '1'){
-                            $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0002000'.$attendance_date['employee_code'] .'0063'. "\n";
+                            $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_out_time'])).'0002000'.$attendance_date['employee_code'] .'0063'. "\n";
                             fwrite($file, $record);
                         }
                     }
