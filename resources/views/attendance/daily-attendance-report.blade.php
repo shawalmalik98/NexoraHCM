@@ -172,7 +172,7 @@
                                     <div class="separator border-gray-200"></div>
                                     <div class="px-7 py-5">
 
-                                        <div class="mb-3">
+                                        {{-- <div class="mb-3">
                                             
                                             <label class="form-label fw-semibold">
                                                 <span>Office Location</span>
@@ -189,6 +189,46 @@
                                                 </select>
                                             </div>
                                             
+                                        </div> --}}
+
+                                        <div class="mb-3">
+                                    
+                                            <label class="form-label fw-semibold">
+                                                <span>Department</span>
+                                            </label>
+                                            <div>
+                                                <select class="form-select" data-kt-select2="true" name="department_id" data-placeholder="Select Department">
+                                                    <option value="">Select Department</option>
+                                                    <option value="All" @if (Request::get('department_id') == 'All') selected @endif>All Departments</option>
+                                                    @if(!empty($departments))
+                                                        @foreach ($departments as $department)
+                                                            <option value="{{ $department['department_id'] }}" @if (Request::get('department_id') == $department['department_id']) selected @endif>{{ $department['department_name'] }}</option>
+                                                        @endforeach
+                                                    @endif                                                             
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 row" >
+                                            <div class="mb-3">
+                                            
+                                                <label class="form-label fw-semibold">Business Unit</label>
+                                                
+                                                <div>
+                                                    <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
+                                                    <option value="">Select Business Unit</option>
+                                                    <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
+                                                    <option value="Candyland" @if (Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
+                                                    <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
+                                                    <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
+                                                    <option value="Hudson Pharma" @if (Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
+                                                    <option value="Astro" @if (Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
+                                                    <option value="Act Group" @if (Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
+                                                    <option value="Ismail Nutrition" @if (Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>
+                                                    <option value="Flour" @if (Request::get('business_unit') == 'Flour') selected @endif>Flour</option>
+                                                </select>
+                                                </div>
+                                                
+                                            </div>
                                         </div>
 
                                         <div class="mb-3">
@@ -207,7 +247,7 @@
 
                                         <div class="mb-10">
                                             
-                                            <label class="form-label fw-semibold">Select Date:</label>
+                                            <label class="form-label fw-semibold">Select Date</label>
                                             
                                             <div class="position-relative d-flex align-items-center">
                                                 <input type="date" class="form-control" placeholder="Select a date" name="d"  @if(!empty(Request::get('d'))) value="{{ Request::get('d') }}" @else value="{{ date('Y-m-d') }}"  @endif  max="{{ date('Y-m-d') }}" required/>
@@ -216,7 +256,7 @@
                                         </div>
                                         
                                         <div class="d-flex justify-content-end">
-                                            @if (!empty(Request::get('employee_location')) || !empty(Request::get('d')) || !empty(Request::get('is_active')))
+                                            @if (!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('d')) || !empty(Request::get('is_active')))
                                                 <a href="{{ url('daily-attendance-report') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2 ">Reset Filter</a>
                                             @endif
                                             <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>

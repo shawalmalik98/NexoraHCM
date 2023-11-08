@@ -64,6 +64,7 @@
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
                                         <th class="ps-4">Employee Name</th>
+                                        <th>Depart &amp; Desig</th>
                                         <th>Device Name</th>
                                         <th>Device Token</th>
                                         <th>Device Status</th>
@@ -77,6 +78,10 @@
                                         @foreach($all_devices as $all_device)
                                             <tr>
                                                 <td class="ps-4">{{$all_device['Employee Code']}} - {{$all_device['Employee Name']}}</td>
+                                                <td>
+                                                    <p class="text-dark fw-bold mb-1 fs-6"> {{ $all_device['Department Name'] }}</p>
+                                                    <p class="text-muted fw-semibold text-muted fs-7">{{$all_device['Designation Name'] }}</p>
+                                                </td>
                                                 <td> {{ $all_device['Device Name']}}</td>
                                                 <td> {{ $all_device['Device Token']}}</td>
                                                 <td>

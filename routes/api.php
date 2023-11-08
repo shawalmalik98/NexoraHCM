@@ -95,7 +95,8 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         // resignation start
         Route::get('employee-resignation', [ResignationController::class , 'employee_resignation']);
         Route::post('add-employee-resignation', [ResignationController::class, 'add_employee_resignation']);
-        Route::get('resignations', [ResignationController::class , 'all_employee_resignation']);
+        // Route::get('resignations', [ResignationController::class , 'all_employee_resignation']);
+        
         // resignation end
 
 

@@ -171,14 +171,13 @@ class LoginController extends Controller
                }
 
                if(!empty($request->history_records)){
-                    if($request->history_records == "15"){
+                    if($request->history_records == "7"){
+                        $lastdays = date('Y-m-d', strtotime('-7 days'));
+                    }elseif($request->history_records == "15"){
                         $lastdays = date('Y-m-d', strtotime('-15 days'));
-
                     }else{
-
                         $lastdays = date('Y-m-d', strtotime('-30 days'));
-                    }
-                    
+                    } 
                     $where_clause = "login_history_time >= '" .$lastdays. "'";
                 }
 
@@ -197,7 +196,7 @@ class LoginController extends Controller
                 ->whereRaw($where_clause)
                 ->orderBy('tbl_login_history.login_history_id', 'DESC')
                 ->get(['employee_code','employee_name','login_history_time','login_history_ip','login_history_country','login_history_city','login_history_latitude','login_history_longitude','login_history_source','login_employee_device','login_history_session_token'])->toArray();
-            
+                
             }
             $send_data = compact('title','login_user','history');
 

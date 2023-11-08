@@ -1331,11 +1331,19 @@ class AttendanceController extends Controller
       
             $login_user = $this->get_login_user_detail();
 
-            $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
+            // $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
             $where_clause = '1=1';
-            if(!empty($request->employee_location)){
-                $where_clause .= " AND employee_location = '".$request->employee_location."'";
+            // if(!empty($request->employee_location)){
+            //     $where_clause .= " AND employee_location = '".$request->employee_location."'";
+            // }
+
+            if(!empty($request->department_id) && $request->department_id != 'All'){
+                $where_clause .= ' AND employee_department = '.$request->department_id;
+            }
+
+            if(!empty($request->business_unit) && $request->business_unit != 'All'){
+                $where_clause .= " AND business_unit = '".$request->business_unit."'";
             }
             
             if(empty($request->is_active)){
@@ -1382,8 +1390,10 @@ class AttendanceController extends Controller
             }
             
             $leave_name = implode(',',$manage_leaves);
+
+            $departments = Department::get()->toArray();
            
-            $send_data = compact('title','login_user','attendance','t_employee_leaves','employee_locations','manage_leaves','leave_name');
+            $send_data = compact('title','login_user','attendance','t_employee_leaves','manage_leaves','leave_name','departments');
 
           
             return view('attendance.daily-attendance-report',$send_data);

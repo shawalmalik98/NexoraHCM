@@ -3191,8 +3191,9 @@ class EmployeeController extends Controller
             $login_user = $this->get_login_user_detail();
 
             $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
+            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('device_status','!=','2')
-            ->get(['device_id as Device ID','device_name as Device Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name'])->toArray();
+            ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name'])->toArray();
         
             $send_data = compact('title','login_user','all_devices');
 

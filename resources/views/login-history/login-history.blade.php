@@ -66,7 +66,7 @@
 
                                     <div class="mb-3">
 
-                                        <label class="form-label fw-semibold">History Date:</label>
+                                        <label class="form-label fw-semibold">History Date</label>
 
                                         <div class="position-relative d-flex align-items-center">
                                             <input type="date" class="form-control" placeholder="Select a date" name="history_date" max="{{ date('Y-m-d') }}" @if(!empty(Request::get('history_date'))) value="{{ Request::get('history_date') }}" @endif />
@@ -82,8 +82,9 @@
                                         <div>
                                             <select class="form-select" data-kt-select2="true" name="history_records">
                                                 <option value="">Select Duration</option>
-                                                <option value="15" @if (Request::get('history_records') == '15') selected @endif>15 Days</option>
-                                                <option value="30" @if (Request::get('history_records') == '30') selected @endif>30 Days</option>
+                                                <option value="7" @if (Request::get('history_records') == '7') selected @endif>Last 7 Days</option>
+                                                <option value="15" @if (Request::get('history_records') == '15') selected @endif>Last 15 Days</option>
+                                                <option value="30" @if (Request::get('history_records') == '30') selected @endif>Last 30 Days</option>
                                             </select>
                                         </div>
                                         
