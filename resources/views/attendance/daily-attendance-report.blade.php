@@ -154,7 +154,7 @@
                     <div class="card-toolbar" >
                         @php $filter = 'btn-color-primary'; @endphp
                         
-                        <a href="#" class="btn btn-sm btn-flex btn-light fw-bold {{ !empty(Request::get('employee_location')) ? $filter : '' }} {{ !empty(Request::get('is_active')) ? $filter : '' }} {{ !empty(Request::get('d')) ? $filter : '' }}" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                        <a href="#" class="btn btn-sm btn-flex btn-light fw-bold {{ !empty(Request::get('department_id')) ? $filter : '' }} {{ !empty(Request::get('business_unit')) ? $filter : '' }} {{ !empty(Request::get('is_active')) ? $filter : '' }} {{ !empty(Request::get('d')) ? $filter : '' }}" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
                     
                         <span class="svg-icon svg-icon-6 svg-icon-muted me-1">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -3190,12 +3190,25 @@ class EmployeeController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
+            $where_clause = '1=1';
+
+            if(!empty($request->department_id) && $request->department_id != 'All'){
+                $where_clause .= ' AND employee_department = '.$request->department_id;
+            }
+
+            if(!empty($request->business_unit) && $request->business_unit != 'All'){
+                $where_clause .= " AND business_unit = '".$request->business_unit."'";
+            }
+
             $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
             ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('device_status','!=','2')
+            ->whereRaw($where_clause)
             ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name'])->toArray();
+
+            $departments = Department::get()->toArray();
         
-            $send_data = compact('title','login_user','all_devices');
+            $send_data = compact('title','login_user','all_devices','departments');
 
             if($request->download == 'TRUE'){
 
