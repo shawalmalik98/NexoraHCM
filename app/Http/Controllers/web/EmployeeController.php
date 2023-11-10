@@ -3206,7 +3206,7 @@ class EmployeeController extends Controller
             ->whereRaw($where_clause)
             ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name'])->toArray();
 
-            $departments = Department::get()->toArray();
+            $departments = Department::get(['department_id','department_name'])->toArray();
         
             $send_data = compact('title','login_user','all_devices','departments');
 
