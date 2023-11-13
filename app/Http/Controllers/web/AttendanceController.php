@@ -2249,7 +2249,7 @@ class AttendanceController extends Controller
 
             // dd($where_clause);
 
-            $departments = Department::get()->toArray();
+            $departments = Department::get(['department_id','department_name'])->toArray();
            
             // $all_attendances = $this->get_monthly_attendance($leave_name,$last_date,$year,$month,$employement_status,$where_clause_two);
             $all_attendances = $this->get_monthly_attendance_all_employees($from_date , $to_date , $where_clause);

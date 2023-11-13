@@ -3206,7 +3206,7 @@ class EmployeeController extends Controller
             ->whereRaw($where_clause)
             ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name'])->toArray();
 
-            $departments = Department::get()->toArray();
+            $departments = Department::get(['department_id','department_name'])->toArray();
         
             $send_data = compact('title','login_user','all_devices','departments');
 
@@ -4742,13 +4742,17 @@ class EmployeeController extends Controller
                                 $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[3]); //$getData[6];
                                 $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[4]);
                                 $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[5]);
-                                $employee_salary =  iconv('ISO-8859-1', 'UTF-8', $getData[6]); //$getData[11];
-                                $employee_Off_day =  iconv('ISO-8859-1', 'UTF-8', $getData[7]); //$getData[17];
-                                $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[8]); //$getData[10];
-                                $employee_contact_no = iconv('ISO-8859-1', 'UTF-8', $getData[9]);
-                                $employee_address =  iconv('ISO-8859-1', 'UTF-8', $getData[10]); //$getData[10];
-                                $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[11]); //$getData[7];
-                                $employee_personal_email =  'test@gmail.com' . $count_row;
+                                $employee_gender = iconv('ISO-8859-1', 'UTF-8', $getData[6]);
+                                $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
+                                $employee_status = iconv('ISO-8859-1', 'UTF-8', $getData[8]);
+                                // $employee_salary =  iconv('ISO-8859-1', 'UTF-8', $getData[6]); //$getData[11];
+                                // $employee_Off_day =  iconv('ISO-8859-1', 'UTF-8', $getData[7]); //$getData[17];
+                                // $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[8]); //$getData[10];
+                                $employee_contact_no = '2131231312' . $count_row;
+                                // $employee_address =  iconv('ISO-8859-1', 'UTF-8', $getData[10]); //$getData[10];
+                                // $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[11]); //$getData[7];
+                                
+                                $employee_personal_email =  'test@gmail.com' . $employeeCode;
                                 
                              
                                 // $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[7]); //$getData[7];
@@ -4818,11 +4822,16 @@ class EmployeeController extends Controller
                                 //     $employee_record_insert = "FALSE";
                                 // }
 
+                                $check_senior_manager_code = Employees::where('employee_code', '=', $employee_senior)->get('employee_id')->toArray();
+                                if(empty($check_senior_manager_code)){
+                                    $employee_record_insert = "FALSE";
+                                }
+
                                 $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
 
-                                // if(empty($departments)){
-                                //     $employee_record_insert = "FALSE";
-                                // }
+                                if(empty($departments)){
+                                    $employee_record_insert = "FALSE";
+                                }
 
                                 // if(empty($employee_designation)){
                                 //     $employee_record_insert = "FALSE";
@@ -4868,15 +4877,23 @@ class EmployeeController extends Controller
                                     $employee_record_insert = "FALSE";
                                 }
 
+                                if($employee_gender == 'M'){
+                                    $employee_gender_type = 'Male';
+                                }elseif($employee_gender == 'F') {
+                                    $employee_gender_type = 'Female';
+                                }else{
+                                    $employee_record_insert = "FALSE";
+                                }
+
                                 // if(empty($employee_status)){
                                 //     $employee_record_insert = "FALSE";
                                 // }
 
-                                // $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
+                                $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
 
-                                // if(empty($employement_status)){
-                                //     $employee_record_insert = "FALSE";
-                                // }
+                                if(empty($employement_status)){
+                                    $employee_record_insert = "FALSE";
+                                }
 
                                 // if(empty($employee_salary)){
                                 //     $employee_record_insert = "FALSE";
@@ -4993,21 +5010,21 @@ class EmployeeController extends Controller
                                         $add_employee->employee_personal_email = $employee_personal_email;
                                         $add_employee->employee_work_email = $employee_personal_email;
                                         $add_employee->employee_contactno = $employee_contact_no;
-                                        // $add_employee->employee_gender = $employee_gender;
+                                        $add_employee->employee_gender = $employee_gender_type;
                                         $add_employee->employee_status =  3;
                                         $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
                                         $add_employee->employee_department = $departments[0]['department_id'];
                                         $add_employee->employee_jobtitle = ($designations[0]['designation_id']) ?? 1;
                                         $add_employee->employee_password = Crypt::encryptString(123);
                                         $add_employee->employee_geofencing_enability = false;
-                                        $add_employee->employee_senior_manager =  '1';
+                                        $add_employee->employee_senior_manager =  $check_senior_manager_code[0]['employee_id'] ?? 1;
                                         $add_employee->employee_is_manager = 0;
-                                        $add_employee->employee_offdays = $employee_Off_day;
+                                        $add_employee->employee_offdays = 'Sunday';
                                         $add_employee->employee_jobtype = 'Office';
                                         // $add_employee->employee_location = $locations[0]['location_id'];
                                         $add_employee->employee_isactive =  1;
                                         $add_employee->employee_earning_type =  1;
-                                        $add_employee->business_unit = $employee_business_unit;
+                                        // $add_employee->business_unit = $employee_business_unit;
 
                                         $employee = $add_employee->save();
                                         $employee_registration_id = $add_employee->employee_id;
@@ -5022,7 +5039,7 @@ class EmployeeController extends Controller
 
                                             $emp_salary = new EmployeeSalary();
                                             $emp_salary->salary_employee_id = $employee_registration_id;
-                                            $emp_salary->salary_amount =  $employee_salary;
+                                            $emp_salary->salary_amount =  15000;
                                             $emp_salary->salary_effected_date = date('Y-m-d',strtotime($joining_date));
                                             $emp_salary->salary_created_date = date('d-m-Y');
                                             $emp_salary->salary_earning_type = 1;
@@ -5058,7 +5075,7 @@ class EmployeeController extends Controller
                                             $process = $add_shift->save();
 
                                             $employment_period = new EmploymentPeriod();
-                                            $employment_period->employement_status_id = 1;
+                                            $employment_period->employement_status_id = $employement_status[0]['employement_status_id'];
                                             $employment_period->employee_id = $employee_registration_id;
                                             $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
                                             $employment_period->employement_period_created_by = 1;
@@ -5071,8 +5088,8 @@ class EmployeeController extends Controller
 
                                                 $submitInformation = new EmployeeInformation();
                                                 $submitInformation->employeeid = $employee_registration_id;
-                                                $submitInformation->dob = $employee_dob;
-                                                $submitInformation->permanentaddress = $employee_address;
+                                                // $submitInformation->dob = $employee_dob;
+                                                // $submitInformation->permanentaddress = $employee_address;
                                                 $submitInformation->save();
 
                                                 $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
