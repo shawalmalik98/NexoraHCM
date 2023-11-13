@@ -2625,20 +2625,21 @@ class AttendanceController extends Controller
             $to_date = $request->input('to_date');
 
             $validator = Validator::make($request->all(), [
-                'from_date' => 'required|date_format:Y-m-d|before_or_equal:now',
-                'to_date' => [
-                    'required',
-                    'date_format:Y-m-d',
-                    'before_or_equal:now',
-                    function ($attribute, $value, $fail) use ($request) {
-                        $fromDate = $request->input('from_date');
-                        $toDate = $request->input('to_date');
+                'from_date' => 'required',
+                'to_date' => 'required',
+                // 'to_date' => [
+                //     'required',
+                //     'date_format:Y-m-d',
+                //     'before_or_equal:now',
+                //     function ($attribute, $value, $fail) use ($request) {
+                //         $fromDate = $request->input('from_date');
+                //         $toDate = $request->input('to_date');
             
-                        if ($toDate != $fromDate && strtotime($toDate) > strtotime($fromDate . ' +10 days')) {
-                            $fail('The to date must be equal to from date or within 10 days after from date.');
-                        }
-                    },
-                ],
+                //         if ($toDate != $fromDate && strtotime($toDate) > strtotime($fromDate . ' +10 days')) {
+                //             $fail('The to date must be equal to from date or within 10 days after from date.');
+                //         }
+                //     },
+                // ],
             ]);
 
             if ($validator->fails()) {

@@ -749,7 +749,7 @@
 
 
 @push('js-link')
-<script src="{{url('assets/js/attendance/daily-attendance-report.js')}}"></script>
+<script src="{{url('assets/js/attendance/daily-attendance-report.js?v=2')}}"></script>
 <script>
 var present_attendance = {{ $present }};
 var absent_count_attendance = {{ $absent_count }};
