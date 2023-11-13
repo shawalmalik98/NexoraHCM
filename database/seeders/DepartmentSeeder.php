@@ -103,6 +103,8 @@ class DepartmentSeeder extends Seeder
                 'Management',
                 'WH Contractual',
                 'Sales',
+                'Engineering',
+                'Recycle'
             ];
             foreach($depart_array as $department){
                 DB::table('tbl_departments')->insert([
