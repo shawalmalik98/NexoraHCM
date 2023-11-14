@@ -219,10 +219,11 @@
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
                                         {{-- <th class="ps-4">ID</th> --}}
-                                        <th class="ps-4">Code</th>
+                                        <th class="ps-4">Employee ID</th>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Depart &amp; Desig</th>
+                                        <th>Group</th>
                                         <th>Business Unit</th>
                                         <th>Manager Rights</th>
                                         <th class="text-center">Action</th>
@@ -241,6 +242,7 @@
                                                     <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee['department_name'] }}</p>
                                                     <p class="text-muted fw-semibold text-muted fs-7">{{$employee['designation_name'] }}</p>
                                                 </td>
+                                                <td>{{ $employee['group_name'] ?? '-' }}</td>
                                                 <td>{{ $employee['business_unit'] ?? '-' }}</td>
                                                 <td>
                                                     @if($employee['employee_is_manager'] != '' && $employee['employee_is_manager'] == 1)
