@@ -282,8 +282,7 @@
                                         <span class="required">Grade</span>                                                        
                                         </label>
                                         
-                                        <input type="number" class="form-control " placeholder="Enter Employee Grade"
-                                        required name="employee_grade" min="1" max="25" />
+                                        <input type="text" class="form-control " placeholder="Enter Employee Grade" required name="employee_grade" />
                                     </div>
 
                                     <div class="col-md-4 fv-row">

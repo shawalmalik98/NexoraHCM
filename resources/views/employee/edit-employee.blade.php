@@ -263,8 +263,7 @@
                             <div class="col-md-4 fv-row">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Grade </label>
                                 
-                                <input type="number" class="form-control " placeholder="Enter Employee Grade"
-                                required name="employee_grade" min="1" max="25" value="{{ $employee_detail[0]['employee_grade'] }}" />
+                                <input type="text" class="form-control" placeholder="Enter Employee Grade" required name="employee_grade" value="{{ $employee_detail[0]['employee_grade'] }}" />
                             </div>
 
                             <div class="col-md-4">
