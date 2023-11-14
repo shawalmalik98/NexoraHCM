@@ -458,7 +458,7 @@
                             </div>
                             
                             <div class="col-md-6 ">
-                                <label class="required fs-6 fw-semibold mb-2">Employee Location</label>
+                                <label class="fs-6 fw-semibold mb-2">Employee Location</label>
                                 <select class="form-select" data-control="select2" data-hide-search="true" name="employee_location[]" multiple>
                                     <option value="">Select Employee Location</option>
                                     @if (!empty($all_locations))

@@ -427,8 +427,8 @@
                                     </div>
 
                                     <div class="col-md-6 fv-row ">
-                                        <label class="required fs-6 fw-semibold mb-2">Location</label>
-                                        <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Employee location" name="employee_location[]" required multiple>
+                                        <label class="fs-6 fw-semibold mb-2">Location</label>
+                                        <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Employee location" name="employee_location[]" multiple>
                                             <option value="">Select Employee Location</option>
                                             @if(!empty($all_locations))
                                                 @foreach ($all_locations as $location)
