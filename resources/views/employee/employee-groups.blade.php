@@ -64,7 +64,7 @@
                                     <tr class="fw-bold text-muted bg-light">
                                         <th class="text-center">Ref ID</th>
                                         <th class="text-center">Name</th>
-                                        <th class="text-center">Created by</th>
+                                        <th class="text-center">No. Of Employees</th>
                                         <th class="text-center">Created at</th>
                                         <th class="text-center">Action</th>
                                     </tr>
@@ -76,8 +76,7 @@
                                                
                                                 <td class="text-center">{{ $employment_status['employee_group_id'] }}</td>
                                                 <td class="text-center">{{ $employment_status['group_name'] }}</td>
-                                                <td class="text-center">{!! CustomHelper::getEmpProfileDiv($employment_status['created_by']) !!}</td>
-                                                
+                                                <td class="text-center">{{ $employment_status['total_employees'] }}</td>
                                                 <td class="text-center">{{ date('h:i A d M, Y', strtotime( $employment_status['created_at'] )) }}</td>
                                                 <td class="text-center">
 

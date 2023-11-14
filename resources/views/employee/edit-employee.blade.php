@@ -263,8 +263,7 @@
                             <div class="col-md-4 fv-row">
                                 <label class="required d-flex align-items-center fs-6 fw-semibold mb-2">Employee Grade </label>
                                 
-                                <input type="number" class="form-control " placeholder="Enter Employee Grade"
-                                required name="employee_grade" min="1" max="25" value="{{ $employee_detail[0]['employee_grade'] }}" />
+                                <input type="text" class="form-control" placeholder="Enter Employee Grade" required name="employee_grade" value="{{ $employee_detail[0]['employee_grade'] }}" />
                             </div>
 
                             <div class="col-md-4">
@@ -883,6 +882,8 @@
                             </div>
                         
                         @endif
+
+                        @if($employee_detail[0]['employee_id'] != 1073)
                         <div class="text-center">
                             <button type="submit"class="btn btn-lg btn-success" id="submit_btn">
                                 <span class="indicator-label">Update Employee</span>
@@ -890,6 +891,7 @@
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                             </button>
                         </div>
+                        @endif
                         
                     </form>
                     {{--end::Table container--}}

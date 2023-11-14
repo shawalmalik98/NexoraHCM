@@ -73,7 +73,13 @@ class EmployeeController extends Controller
 
             // }
 
-            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->whereRaw($where_clause)->orderBy('employee_code','ASC')->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit'])->toArray();
+            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
+            ->whereRaw($where_clause)
+            ->orderBy('employee_code','ASC')
+            ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit','group_name'])
+            ->toArray();
 
             $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
@@ -159,8 +165,8 @@ class EmployeeController extends Controller
                 }
             }
 
-            // return view('employee.add-employee', $send_data);
-            return view('employee.add-employee-new', $send_data);
+            return view('employee.add-employee', $send_data);
+            // return view('employee.add-employee-new', $send_data);
         }catch(\Exception $e){
 
             $this->create_error_log('Open Add Employee Page', $e);
@@ -5698,7 +5704,12 @@ class EmployeeController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
-            $get_employee_groups = EmployeeGroup::get()->toArray();
+            $get_employee_groups = EmployeeGroup::
+            select('employee_group_id','group_name','created_at', DB::raw('COUNT(employee_id) as total_employees'))
+            ->leftJoin('tbl_employees','tbl_employee_groups.employee_group_id','=','tbl_employees.employee_group')
+            ->groupBy('employee_group_id','group_name','created_at')
+            ->get()
+            ->toArray();
 
             $employee_group_id = array_column($get_employee_groups, 'employee_group_id');
 

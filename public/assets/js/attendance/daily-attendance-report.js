@@ -152,7 +152,7 @@ $('#from_date').change(function () {
         if (maxDate > currentDate) {
             maxDate = currentDate; 
         }
-        $('#to_date').attr('max', maxDate);
+        // $('#to_date').attr('max', maxDate);
     } else {
         $('#to_date').prop('disabled', true);
         $('#to_date').removeAttr('min');
