@@ -195,14 +195,14 @@ class EmployeeController extends Controller
                 $employee_deactivate_type =  'required|numeric|in:1,2';
             }
 
-            $messages = [
-                'employee_name.required' => 'The employee name field is required.',
-                'employee_name.regex' => 'employee name must be character.',
-            ];
+            // $messages = [
+            //     'employee_name.required' => 'The employee name field is required.',
+            //     'employee_name.regex' => 'employee name must be character.',
+            // ];
 
             $validator = Validator::make($employee_data->all(), [
                 'employee_code' =>  ['required','numeric','unique:tbl_employees,employee_code'],
-                'employee_name' =>  ['required', 'regex:/^([a-zA-Z]+)(\s[a-zA-Z]+)*$/'],
+                'employee_name' =>  'required',
                 'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno'],
                 'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_personal_email','unique:tbl_employees,employee_work_email'],
                 'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email','unique:tbl_employees,employee_personal_email'],
@@ -242,7 +242,7 @@ class EmployeeController extends Controller
                 'fund_amount.*' => 'required|numeric|min:0|max:99999',
                 'fund_id.*' => 'required|numeric'
                
-            ],$messages);
+            ]);
 
             if($validator->fails()) {
                 foreach($validator->errors()->all() as $error){
@@ -1117,13 +1117,13 @@ class EmployeeController extends Controller
                 $employee_deactivate_type =  'nullable';
             }
 
-            $messages = [
-                'employee_name.required' => 'The employee name field is required.',
-                'employee_name.regex' => 'employee name must be character.',
-            ];
+            // $messages = [
+            //     'employee_name.required' => 'The employee name field is required.',
+            //     'employee_name.regex' => 'employee name must be character.',
+            // ];
            
             $validator = Validator::make($employee_data->all(), [
-                'employee_name' =>  ['required', 'regex:/^([a-zA-Z]+)(\s[a-zA-Z]+)*$/'],
+                'employee_name' =>  'required',
                 'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno,'.$employee_data->input('employee_id').',employee_id'],
                 'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id'],
                 'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id'],
@@ -1163,7 +1163,7 @@ class EmployeeController extends Controller
                 'fund_amount.*' => 'required|numeric|min:0|max:99999',
                 'fund_id.*' => 'required|numeric'
                 
-            ], $messages);
+            ]);
             
             if($validator->fails()) {
                 foreach($validator->errors()->all() as $error){
