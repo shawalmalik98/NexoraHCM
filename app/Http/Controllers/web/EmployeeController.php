@@ -4744,20 +4744,20 @@ class EmployeeController extends Controller
 
                                 $employeeCode = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[0]));//$getData[0];
                                 $employee_name = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
-                                $employee_department =  iconv('ISO-8859-1', 'UTF-8', $getData[2]); //$getData[5];
-                                $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[3]); //$getData[6];
-                                $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[4]);
+                                $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[2]);
+                                $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[3]);
+                                $employee_department =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); //$getData[5];
                                 $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[5]);
-                                $employee_gender = iconv('ISO-8859-1', 'UTF-8', $getData[6]);
-                                $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
-                                $employee_status = iconv('ISO-8859-1', 'UTF-8', $getData[8]);
+                                // $employee_gender = iconv('ISO-8859-1', 'UTF-8', $getData[6]);
+                                // $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
+                                // $employee_status = iconv('ISO-8859-1', 'UTF-8', $getData[8]);
                                 // $employee_salary =  iconv('ISO-8859-1', 'UTF-8', $getData[6]); //$getData[11];
                                 // $employee_Off_day =  iconv('ISO-8859-1', 'UTF-8', $getData[7]); //$getData[17];
                                 // $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[8]); //$getData[10];
-                                $employee_contact_no = '2131231312' . $count_row;
+                                $employee_contact_no = '21312313128' . $count_row;
                                 // $employee_address =  iconv('ISO-8859-1', 'UTF-8', $getData[10]); //$getData[10];
                                 // $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[11]); //$getData[7];
-                                
+                                // $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[4]);
                                 $employee_personal_email =  'test@gmail.com' . $employeeCode;
                                 
                              
@@ -4828,10 +4828,10 @@ class EmployeeController extends Controller
                                 //     $employee_record_insert = "FALSE";
                                 // }
 
-                                $check_senior_manager_code = Employees::where('employee_code', '=', $employee_senior)->get('employee_id')->toArray();
-                                if(empty($check_senior_manager_code)){
-                                    $employee_record_insert = "FALSE";
-                                }
+                                // $check_senior_manager_code = Employees::where('employee_code', '=', $employee_senior)->get('employee_id')->toArray();
+                                // if(empty($check_senior_manager_code)){
+                                //     $employee_record_insert = "FALSE";
+                                // }
 
                                 $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
 
@@ -4883,23 +4883,23 @@ class EmployeeController extends Controller
                                     $employee_record_insert = "FALSE";
                                 }
 
-                                if($employee_gender == 'M'){
-                                    $employee_gender_type = 'Male';
-                                }elseif($employee_gender == 'F') {
-                                    $employee_gender_type = 'Female';
-                                }else{
-                                    $employee_record_insert = "FALSE";
-                                }
+                                // if($employee_gender == 'M'){
+                                //     $employee_gender_type = 'Male';
+                                // }elseif($employee_gender == 'F') {
+                                //     $employee_gender_type = 'Female';
+                                // }else{
+                                //     $employee_record_insert = "FALSE";
+                                // }
 
                                 // if(empty($employee_status)){
                                 //     $employee_record_insert = "FALSE";
                                 // }
 
-                                $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
+                                // $employement_status = EmploymentStatus::where('employement_status_name', $employee_status)->get(['employement_status_id','employement_status_name'])->toArray();
 
-                                if(empty($employement_status)){
-                                    $employee_record_insert = "FALSE";
-                                }
+                                // if(empty($employement_status)){
+                                //     $employee_record_insert = "FALSE";
+                                // }
 
                                 // if(empty($employee_salary)){
                                 //     $employee_record_insert = "FALSE";
@@ -5012,18 +5012,18 @@ class EmployeeController extends Controller
                                         $add_employee->employee_code =  $employeeCode;
                                         // $add_employee->employee_code = $employeeCode;
                                         $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
-                                        $add_employee->employee_cnic = $employee_nic;
+                                        // $add_employee->employee_cnic = $employee_nic;
                                         $add_employee->employee_personal_email = $employee_personal_email;
                                         $add_employee->employee_work_email = $employee_personal_email;
                                         $add_employee->employee_contactno = $employee_contact_no;
-                                        $add_employee->employee_gender = $employee_gender_type;
+                                        $add_employee->employee_gender = 'Male';
                                         $add_employee->employee_status =  3;
                                         $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
                                         $add_employee->employee_department = $departments[0]['department_id'];
-                                        $add_employee->employee_jobtitle = ($designations[0]['designation_id']) ?? 1;
+                                        $add_employee->employee_jobtitle = $employee_job_title;
                                         $add_employee->employee_password = Crypt::encryptString(123);
                                         $add_employee->employee_geofencing_enability = false;
-                                        $add_employee->employee_senior_manager =  $check_senior_manager_code[0]['employee_id'] ?? 1;
+                                        $add_employee->employee_senior_manager = 1;
                                         $add_employee->employee_is_manager = 0;
                                         $add_employee->employee_offdays = 'Sunday';
                                         $add_employee->employee_jobtype = 'Office';
@@ -5081,7 +5081,7 @@ class EmployeeController extends Controller
                                             $process = $add_shift->save();
 
                                             $employment_period = new EmploymentPeriod();
-                                            $employment_period->employement_status_id = $employement_status[0]['employement_status_id'];
+                                            $employment_period->employement_status_id = 3;
                                             $employment_period->employee_id = $employee_registration_id;
                                             $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
                                             $employment_period->employement_period_created_by = 1;
