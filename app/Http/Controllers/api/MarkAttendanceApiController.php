@@ -489,8 +489,8 @@ class MarkAttendanceApiController extends Controller
 			if(count($attendance_object) > 0 ){
 				DB::table('tbl_offline_attendance_object')->insert([
 					'att_offline_object' => $request->post('attendance_object'),
-					// 'att_offline_emp_id' => $login_user[0]['employee_id'],
-					// 'att_created_at' => date('Y-m-d H:i:s'),
+					'att_offline_emp_id' => $login_user[0]['employee_id'],
+					'att_created_at' => date('Y-m-d H:i:s'),
 				]);
 
 				foreach($attendance_object as $attendance){

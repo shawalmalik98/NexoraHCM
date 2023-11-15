@@ -345,7 +345,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
-								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
+								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
 								
@@ -366,7 +366,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
-								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
+								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
 	
@@ -388,7 +388,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
-								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
+								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
 								
@@ -408,7 +408,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
-								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
+								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
 							}
@@ -428,7 +428,7 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_check_in_source = $attendance_source;
 							$mark_attendance->att_ci_lat = $attendance_lat;
 							$mark_attendance->att_ci_long = $attendance_long;
-							$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
+							$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 							$mark_attendance->att_remote_applicable = $remote_applicable;
 							$mark_attendance->save();
 	
@@ -449,7 +449,7 @@ trait MachineAttendanceTrait {
 						$mark_attendance->att_check_in_source = $attendance_source;
 						$mark_attendance->att_ci_lat = $attendance_lat;
 						$mark_attendance->att_ci_long = $attendance_long;
-						$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
+						$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 						$mark_attendance->att_remote_applicable = $remote_applicable;
 						$mark_attendance->save();
 	
@@ -508,7 +508,7 @@ trait MachineAttendanceTrait {
 							$check_out->att_check_out_status = 1;
 							$check_out->att_check_out_source = 4;
 							
-							$check_out->att_updated_at = date('Y-m-d H:i:s', strtotime($check_out_time));
+							$check_out->att_updated_at = date('Y-m-d H:i:s');
 							$employee_official_time = $this->calculate_minutes_machine($employee_shift_start,$employee_shift_end);
 							$current_shift_time = $this->calculate_minutes_machine($get_attendance[0]['att_check_in_time'] , date('H:i:s', strtotime($check_out_time)));
 							$diff = $employee_official_time - $current_shift_time;
@@ -567,7 +567,7 @@ trait MachineAttendanceTrait {
 							$check_out->att_check_out_status = 1;
 							$check_out->att_check_out_source = $attendance_source;
 							
-							$check_out->att_updated_at = date('Y-m-d H:i:s', strtotime($check_out_time));
+							$check_out->att_updated_at = date('Y-m-d H:i:s');
 							
 							$employee_official_time = $this->calculate_minutes_machine($employee_shift_start , $employee_shift_end);
 							
