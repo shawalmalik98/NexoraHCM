@@ -135,9 +135,10 @@
                                         <label class="form-label fw-semibold">Employee Status</label>
                                         
                                         <div>
-                                            <select class="form-select " data-kt-select2="true" data-placeholder="Employee Activity Status" name="employee_isactive" required="">
-                                                <option value="1" @if(!empty(Request::get('employee_isactive')) && Request::get('employee_isactive') == '1') selected @endif>Active Employees </option>
-                                                <option value="2" @if(!empty(Request::get('employee_isactive')) && Request::get('employee_isactive') == '2') selected @endif>De-active Employees</option>
+                                            <select class="form-select " data-kt-select2="true" data-placeholder="Employee Activity Status" name="is_active" required="">
+                                                <option value="1" @if(!empty(Request::get('is_active')) && Request::get('is_active') == '1') selected @endif>Active Employees </option>
+                                                <option value="2" @if(!empty(Request::get('is_active')) && Request::get('is_active') == '2') selected @endif>De-active Employees</option>
+                                                <option value="3" @if(!empty(Request::get('is_active')) && Request::get('is_active') == '3') selected @endif>All Employees</option>
                                             </select>
                                         </div>
                                         
@@ -150,6 +151,7 @@
                                         <div>
                                             <select class="form-select " data-kt-select2="true" data-placeholder="Select business unit" name="business_unit">
                                                 <option value="">Select Business Unit</option>
+                                                <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
                                                 <option value="Candyland" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
                                                 <option value="Bisconni" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
                                                 <option value="Snackcity" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
@@ -169,6 +171,7 @@
                                         <div>
                                             <select class="form-select " data-kt-select2="true" data-placeholder="Select Employee Department" name="employee_department">
                                                 <option value="">Select Employee Department</option>
+                                                <option value="All" @if (Request::get('department_id') == 'All') selected @endif>All Departments</option>
                                                 @if(!empty($departments_status))
                                                     @foreach ($departments_status as $department_status)
                                                         <option value="{{$department_status['department_id']}}" @if(!empty(Request::get('employee_department')) && Request::get('employee_department') == $department_status['department_id']) selected @endif>{{$department_status['department_name']}}</option>
@@ -179,25 +182,27 @@
                                         </div> 
                                     </div>
 
-                                    {{-- <div class="mb-3">
+                                    <div class="mb-3">
                                         
-                                        <label class="form-label fw-semibold">Employment Status </label>
+                                        <label class="form-label fw-semibold">Employee Group </label>
                                         
                                         <div>
-                                            <select class="form-select " data-kt-select2="true" data-placeholder="Select Employment Status" name="employee_status">
-                                                <option value="">Select Employment Status</option>
-                                                @if(!empty($employment_status))
-                                                    @foreach ($employment_status as $employment_stats)
-                                                        <option value="{{$employment_stats['employement_status_id']}}" @if(!empty(Request::get('employee_status')) && Request::get('employee_status') == $employment_stats['employement_status_id']) selected @endif>{{$employment_stats['employement_status_name']}}</option>
-                                                    @endforeach
-                                            
-                                                @endif  
+                                            <select class="form-select " data-kt-select2="true" data-placeholder="Select Employee group" name="employee_group">
+                                                <option value="">Select Employee group</option>
+                                                <option value="All" @if (Request::get('employee_group') == 'All') selected @endif>All Employee Group</option>
+                                                @if(!empty($employee_group))
+                                                    @foreach ($employee_group as $employee_group)
+                                                        <option value="{{ $employee_group['employee_group_id'] }}"
+                                                        @if(!empty(Request::get('employee_group')) && Request::get('employee_group') == $employee_group['employee_group_id']) selected @endif>
+                                                            {{ $employee_group['group_name'] }}</option>
+                                                    @endforeach 
+                                                @endif    
                                             </select>
                                         </div> 
-                                    </div> --}}
+                                    </div>
 
                                     <div class="d-flex justify-content-end">
-                                        @if(!empty(Request::get('employee_isactive')))
+                                        @if(!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('employee_group')) || !empty(Request::get('is_active')))
                                             <a href="{{ url('employees') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2 ">Reset Filter</a>
                                         @endif
                                         <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
