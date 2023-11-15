@@ -45,25 +45,42 @@ class EmployeeController extends Controller
 
             $where_clause = "1=1";
 
-            if(!empty($request->input('employee_isactive'))){
-
-                $where_clause .= " and employee_isactive=".(($request->input('employee_isactive') == 2) ? 0 : $request->input('employee_isactive'));
-
+            if(empty($request->is_active)){
+                $where_clause .= ' AND employee_isactive = '."1".'';
             }else{
-
-                $where_clause .= " and employee_isactive=1";
-
+                if(!empty($request->is_active) && $request->is_active == 1){
+                    $where_clause .= ' AND employee_isactive = '."1".''; 
+                }
+                elseif(!empty($request->is_active) && $request->is_active == 2){
+                    $where_clause .= ' AND employee_isactive = '."0".''; 
+                }
             }
 
-            if(!empty($request->input('business_unit'))){
+            // if(!empty($request->input('employee_isactive'))){
+
+            //     $where_clause .= " and employee_isactive=".(($request->input('employee_isactive') == 2) ? 0 : $request->input('employee_isactive'));
+
+            // }else{
+
+            //     $where_clause .= " and employee_isactive=1";
+
+            // }
+
+            if(!empty($request->input('business_unit')) && $request->input('business_unit') != 'All'){
 
                 $where_clause .= " and business_unit= '".$request->input('business_unit')."'";
 
             }
 
-            if(!empty($request->input('employee_department'))){
+            if(!empty($request->input('employee_department')) && $request->input('employee_department') != 'All'){
 
                 $where_clause .= " and employee_department= '".$request->input('employee_department')."'";
+
+            }
+
+            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'){
+
+                $where_clause .= " and employee_group= '".$request->input('employee_group')."'";
 
             }
 
@@ -89,7 +106,9 @@ class EmployeeController extends Controller
 
             $employee_active = Employees::where('employee_isactive', 1)->count();
 
-            $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status');
+            $employee_group = EmployeeGroup::get()->toArray();
+
+            $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status','employee_group');
 
             if($request->download == "TRUE"){
                 
@@ -1369,14 +1388,12 @@ class EmployeeController extends Controller
                         }
 
                     }
-
-                    $update_employee->save();
                     
-
+                    $update_employee->save();
                     if(!empty($employee_data->input('employee_location'))){
-
+                        
                         EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->whereNotIn('emp_loc_loc_id',$employee_data->input('employee_location'))->delete();
-
+                      
                         foreach($employee_data->input('employee_location') as $location){
                             $check_if_emp_location_exists = EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->where('emp_loc_loc_id',$location)->get()->toArray();
                             
@@ -1388,9 +1405,11 @@ class EmployeeController extends Controller
                                 $new_employee_location->save();
                             }
                         }
+                    }else{
+                        EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->delete();
                     }
 
-
+                    
                     $itEmployees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('department_name','=','IT')->where('employee_isactive','=',1)->get('employee_id')->toArray();
 
                     if($employee_data->input('employee_isactive') == 0){
