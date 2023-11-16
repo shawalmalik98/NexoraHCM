@@ -2746,7 +2746,7 @@ class EmployeeController extends Controller
 
            if(!empty($update_onboard_employee)){
                 $update_onboard_employee->doj =  $request->input('joining_date');
-                $update_onboard_employee->employee_hired_created_at = date('d-m-Y H:i:s');
+                $update_onboard_employee->employee_hired_created_at = date('Y-m-d H:i:s');
                 $process =  $update_onboard_employee->save();
 
                 if($process == 1){

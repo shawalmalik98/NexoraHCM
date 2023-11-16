@@ -14,7 +14,7 @@ class ActivityTracker
 		$add_log->activity_request_method = Request::method();
 		$add_log->activity_url = Request::fullUrl();
 		$add_log->activity_employee_ip_address = Request::ip();
-		$add_log->activity_created = date('d-m-Y H:i:s');
+		$add_log->activity_created = date('Y-m-d H:i:s');
 		$add_log->save();
     }
 
@@ -26,7 +26,7 @@ class ActivityTracker
 		$add_log->activity_request_method = Request::method();
 		$add_log->activity_url = Request::fullUrl();
 		$add_log->activity_employee_ip_address = Request::ip();
-		$add_log->activity_created = date('d-m-Y H:i:s');
+		$add_log->activity_created = date('Y-m-d H:i:s');
 		$add_log->save();
     }
 }

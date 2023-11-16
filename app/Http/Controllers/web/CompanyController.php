@@ -59,7 +59,7 @@ class CompanyController extends Controller
                 $add_new_company = new Company();
                 $add_new_company->company_name = $company_data->input('company_name');
                 $add_new_company->created_by = session('user_session');
-                $add_new_company->created_at = date('d-m-Y H:i:s');
+                $add_new_company->created_at = date('Y-m-d H:i:s');
                 $process = $add_new_company->save();
                 if($process == 1){
                     return response()->json([

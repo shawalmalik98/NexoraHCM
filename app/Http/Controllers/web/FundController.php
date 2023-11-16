@@ -63,7 +63,7 @@ class FundController extends Controller
                 $new_fund = new Fund();
                 $new_fund->fund_name = $request->input('fund_name');
                 $new_fund->fund_created_by = session('user_session');
-                $new_fund->fund_created_at = date('d-m-Y H:i:s');
+                $new_fund->fund_created_at = date('Y-m-d H:i:s');
                 $process = $new_fund->save();   
                 if($process == 1){
                     return response()->json([

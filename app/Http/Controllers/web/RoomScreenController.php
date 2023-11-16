@@ -97,7 +97,7 @@ class RoomScreenController extends Controller
                     $new_room = new RoomScreen();
                     $new_room->room_name = $request->input('room_name');
                     $new_room->room_location_id = $request->input('location_name');
-                    $new_room->last_updated = date('d-m-Y H:i:s');
+                    $new_room->last_updated = date('Y-m-d H:i:s');
                     $process = $new_room->save();   
                     if($process == 1){
                         return response()->json([

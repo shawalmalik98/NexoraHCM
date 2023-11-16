@@ -118,7 +118,7 @@ class OfficeLocationsController extends Controller
                 $new_location->location_latitude = $request->input('location_latitude');
                 $new_location->location_longitude = $request->input('location_longitude');
                 $new_location->location_attendance_radius = $request->input('location_allowed_range');
-                $new_location->location_added_at = date('d-m-Y H:i:s');
+                $new_location->location_added_at = date('Y-m-d H:i:s');
                 $new_location->location_updated_at = '00-00-00 00:00:00';
                 $process = $new_location->save();   
                 if($process == 1){
@@ -183,7 +183,7 @@ class OfficeLocationsController extends Controller
                     $update_location->location_latitude = $request->input('latitude');
                     $update_location->location_longitude = $request->input('longitude');
                     $update_location->location_attendance_radius = $request->input('location_allowed_range');
-                    $update_location->location_updated_at = date('d-m-Y H:i:s');
+                    $update_location->location_updated_at = date('Y-m-d H:i:s');
                     $process = $update_location->save();   
                     if($process == 1){
                         return response()->json([

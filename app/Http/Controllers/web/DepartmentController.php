@@ -61,7 +61,7 @@ class DepartmentController extends Controller
             }else {
                 $add_new_department = new Department();
                 $add_new_department->department_name = $depart_data->input('department_name');
-                $add_new_department->department_create_time = date('d-m-Y H:i:s');
+                $add_new_department->department_create_time = date('Y-m-d H:i:s');
                 $add_new_department->department_update_time = '00-00-00 00:00:00';
                 $process = $add_new_department->save();
                 if($process == 1){
@@ -125,7 +125,7 @@ class DepartmentController extends Controller
                 if(!empty($update_department)){
 
                     $update_department->department_name = $depart_data->input('department_name');
-                    $update_department->department_update_time = date('d-m-Y H:i:s');
+                    $update_department->department_update_time = date('Y-m-d H:i:s');
                     $update_department->department_hod =  $depart_data->input('employee_name');
                     $process = $update_department->save();
                     if($process == 1){
