@@ -15,17 +15,41 @@ return new class extends Migration
     public function up()
     {
 
-        if(Schema::hasTable('tbl_employees')){
+        if(Schema::hasTable('tbl_office_locations')){
 
-            if (!Schema::hasColumn('tbl_employees', 'employee_web_access')) {
-                Schema::table('tbl_employees', function (Blueprint $table) {
-                    $table->integer('employee_web_access')->nullable()->comment('0 = deactive  1 = active');
+            if (!Schema::hasColumn('tbl_office_locations', 'last_updated_by')) {
+                Schema::table('tbl_office_locations', function (Blueprint $table) {
+                    $table->integer('last_updated_by')->default(1);
                 });
             }
 
-            if (!Schema::hasColumn('tbl_employees', 'employee_mobile_access')) {
-                Schema::table('tbl_employees', function (Blueprint $table) {
-                    $table->integer('employee_mobile_access')->nullable()->comment('0 = deactive 1 = active');
+        }
+
+        if(Schema::hasTable('tbl_employees_location')){
+
+            if (!Schema::hasColumn('tbl_employees_location', 'created_by')) {
+                Schema::table('tbl_employees_location', function (Blueprint $table) {
+                    $table->integer('created_by')->default(1);
+                });
+            }
+
+        }
+
+        if(Schema::hasTable('tbl_departments')){
+
+            if (!Schema::hasColumn('tbl_departments', 'last_updated_by')) {
+                Schema::table('tbl_departments', function (Blueprint $table) {
+                    $table->integer('last_updated_by')->default(1);
+                });
+            }
+
+        }
+
+        if(Schema::hasTable('tbl_designations')){
+
+            if (!Schema::hasColumn('tbl_designations', 'last_updated_by')) {
+                Schema::table('tbl_designations', function (Blueprint $table) {
+                    $table->integer('last_updated_by')->default(1);
                 });
             }
 
