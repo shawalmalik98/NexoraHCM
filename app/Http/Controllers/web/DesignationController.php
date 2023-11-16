@@ -125,6 +125,7 @@ class DesignationController extends Controller
                     $add_new_designation->department_id = $department_id;
                     $add_new_designation->designation_create_time = date('Y-m-d H:i:s');
                     $add_new_designation->designation_update_time = '00-00-00 00:00:00';
+                    $add_new_designation->last_updated_by = session('user_session');
                     $process = $add_new_designation->save();
                     
                 }
@@ -193,6 +194,7 @@ class DesignationController extends Controller
                         $update_desgnation->designation_name = $designation_data->input('designation_name');
                         $update_desgnation->department_id = $designation_data->input('department_id');
                         $update_desgnation->designation_update_time = date('Y-m-d H:i:s');
+                        $update_desgnation->last_updated_by = session('user_session');
                         $process = $update_desgnation->save();
                         if($process == 1){
                             return response()->json([

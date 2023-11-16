@@ -63,6 +63,7 @@ class DepartmentController extends Controller
                 $add_new_department->department_name = $depart_data->input('department_name');
                 $add_new_department->department_create_time = date('Y-m-d H:i:s');
                 $add_new_department->department_update_time = '00-00-00 00:00:00';
+                $add_new_department->last_updated_by = session('user_session');
                 $process = $add_new_department->save();
                 if($process == 1){
                     return response()->json([
@@ -127,6 +128,7 @@ class DepartmentController extends Controller
                     $update_department->department_name = $depart_data->input('department_name');
                     $update_department->department_update_time = date('Y-m-d H:i:s');
                     $update_department->department_hod =  $depart_data->input('employee_name');
+                    $update_department->last_updated_by = session('user_session');
                     $process = $update_department->save();
                     if($process == 1){
                         return response()->json([

@@ -399,6 +399,7 @@ class EmployeeController extends Controller
                             $new_employee_location->emp_loc_employee_id = $employee_registration_id;
                             $new_employee_location->emp_loc_loc_id = $location;
                             $new_employee_location->created_at = date('Y-m-d H:i:s');
+                            $new_employee_location->created_by = session('user_session');
                             $new_employee_location->save();
                         }
                     }
@@ -1402,6 +1403,7 @@ class EmployeeController extends Controller
                                 $new_employee_location->emp_loc_employee_id = $employee_data->input('employee_id');
                                 $new_employee_location->emp_loc_loc_id = $location;
                                 $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                $new_employee_location->created_by = session('user_session');
                                 $new_employee_location->save();
                             }
                         }

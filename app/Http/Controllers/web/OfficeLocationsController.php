@@ -36,7 +36,8 @@ class OfficeLocationsController extends Controller
                 'tbl_office_locations.location_latitude', 'tbl_office_locations.location_longitude',
                 'tbl_office_locations.location_attendance_radius', 
                 'tbl_office_locations.location_added_at',
-                'tbl_office_locations.location_updated_at'
+                'tbl_office_locations.location_updated_at',
+                'tbl_office_locations.last_updated_by'
             )
             ->orderByRaw('COUNT(e.employee_id) DESC')
             ->get()
@@ -120,6 +121,7 @@ class OfficeLocationsController extends Controller
                 $new_location->location_attendance_radius = $request->input('location_allowed_range');
                 $new_location->location_added_at = date('Y-m-d H:i:s');
                 $new_location->location_updated_at = '00-00-00 00:00:00';
+                $new_location->last_updated_by = session('user_session');
                 $process = $new_location->save();   
                 if($process == 1){
                     return response()->json([
@@ -184,6 +186,7 @@ class OfficeLocationsController extends Controller
                     $update_location->location_longitude = $request->input('longitude');
                     $update_location->location_attendance_radius = $request->input('location_allowed_range');
                     $update_location->location_updated_at = date('Y-m-d H:i:s');
+                    $update_location->last_updated_by = session('user_session');
                     $process = $update_location->save();   
                     if($process == 1){
                         return response()->json([
