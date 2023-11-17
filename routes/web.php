@@ -718,10 +718,13 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::post('delete-selected-daily-wages',[PayrollController::class, 'delete_selected_daily_wages']);
         Route::get('download-daily-wages-pdf',[PayrollController::class,'download_daily_wages_pdf']);
         Route::post('calculate-daily-wages',[PayrollController::class,'calculate_daily_wages']);
+        
 
       });
 
       Route::withoutMiddleware(['userPermission'])->group(function () {
+
+          Route::get('/employee-location', [EmployeeController::class, 'employees_location_detail']);
 
           Route::get('/',[HomeController::class, 'index']);
 
@@ -982,4 +985,3 @@ Route::get('/privacy-policy', [HomeController::class , 'privacy_policy']);
 Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni_attendace_report']);
 Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
 Route::post('update-bisconni-employee-report',[AttendanceController::class, 'update_bisconni_employee_attendance']);
-Route::get('/employee-location', [EmployeeController::class, 'employees_location_detail']);
