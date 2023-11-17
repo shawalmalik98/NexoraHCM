@@ -21,8 +21,10 @@ trait MachineAttendanceTrait {
 				$day = date("d", strtotime($check_in));
 				$month = date("m", strtotime($check_in));
 				$year = date("Y", strtotime($check_in));
+
+				$att_comp_date = $year . '-' . $month . '-' . $day;
 				
-				$get_attendance = Attendance::where('att_employee_id', $employee_data[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['att_employee_id','attendance_id','att_for_date','att_for_month','att_for_year','att_check_overall_status','att_check_out_time','att_check_in_time','att_check_out_status'])->toArray();
+				$get_attendance = Attendance::where('att_employee_id', $employee_data[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['att_employee_id','attendance_id','att_for_date','att_for_month','att_for_year','att_check_overall_status','att_check_out_time','att_check_in_time','att_check_out_status','att_comp_date'])->toArray();
 				
 				if(!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false ){
 					Attendance::where('attendance_id',$get_attendance[0]['attendance_id'])->delete();
@@ -53,6 +55,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->save();
@@ -71,6 +74,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->save();
@@ -90,6 +94,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->save();
@@ -107,6 +112,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 								$mark_attendance->save();
@@ -124,6 +130,7 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_for_date = $day;
 							$mark_attendance->att_for_month = $month;
 							$mark_attendance->att_for_year = $year;
+							$mark_attendance->att_comp_date = $att_comp_date;
 							$mark_attendance->att_check_in_source = $attendance_source;
 							$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 							$mark_attendance->save();
@@ -142,6 +149,7 @@ trait MachineAttendanceTrait {
 						$mark_attendance->att_for_date = $day;
 						$mark_attendance->att_for_month = $month;
 						$mark_attendance->att_for_year = $year;
+						$mark_attendance->att_comp_date = $att_comp_date;
 						$mark_attendance->att_check_in_source = $attendance_source;
 						$mark_attendance->att_created_at = date('Y-m-d H:i:s', strtotime($check_in));
 						$mark_attendance->save();
@@ -308,8 +316,10 @@ trait MachineAttendanceTrait {
 				$day = date("d", strtotime($check_in));
 				$month = date("m", strtotime($check_in));
 				$year = date("Y", strtotime($check_in));
+
+				$att_comp_date = $year . '-' . $month . '-' . $day;
 				
-				$get_attendance = Attendance::where('att_employee_id', $employee_data[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['att_employee_id','attendance_id','att_for_date','att_for_month','att_for_year','att_check_overall_status','att_check_out_time','att_check_in_time','att_check_out_status'])->toArray();
+				$get_attendance = Attendance::where('att_employee_id', $employee_data[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['att_employee_id','attendance_id','att_for_date','att_for_month','att_for_year','att_check_overall_status','att_check_out_time','att_check_in_time','att_check_out_status','att_comp_date'])->toArray();
 				
 				if(!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false ){
 					Attendance::where('attendance_id',$get_attendance[0]['attendance_id'])->delete();
@@ -342,6 +352,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
@@ -363,6 +374,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
@@ -385,6 +397,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
@@ -405,6 +418,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_for_date = $day;
 								$mark_attendance->att_for_month = $month;
 								$mark_attendance->att_for_year = $year;
+								$mark_attendance->att_comp_date = $att_comp_date;
 								$mark_attendance->att_check_in_source = $attendance_source;
 								$mark_attendance->att_ci_lat = $attendance_lat;
 								$mark_attendance->att_ci_long = $attendance_long;
@@ -425,6 +439,7 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_for_date = $day;
 							$mark_attendance->att_for_month = $month;
 							$mark_attendance->att_for_year = $year;
+							$mark_attendance->att_comp_date = $att_comp_date;
 							$mark_attendance->att_check_in_source = $attendance_source;
 							$mark_attendance->att_ci_lat = $attendance_lat;
 							$mark_attendance->att_ci_long = $attendance_long;
@@ -434,6 +449,7 @@ trait MachineAttendanceTrait {
 	
 						}
 					}else{
+						
 						$mark_attendance = new Attendance();
 						$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
 						$mark_attendance->att_check_in_time = date('H:i:s', strtotime($check_in));
@@ -446,6 +462,7 @@ trait MachineAttendanceTrait {
 						$mark_attendance->att_for_date = $day;
 						$mark_attendance->att_for_month = $month;
 						$mark_attendance->att_for_year = $year;
+						$mark_attendance->att_comp_date = $att_comp_date;
 						$mark_attendance->att_check_in_source = $attendance_source;
 						$mark_attendance->att_ci_lat = $attendance_lat;
 						$mark_attendance->att_ci_long = $attendance_long;

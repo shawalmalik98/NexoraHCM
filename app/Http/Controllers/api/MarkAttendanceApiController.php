@@ -94,6 +94,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_date = $day;
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
+									$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 									$mark_Attendance->att_check_in_source = 2;
 									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_Attendance->att_ci_long = $request->post('location_longitude');
@@ -122,6 +123,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_date = $day;
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
+									$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 									$mark_Attendance->att_check_in_source = 2;
 									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_Attendance->att_ci_long = $request->post('location_longitude');
@@ -153,6 +155,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_date = $day;
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
+									$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 									$mark_Attendance->att_check_in_source = 2;
 									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_Attendance->att_ci_long = $request->post('location_longitude');
@@ -182,6 +185,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_Attendance->att_for_date = $day;
 									$mark_Attendance->att_for_month = $month;
 									$mark_Attendance->att_for_year = $year;
+									$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 									$mark_Attendance->att_check_in_source = 2;
 									$mark_Attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_Attendance->att_ci_long = $request->post('location_longitude');
@@ -213,6 +217,7 @@ class MarkAttendanceApiController extends Controller
 								$mark_Attendance->att_for_date = $day;
 								$mark_Attendance->att_for_month = $month;
 								$mark_Attendance->att_for_year = $year;
+								$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 								$mark_Attendance->att_check_in_source = 2;
 								$mark_Attendance->att_ci_lat = $request->post('location_latitude');
 								$mark_Attendance->att_ci_long = $request->post('location_longitude');
@@ -241,6 +246,7 @@ class MarkAttendanceApiController extends Controller
 							$mark_Attendance->att_for_date = $day;
 							$mark_Attendance->att_for_month = $month;
 							$mark_Attendance->att_for_year = $year;
+							$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 							$mark_Attendance->att_check_in_source = 2;
 							$mark_Attendance->att_ci_lat = $request->post('location_latitude');
 							$mark_Attendance->att_ci_long = $request->post('location_longitude');

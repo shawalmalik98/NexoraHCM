@@ -93,7 +93,7 @@ class MarkAttendanceController extends Controller
 								$month = date("m");
 								$year = date("Y");
 								
-								$get_attendance = Attendance::where('att_employee_id', $get_employee_decoded[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['att_employee_id','attendance_id','att_for_date','att_for_month','att_for_year','att_check_overall_status','att_check_out_time','att_check_in_time'])->toArray();
+								$get_attendance = Attendance::where('att_employee_id', $get_employee_decoded[0]['employee_id'])->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['att_employee_id','attendance_id','att_for_date','att_for_month','att_for_year','att_check_overall_status','att_check_out_time','att_check_in_time','att_comp_date'])->toArray();
 								
 								
 								if(!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false ){
@@ -122,6 +122,7 @@ class MarkAttendanceController extends Controller
 													$mark_Attendance->att_for_date = $day;
 													$mark_Attendance->att_for_month = $month;
 													$mark_Attendance->att_for_year = $year;
+													$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 													$mark_Attendance->att_remote_applicable = $remote_applicable;
 													$process = $mark_Attendance->save();
 													
@@ -148,6 +149,7 @@ class MarkAttendanceController extends Controller
 													$mark_Attendance->att_for_date = $day;
 													$mark_Attendance->att_for_month = $month;
 													$mark_Attendance->att_for_year = $year;
+													$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 													$mark_Attendance->att_remote_applicable = $remote_applicable;
 													$process = $mark_Attendance->save();
 
@@ -176,6 +178,7 @@ class MarkAttendanceController extends Controller
 													$mark_Attendance->att_for_date = $day;
 													$mark_Attendance->att_for_month = $month;
 													$mark_Attendance->att_for_year = $year;
+													$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 													$mark_Attendance->att_remote_applicable = $remote_applicable;
 													$process = $mark_Attendance->save();
 
@@ -202,6 +205,7 @@ class MarkAttendanceController extends Controller
 													$mark_Attendance->att_for_date = $day;
 													$mark_Attendance->att_for_month = $month;
 													$mark_Attendance->att_for_year = $year;
+													$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 													$mark_Attendance->att_remote_applicable = $remote_applicable;
 													$process = $mark_Attendance->save();
 
@@ -229,6 +233,7 @@ class MarkAttendanceController extends Controller
 												$mark_Attendance->att_for_date = $day;
 												$mark_Attendance->att_for_month = $month;
 												$mark_Attendance->att_for_year = $year;
+												$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 												$mark_Attendance->att_remote_applicable = $remote_applicable;
 												$process = $mark_Attendance->save();
 												if($process == 1){
@@ -255,6 +260,7 @@ class MarkAttendanceController extends Controller
 											$mark_Attendance->att_for_date = $day;
 											$mark_Attendance->att_for_month = $month;
 											$mark_Attendance->att_for_year = $year;
+											$mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
 											$mark_Attendance->att_remote_applicable = $remote_applicable;
 											$process = $mark_Attendance->save();
 											if($process == 1){

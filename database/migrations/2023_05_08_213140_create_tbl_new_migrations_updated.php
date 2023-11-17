@@ -13,7 +13,17 @@ return new class extends Migration
      * @return void
      */
     public function up()
-    {
+    {   
+
+        if(Schema::hasTable('tbl_attendance')){
+
+            if (!Schema::hasColumn('tbl_attendance', 'att_comp_date')) {
+                Schema::table('tbl_attendance', function (Blueprint $table) {
+                    $table->string('att_comp_date', 50)->nullable();
+                });
+            }
+
+        }
 
         if(Schema::hasTable('tbl_office_locations')){
 
