@@ -674,13 +674,13 @@
                         <thead>
                             <tr>
                                 <th scope="col" colspan="4" class="pi">PREVIOUS APPLICATION IN
-                                    SOURCECODE?
+                                    Ismail Industries Limited?
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <th scope="row">Have you applied in Sourcecode before?</th>
+                                <th scope="row">Have you applied in Ismail Industries Limited before?</th>
                                 <td>
                                     <select class="form-select" name="appliedbefore" aria-label="Default select example" onchange="appliedBefore(this.value)">
                                         <option selected>Select Option</option>
