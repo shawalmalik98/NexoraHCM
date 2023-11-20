@@ -34,12 +34,12 @@ $('#manager_rights').change(function(){
         $('.checked').prop('checked', true);
         $('#manager_right_div').removeClass('col-md-6').addClass('col-md-6');
         $('#attendance_access_div').removeClass('d-none');
-        $('#attendance_access').attr('required','required');
+        // $('#attendance_access').attr('required','required');
     }else{
         $('#manager_right_div').removeClass('col-md-6').addClass('col-md-6');
         $('.checked').prop('checked', false);
         $('#attendance_access_div').addClass('d-none');
-        $('#attendance_access').removeAttr('required','required');
+        // $('#attendance_access').removeAttr('required','required');
     }
 });
 

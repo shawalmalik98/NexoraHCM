@@ -219,6 +219,7 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         // meeting end
 
         // employee api start
+        Route::get('/get-all-employees', [EmployeeApiController::class, 'get_all_employees']);
         Route::get('/get-employee-detail', [EmployeeApiController::class, 'get_employee_detail']);
         Route::get('/employee-personal-documents', [EmployeeApiController::class, 'employee_personal_documents']);
         Route::get('/download-personal-document', [EmployeeApiController::class, 'download_personal_document']);
@@ -239,5 +240,7 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 
 
 });
+
+Route::get('/get-all-employees', [EmployeeApiController::class, 'get_all_employees']);
 
 Route::post('insert-machine-attendance', [MachineAttendanceController::class, 'pull_attendance_from_machine_into_portal']);

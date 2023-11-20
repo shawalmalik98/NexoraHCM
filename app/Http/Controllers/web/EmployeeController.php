@@ -106,9 +106,9 @@ class EmployeeController extends Controller
 
             $employee_active = Employees::where('employee_isactive', 1)->count();
 
-            $employee_group = EmployeeGroup::get()->toArray();
+            $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
 
-            $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status','employee_group');
+            $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status','employee_groups');
 
             if($request->download == "TRUE"){
                 
@@ -125,6 +125,7 @@ class EmployeeController extends Controller
             }else{
 
                 return view('employee.all-employees',$send_data);
+                // return view('employee.all-employees2',$send_data);
             }
 
         }catch(\Exception $e){
@@ -238,7 +239,7 @@ class EmployeeController extends Controller
                 'employee_password' => 'required|max:10',
                 'employee_isactive' => 'required|in:0,1',
                 'make_ra' => 'required|in:1,0',
-                'attendance_access' => ($employee_data->input('make_ra') == '1') ? 'required|in:0,1' : '',
+                // 'attendance_access' => ($employee_data->input('make_ra') == '1') ? 'required|in:0,1' : '',
                 'employee_jobtype' => 'required|in:Office,Home',
                 'employee_offday' => ['array','min:0','max:6'],
                 'employee_offday.*' => 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday,',
@@ -1158,7 +1159,7 @@ class EmployeeController extends Controller
                 'employee_password' => 'required',
                 'employee_isactive' => 'required|in:1,0',
                 'make_ra' => 'required|in:1,0',
-                'attendance_access' => ($employee_data->input('make_ra') == '1') ? 'required|in:0,1' : '',
+                // 'attendance_access' => ($employee_data->input('make_ra') == '1') ? 'required|in:0,1' : '',
                 'employee_jobtype' => 'required|in:Office,Home',
                 'employee_offday' => ['array','min:0','max:6'],
                 'employee_offday.*' => 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday,',
@@ -1760,7 +1761,9 @@ class EmployeeController extends Controller
                        $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => $employee_data->input('attendance_access') ]);
                     }elseif($employee_data->input('make_ra') == '0'){
                         $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => 0 ]);
-                      
+                    }else{
+                        $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => 0 ]);
+
                     }
 
                     if($process == 1){
@@ -3227,15 +3230,24 @@ class EmployeeController extends Controller
                 $where_clause .= " AND business_unit = '".$request->business_unit."'";
             }
 
+            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'){
+
+                $where_clause .= " and employee_group= '".$request->input('employee_group')."'";
+
+            }
+
+            $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
+           
             $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
             ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
             ->where('device_status','!=','2')
             ->whereRaw($where_clause)
-            ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name'])->toArray();
+            ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name', 'group_name as Employee Group'])->toArray();
 
             $departments = Department::get(['department_id','department_name'])->toArray();
         
-            $send_data = compact('title','login_user','all_devices','departments');
+            $send_data = compact('title','login_user','all_devices','departments','employee_groups');
 
             if($request->download == 'TRUE'){
 

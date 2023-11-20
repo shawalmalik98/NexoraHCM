@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File;  
-use App\Models\{Employees, EmployeeDocument, OfficeLocation, EmployeeLocation};
+use App\Models\{Employees, EmployeeDocument, OfficeLocation, EmployeeLocation, HrmSetting, EmploymentStatus, EmployeeGroup, Department};
 use App\Traits\{LoginEmployee, LogGenerateTrait, ApiResponseTrait, NotificationTrait};
 use App\Helpers\ActivityTracker;
 
@@ -18,6 +18,32 @@ class EmployeeApiController extends Controller
     const MAIN_TITLE = "employee";
     const DOCUMENT = 'employee-personal-document';
     const LOCATION = "office-location";
+
+    protected function get_all_employees(Request $request){
+
+        try{
+
+            $all_employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
+            // ->orderBy('employee_code','ASC')
+            ->get(['employee_id','employee_code','employee_name','employee_personal_email','department_name','designation_name','employee_is_manager','employee_offdays','business_unit','group_name'])->toArray();
+
+            return $this->api_response_json(TRUE,"All Employees",$all_employees,200); 
+        
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('View All Employees API', $e, $request->header('Bearer-Token'));
+
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+
+        }
+        finally{
+
+            ActivityTracker::track_activity_from_api('View All Employees API',  $request->header('Bearer-Token'));
+           
+        }
+
+    }
 
     protected function get_employee_detail(Request $request){
 

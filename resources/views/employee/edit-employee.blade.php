@@ -301,7 +301,7 @@
                             </div>
 
                             <div class="{{ $employee_detail[0]['employee_is_manager'] == 1 ? "col-md-6" : "col-md-6" }} fv-row {{ $employee_detail[0]['employee_is_manager'] == 1 ? "" : "d-none" }}" id="attendance_access_div">
-                                <label class="required fs-6 fw-semibold mb-2">Attendance Rights</label>
+                                <label class="fs-6 fw-semibold mb-2">Attendance Rights</label>
                                 <select class="form-select " data-control="select2" data-hide-search="false" name="attendance_access" id="attendance_access">
                                     <option value="">Select Attendance Rights</option>
                                     <option value="1" @if(!empty($get_attendance_access) && $get_attendance_access[0]['attendance_access'] == 1) selected @endif>Yes, Manager can edit attendance of team</option>
