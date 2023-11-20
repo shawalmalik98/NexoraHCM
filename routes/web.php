@@ -144,6 +144,7 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::post('/upload-attendance-report',[AttendanceController::class, 'upload_attendance_record']);
         Route::post('/export-attendance-data', [AttendanceController::class , 'export_data_into_dat_file']);
         Route::get('/download-daily-attendance', [AttendanceController::class, 'download_daily_attendance_all_employee']);
+        Route::post('/delete-attendance-record', [AttendanceController::class, 'delete_attendance_record']);
 
       });
 
