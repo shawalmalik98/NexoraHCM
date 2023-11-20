@@ -25,6 +25,7 @@ return new class extends Migration
                 $table->string('att_check_overall_status', 50)->nullable();
                 $table->string('att_shift_start_time', 50)->nullable();
                 $table->string('att_shift_end_time', 50)->nullable();
+                $table->string('att_comp_date', 50)->nullable();
                 $table->string('att_for_date', 50);
                 $table->string('att_for_month', 50);
                 $table->string('att_for_year', 50);
