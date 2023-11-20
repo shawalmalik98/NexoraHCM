@@ -1331,6 +1331,146 @@ class AttendanceController extends Controller
       
             $login_user = $this->get_login_user_detail();
 
+            $where_clause = '1=1';
+
+            if(!empty($request->department_id) && $request->department_id != 'All'){
+                $where_clause .= ' AND employee_department = '.$request->department_id;
+            }
+
+            if(!empty($request->business_unit) && $request->business_unit != 'All'){
+                $where_clause .= " AND business_unit = '".$request->business_unit."'";
+            }
+            
+            if(empty($request->is_active)){
+                $where_clause .= ' AND employee_isactive = '."1".'';
+            }else{
+                if(!empty($request->is_active) && $request->is_active == 1){
+                    $where_clause .= ' AND employee_isactive = '."1".''; 
+                }
+                elseif(!empty($request->is_active) && $request->is_active == 2){
+                    $where_clause .= ' AND employee_isactive = '."0".''; 
+                }
+            }
+            
+
+            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+            array_push($manage_leaves,'RPL');
+            if(!empty($request->input('d'))){
+                
+                $date = date('d', strtotime($request->input('d')));
+                $month = date('m', strtotime($request->input('d')));
+                $year = date('Y', strtotime($request->input('d')));
+
+                $full_date = $year . '-' . $month . '-' . $date;
+        
+                $t_employee_leaves = Employees::join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_for_date'=>$date,'att_for_month'=>$month,'att_for_year'=>$year])->whereRaw($where_clause)->where(function($query) use($manage_leaves){
+                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                    ->orWhere('att_check_overall_status','RPL');
+                })->count();
+               
+                $attendance = DB::select("SELECT e.employee_code, 
+                e.employee_name, 
+                e.business_unit, 
+                e.employee_offdays, 
+                dp.department_name, 
+                ds.designation_name, 
+                CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END as attendance_date,
+                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
+                CASE WHEN a.att_check_in_time IS NULL THEN '-' ELSE a.att_check_in_time END as att_check_in_time,
+                CASE WHEN a.att_check_out_time IS NULL OR a.att_check_out_status = 0
+                THEN '-' ELSE a.att_check_out_time 
+                END as att_check_out_time,
+                a.att_check_out_status,
+                a.att_created_at,
+                a.att_updated_at,
+                CASE 
+                WHEN a.att_check_overall_status IS NULL AND e.employee_offdays LIKE 
+                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) THEN 'Offdays'
+                WHEN a.att_check_overall_status IS NULL THEN 'Absent' 
+                ELSE a.att_check_overall_status 
+                                
+                END as att_check_overall_status
+                                
+                FROM tbl_employees e
+                INNER JOIN tbl_departments dp ON e.employee_department = dp.department_id
+                INNER JOIN tbl_designations ds ON e.employee_designation = ds.designation_id
+                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+                AND att_for_date = $date AND att_for_month = $month AND att_for_year = $year
+                WHERE $where_clause");
+                $attendance = json_decode(json_encode($attendance), TRUE);
+                
+            }else{
+                
+                $date = date('d');
+                $month = date('m');
+                $year = date('Y');
+
+                $full_date = $year . '-' . $month . '-' . $date;
+
+                $t_employee_leaves = Employees::join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_for_date'=>date('d'),'att_for_month'=>date('m'),'att_for_year'=>date('Y')])->whereRaw($where_clause)->whereIn('att_check_overall_status' , $manage_leaves)->where(function($query) use($manage_leaves){
+                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                    ->orWhere('att_check_overall_status','RPL');
+                })->count();
+
+                $attendance = DB::select("SELECT e.employee_code, 
+                e.employee_name, 
+                e.business_unit, 
+                e.employee_offdays, 
+                dp.department_name, 
+                ds.designation_name, 
+                CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END as attendance_date,
+                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
+                CASE WHEN a.att_check_in_time IS NULL THEN '-' ELSE a.att_check_in_time END as att_check_in_time,
+                CASE WHEN a.att_check_out_time IS NULL OR a.att_check_out_status = 0
+                THEN '-' ELSE a.att_check_out_time 
+                END as att_check_out_time,
+                a.att_check_out_status,
+                a.att_created_at,
+                a.att_updated_at,
+                CASE 
+                WHEN a.att_check_overall_status IS NULL AND e.employee_offdays LIKE 
+                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) THEN 'Offdays'
+                WHEN a.att_check_overall_status IS NULL THEN 'Absent' 
+                ELSE a.att_check_overall_status 
+                                
+                END as att_check_overall_status
+                                
+                FROM tbl_employees e
+                INNER JOIN tbl_departments dp ON e.employee_department = dp.department_id
+                INNER JOIN tbl_designations ds ON e.employee_designation = ds.designation_id
+                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+                AND att_for_date = $date AND att_for_month = $month AND att_for_year = $year
+                WHERE $where_clause");
+                $attendance = json_decode(json_encode($attendance), TRUE);
+
+            }
+            
+            $leave_name = implode(',',$manage_leaves);
+
+            $departments = Department::get(['department_id','department_name'])->toArray();
+           
+            $send_data = compact('title','login_user','attendance','t_employee_leaves','manage_leaves','leave_name','departments');
+
+          
+            return view('attendance.daily-attendance-report2',$send_data);
+           
+        }catch(\Exception $e){
+            $this->create_error_log('Daily Attendance Report All Employee ', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
+            ActivityTracker::track_activity('Daily Attendance Report All Employee');
+        }   
+    }
+
+    protected function get_employee_daily_attendance2(Request $request){
+
+        try{
+            
+            $title = Self::TITLE_GLOBAL3;
+      
+            $login_user = $this->get_login_user_detail();
+
             // $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
             $where_clause = '1=1';
