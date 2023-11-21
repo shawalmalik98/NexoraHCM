@@ -5,7 +5,7 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation,ShareAttReport, LeaveManagement, AttendanceLocker, EmployeeGroup};
+use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation,ShareAttReport, LeaveManagement, AttendanceLocker, DeletedAttendance, EmployeeGroup};
 use Illuminate\Support\Facades\DB;
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee};
 use App\Helpers\ActivityTracker;
@@ -1379,6 +1379,8 @@ class AttendanceController extends Controller
                 e.employee_offdays, 
                 dp.department_name, 
                 ds.designation_name, 
+                a.att_check_in_status,
+                a.attendance_id,
                 CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END as attendance_date,
                 DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
                 CASE WHEN a.att_check_in_time IS NULL THEN '-' ELSE a.att_check_in_time END as att_check_in_time,
@@ -1423,6 +1425,8 @@ class AttendanceController extends Controller
                 e.employee_offdays, 
                 dp.department_name, 
                 ds.designation_name, 
+                a.att_check_in_status,
+                a.attendance_id,
                 CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END as attendance_date,
                 DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
                 CASE WHEN a.att_check_in_time IS NULL THEN '-' ELSE a.att_check_in_time END as att_check_in_time,
@@ -2981,6 +2985,73 @@ class AttendanceController extends Controller
                 'status' => 'FALSE',
                 'msg' => 'No file uploaded',
             ]);
+        }
+    }
+
+    protected function delete_attendance_record(Request $request){
+        try{
+            $attendance_record_id = $request->input('attendance_id');
+            $deletion_remarks = $request->input('deletion_remarks');
+
+            if(!empty($attendance_record_id) && !empty($deletion_remarks)){
+                $get_attendance_data = Attendance::where('attendance_id', $attendance_record_id)->get([
+                    'att_employee_id',
+                    'attendance_id',
+                    'att_check_in_time',
+                    'att_check_out_time',
+                    'att_comp_date'
+                ])->toArray();
+
+                if(!empty($get_attendance_data)){
+
+                    $add_new_delete_attendance_record = new DeletedAttendance();
+                    $add_new_delete_attendance_record->att_record_id = $get_attendance_data[0]['attendance_id'];
+                    $add_new_delete_attendance_record->att_date = $get_attendance_data[0]['att_comp_date'];
+                    $add_new_delete_attendance_record->att_emp_id = $get_attendance_data[0]['att_employee_id'];
+                    $add_new_delete_attendance_record->att_checkin_time = $get_attendance_data[0]['att_check_in_time'];
+                    $add_new_delete_attendance_record->att_checkout_time = $get_attendance_data[0]['att_check_out_time'];
+                    $add_new_delete_attendance_record->att_deleted_by = session('user_session');
+                    $add_new_delete_attendance_record->att_deleted_reason = $deletion_remarks;
+                    $add_new_delete_attendance_record->att_deleted_at = date('Y-m-d H:i:s');
+                    $add_new_delete_attendance_record->save();
+
+                    Attendance::where('attendance_id', $attendance_record_id)->delete();
+
+                    return response()->json([
+                        'status' => 'TRUE',
+                        'msg' => 'Attendance record has been successfully deleted.',
+                    ]);
+
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => 'Attendance record is already deleted.',
+                    ]);
+                }
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => 'Please provide deletion remarks.',
+                ]);
+            }
+        }catch(\Exception $e){
+            $this->create_error_log('Delete Attendance Record', $e);
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                   
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+               
+            }
+        }finally{
+            ActivityTracker::track_activity('Delete Attendance Record');
         }
     }
 

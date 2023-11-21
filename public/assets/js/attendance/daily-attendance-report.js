@@ -173,3 +173,76 @@ $('#attendance_record_download').submit(function () {
     $('#attendance_download_btn').attr('data-kt-indicator', 'on');
     $('#attendance_download_btn').css('cursor', 'not-allowed');
 });
+
+$('.delete_attendance_btn').click(function (){
+    $('#delete_attendance_modal').modal('show');
+    var attendance_id = $(this).data('id');
+    $('#attendance_id_input').val(attendance_id);
+});
+
+$('#delete_attendance_record').submit(function (e) {
+
+    $('#delete_btn').prop('disabled', true);
+    $("#delete_btn").attr('data-kt-indicator', 'on');
+    $('#delete_btn').css('cursor', 'not-allowed');
+    e.preventDefault();
+    $.ajax({
+        url: base_url + '/daily-attendance-report/delete-attendance-record',
+        type: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: new FormData(this),
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function (data) {
+
+            if (data.status == 'TRUE') {
+                Toast.fire({
+                    icon: 'success',
+                    title: data.msg,
+                    timer: 3000,
+                });
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            } else {
+                Toast.fire({
+                    icon: 'warning',
+                    title: data.msg,
+                    timer: 3000,
+                });
+                $('#delete_btn').prop('disabled', false);
+                $("#delete_btn").removeAttr('data-kt-indicator');
+                $('#delete_btn').css('cursor', 'pointer');
+            }
+        },
+        error: function (jqXHR, textStatus) {
+            var errorStatus = jqXHR.status;
+            $('#delete_btn').prop('disabled', false);
+            $("#delete_btn").removeAttr('data-kt-indicator');
+            $('#delete_btn').css('cursor', 'pointer');
+            if (errorStatus == 0) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Attendance upload failed please try again',
+                    timer: 4000,
+                });
+                setTimeout(() => {
+                    location.reload();
+                }, 4000);
+            } else {
+                if (errorStatus == 419) {
+                    location.reload();
+                } else {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Try Again. Error Code ' + errorStatus,
+                        timer: 3000,
+                    })
+                }
+            }
+        }
+    });
+});

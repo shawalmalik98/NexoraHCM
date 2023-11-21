@@ -293,6 +293,9 @@
                                             <th class="text-center">Check Out Time</th>
                                             <th class="text-center">Hours Worked</th>
                                             <th class="text-center">Status</th>
+                                            @if($login_user[0]['employee_department'] == '34')
+                                                <th class="text-center">Action</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                   
@@ -346,7 +349,15 @@
                                                             <p class="text-warning"><i class="fa-solid fa-umbrella-beach text-warning"></i> -- Off Day</p>
                                                         @endif
                                                     </td>
-
+                                                    @if($login_user[0]['employee_department'] == '34')
+                                                        <td class="text-center">
+                                                            @if($attendances['att_check_in_status'] == '1' || $attendances['att_check_out_status'] == '1')
+                                                                <i class="fa-regular fa-circle-xmark delete_attendance_btn text-danger mx-2" data-value="LeadDisApprove" data-id="{{ $attendances['attendance_id'] }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Attendance" style="font-size: 20px;cursor: pointer;"></i>
+                                                            @else
+                                                                <i class="fa-regular fa-circle-xmark text-danger mx-2" disabled data-value="LeadDisApprove" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Attendance" style="font-size: 20px;cursor: not-allowed;"></i>
+                                                            @endif
+                                                        </td>
+                                                    @endif
                                                 </tr>
                                                 
                                             @endforeach
@@ -513,6 +524,42 @@
                     </div>
                 </div>
             </form>
+
+            <div class="modal fade" id="delete_attendance_modal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-top">
+                    <form id="delete_attendance_record">
+                        @csrf
+                        <div class="modal-content rounded">
+                            <div class="modal-header">
+                                <h4 class="modal-title pl-4">Confirmation Alert</h4>
+                                <button type="button" class="btn btn-sm btn-icon btn-active-color-white" data-bs-dismiss="modal" aria-label="Close">
+                                    <span class="svg-icon svg-icon-1">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="" xmlns="http://www.w3.org/2000/svg">
+                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="" />
+                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="" />
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
+    
+                            <div class="modal-body pt-0">
+                                <p class="pt-4 fs-6 msg">Are you sure to <b>Delete</b> this attendance record ?</p>
+                                <textarea class="form-control " rows="3" name="deletion_remarks" placeholder="Reason" id="approvermessage" required></textarea>
+                                <input type="hidden" name="attendance_id" id="attendance_id_input">
+                            </div>
+    
+                            <div class="modal-footer">
+                                <button type="submit" id="delete_btn" class="btn btn-danger">
+                                    <span class="indicator-label">Yes, Delete</span>
+                                    <span class="indicator-progress">Please wait... 
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                                </button>
+                                <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
     
     </div>
 </div>
