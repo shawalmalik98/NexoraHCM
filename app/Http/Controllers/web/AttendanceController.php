@@ -5,7 +5,7 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation,ShareAttReport, LeaveManagement, AttendanceLocker};
+use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation,ShareAttReport, LeaveManagement, AttendanceLocker, EmployeeGroup};
 use Illuminate\Support\Facades\DB;
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee};
 use App\Helpers\ActivityTracker;
@@ -1340,6 +1340,12 @@ class AttendanceController extends Controller
             if(!empty($request->business_unit) && $request->business_unit != 'All'){
                 $where_clause .= " AND business_unit = '".$request->business_unit."'";
             }
+
+            if(!empty($request->employee_group) && $request->employee_group != 'All'){
+
+                $where_clause .= " and employee_group= '".$request->employee_group."'";
+
+            }
             
             if(empty($request->is_active)){
                 $where_clause .= ' AND employee_isactive = '."1".'';
@@ -1351,7 +1357,6 @@ class AttendanceController extends Controller
                     $where_clause .= ' AND employee_isactive = '."0".''; 
                 }
             }
-            
 
             $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
             array_push($manage_leaves,'RPL');
@@ -1448,8 +1453,10 @@ class AttendanceController extends Controller
             $leave_name = implode(',',$manage_leaves);
 
             $departments = Department::get(['department_id','department_name'])->toArray();
+
+            $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
            
-            $send_data = compact('title','login_user','attendance','t_employee_leaves','manage_leaves','leave_name','departments');
+            $send_data = compact('title','login_user','attendance','t_employee_leaves','manage_leaves','leave_name','departments','employee_groups');
 
           
             return view('attendance.daily-attendance-report2',$send_data);

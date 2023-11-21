@@ -20,8 +20,8 @@ return new class extends Migration
                 $table->integer('shift_employee_id');
                 $table->integer('shift_log_type')->comment('1 = actual, 2 = updated');
                 $table->date('shift_log_effect_date');
-                $table->time('shift_log_start');
-                $table->time('shift_log_end');
+                $table->string('shift_log_start',100);
+                $table->string('shift_log_end',100);
                 $table->dateTime('shift_log_create_at');
             });
         }

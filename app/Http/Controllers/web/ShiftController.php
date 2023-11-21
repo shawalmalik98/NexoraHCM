@@ -7,13 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 use App\Models\{ShiftManagement, Employees, Department, ShiftRequest, ShiftRequestLog, OfficeLocation, HrmSetting, Attendance};
-use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, MailTrait};
+use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, MailTrait, AttendanceEmployee};
 use App\Helpers\ActivityTracker;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class ShiftController extends Controller
 {
-    use LoginEmployee, LogGenerateTrait, NotificationTrait, MailTrait;
+    use LoginEmployee, LogGenerateTrait, NotificationTrait, MailTrait, AttendanceEmployee;
     const MAIN_TITLE = 'shift-management';
     const SUB_TITLE = 'add-shift';
     const MY_TITLE = 'my-shift-time';
@@ -310,7 +310,7 @@ class ShiftController extends Controller
     }
 
     protected function add_employee_shift(Request $request){
-        
+
         try{
             $validator = Validator::make($request->all(), [
 
@@ -454,6 +454,7 @@ class ShiftController extends Controller
     }
 
     protected function add_shift_time_request(Request $request){
+        
         try{
 
             $validator = Validator::make($request->all(), [
@@ -489,8 +490,8 @@ class ShiftController extends Controller
             if(empty($check_resquest_exist)){
                 $add_shift_request = new ShiftRequest();
                 $add_shift_request->request_employee_id = $login_user[0]['employee_id'];
-                $add_shift_request->request_shift_start = $request->input('shift_start');
-                $add_shift_request->request_shift_end = $request->input('shift_end');
+                $add_shift_request->request_shift_start = $request->input('shift_start').':00';
+                $add_shift_request->request_shift_end = $request->input('shift_end').':00';
                 $add_shift_request->request_shift_effect_date = $request->input('effect_date');
                 $add_shift_request->request_status = 1;
                 $add_shift_request->request_submit_time = date('Y-m-d H:i:s');
@@ -502,8 +503,8 @@ class ShiftController extends Controller
                 $add_request_log->shift_employee_id = $login_user[0]['employee_id'];
                 $add_request_log->shift_log_type = 1;
                 $add_request_log->shift_log_effect_date =  $request->input('effect_date');
-                $add_request_log->shift_log_start = $request->input('shift_start');
-                $add_request_log->shift_log_end = $request->input('shift_end');
+                $add_request_log->shift_log_start = $request->input('shift_start').':00';
+                $add_request_log->shift_log_end = $request->input('shift_end').':00';
                 $add_request_log->shift_log_create_at = date('Y-m-d H:i:s');
                 $add_request_log->save();
                     
@@ -552,6 +553,7 @@ class ShiftController extends Controller
     } 
     
     protected function update_shift_time_request(Request $request){
+       
         try{
             $validator = Validator::make($request->all(), [
                 'request_id' => 'required',
@@ -589,8 +591,8 @@ class ShiftController extends Controller
                 if($get_request[0]['request_status'] == 1){
                     
                     $update_shift = ShiftRequest::find($request->input('request_id'));
-                    $update_shift->request_shift_start = $request->input('shift_start');
-                    $update_shift->request_shift_end = $request->input('shift_end');
+                    $update_shift->request_shift_start = ($request->input('shift_start') != $get_request[0]['request_shift_start']) ? $request->input('shift_start').':00' : $request->input('shift_start');
+                    $update_shift->request_shift_end = ($request->input('shift_end') != $get_request[0]['request_shift_end']) ? $request->input('shift_end').':00' : $request->input('shift_end');
                     $update_shift->request_shift_effect_date = $request->input('effect_date');
                     $update_shift->request_shift_reason = $request->input('reason'); 
                     $update_shift->save();
@@ -602,8 +604,8 @@ class ShiftController extends Controller
                     $add_request_log->shift_employee_id = $login_user[0]['employee_id'];
                     $add_request_log->shift_log_type = 1;
                     $add_request_log->shift_log_effect_date =  $request->input('effect_date');
-                    $add_request_log->shift_log_start = $request->input('shift_start');
-                    $add_request_log->shift_log_end = $request->input('shift_end');
+                    $add_request_log->shift_log_start = ($request->input('shift_start') != $get_request[0]['request_shift_start']) ? $request->input('shift_start').':00' : $request->input('shift_start');
+                    $add_request_log->shift_log_end = ($request->input('shift_end') != $get_request[0]['request_shift_end']) ? $request->input('shift_end').':00' : $request->input('shift_end');
                     $add_request_log->shift_log_create_at = date('Y-m-d H:i:s');
                     $add_request_log->save();
 
@@ -618,8 +620,6 @@ class ShiftController extends Controller
                         'msg' => 'You can\'t update this request now because your reporting authority has changed its status.'
                     ]);
                 }
-
-                
 
             }else{
                 return response()->json([
@@ -828,6 +828,7 @@ class ShiftController extends Controller
     }
 
     protected function approved_shift_time_request(Request $request){
+
         try{
             $validator = Validator::make($request->all(), [
                 'approved_id' => 'required',
@@ -871,8 +872,8 @@ class ShiftController extends Controller
                     }
                     
                     $approved_shift = ShiftRequest::find($request->input('approved_id'));
-                    $approved_shift->request_shift_start = $request->input('shift_start');
-                    $approved_shift->request_shift_end = $request->input('shift_end');
+                    $approved_shift->request_shift_start = ($request->input('shift_start') != $get_request[0]['request_shift_start']) ? $request->input('shift_start').':00' : $request->input('shift_start');
+                    $approved_shift->request_shift_end = ($request->input('shift_end') != $get_request[0]['request_shift_end']) ? $request->input('shift_end').':00' : $request->input('shift_end');
                     $approved_shift->request_shift_effect_date = $request->input('effect_date');
                     $approved_shift->request_status = 2;
                     $approved_shift->request_approved_by_hr = $login_user[0]['employee_id'];
@@ -886,8 +887,8 @@ class ShiftController extends Controller
                         $add_shift = new ShiftManagement();
                         $add_shift->employee_id = $approved_shift->request_employee_id;
                         $add_shift->shift_start_from_date = $request->input('effect_date');
-                        $add_shift->shift_start_time = $request->input('shift_start');
-                        $add_shift->shift_end_time = $request->input('shift_end');
+                        $add_shift->shift_start_time = ($request->input('shift_start') != $get_request[0]['request_shift_start']) ? $request->input('shift_start').':00' : $request->input('shift_start');
+                        $add_shift->shift_end_time = ($request->input('shift_end') != $get_request[0]['request_shift_end']) ? $request->input('shift_end').':00' : $request->input('shift_end');
                         $add_shift->shift_created_by = $login_user[0]['employee_id'];
                         $add_shift->save();
 
@@ -897,8 +898,8 @@ class ShiftController extends Controller
                             $add_request_log->shift_employee_id = $login_user[0]['employee_id'];
                             $add_request_log->shift_log_type = 2;
                             $add_request_log->shift_log_effect_date =  $request->input('effect_date');
-                            $add_request_log->shift_log_start = $request->input('shift_start');
-                            $add_request_log->shift_log_end = $request->input('shift_end');
+                            $add_request_log->shift_log_start= ($request->input('shift_start') != $get_request[0]['request_shift_start']) ? $request->input('shift_start').':00' : $request->input('shift_start');
+                            $add_request_log->shift_log_end = ($request->input('shift_end') != $get_request[0]['request_shift_end']) ? $request->input('shift_end').':00' : $request->input('shift_end');
                             $add_request_log->shift_log_create_at = date('Y-m-d H:i:s');
                             $add_request_log->save();
                         }
@@ -917,7 +918,7 @@ class ShiftController extends Controller
                             'status' => 'FALSE',
                             'msg' => 'Something went wrong. Please try again.',
                         ]);
-                    }
+                    }  
                     
                 }else{
                     return response()->json([
@@ -969,7 +970,7 @@ class ShiftController extends Controller
             }
 
             $shift_request_log = ShiftRequestLog::
-            selectRaw('employee_name,employee_code,shift_log_type,shift_log_start,shift_log_end,date_format(shift_log_create_at,"%d-%M-%Y %H:%i:%s") as shift_log_create_at')
+            selectRaw('employee_name,employee_code,shift_log_type,shift_log_start,shift_log_end ,CONVERT(VARCHAR, shift_log_create_at, 120) as shift_log_create_at')
             ->join('tbl_employees','tbl_employees.employee_id','=','shift_employee_id')
             ->where('shift_request_id',$request->input('request_id'))->get()->toArray();
 

@@ -17,8 +17,8 @@ return new class extends Migration
             Schema::create('tbl_shift_request', function (Blueprint $table) {
                 $table->id('shift_request_id');
                 $table->integer('request_employee_id');
-                $table->time('request_shift_start');
-                $table->time('request_shift_end');
+                $table->string('request_shift_start',100);
+                $table->string('request_shift_end',100);
                 $table->date('request_shift_effect_date');
                 $table->string('request_shift_reason',1000);
                 $table->integer('request_status')->comment('1 = Pending, 2 = Approved, 3 = Disapproved');
