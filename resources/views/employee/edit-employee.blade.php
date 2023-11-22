@@ -883,7 +883,6 @@
                         
                         @endif
 
-                        @if($employee_detail[0]['employee_id'] != 1073)
                         <div class="text-center">
                             <button type="submit"class="btn btn-lg btn-success" id="submit_btn">
                                 <span class="indicator-label">Update Employee</span>
@@ -891,7 +890,6 @@
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                             </button>
                         </div>
-                        @endif
                         
                     </form>
                     {{--end::Table container--}}
