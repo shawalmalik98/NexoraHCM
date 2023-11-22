@@ -16,16 +16,16 @@
                         My Attendance ({{date('F Y',strtotime($year . '-' . $month . '-01')) }})
                     @else
                         
-                        My Attendance ({{date('d-F', strtotime(Request::get('from_date'))) .' to ' .date('d-F-Y', strtotime(Request::get('to_date')))}})
+                        My Attendance ({{date('d-M', strtotime($from_date)) .' to ' .date('d-M-Y', strtotime($to_date))}})
                     @endif
                 </h1>   
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
                 <div class="d-flex align-items-center gap-2 gap-lg-3">
                     @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')))
-                        <a href="{{ url('my-attendance-report?m='.$month.'&y='.$year.'&from_date='.Request::get('from_date').'&to_date='.Request::get('to_date'))}}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
+                        <a href="{{ url('my-attendance-report?from_date='.Request::get('from_date').'&to_date='.Request::get('to_date'))}}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
                     @else
-                        <a href="{{ url('my-attendance-report?m='.$month.'&y='.$year.'&from_date='.Request::get('from_date').'&to_date='.Request::get('to_date')) }}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
+                        <a href="{{ url('my-attendance-report?from_date='.Request::get('from_date').'&to_date='.Request::get('to_date')) }}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
                     @endif
                   
                 </div>
@@ -130,70 +130,15 @@
 
                                     <div class="separator border-gray-200"></div>
                                     <div class="px-7 py-5">
-                                        
-                                        <div class="mb-3" id="main-div-select-month">
-                                            
-                                            <label class="form-label fw-semibold @if (!empty($month) && is_numeric($month)) required  @endif" id="label-month">Select Month</label>
-                                            
-                                            <select class="form-select " data-kt-select2="true" data-placeholder="Select Month"name="m"
-                                                 id="select-month" @if (!empty($month) && is_numeric($month)) required  @endif>
-                                                <option value="">Select Month</option>
-                                                <option value="01" @if (!empty($month) && $month == '01') selected  @endif>January
-                                                </option>
-                                                <option value="02" @if (!empty($month) && $month == '02') selected  @endif>February
-                                                </option>
-                                                <option value="03" @if (!empty($month) && $month == '03') selected @endif>March
-                                                </option>
-                                                <option value="04" @if (!empty($month) && $month == '04') selected  @endif>April
-                                                </option>
-                                                <option value="05" @if (!empty($month) && $month == '05') selected  @endif>May
-                                                </option>
-                                                <option value="06" @if (!empty($month) && $month == '06') selected  @endif>June
-                                                </option>
-                                                <option value="07" @if (!empty($month) && $month == '07') selected  @endif>July
-                                                </option>
-                                                <option value="08" @if (!empty($month) && $month == '08') selected  @endif>August
-                                                </option>
-                                                <option value="09" @if (!empty($month) && $month == '09') selected  @endif>September
-                                                </option>
-                                                <option value="10" @if (!empty($month) && $month == '10') selected  @endif>October
-                                                </option>
-                                                <option value="11" @if (!empty($month) && $month == '11') selected  @endif>November
-                                                </option>
-                                                <option value="12" @if (!empty($month) && $month == '12') selected @endif>December
-                                                </option>
-                                            </select>
-                                        
-                                            
-                                        </div>
-
-                                        <div class="mb-3" id="main-div-select-year">
-                                            
-                                            <label class="form-label fw-semibold @if (!empty($year) && is_numeric($year)) required  @endif" id="label-year">Select Year</label>
-                                            
-                                                <select class="form-select " data-kt-select2="true" data-placeholder="Select Year" name="y"  id="select-year" @if (!empty($year) && is_numeric($year)) required  @endif>
-                                                    <option value="">Select Year</option>
-                                                    @if(!empty($dynamic_years))
-                                                        @foreach ($dynamic_years as $year_list)
-                                                            <option value="{{$year_list}}" @if (!empty($year) && $year == $year_list) selected   @endif>{{$year_list}}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
-                                                </select>
-                                     
-                                            
-                                        </div>
-
+                                    
                                         <div class="mb-3">
-                                            
                                             <label class="form-label fw-semibold @if(!empty(Request::get('from_date'))) required  @endif" id="label-from-date">Form Date</label>
-                                            <input class="form-control" type="date" name="from_date" id="from_date" value="{{Request::get('from_date')}}" @if(!empty(Request::get('from_date'))) required  @endif max="{{date('Y-m-d')}}" />
+                                            <input class="form-control" type="date" name="from_date" id="from_date" value="{{ $from_date}}" @if(!empty(Request::get('from_date'))) required  @endif max="{{date('Y-m-d')}}" />
                                         </div>
 
                                         <div class="mb-3">
-                                            
                                             <label class="form-label fw-semibold @if(!empty(Request::get('to_date'))) required  @endif" id="label-to-date">To Date</label>
-                                            <input class="form-control" type="date" name="to_date" id="to_date" value="{{Request::get('to_date')}}" @if(!empty(Request::get('to_date'))) required  @endif max="{{date('Y-m-d')}}"/>
+                                            <input class="form-control" type="date" name="to_date" id="to_date" value="{{$to_date}}" @if(!empty(Request::get('to_date'))) required  @endif max="{{date('Y-m-d')}}"/>
                                         </div>
                                        
                                         <div class="d-flex justify-content-end">
@@ -231,7 +176,6 @@
                                             <th class="text-center">Att Source</th>
                                             <th class="text-center">Hours Worked</th>
                                             <th class="text-center">Status</th>
-                                        
                                         </tr>
                                     </thead>
                                     <tbody>

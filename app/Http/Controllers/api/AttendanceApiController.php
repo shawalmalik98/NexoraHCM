@@ -9,6 +9,7 @@ use App\Models\{Attendance,Employees,LeaveManagement};
 
 use App\Traits\{LogGenerateTrait, LoginEmployee, ApiResponseTrait};
 use App\Helpers\{ActivityTracker, CustomHelper};
+use DatePeriod,DateTime,DateInterval;
 
 class AttendanceApiController extends Controller
 {    
@@ -19,36 +20,69 @@ class AttendanceApiController extends Controller
     protected function personal_attendace(Request $request){
         try{
             
-            $title = Self::TITLE_GLOBAL2;
-      
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
             
-            if($request->get('m') != '' && is_numeric($request->get('m')) && $request->get('m') >= 01 && $request->get('m') <= 12 && $request->get('y') != '' && is_numeric($request->get('y')) && $request->get('y') >= 1900 && $request->get('y') <= 3000){
+            // if($request->get('m') != '' && is_numeric($request->get('m')) && $request->get('m') >= 01 && $request->get('m') <= 12 && $request->get('y') != '' && is_numeric($request->get('y')) && $request->get('y') >= 1900 && $request->get('y') <= 3000){
 
-                $month_days = cal_days_in_month(CAL_MONTH_GREGORIAN_LONG, $request->get('m'),$request->get('y'));
-                $month = $request->get('m');
-                $year =  $request->get('y');
+            //     $month_days = cal_days_in_month(CAL_MONTH_GREGORIAN_LONG, $request->get('m'),$request->get('y'));
+            //     $month = $request->get('m');
+            //     $year =  $request->get('y');
 
-            }else{
-                $month_days = date('t');
-                $month = date('m');
-                $year =  date('Y');
+            // }else{
+            //     $month_days = date('t');
+            //     $month = date('m');
+            //     $year =  date('Y');
               
+            // }
+
+            if(empty($request->get('from_date')) && empty($request->get('to_date'))){
+                if(date('d') >= '26'){
+                    $from_date = date('Y-m-26');
+                    $to_date = date('Y-m-d');
+                }else{
+                    $today = new DateTime();
+                    $today->modify('first day of previous month');
+                    $today->modify('+25 days');
+                    $from_date = $today->format('Y-m-d');
+                    $to_date = date('Y-m-d');
+                }
             }
 
-            $attendance = Attendance::where(['att_employee_id'=>$login_user[0]['employee_id'],'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
-             
-            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+            if(!empty($request->get('from_date')) && !empty($request->get('to_date'))){
+                $from_date = $request->get('from_date');
+                $to_date = $request->get('to_date');
+            }
 
-            $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_employee_id'=>$login_user[0]['employee_id'],'att_for_month'=>$month,'att_for_year'=>$year])->where(function($query) use($manage_leaves){
-                $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                ->orWhere('att_check_overall_status','RPL');
-            })->count();
+            $startDate = new DateTime($from_date);
+            $endDate = new DateTime($to_date);
+
+            $interval = $startDate->diff($endDate);
+            $month_days = $interval->days + 1;
+
+            // dd($numberOfDays);
+
+            $attendance = Attendance::whereBetween('att_comp_date', [$from_date , $to_date])->where([
+                'att_employee_id'=>$login_user[0]['employee_id'],
+                // 'att_for_month'=>$month,
+                // 'att_for_year'=>$year
+            ])->get()->toArray();
+
+            // dd($attendance);
+             
+            // $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+
+            // $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_employee_id'=>$login_user[0]['employee_id'],'att_for_month'=>$month,'att_for_year'=>$year])->where(function($query) use($manage_leaves){
+            //     $query->whereIn('att_check_overall_status' ,$manage_leaves)
+            //     ->orWhere('att_check_overall_status','RPL');
+            // })->count();
            
             $login_user[0]['employee_offdays'] = (!empty($login_user[0]['employee_offdays'])) ? explode(",",$login_user[0]['employee_offdays']):[];
             $off_days =  $login_user[0]['employee_offdays'];   
         
-            $data = compact('title','attendance','month_days','t_employee_leaves','month','year','off_days','manage_leaves');
+            // $data = compact('title','attendance','month_days','t_employee_leaves','month','year','off_days','manage_leaves');
+
+            // $data = compact('attendance','month_days','month','year','off_days');
+            $data = compact('attendance','from_date','to_date','month_days','off_days');
 
             return $this->api_response_json(TRUE,"My Attendance",$data,200);
 

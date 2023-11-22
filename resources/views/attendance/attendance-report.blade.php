@@ -5,16 +5,16 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Attendance Report</title>
 		
-	<meta name="description" content="More than five years back a group of few members started SourceCode Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
+	<meta name="description" content="More than five years back a group of few members started IIL Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
 
 
-	<meta itemprop="name" content="Portal || SourceCode">
-	<meta itemprop="description" content="More than five years back a group of few members started SourceCode Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
+	<meta itemprop="name" content="Portal || IIL">
+	<meta itemprop="description" content="More than five years back a group of few members started IIL Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
 
 
 	<meta property="og:type" content="website">
-	<meta property="og:title" content="Portal || SourceCode">
-	<meta property="og:description" content="More than five years back a group of few members started SourceCode Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
+	<meta property="og:title" content="Portal || IIL">
+	<meta property="og:description" content="More than five years back a group of few members started IIL Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
     <link rel="icon" href="{{ url('portal_assets/images/fav-icons.png') }}" />
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" >
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -66,7 +66,7 @@
                 
                 <h1 class="text-center" style="margin-top:1%">{{$companySetting['company_name']}}</h1>
 
-                <h2 class="text-center" style="margin-top:1%">Employee Monthly Attendance Sheet </h2>
+                <h5 class="text-center" style="margin-top:1%">Employee Monthly Attendance Sheet </h5>
 
             </div>
         </div>    
@@ -86,12 +86,7 @@
                         
 
                         <td>
-                            @if(!empty($month) && !empty($year))
-                                @php $apply_month_year =  $month .'-'. $year; @endphp
-                                {{\Carbon\Carbon::createFromFormat('m-Y', $apply_month_year)->format('F-Y') }}
-                            @else
-                                {{date('d-F', strtotime(Request::get('from_date'))) .' to ' .date('d-F-Y', strtotime(Request::get('to_date')))}}
-                            @endif
+                            {{ date('d-M', strtotime($from_date)) .' to ' .date('d-M-Y', strtotime($to_date)) }}
                         </td>
                         
                     </tr>
