@@ -1072,6 +1072,7 @@ class EmployeeController extends Controller
             $attendance_count = Attendance::where('att_employee_id',$employee_id)->whereNot('att_check_overall_status','LIKE', '%Holiday%')->count();
 
             $shift_start_timings = $this->get_employee_today_shift($employee_id,"in",date('Y-m-d'));
+
             $shift_end_timings = $this->get_employee_today_shift($employee_id,"out",date('Y-m-d'));
 
             $fetch_shift_timing = ShiftManagement::where('employee_id',$employee_id)
@@ -1568,6 +1569,7 @@ class EmployeeController extends Controller
                     if($attendance_count == 0){
 
                         $get_employee_shift = ShiftManagement::where('employee_id',$update_employee->employee_id)->get()->toArray();
+                       
                         $get_holidays =  Holiday::where('holiday_date','>=', $employee_data->input('employee_doj'))->where(function ($query) use ($employee_data) {
                             $query->where('department_name', 'LIKE', '%'.$employee_data->input('employee_department'). '%')
                             ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
@@ -1585,15 +1587,14 @@ class EmployeeController extends Controller
                                 $update_employee_salary->save();
 
                             }
-
+                          
                             if(!empty($get_employee_shift)){
-
+                                
                                 $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d',strtotime($employee_old_doj)))->delete();
 
                                 $insert_shift_start_timings = $employee_data->input('shift_start_timings').':00';
                                 $insert_shift_end_timings = $employee_data->input('shift_end_timings').':00';
-
-
+                                
                                 $add_shift = new ShiftManagement();
                                 $add_shift->employee_id =  $update_employee->employee_id;
                                 $add_shift->shift_start_from_date = $employee_data->input('employee_doj');
@@ -1601,6 +1602,7 @@ class EmployeeController extends Controller
                                 $add_shift->shift_end_time = $insert_shift_end_timings;
                                 $add_shift->shift_created_by =  session('user_session');
                                 $process =  $add_shift->save();
+                                
 
                                 ShiftManagement::where('employee_id',$update_employee->employee_id)->where('shift_start_from_date','<',$employee_data->input('employee_doj'))->delete();
                                 Attendance::where('att_employee_id',$update_employee->employee_id)->delete();
@@ -1707,16 +1709,15 @@ class EmployeeController extends Controller
                     $shift_start_timings = $this->get_employee_today_shift($employee_data->input('employee_id'),"in",date('Y-m-d'));
                     $shift_end_timings = $this->get_employee_today_shift($employee_data->input('employee_id'),"out",date('Y-m-d'));
 
-                    if(($employee_data->input('shift_end_timings') != $shift_end_timings || $employee_data->input('shift_start_timings') != $shift_start_timings) && $employee_old_doj == $employee_data->input('employee_doj')  ){
-
+                    if(($employee_data->input('shift_end_timings').':00' != $shift_end_timings || $employee_data->input('shift_start_timings').':00' != $shift_start_timings) && $employee_old_doj == $employee_data->input('employee_doj')){
 
                         if(strtotime($employee_data->input('employee_doj')) <= strtotime(date('Y-m-d',strtotime('+1 days')))){
-
+                
                             $insert_shift_start_timings = $employee_data->input('shift_start_timings').':00';
                             $insert_shift_end_timings = $employee_data->input('shift_end_timings').':00';
 
-                            $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d',strtotime('+1 days')))->delete();
-
+                            $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d'))->delete();
+                          
                             $get_todays_attendance = Attendance::where('att_for_date', date('d'))->where('att_for_month', date('m'))->where('att_for_year', date('Y'))->where('att_employee_id', $employee_data->input('employee_id'))->get(['attendance_id'])->toArray();
 
                             $add_shift = new ShiftManagement();

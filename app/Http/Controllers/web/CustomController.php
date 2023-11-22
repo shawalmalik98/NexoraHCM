@@ -148,6 +148,7 @@ class CustomController extends Controller
                 $result[] = '<option value="">First Select Department</option>';
             }
 
+           
         }
         catch(\Exception $e){
             $this->create_error_log("Fetch Employee Selected Department", $e);
@@ -158,8 +159,8 @@ class CustomController extends Controller
         }
         finally{
 
-            ActivityTracker::track_activity('Fetch Employee Selected Department');
             return $result;
+            ActivityTracker::track_activity('Fetch Employee Selected Department');
 
         }
     }

@@ -222,6 +222,25 @@
                                         </div>
 
                                         <div class="mb-3">
+                                        
+                                            <label class="form-label fw-semibold">Employee Group </label>
+                                            
+                                            <div>
+                                                <select class="form-select " data-kt-select2="true" data-placeholder="Select Employee group" name="employee_group">
+                                                    <option value="">Select Employee group</option>
+                                                    <option value="All" @if (Request::get('employee_group') == 'All') selected @endif>All Employee Group</option>
+                                                    @if(!empty($employee_groups))
+                                                        @foreach ($employee_groups as $employee_group)
+                                                            <option value="{{ $employee_group['employee_group_id'] }}"
+                                                            @if(!empty(Request::get('employee_group')) && Request::get('employee_group') == $employee_group['employee_group_id']) selected @endif>
+                                                                {{ $employee_group['group_name'] }}</option>
+                                                        @endforeach 
+                                                    @endif    
+                                                </select>
+                                            </div> 
+                                        </div>
+
+                                        <div class="mb-3">
                                             
                                             <label class="form-label fw-semibold">Employee Status</label>
                                             
@@ -246,7 +265,7 @@
                                         </div>
                                         
                                         <div class="d-flex justify-content-end">
-                                            @if (!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('d')) || !empty(Request::get('is_active')))
+                                            @if (!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('employee_group')) || !empty(Request::get('d')) || !empty(Request::get('is_active')))
                                                 <a href="{{ url('daily-attendance-report') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2 ">Reset Filter</a>
                                             @endif
                                             <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
