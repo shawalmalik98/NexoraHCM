@@ -1712,13 +1712,19 @@ class EmployeeController extends Controller
                     if(($employee_data->input('shift_end_timings').':00' != $shift_end_timings || $employee_data->input('shift_start_timings').':00' != $shift_start_timings) && $employee_old_doj == $employee_data->input('employee_doj')){
 
                         if(strtotime($employee_data->input('employee_doj')) <= strtotime(date('Y-m-d',strtotime('+1 days')))){
-                
+                            
                             $insert_shift_start_timings = $employee_data->input('shift_start_timings').':00';
                             $insert_shift_end_timings = $employee_data->input('shift_end_timings').':00';
 
-                            $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d'))->delete();
+                            $delete_record_of_next_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d',strtotime('+1 days')))->delete();
                           
                             $get_todays_attendance = Attendance::where('att_for_date', date('d'))->where('att_for_month', date('m'))->where('att_for_year', date('Y'))->where('att_employee_id', $employee_data->input('employee_id'))->get(['attendance_id'])->toArray();
+
+                            if(empty($get_todays_attendance)){
+
+                                $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d'))->delete();
+                               
+                            }
 
                             $add_shift = new ShiftManagement();
                             $add_shift->employee_id = $employee_data->input('employee_id');
@@ -1729,7 +1735,7 @@ class EmployeeController extends Controller
                             $add_shift->save();
 
                         }else{
-
+                            
                             $insert_shift_start_timings = $employee_data->input('shift_start_timings').':00';
                             $insert_shift_end_timings = $employee_data->input('shift_end_timings').':00';
 
