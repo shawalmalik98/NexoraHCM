@@ -54,7 +54,7 @@ class MarkAttendanceApiController extends Controller
 					$diff  = $employee_official_time - $current_shift_time;
 
 					if(abs($diff) <= 300 || $current_shift_time < 180){
-						return $this->api_response_json(FALSE,"You've already checked in for today's Shifts","",200);
+						return $this->api_response_json(FALSE,"You've already checked in for today's shift","",200);
 					}
 
 				}
