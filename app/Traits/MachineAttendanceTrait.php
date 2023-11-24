@@ -331,15 +331,103 @@ trait MachineAttendanceTrait {
 				$employee_shift_end = $this->get_employee_today_shift($employee_id,"out",date('Y-m-d',strtotime($check_in)));
 	
 				if(empty($get_attendance) || (!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false)){
-					if($employee_data[0]['employee_shift_flexibilty'] != '1'){
-						$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
-						$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
-						$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
-						$exceed_final = date('H:i', $exceed);
-						$request_check_in_time = date("H", strtotime($check_in));
-						$check_in_grace_period = HrmSetting::pluck('check_in_flexibility_time')->toArray();
-						if($employee_shift_start_hour == $request_check_in_time){
-							if(date('i' , strtotime($check_in)) <= $employee_shift_start_minute + $check_in_grace_period[0]){
+					if(date('H',strtotime($check_in)) < 13 && date('H',strtotime($check_in)) >= 07){
+						if($employee_data[0]['employee_shift_flexibilty'] != '1'){
+							$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
+							$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
+							$exceed = strtotime("+1 hours", strtotime($employee_shift_start));
+							$exceed_final = date('H:i', $exceed);
+							$request_check_in_time = date("H", strtotime($check_in));
+							$check_in_grace_period = HrmSetting::pluck('check_in_flexibility_time')->toArray();
+							if($employee_shift_start_hour == $request_check_in_time){
+								if(date('i' , strtotime($check_in)) <= $employee_shift_start_minute + $check_in_grace_period[0]){
+									$mark_attendance = new Attendance();
+									$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
+									$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
+									$mark_attendance->att_check_out_time = '00:00:00';
+									$mark_attendance->att_check_in_status = 1;
+									$mark_attendance->att_check_out_status = 0;
+									$mark_attendance->att_shift_start_time = $employee_shift_start;
+									$mark_attendance->att_shift_end_time = $employee_shift_end;
+									$mark_attendance->att_check_overall_status = 'Present';
+									$mark_attendance->att_for_date = $day;
+									$mark_attendance->att_for_month = $month;
+									$mark_attendance->att_for_year = $year;
+									$mark_attendance->att_comp_date = $att_comp_date;
+									$mark_attendance->att_check_in_source = $attendance_source;
+									$mark_attendance->att_ci_lat = $attendance_lat;
+									$mark_attendance->att_ci_long = $attendance_long;
+									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
+									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->save();
+									
+		
+								}else{
+									$mark_attendance = new Attendance();
+									$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
+									$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
+									$mark_attendance->att_check_out_time = '00:00:00';
+									$mark_attendance->att_check_in_status = 1;
+									$mark_attendance->att_check_out_status = 0;
+									$mark_attendance->att_shift_start_time = $employee_shift_start;
+									$mark_attendance->att_shift_end_time = $employee_shift_end;
+									$mark_attendance->att_check_overall_status = 'Late Coming';
+									$mark_attendance->att_for_date = $day;
+									$mark_attendance->att_for_month = $month;
+									$mark_attendance->att_for_year = $year;
+									$mark_attendance->att_comp_date = $att_comp_date;
+									$mark_attendance->att_check_in_source = $attendance_source;
+									$mark_attendance->att_ci_lat = $attendance_lat;
+									$mark_attendance->att_ci_long = $attendance_long;
+									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
+									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->save();
+		
+								}
+							}elseif(date('H' , strtotime($check_in)) > $employee_shift_start_hour){
+								if(date('H:i', strtotime($check_in)) <= $exceed_final ){
+									$mark_attendance = new Attendance();
+									$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
+									$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
+									$mark_attendance->att_check_out_time = '00:00:00';
+									$mark_attendance->att_check_in_status = 1;
+									$mark_attendance->att_check_out_status = 0;
+									$mark_attendance->att_shift_start_time = $employee_shift_start;
+									$mark_attendance->att_shift_end_time = $employee_shift_end;
+									$mark_attendance->att_check_overall_status = 'Late Coming';
+									$mark_attendance->att_for_date = $day;
+									$mark_attendance->att_for_month = $month;
+									$mark_attendance->att_for_year = $year;
+									$mark_attendance->att_comp_date = $att_comp_date;
+									$mark_attendance->att_check_in_source = $attendance_source;
+									$mark_attendance->att_ci_lat = $attendance_lat;
+									$mark_attendance->att_ci_long = $attendance_long;
+									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
+									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->save();
+									
+								}else{
+									$mark_attendance = new Attendance();
+									$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
+									$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
+									$mark_attendance->att_check_out_time = '00:00:00';
+									$mark_attendance->att_check_in_status = 1;
+									$mark_attendance->att_check_out_status = 0;
+									$mark_attendance->att_shift_start_time = $employee_shift_start;
+									$mark_attendance->att_shift_end_time = $employee_shift_end;
+									$mark_attendance->att_check_overall_status = 'Half day';
+									$mark_attendance->att_for_date = $day;
+									$mark_attendance->att_for_month = $month;
+									$mark_attendance->att_for_year = $year;
+									$mark_attendance->att_comp_date = $att_comp_date;
+									$mark_attendance->att_check_in_source = $attendance_source;
+									$mark_attendance->att_ci_lat = $attendance_lat;
+									$mark_attendance->att_ci_long = $attendance_long;
+									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
+									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->save();
+								}
+							}else{
 								$mark_attendance = new Attendance();
 								$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
 								$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
@@ -359,77 +447,13 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 								$mark_attendance->att_remote_applicable = $remote_applicable;
 								$mark_attendance->save();
-								
-	
-							}else{
-								$mark_attendance = new Attendance();
-								$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
-								$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
-								$mark_attendance->att_check_out_time = '00:00:00';
-								$mark_attendance->att_check_in_status = 1;
-								$mark_attendance->att_check_out_status = 0;
-								$mark_attendance->att_shift_start_time = $employee_shift_start;
-								$mark_attendance->att_shift_end_time = $employee_shift_end;
-								$mark_attendance->att_check_overall_status = 'Late Coming';
-								$mark_attendance->att_for_date = $day;
-								$mark_attendance->att_for_month = $month;
-								$mark_attendance->att_for_year = $year;
-								$mark_attendance->att_comp_date = $att_comp_date;
-								$mark_attendance->att_check_in_source = $attendance_source;
-								$mark_attendance->att_ci_lat = $attendance_lat;
-								$mark_attendance->att_ci_long = $attendance_long;
-								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
-								$mark_attendance->att_remote_applicable = $remote_applicable;
-								$mark_attendance->save();
-	
-							}
-						}elseif(date('H' , strtotime($check_in)) > $employee_shift_start_hour){
-							if(date('H:i', strtotime($check_in)) <= $exceed_final ){
-								$mark_attendance = new Attendance();
-								$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
-								$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
-								$mark_attendance->att_check_out_time = '00:00:00';
-								$mark_attendance->att_check_in_status = 1;
-								$mark_attendance->att_check_out_status = 0;
-								$mark_attendance->att_shift_start_time = $employee_shift_start;
-								$mark_attendance->att_shift_end_time = $employee_shift_end;
-								$mark_attendance->att_check_overall_status = 'Late Coming';
-								$mark_attendance->att_for_date = $day;
-								$mark_attendance->att_for_month = $month;
-								$mark_attendance->att_for_year = $year;
-								$mark_attendance->att_comp_date = $att_comp_date;
-								$mark_attendance->att_check_in_source = $attendance_source;
-								$mark_attendance->att_ci_lat = $attendance_lat;
-								$mark_attendance->att_ci_long = $attendance_long;
-								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
-								$mark_attendance->att_remote_applicable = $remote_applicable;
-								$mark_attendance->save();
-								
-							}else{
-								$mark_attendance = new Attendance();
-								$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
-								$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
-								$mark_attendance->att_check_out_time = '00:00:00';
-								$mark_attendance->att_check_in_status = 1;
-								$mark_attendance->att_check_out_status = 0;
-								$mark_attendance->att_shift_start_time = $employee_shift_start;
-								$mark_attendance->att_shift_end_time = $employee_shift_end;
-								$mark_attendance->att_check_overall_status = 'Half day';
-								$mark_attendance->att_for_date = $day;
-								$mark_attendance->att_for_month = $month;
-								$mark_attendance->att_for_year = $year;
-								$mark_attendance->att_comp_date = $att_comp_date;
-								$mark_attendance->att_check_in_source = $attendance_source;
-								$mark_attendance->att_ci_lat = $attendance_lat;
-								$mark_attendance->att_ci_long = $attendance_long;
-								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
-								$mark_attendance->att_remote_applicable = $remote_applicable;
-								$mark_attendance->save();
+		
 							}
 						}else{
+							
 							$mark_attendance = new Attendance();
 							$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
-							$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
+							$mark_attendance->att_check_in_time = date('H:i:s', strtotime($check_in));
 							$mark_attendance->att_check_out_time = '00:00:00';
 							$mark_attendance->att_check_in_status = 1;
 							$mark_attendance->att_check_out_status = 0;
@@ -446,40 +470,22 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 							$mark_attendance->att_remote_applicable = $remote_applicable;
 							$mark_attendance->save();
-	
+		
 						}
-					}else{
-						
-						$mark_attendance = new Attendance();
-						$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
-						$mark_attendance->att_check_in_time = date('H:i:s', strtotime($check_in));
-						$mark_attendance->att_check_out_time = '00:00:00';
-						$mark_attendance->att_check_in_status = 1;
-						$mark_attendance->att_check_out_status = 0;
-						$mark_attendance->att_shift_start_time = $employee_shift_start;
-						$mark_attendance->att_shift_end_time = $employee_shift_end;
-						$mark_attendance->att_check_overall_status = 'Present';
-						$mark_attendance->att_for_date = $day;
-						$mark_attendance->att_for_month = $month;
-						$mark_attendance->att_for_year = $year;
-						$mark_attendance->att_comp_date = $att_comp_date;
-						$mark_attendance->att_check_in_source = $attendance_source;
-						$mark_attendance->att_ci_lat = $attendance_lat;
-						$mark_attendance->att_ci_long = $attendance_long;
-						$mark_attendance->att_created_at = date('Y-m-d H:i:s');
-						$mark_attendance->att_remote_applicable = $remote_applicable;
-						$mark_attendance->save();
-	
 					}
 				}else{
-					if(date('H', strtotime($check_in)) < 18){
-						$check_in = Attendance::find($get_attendance[0]['attendance_id']);
-						$check_in->att_check_in_time = date('H:i:s', strtotime($check_in));
-						$check_in->att_check_in_status = 1;
-						$check_in->att_check_in_source = 2;
-						$check_in->att_ci_lat = $attendance_lat;
-						$check_in->att_ci_long = $attendance_long;
-						$check_in->save();
+					if(date('H',strtotime($check_in)) < 13 && date('H',strtotime($check_in)) >= 07){
+						$time = date('H:i:s', strtotime($check_in));
+						if(date('H:i:s', strtotime($check_in)) < $get_attendance[0]['att_check_in_time']){
+							$check_in = Attendance::find($get_attendance[0]['attendance_id']);
+							$check_in->att_check_in_time = $time;
+							$check_in->att_check_in_status = 1;
+							$check_in->att_check_in_source = 2;
+							$check_in->att_ci_lat = $attendance_lat;
+							$check_in->att_ci_long = $attendance_long;
+							$check_in->save();
+						}
+						
 					}
 				}
 	
@@ -521,12 +527,14 @@ trait MachineAttendanceTrait {
 				$employee_shift_end = $this->get_employee_today_shift($employee_id,"out",date('Y-m-d',strtotime($check_out_time)));
 
 				if(!empty($get_attendance)){
-
+					// dd('321');
 					$check_in_time = $get_attendance[0]['att_for_year'].'-'.$get_attendance[0]['att_for_month'].'-'.$get_attendance[0]['att_for_date'].' '.$get_attendance[0]['att_check_in_time'];
 					
 					// if(strtotime($check_out_time) < strtotime($check_in_time) == FALSE ){
 						
 						// if($get_attendance[0]['att_check_out_time'] == '00:00:00' &&  ($get_attendance[0]['att_check_out_status'] == '0' || $get_attendance[0]['att_check_out_status'] == NULL)){
+
+						if(date('H', strtotime($check_out_time)) >= 07 && date('H', strtotime($check_out_time)) <= 23){
 
 							$check_out = Attendance::find($get_attendance[0]['attendance_id']);
 
@@ -556,29 +564,122 @@ trait MachineAttendanceTrait {
 							$check_out->att_co_long = $attendance_long;
 							
 							$check_out->save();
+						}
 
 						// }
 					// }
 				}else{
+					// dd(date('H', strtotime($check_out_time)));
+					if(date('H', strtotime($check_out_time)) >= 00 && date('H', strtotime($check_out_time)) < 04){
 
-					$mark_attendance = new Attendance();
-					$mark_attendance->att_employee_id = $employee_id;
-					$mark_attendance->att_check_in_time = '00:00:00';
-					$mark_attendance->att_check_out_time = date('H:i:s', strtotime($check_out_time));
-					$mark_attendance->att_check_in_status = 0;
-					$mark_attendance->att_check_out_status = 1;
-					$mark_attendance->att_shift_start_time = $employee_shift_start;
-					$mark_attendance->att_shift_end_time = $employee_shift_end;
-					$mark_attendance->att_check_overall_status = 'Late Coming';
-					$mark_attendance->att_for_date = $day;
-					$mark_attendance->att_for_month = $month;
-					$mark_attendance->att_for_year = $year;
-					$mark_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
-					$mark_attendance->att_check_in_source = 2;
-					$mark_attendance->att_check_out_source = 2;
-					$mark_attendance->att_co_lat = $attendance_lat;
-					$mark_attendance->att_co_long = $attendance_long;
-					$process = $mark_attendance->save();
+
+						$day = date('d',strtotime("-1 days", strtotime($check_out_time)));
+
+						$month = date('m',strtotime("-1 days", strtotime($check_out_time)));
+
+						$year = date('Y',strtotime("-1 days", strtotime($check_out_time)));
+
+					
+						$get_attendance_yesterday = Attendance::where('att_employee_id', $employee_id)
+						->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)
+						// ->where('att_check_overall_status', 'NOT LIKE', '%Holiday%')
+						// ->whereNotIn('att_check_overall_status', $manage_leaves)
+						// ->where(function ($query) {
+							// $query->where('att_request_approval', '!=', 1)
+								// ->orWhereNull('att_request_approval');
+						// })
+						// ->where('att_check_in_source', '!=', 3)
+						->get()
+						->toArray();
+
+						if(!empty($get_attendance_yesterday)){
+
+							$employee_shift_start = $this->get_employee_today_shift($employee_id,"in",date('Y-m-d',strtotime("-1 days",strtotime($check_out_time))));
+							$employee_shift_end = $this->get_employee_today_shift($employee_id,"out",date('Y-m-d',strtotime("-1 days",strtotime($check_out_time))));
+
+							// if($get_attendance_yesterday[0]['att_check_out_time'] == '00:00:00' && ($get_attendance_yesterday[0]['att_check_out_status'] == '0' || $get_attendance_yesterday[0]['att_check_out_status'] == NULL)){
+
+								$check_out = Attendance::find($get_attendance_yesterday[0]['attendance_id']);
+
+								$check_out->att_check_out_time = date('H:i:s', strtotime($check_out_time));
+
+								$check_out->att_check_out_status = 1;
+								$check_out->att_check_out_source = $attendance_source;
+								
+								$check_out->att_updated_at = date('Y-m-d H:i:s');
+								
+								$employee_official_time = $this->calculate_minutes_machine($employee_shift_start , $employee_shift_end);
+								
+								$yesterday_full_date = $get_attendance_yesterday[0]['att_for_year'] .'-'. $get_attendance_yesterday[0]['att_for_month'] .'-'. $get_attendance_yesterday[0]['att_for_date']. ' '. $get_attendance_yesterday[0]['att_check_in_time'];
+
+								$current_shift_time = $this->calculate_minutes_with_date_machine($yesterday_full_date , date('Y-m-d H:i:s', strtotime($check_out_time)));
+								
+								$diff = $employee_official_time - $current_shift_time;
+
+								$check_out_grace_period = HrmSetting::pluck('check_out_flexibility_time')->toArray();
+
+								if($diff >= 120){
+									
+									$check_out->att_check_overall_status = "Half day";  
+
+								}elseif($diff > $check_out_grace_period[0] && $diff < 120){
+
+									$check_out->att_check_overall_status = "Early out"; 
+									
+								}
+
+								$check_out->att_co_lat = $attendance_lat;
+								$check_out->att_co_long = $attendance_long;
+
+								$check_out->save();
+								
+							// }
+						}else{
+							$mark_attendance = new Attendance();
+							$mark_attendance->att_employee_id = $employee_id;
+							$mark_attendance->att_check_in_time = '00:00:00';
+							$mark_attendance->att_check_out_time = date('H:i:s', strtotime($check_out_time));
+							$mark_attendance->att_check_in_status = 0;
+							$mark_attendance->att_check_out_status = 1;
+							$mark_attendance->att_shift_start_time = $employee_shift_start;
+							$mark_attendance->att_shift_end_time = $employee_shift_end;
+							$mark_attendance->att_check_overall_status = 'Late Coming';
+							$mark_attendance->att_for_date = $day;
+							$mark_attendance->att_for_month = $month;
+							$mark_attendance->att_for_year = $year;
+							$mark_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+							$mark_attendance->att_check_in_source = 2;
+							$mark_attendance->att_check_out_source = 2;
+							$mark_attendance->att_co_lat = $attendance_lat;
+							$mark_attendance->att_co_long = $attendance_long;
+							$process = $mark_attendance->save();
+						}
+
+
+					}else{
+						if(date('H',strtotime($check_out_time)) >= 07){
+							$mark_attendance = new Attendance();
+							$mark_attendance->att_employee_id = $employee_id;
+							$mark_attendance->att_check_in_time = '00:00:00';
+							$mark_attendance->att_check_out_time = date('H:i:s', strtotime($check_out_time));
+							$mark_attendance->att_check_in_status = 0;
+							$mark_attendance->att_check_out_status = 1;
+							$mark_attendance->att_shift_start_time = $employee_shift_start;
+							$mark_attendance->att_shift_end_time = $employee_shift_end;
+							$mark_attendance->att_check_overall_status = 'Late Coming';
+							$mark_attendance->att_for_date = $day;
+							$mark_attendance->att_for_month = $month;
+							$mark_attendance->att_for_year = $year;
+							$mark_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+							$mark_attendance->att_check_in_source = 2;
+							$mark_attendance->att_check_out_source = 2;
+							$mark_attendance->att_co_lat = $attendance_lat;
+							$mark_attendance->att_co_long = $attendance_long;
+							$process = $mark_attendance->save();
+						}
+					}
+
+					
 			
 					// $day = date('d',strtotime("-1 days", strtotime($check_out_time)));
 
