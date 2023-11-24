@@ -86,6 +86,8 @@ class LoginApiController extends Controller
                                             $employee_device_id = EmployeeDevice::where('device_token',$request->post('device_token'))->where('device_status',1)->get('device_id')->toArray();
 
                                             $filter_user = $this->filter_array_key($filter_user);
+                                            $filter_user[0]['password'] = Crypt::decryptString($filter_user[0]['employee_password']);
+                                            unset($filter_user[0]['employee_password']);
                                         
                                             $login_history = new LoginHistory();
                                             $login_history->login_history_employee_id = $filter_user[0]['employee_id'];
@@ -116,6 +118,9 @@ class LoginApiController extends Controller
                                                 $bearer_token->save();
 
                                                 $filter_user = $this->filter_array_key($filter_user);
+                                                $filter_user[0]['password'] = Crypt::decryptString($filter_user[0]['employee_password']);
+
+                                                unset($filter_user[0]['employee_password']);
 
                                                 $login_history = new LoginHistory();
                                                 $login_history->login_history_employee_id = $filter_user[0]['employee_id'];
@@ -171,17 +176,14 @@ class LoginApiController extends Controller
                 }
             }
         }catch(\Exception $e){
-
-
             $this->create_error_log_from_api('Store login employee process', $e, $request->header('Bearer-Token'));
             return $this->api_response_json(FALSE,"Something went wrong. Please try again.",$e->getMessage(),500);
-
         }
     }
 
     protected function filter_array_key($filter_user){
         
-        unset($filter_user[0]['employee_password'] , $filter_user[0]['employee_bank_name'] , $filter_user[0]['employee_iban'] , $filter_user[0]['employee_account_number'] , $filter_user[0]['employee_shift_flexibilty'] , $filter_user[0]['employee_jobtitle'] , $filter_user[0]['employee_status'] , $filter_user[0]['employee_location'] , $filter_user[0]['employee_earning_type'] , $filter_user[0]['employee_cnic'] , $filter_user[0]['employee_deactivation_type']);
+        unset($filter_user[0]['employee_bank_name'] , $filter_user[0]['employee_iban'] , $filter_user[0]['employee_account_number'] , $filter_user[0]['employee_shift_flexibilty'] , $filter_user[0]['employee_jobtitle'] , $filter_user[0]['employee_status'] , $filter_user[0]['employee_location'] , $filter_user[0]['employee_earning_type'] , $filter_user[0]['employee_cnic'] , $filter_user[0]['employee_deactivation_type']);
 
         return $filter_user;
     }
