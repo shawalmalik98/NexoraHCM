@@ -53,7 +53,9 @@ class EmployeeApiController extends Controller
 
             $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('employee_id' , $login_user[0]['employee_id'])
-            ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','employee_geofencing_enability','employee_offdays'])->toArray();
+            ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','employee_geofencing_enability','employee_offdays','employee_password'])->toArray();
+            $employees[0]['password'] = Crypt::decryptString($employees[0]['employee_password']);
+            unset($employees[0]['employee_password']);
 
             return $this->api_response_json(TRUE,"Employee Detail",$employees,200); 
         
