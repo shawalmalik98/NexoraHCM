@@ -363,6 +363,7 @@ trait MachineAttendanceTrait {
 									
 		
 								}else{
+									
 									$mark_attendance = new Attendance();
 									$mark_attendance->att_employee_id = $employee_data[0]['employee_id'];
 									$mark_attendance->att_check_in_time = date('H:i:s',strtotime($check_in));
@@ -476,7 +477,7 @@ trait MachineAttendanceTrait {
 				}else{
 					if(date('H',strtotime($check_in)) < 13 && date('H',strtotime($check_in)) >= 07){
 						$time = date('H:i:s', strtotime($check_in));
-						if(date('H:i:s', strtotime($check_in)) < $get_attendance[0]['att_check_in_time']){
+						if(date('H:i:s', strtotime($check_in)) < $get_attendance[0]['att_check_in_time'] || $get_attendance[0]['att_check_in_time'] == '00:00:00'){
 							$check_in = Attendance::find($get_attendance[0]['attendance_id']);
 							$check_in->att_check_in_time = $time;
 							$check_in->att_check_in_status = 1;
@@ -533,42 +534,46 @@ trait MachineAttendanceTrait {
 					// if(strtotime($check_out_time) < strtotime($check_in_time) == FALSE ){
 						
 						// if($get_attendance[0]['att_check_out_time'] == '00:00:00' &&  ($get_attendance[0]['att_check_out_status'] == '0' || $get_attendance[0]['att_check_out_status'] == NULL)){
-
+	
 						if(date('H', strtotime($check_out_time)) >= 07 && date('H', strtotime($check_out_time)) <= 23){
-
-							$check_out = Attendance::find($get_attendance[0]['attendance_id']);
-
-							$check_out->att_check_out_time = date('H:i:s', strtotime($check_out_time));
-
-							$check_out->att_check_out_status = 1;
-							$check_out->att_check_out_source = 4;
 							
-							$check_out->att_updated_at = date('Y-m-d H:i:s');
-							$employee_official_time = $this->calculate_minutes_machine($employee_shift_start,$employee_shift_end);
-							$current_shift_time = $this->calculate_minutes_machine($get_attendance[0]['att_check_in_time'] , date('H:i:s', strtotime($check_out_time)));
-							$diff = $employee_official_time - $current_shift_time;
-							
-							$check_out_grace_period = HrmSetting::pluck('check_out_flexibility_time')->toArray();
-							
-							if($diff >= 120){
+							if(date('H:i:s', strtotime($check_out_time)) > $get_attendance[0]['att_check_out_time']){
+								
+								$check_out = Attendance::find($get_attendance[0]['attendance_id']);
 
-								$check_out->att_check_overall_status = "Half day";
+								$check_out->att_check_out_time = date('H:i:s', strtotime($check_out_time));
 
-							}elseif($diff > $check_out_grace_period[0] && $diff < 120){
+								$check_out->att_check_out_status = 1;
+								$check_out->att_check_out_source = 4;
+								
+								$check_out->att_updated_at = date('Y-m-d H:i:s');
+								$employee_official_time = $this->calculate_minutes_machine($employee_shift_start,$employee_shift_end);
+								$current_shift_time = $this->calculate_minutes_machine($get_attendance[0]['att_check_in_time'] , date('H:i:s', strtotime($check_out_time)));
+								$diff = $employee_official_time - $current_shift_time;
+								
+								$check_out_grace_period = HrmSetting::pluck('check_out_flexibility_time')->toArray();
+								
+								if($diff >= 120){
 
-								$check_out->att_check_overall_status = "Early out";
-							}
+									$check_out->att_check_overall_status = "Half day";
 
-							$check_out->att_check_out_source = $attendance_source;
-							$check_out->att_co_lat = $attendance_lat;
-							$check_out->att_co_long = $attendance_long;
-							
-							$check_out->save();
+								}elseif($diff > $check_out_grace_period[0] && $diff < 120){
+
+									$check_out->att_check_overall_status = "Early out";
+								}
+
+								$check_out->att_check_out_source = $attendance_source;
+								$check_out->att_co_lat = $attendance_lat;
+								$check_out->att_co_long = $attendance_long;
+								
+								$check_out->save();
+							}	
 						}
 
 						// }
 					// }
 				}else{
+					
 					// dd(date('H', strtotime($check_out_time)));
 					if(date('H', strtotime($check_out_time)) >= 00 && date('H', strtotime($check_out_time)) < 04){
 

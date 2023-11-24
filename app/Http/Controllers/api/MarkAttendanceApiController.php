@@ -279,10 +279,11 @@ class MarkAttendanceApiController extends Controller
 
 					}else{
 
+						
 						if(date('H') >= 13){
 							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In after 1 PM.","",500);
 						}
-
+					
 						if(date('H') < 07){
 							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In before 7 AM.","",500);
 						}
@@ -325,7 +326,6 @@ class MarkAttendanceApiController extends Controller
 	protected function check_out(Request $request){
 		try{
 
-			
 			$login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
 			$employee_id = $login_user[0]['employee_id'];
@@ -347,12 +347,12 @@ class MarkAttendanceApiController extends Controller
 					$year = date("Y");
 
 					$get_attendance = Attendance::where('att_employee_id',$employee_id)->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get()->toArray();
-
+					
 					$employee_shift_start = $this->get_employee_today_shift($login_user[0]['employee_id'],"in",date('Y-m-d'));
 					$employee_shift_end = $this->get_employee_today_shift($login_user[0]['employee_id'],"out",date('Y-m-d'));
 
 					if(!empty($get_attendance)){
-					
+						
 						// if($get_attendance[0]['att_check_out_time'] == '00:00:00' && ($get_attendance[0]['att_check_out_status'] == 0 || $get_attendance[0]['att_check_out_status'] == NULL) && in_array($get_attendance[0]['att_check_overall_status'],$manage_leaves) == false){
 						
 							$check_out = Attendance::find($get_attendance[0]['attendance_id']);
@@ -637,8 +637,8 @@ class MarkAttendanceApiController extends Controller
 			if(count($attendance_object) > 0 ){
 				DB::table('tbl_offline_attendance_object')->insert([
 					'att_offline_object' => $request->post('attendance_object'),
-					// 'att_offline_emp_id' => $login_user[0]['employee_id'],
-					// 'att_created_at' => date('Y-m-d H:i:s'),
+					'att_offline_emp_id' => $login_user[0]['employee_id'],
+					'att_created_at' => date('Y-m-d H:i:s'),
 				]);
 
 				foreach($attendance_object as $attendance){
