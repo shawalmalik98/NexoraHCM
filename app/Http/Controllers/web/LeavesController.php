@@ -601,7 +601,8 @@ class LeavesController extends Controller
 
                             if(!empty($all_employees) && !empty($leaves_name)){
                                 
-                                $delete_employee = Leave::where('leaves_employee_id', '=', $all_employees[0]['employee_id'])->delete();
+                                $delete_employee = Leave::where('leaves_employee_id', '=', $all_employees[0]['employee_id'])
+                                ->where('leave_type_id', $leaves_name[0]['leave_manage_id'])->delete();
                                 
                                 $new_leave = new Leave();
                                 $new_leave->leaves_employee_id = $all_employees[0]['employee_id'];
