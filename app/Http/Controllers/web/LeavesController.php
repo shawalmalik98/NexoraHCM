@@ -38,7 +38,8 @@ class LeavesController extends Controller
                 $where_clause .= ' AND employee_location = "'.$request->employee_location.'"'; 
             }
 
-             $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location')->get()->toArray();
+             $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location')
+             ->get()->toArray();
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
@@ -557,4 +558,89 @@ class LeavesController extends Controller
     }
 
 
+    protected function upload_leave_record(Request $request){
+
+    
+        set_time_limit(18000);
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:csv'
+        ]);
+        if($validator->fails()) {
+            foreach($validator->errors()->all() as $error){
+                return response()->json([
+                    'msg' => $error,
+                    'status' => 'FALSE',
+                    'validation' => 'TRUE',
+                ]);
+            }
+        }else{
+            $filename = $request->file('file')->getPathName();
+            
+            if($request->file('file')->getSize() > 0)
+            {
+                $error = 0;
+                $success = 0;
+                $file = fopen($filename, "r");
+                $file2 = fopen($filename, "r");
+                $error_logs = array();
+                
+                // if(empty($error_msg) || $request->input('Location_Approved') == 'TRUE'){
+                    $arrays = [];
+                    $count_row = 0;
+                    while (($getData = fgetcsv($file2)) !== FALSE)
+                    {
+            
+                        // if($count_row != 0){
+
+                            $employee_code = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[0]));//$getData[0];
+                            $leave_type = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[3];
+                            $leave_allotment = iconv('ISO-8859-1', 'UTF-8', $getData[2]);//$getData[4];
+
+                            $all_employees = Employees::where('employee_code', $employee_code)->get('employee_id')->toArray();
+                            $leaves_name = LeaveManagement::where('leave_name', $leave_type)->get('leave_manage_id')->toArray();
+
+                            if(!empty($all_employees) && !empty($leaves_name)){
+                                
+                                $delete_employee = Leave::where('leaves_employee_id', '=', $all_employees[0]['employee_id'])->delete();
+                                
+                                $new_leave = new Leave();
+                                $new_leave->leaves_employee_id = $all_employees[0]['employee_id'];
+                                $new_leave->leave_type_id = $leaves_name[0]['leave_manage_id'];
+                                $new_leave->leave_allotement = $leave_allotment;
+                                $new_leave->leave_ent_created_at = date('Y-m-d H:i:s');
+                                $new_leave->save();
+                                
+
+                                // $success++;
+                            }
+                            // 
+                        //  }
+
+                    }
+                    $count_row ++;
+                   
+                    fclose($file2);
+                    
+                    return response()->json([
+                        'status' => 'TRUE',
+                        'msg' => 'Upload Employees Leaves record',
+                        'error_logs' => $error_logs
+                    ]);
+                // }
+                // else{
+                //     $msg = "You have $success valid records and $error invalid records.";
+
+                //     return response()->json([
+                //         'status' => 'FALSE',
+                //         'msg' =>  'Location record upload failed '."<br>".$msg,
+                //         'error_logs' => $error_logs
+                //     ]);
+                // }
+
+            }
+
+
+        }
+    
+    }
 }

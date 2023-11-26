@@ -19,6 +19,18 @@
                 </h1>
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
+
+                <div class="m-0">
+                    <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#leave_upload">
+                         <span class="svg-icon svg-icon-2">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                            </svg>
+                        </span>										
+                        Update Employee Leave Records
+                    </a>
+                </div>
                 
                 @if (!empty($leaves_entitled))
 
@@ -176,6 +188,50 @@
         </div>
     </div>
 
+    <form class="form" id="employee_leave_update">
+        @csrf	
+        <div class="modal fade" id="leave_upload" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable mw-650px">
+                <div class="modal-content rounded">
+                
+                    <div class="modal-header">
+                        <h4 class="modal-title pl-4">Update Leave Records</h4>
+                        <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
+                            <span class="svg-icon svg-icon-1">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
+                            </svg>
+                        </span>
+                        </button>
+                    </div>
+                
+                    <div class="modal-body">
+                        <div class="row g-8">
+                            <input type="hidden" name="Force_Approved">
+                            <div class="col-md-12 fv-row">
+                                <label class="fs-6 fw-semibold mb-2 required">File Attachment</label>
+                                <input type="file" class="form-control" accept=".csv" name="file">
+                                <p class="text-danger mt-1">Please <b>Download Format File</b> and add leave(s) record. All the fields exist in file are required.</p>
+                                <p class="text-danger mt-0">Only CSV file is supported for leave(s) upload process.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="update_btn" class="btn btn-primary">
+                            <span class="indicator-label">Submit</span>
+                            <span class="indicator-progress">Please wait... 
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                        </button>
+                        <a href="/portal_assets/location_excel_document/LocationRecord.zip" id="download_btn" class="btn btn-success">Download Format</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
     <form class="form" id="downloadbutton" action="{{ url('manage-leaves/manage-leaves-download') }}" method="POST">
         @csrf
         <div class="modal fade" id="download_modal_pdf" uploaddex="-1" aria-hidden="true">
@@ -232,4 +288,78 @@
 </div>
 
 @endsection
+
+@push('js-link')
+<script>
+$('#employee_leave_update').submit(function (e) {
+
+$('#update_btn').prop('disabled', true);
+$("#update_btn").attr('data-kt-indicator', 'on');
+$('#update_btn').css('cursor', 'not-allowed');
+e.preventDefault();
+$.ajax({
+    url: "{{url('/manage-leaves/upload-employee-leave')}}",
+    type: 'POST',
+    headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
+    data: new FormData(this),
+    contentType: false,
+    cache: false,
+    processData: false,
+    success: function (data) {
+
+        if (data.status == 'TRUE') {
+            Toast.fire({
+                icon: 'success',
+                title: data.msg,
+                timer: 3000,
+            })
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+        } else {
+
+            Toast.fire({
+                icon: 'warning',
+                title: data.msg,
+                timer: 3000,
+            })
+            $('#update_btn').prop('disabled', false);
+            $('#update_btn').css('cursor', 'pointer');
+            $("#update_btn").removeAttr('data-kt-indicator');
+
+        }
+    },
+    error: function (jqXHR, textStatus) {
+        var errorStatus = jqXHR.status;
+        $('#update_btn').prop('disabled', false);
+        $("#update_btn").removeAttr('data-kt-indicator');
+        $('#update_btn').css('cursor', 'pointer');
+        if (errorStatus == 0) {
+            Toast.fire({
+                icon: 'warning',
+                title: 'Leave upload failed please try again',
+                timer: 4000,
+            });
+            setTimeout(() => {
+                location.reload();
+            }, 4000);
+        } else {
+            if (errorStatus == 419) {
+                location.reload();
+            } else {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Try Again. Error Code ' + errorStatus,
+                    timer: 3000,
+                })
+            }
+        }
+    }
+});
+});
+    
+</script>
+@endpush
 

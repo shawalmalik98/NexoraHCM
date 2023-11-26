@@ -176,6 +176,8 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
         Route::post('/update-employee-leave-entitlement',[LeavesController::class, 'update_employee_leave_entitlement']);
 
         Route::post('manage-leaves-download',[LeavesController::class, 'download_manage_leaves']);
+
+        Route::post('/upload-employee-leave',[LeavesController::class, 'upload_leave_record']);
       });
 
       Route::prefix('/leave-management')->group(function () {
