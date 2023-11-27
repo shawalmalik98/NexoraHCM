@@ -58,7 +58,7 @@ class HomeController extends Controller
 
             $setting = HrmSetting::orderBy('setting_id','DESC')->get(['setting_id','linked_post1','linked_post2'])->toArray();
 
-            $leaves_entitiled = LeaveManagement::join('tbl_leave_entitlement','tbl_leave_management.leave_manage_id','=','tbl_leave_entitlement.leave_type_id')->WhereIN('leave_type_id',array(1,2,3))->where('leaves_employee_id', session('user_session'))->get('leave_allotement')->toArray();
+            $leaves_entitiled = LeaveManagement::join('tbl_leave_entitlement','tbl_leave_management.leave_manage_id','=','tbl_leave_entitlement.leave_type_id')->WhereIN('leave_type_id',array(1,2,3))->where('leaves_employee_id', session('user_session'))->orderBy('leave_type_id','ASC')->get('leave_allotement')->toArray();
 
             $annual_used = Attendance::where('att_employee_id', session('user_session'))->where('att_check_overall_status','Annual Leave')->count();
 
