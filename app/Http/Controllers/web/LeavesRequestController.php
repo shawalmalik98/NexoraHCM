@@ -85,7 +85,7 @@ class LeavesRequestController extends Controller
 
                 $total_team_member = $this->get_employee_hierarchy_unique($login_employee_id,  $status);
 
-                $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
+                $where_clause = '1=1 AND employee_isactive = '."$status".'';
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
                     
