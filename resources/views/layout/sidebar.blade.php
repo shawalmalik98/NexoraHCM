@@ -166,6 +166,19 @@
 
                                 @endif
 
+                                {{-- @if(!empty($permission) && $permission[80]['module_accessibility'] == 1 && $permission[80]['permission_status'] == 1) --}}
+
+                                    <div class="menu-item search-item">
+                                        <a class="menu-link nav-link @if($title == 'employee-mobile-access') active @endif" href="{{ url('/employee-mobile-access') }}">
+                                            <span class="menu-bullet">
+                                                <i class="far fa-circle nav-icon"></i>
+                                            </span>
+                                            <span class="menu-title">Employees Mobile Access</span>
+                                        </a>
+                                    </div>
+
+                                {{-- @endif --}}
+
                                 @if(!empty($permission) && $permission[66]['module_accessibility'] == 1 && $permission[66]['permission_status'] == 1)
 
                                     <div class="menu-item search-item">

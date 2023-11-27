@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\File;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
-use App\Models\{Employees, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation, Fund, EmployeeFund};
+use App\Models\{Employees, MobileAccess, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation, Fund, EmployeeFund};
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee, MailTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +28,7 @@ class EmployeeController extends Controller
     const DOCUMENT = 'employee-personal-documents';
     const ONBOARDING = 'employee-on-boarding';
     const Devices = 'employee-devices';
+    const MOBILE_ACCESS = 'employee-mobile-access';
     const BANK_TITLE = 'employee-bank';
     const EMP_STATUS = 'employment-status';
     const EMP_GROUP = 'employment-group';
@@ -3393,6 +3394,192 @@ class EmployeeController extends Controller
         }finally{
             ActivityTracker::track_activity('Access Dis-Approve Employee Device Request');
 
+        }
+
+    }
+
+    protected function employee_mobile_access(Request $request){
+
+        try{
+
+            $title = Self::MOBILE_ACCESS;
+
+            $login_user = $this->get_login_user_detail();
+
+            $where_clause = '1=1';
+
+            if(!empty($request->department_id) && $request->department_id != 'All'){
+                $where_clause .= ' AND employee_department = '.$request->department_id;
+            }
+
+            if(!empty($request->business_unit) && $request->business_unit != 'All'){
+                $where_clause .= " AND business_unit = '".$request->business_unit."'";
+            }
+
+            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'){
+
+                $where_clause .= " and employee_group= '".$request->input('employee_group')."'";
+
+            }
+
+            $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
+           
+            $all_mobile_access = MobileAccess::join('tbl_employees', 'tbl_mobile_access.mobile_employee_id', '=', 'tbl_employees.employee_id')
+            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
+            ->whereRaw($where_clause)
+            ->get(['employee_id','employee_code','employee_name', 'department_name', 'designation_name','mobile_access_id','mobile_employee_id','access_button_id','access_buttons'])->toArray();
+
+            $all_employees = Employees::get(['employee_id','employee_name','employee_code'])->toArray();
+
+            $departments = Department::get(['department_id','department_name'])->toArray();
+        
+            $send_data = compact('title','login_user','all_mobile_access','departments','employee_groups','all_employees');
+
+           
+            return view('employee.employee-mobile-access', $send_data);
+            
+
+        }catch(\Exception $e){
+
+            $this->create_error_log('Employee Mobile access', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+
+        }finally{
+
+            ActivityTracker::track_activity('Employee mobile access');
+
+        }
+
+    }
+
+    protected function add_mobile_access_button(Request $request){
+
+        try{
+
+            $validator = Validator::make($request->all(), [
+                'employee_name' => 'required',
+                'button_name' => 'required',
+                'button_status' => 'required'
+                
+            ]);
+
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE'
+                    ]);
+                }
+            }else {
+
+                $new_button_access = new MobileAccess();
+                $new_button_access->mobile_employee_id = $request->input('employee_name');
+                $new_button_access->access_button_id = $request->input('button_name');
+                $new_button_access->access_buttons = $request->input('button_status');
+                $process = $new_button_access->save();   
+                if($process == 1){
+                    return response()->json([
+                        'status' => 'TRUE',
+                        'msg' => "Mobile button added successfully.",
+                    ]);
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Mobile button addition failed. Please try again after some time.",
+                    ]);
+                }
+            }   
+             
+        }catch(\Exception $e){
+            $this->create_error_log("Add mobile access button", $e);
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+            
+            }
+        }finally{
+            ActivityTracker::track_activity('Add Mobile Access Button'); 
+        }
+
+    }
+
+    protected function update_mobile_access_button(Request $request){
+
+        try{
+
+            $validator = Validator::make($request->all(), [
+                'employee_name' => 'required',
+                'button_name' => 'required',
+                'button_status' => 'required'
+                
+            ]);
+
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE'
+                    ]);
+                }
+            }else {               
+
+                $update_button_access = MobileAccess::find($request->input('mobile_access_id'));
+
+                if(!empty($update_button_access)){
+
+                    // $update_button_access->mobile_employee_id = $request->input('employee_name');
+                    $update_button_access->access_button_id = $request->input('button_name');
+                    $update_button_access->access_buttons = $request->input('button_status');
+                    $process = $update_button_access->save();   
+                    if($process == 1){
+                        return response()->json([
+                            'status' => 'TRUE',
+                            'msg' => "Mobile button updated successfully.",
+                        ]);
+                    }else{
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'msg' => "Mobile button updation failed. Please try again after some time.",
+                        ]);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => 'Mobile button not found on this id.',
+                    ]);
+                }      
+
+            }   
+             
+        }catch(\Exception $e){
+            $this->create_error_log("Update mobile access button", $e);
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+            
+            }
+        }finally{
+            ActivityTracker::track_activity('Update Mobile Access Button'); 
         }
 
     }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Employees, Permission, RequestApproval, Attendance, EmailRecipient, LeaveManagement, AttendanceAccess, HrmSetting, RoomScreen};
+use App\Models\{Employees, MobileAccess, Permission, RequestApproval, Attendance, EmailRecipient, LeaveManagement, AttendanceAccess, HrmSetting, RoomScreen};
 use App\Traits\LogGenerateTrait;
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
@@ -277,6 +277,27 @@ class CustomController extends Controller
 
     protected function add_room_location(){
         RoomScreen::whereNull('room_location_id')->update(['room_location_id'=> 1]);
+        return response()->json([
+            'status' => 'TRUE',
+            'msg' => 'Job executed successfully.'
+        ]);
+    }
+
+    protected function add_employee_button_access(){
+        $employees = Employees::pluck('employee_id')->toArray();
+    
+        foreach ($employees as $employee) {
+            
+            for ($i = 1; $i <= 6; $i++) {
+                $mobileAccess = new MobileAccess();
+                $mobileAccess->mobile_employee_id = $employee; 
+                $mobileAccess->access_button_id = $i; 
+                $mobileAccess->access_buttons = 1; 
+                $mobileAccess->save(); 
+            }
+                
+        }
+           
         return response()->json([
             'status' => 'TRUE',
             'msg' => 'Job executed successfully.'

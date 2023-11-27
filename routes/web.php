@@ -63,6 +63,12 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
 
       });
 
+      // Route::prefix('/employee-mobile-access')->group(function (){
+
+      //   Route::get('/', [EmployeeController::class, 'employee_mobile_access']);
+
+      // });
+
       Route::prefix('/employee-work-anniversay')->group(function (){
 
         Route::get('/', [EmployeeController::class, 'employee_anniversary']);
@@ -902,6 +908,14 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
           Route::post('/polling/employee-polling',[PollingsController::class,'polling_employee']);
           //employee polling
 
+          Route::prefix('/employee-mobile-access')->group(function (){
+
+            Route::get('/', [EmployeeController::class, 'employee_mobile_access']);
+            Route::post('/add-button', [EmployeeController::class, 'add_mobile_access_button']);
+            Route::post('/update-button', [EmployeeController::class, 'update_mobile_access_button']);
+    
+          });
+
       });
 
       Route::prefix('/leave-policy')->group(function () {
@@ -978,6 +992,9 @@ Route::get('/set-employee-permissions', [CustomController::class, 'fetch_all_emp
 Route::get('/set-attendance-access', [CustomController::class, 'add_attendance_access_data']);
 Route::get('/set-recipient-type', [CustomController::class, 'add_recipient_type']);
 Route::get('/set-room-location', [CustomController::class, 'add_room_location']);
+
+Route::get('/employee-access-button', [CustomController::class, 'add_employee_button_access']);
+
 
 Route::get('/clear-all-cache', [CommandController::class , 'clear_all_cache']);
 Route::get('/clear-all-config', [CommandController::class , 'clear_all_config']);
