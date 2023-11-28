@@ -168,6 +168,8 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 
         //employee start
         Route::post('change_password_method', [EmployeeApiController::class, 'change_password_function']);
+
+        Route::get('employee-button-access', [EmployeeApiController::class, 'employee_mobile_access']);
         // employee end
 
         //notification start

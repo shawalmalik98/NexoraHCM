@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File;  
-use App\Models\{Employees, EmployeeDocument, OfficeLocation, EmployeeLocation, HrmSetting, EmploymentStatus, EmployeeGroup, Department};
+use App\Models\{Employees, EmployeeDocument, MobileAccess, OfficeLocation, EmployeeLocation, HrmSetting, EmploymentStatus, EmployeeGroup, Department};
 use App\Traits\{LoginEmployee, LogGenerateTrait, ApiResponseTrait, NotificationTrait};
 use App\Helpers\ActivityTracker;
 
@@ -280,6 +280,34 @@ class EmployeeApiController extends Controller
 
             ActivityTracker::track_activity_from_api('Get Employee Office Location', $request->header('Bearer-Token')); 
         }
+    }
+
+    protected function employee_mobile_access(Request $request){
+
+        try{
+
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
+           
+            $all_mobile_access = MobileAccess::join('tbl_employees', 'tbl_mobile_access.mobile_employee_id', '=', 'tbl_employees.employee_id')
+            ->where('employee_isactive',1)
+            ->where('employee_id',$login_user[0]['employee_id'])
+            ->get(['access_button_id as Button Name ID','access_buttons as Button Access'])->toArray();
+
+            return $this->api_response_json(TRUE,"Employee Mobile Button(s) Access",$all_mobile_access,200);
+            
+
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('Get Employee Mobile Button Access', $e, $request->header('Bearer-Token'));
+
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.",$e->getMessage(),500);
+
+        }finally{
+
+            ActivityTracker::track_activity_from_api('Get Employee Button Access', $request->header('Bearer-Token')); 
+
+        }
+
     }
 
 }

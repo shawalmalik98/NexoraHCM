@@ -184,18 +184,20 @@ class LoginController extends Controller
                 ($where_clause) ?? '';
  
                 $history = LoginHistory::join('tbl_employees','tbl_employees.employee_id', '=', 'tbl_login_history.login_history_employee_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->whereRaw($where_clause)
                 ->orderBy('tbl_login_history.login_history_id', 'DESC')
-                ->get(['employee_code','employee_name','login_history_time','login_history_ip','login_history_country','login_history_city','login_history_latitude','login_history_longitude','login_history_source','login_employee_device','login_history_session_token'])->toArray();
+                ->get(['employee_code','employee_name','login_history_time','login_history_ip','login_history_country','login_history_city','login_history_latitude','login_history_longitude','login_history_source','login_employee_device','login_history_session_token','department_name','designation_name'])->toArray();
 
             }else{
 
                 $where_clause .= " AND login_history_time LIKE '%".date("Y-m-d")."%'";
 
                 $history = LoginHistory::join('tbl_employees','tbl_employees.employee_id', '=' , 'tbl_login_history.login_history_employee_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->whereRaw($where_clause)
                 ->orderBy('tbl_login_history.login_history_id', 'DESC')
-                ->get(['employee_code','employee_name','login_history_time','login_history_ip','login_history_country','login_history_city','login_history_latitude','login_history_longitude','login_history_source','login_employee_device','login_history_session_token'])->toArray();
+                ->get(['employee_code','employee_name','login_history_time','login_history_ip','login_history_country','login_history_city','login_history_latitude','login_history_longitude','login_history_source','login_employee_device','login_history_session_token','department_name','designation_name'])->toArray();
                 
             }
             $send_data = compact('title','login_user','history');

@@ -3427,10 +3427,11 @@ class EmployeeController extends Controller
             $all_mobile_access = MobileAccess::join('tbl_employees', 'tbl_mobile_access.mobile_employee_id', '=', 'tbl_employees.employee_id')
             ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
+            ->where('employee_isactive',1)
             ->whereRaw($where_clause)
             ->get(['employee_id','employee_code','employee_name', 'department_name', 'designation_name','mobile_access_id','mobile_employee_id','access_button_id','access_buttons'])->toArray();
 
-            $all_employees = Employees::get(['employee_id','employee_name','employee_code'])->toArray();
+            $all_employees = Employees::where('employee_isactive',1)->get(['employee_id','employee_name','employee_code'])->toArray();
 
             $departments = Department::get(['department_id','department_name'])->toArray();
         

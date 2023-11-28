@@ -111,6 +111,7 @@
                         <thead>
                             <tr class="fw-bold text-muted bg-light">
                                 <th class="ps-4">Employee</th>
+                                <th>Depart &amp; Desig</th>
                                 <th>Time</th>
                                 <th>IP</th>
                                 <th>Location</th>
@@ -126,6 +127,10 @@
                                 @foreach ($history as $history)
                                     <tr>
                                         <td class="ps-4">{{$history['employee_code']}} - {{$history['employee_name']}}</td>
+                                        <td>
+                                            <p class="text-dark fw-bold mb-1 fs-6"> {{ $history['department_name'] }}</p>
+                                            <p class="text-muted fw-semibold text-muted fs-7">{{$history['designation_name'] }}</p>
+                                        </td>
                                         <td><span class="text-center">{{ date('d, F Y h:i:s A',strtotime($history['login_history_time'])) }}</span></td>
                                         <td><span class="text-center">{{ $history['login_history_ip'] }}</span></td>
                                         <td>{{ $history['login_history_country'] }} - {{ $history['login_history_city'] }}</td>
