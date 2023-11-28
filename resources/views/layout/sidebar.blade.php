@@ -278,7 +278,7 @@
 
                                 {{-- @if(!empty($permission) && $permission[21]['module_accessibility'] == 1 && $permission[21]['permission_status'] == 1) --}}
 
-                                    <div class="menu-item search-item">
+                                    {{-- <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'bisconni-report') active @endif" href="{{url('bisconni-attendance-report')}}">
                                             <span class="menu-icon">
 
@@ -286,7 +286,7 @@
                                             </span>
                                             <span class="menu-title">Bisconni Attendance Report</span>
                                         </a>
-                                    </div>
+                                    </div> --}}
 
                                 {{-- @endif --}}
                                 

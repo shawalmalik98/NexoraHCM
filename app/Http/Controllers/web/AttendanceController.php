@@ -2808,7 +2808,7 @@ class AttendanceController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'from_date' => 'required',
-                'to_date' => 'required',
+                'to_date' => 'required|date_format:Y-m-d|before_or_equal:now',
                 // 'to_date' => [
                 //     'required',
                 //     'date_format:Y-m-d',

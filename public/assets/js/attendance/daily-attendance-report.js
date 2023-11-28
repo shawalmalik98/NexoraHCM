@@ -143,16 +143,16 @@ $('#to_date,#from_date').change(function () {
 $('#from_date').change(function () {
     var from_selected_date = $(this).val();
     var currentDate = new Date().toISOString().split('T')[0];
-    var maxDate = get_ten_day_future_date(from_selected_date);
+    // var maxDate = get_ten_day_future_date(from_selected_date);
 
     if (from_selected_date != '') {
         $('#to_date').prop('disabled', false);
         $('#to_date').prop('required', true);
         $('#to_date').attr('min', from_selected_date);
-        if (maxDate > currentDate) {
-            maxDate = currentDate; 
-        }
-        // $('#to_date').attr('max', maxDate);
+        // if (maxDate > currentDate) {
+        //     maxDate = currentDate; 
+        // }
+        $('#to_date').attr('max', currentDate);
     } else {
         $('#to_date').prop('disabled', true);
         $('#to_date').removeAttr('min');
@@ -161,12 +161,12 @@ $('#from_date').change(function () {
     }
 });
 
-function get_ten_day_future_date(from_date) {
-    var date = new Date(from_date);
-    date.setDate(date.getDate() + 10);
-    var future_date = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
-    return future_date;
-}
+// function get_ten_day_future_date(from_date) {
+//     var date = new Date(from_date);
+//     date.setDate(date.getDate() + 10);
+//     var future_date = date.getFullYear() + '-' + ('0' + (date.getMonth() + 1)).slice(-2) + '-' + ('0' + date.getDate()).slice(-2);
+//     return future_date;
+// }
 
 $('#attendance_record_download').submit(function () {
     $('#attendance_download_btn').prop('disabled', true);

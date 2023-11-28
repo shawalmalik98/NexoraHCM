@@ -45,7 +45,7 @@
                                             <div style="margin-bottom: 10px">
                                             </div>
                                             <div style="margin-bottom: 15px">
-                                                <img alt="Logo" src="{{ url('/portal_assets/images/hcm-logo.png') }}" style="width: 30%;" draggable="false"/>
+                                                <img alt="Logo" src="{{ url('/portal_assets/images/default-img.png') }}" style="width: 30%;" draggable="false"/>
                                             </div>
                                             <div style="font-size: 14px; font-weight: 500; margin-bottom: 27px; font-family:Arial,Helvetica,sans-serif;">
                                                 <p style="margin-bottom:9px; color:#181C32; font-size: 22px; font-weight:700"> Verification Code</p>
