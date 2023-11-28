@@ -176,11 +176,11 @@
                                                 </td>
                                                 <td> 
                                                     @if( $all_device['access_button_id'] == 1)
-                                                        <span>Attendance</span>
-                                                    @elseif($all_device['access_button_id'] == 2)
                                                         <span>Leave</span>
-                                                    @elseif($all_device['access_button_id'] == 3)
+                                                    @elseif($all_device['access_button_id'] == 2)
                                                         <span>Resignation</span>
+                                                    @elseif($all_device['access_button_id'] == 3)
+                                                        <span>Attendance</span>
                                                      @elseif($all_device['access_button_id'] == 4)
                                                          <span>Salary</span>
                                                      @elseif($all_device['access_button_id'] == 5)
@@ -267,9 +267,9 @@
                                 <div class="position-relative d-flex align-items-center">
                                     <select class="form-select addemployeeaccess" data-control="select2" data-hide-search="false" data-placeholder="Select button" name="button_name" required>
                                         <option value="">Select button</option>
-                                            <option value="1">Attendance</option>
-                                            <option value="2" >Leave</option>
-                                            <option value="3" >Resignation</option>
+                                            <option value="1">Leave</option>
+                                            <option value="2">Resignation</option>
+                                            <option value="3">Attendance</option>
                                             <option value="4">Salary</option>
                                             <option value="5">Loan</option>
                                             <option value="6" >News</option>
@@ -347,9 +347,9 @@
                                 <div class="position-relative d-flex align-items-center">
                                     <select class="form-select updateemployeeaccess" data-control="select2" data-hide-search="false" data-placeholder="Select button" id="button_id" name="button_name" required>
                                         <option value="">Select button</option>
-                                        <option value="1">Attendance</option>
-                                            <option value="2" >Leave</option>
-                                            <option value="3" >Resignation</option>
+                                            <option value="1">Leave</option>
+                                            <option value="2">Resignation</option>
+                                            <option value="3">Attendance</option>
                                             <option value="4">Salary</option>
                                             <option value="5">Loan</option>
                                             <option value="6" >News</option>
