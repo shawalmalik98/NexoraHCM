@@ -359,6 +359,7 @@ trait MachineAttendanceTrait {
 									$mark_attendance->att_ci_long = $attendance_long;
 									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$mark_attendance->save();
 									
 		
@@ -382,6 +383,7 @@ trait MachineAttendanceTrait {
 									$mark_attendance->att_ci_long = $attendance_long;
 									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$mark_attendance->save();
 		
 								}
@@ -405,6 +407,7 @@ trait MachineAttendanceTrait {
 									$mark_attendance->att_ci_long = $attendance_long;
 									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$mark_attendance->save();
 									
 								}else{
@@ -426,6 +429,7 @@ trait MachineAttendanceTrait {
 									$mark_attendance->att_ci_long = $attendance_long;
 									$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$mark_attendance->save();
 								}
 							}else{
@@ -447,6 +451,7 @@ trait MachineAttendanceTrait {
 								$mark_attendance->att_ci_long = $attendance_long;
 								$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 								$mark_attendance->att_remote_applicable = $remote_applicable;
+								$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 								$mark_attendance->save();
 		
 							}
@@ -470,6 +475,7 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_ci_long = $attendance_long;
 							$mark_attendance->att_created_at = date('Y-m-d H:i:s');
 							$mark_attendance->att_remote_applicable = $remote_applicable;
+							$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 							$mark_attendance->save();
 		
 						}
@@ -484,6 +490,7 @@ trait MachineAttendanceTrait {
 							$check_in->att_check_in_source = 2;
 							$check_in->att_ci_lat = $attendance_lat;
 							$check_in->att_ci_long = $attendance_long;
+							$check_in->att_ci_marked_time = date('Y-m-d H:i:s');
 							$check_in->save();
 						}
 						
@@ -565,7 +572,7 @@ trait MachineAttendanceTrait {
 								$check_out->att_check_out_source = $attendance_source;
 								$check_out->att_co_lat = $attendance_lat;
 								$check_out->att_co_long = $attendance_long;
-								
+								$check_out->att_co_marked_time = date('Y-m-d H:i:s');
 								$check_out->save();
 							}	
 						}
@@ -635,7 +642,7 @@ trait MachineAttendanceTrait {
 
 								$check_out->att_co_lat = $attendance_lat;
 								$check_out->att_co_long = $attendance_long;
-
+								$check_out->att_co_marked_time = date('Y-m-d H:i:s');
 								$check_out->save();
 								
 							// }
@@ -657,6 +664,7 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_check_out_source = 2;
 							$mark_attendance->att_co_lat = $attendance_lat;
 							$mark_attendance->att_co_long = $attendance_long;
+							$mark_attendance->att_co_marked_time = date('Y-m-d H:i:s');
 							$process = $mark_attendance->save();
 						}
 
@@ -680,6 +688,7 @@ trait MachineAttendanceTrait {
 							$mark_attendance->att_check_out_source = 2;
 							$mark_attendance->att_co_lat = $attendance_lat;
 							$mark_attendance->att_co_long = $attendance_long;
+							$mark_attendance->att_co_marked_time = date('Y-m-d H:i:s');
 							$process = $mark_attendance->save();
 						}
 					}
