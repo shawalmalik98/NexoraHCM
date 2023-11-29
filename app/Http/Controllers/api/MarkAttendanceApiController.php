@@ -105,6 +105,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_attendance->att_ci_long = $request->post('location_longitude');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$process = $mark_attendance->save();
 									
 									if($process == 1){
@@ -134,6 +135,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_attendance->att_ci_long = $request->post('location_longitude');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$process = $mark_attendance->save();
 
 									if($process == 1){
@@ -166,6 +168,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_attendance->att_ci_long = $request->post('location_longitude');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$process = $mark_attendance->save();
 
 									if($process == 1){
@@ -196,6 +199,7 @@ class MarkAttendanceApiController extends Controller
 									$mark_attendance->att_ci_lat = $request->post('location_latitude');
 									$mark_attendance->att_ci_long = $request->post('location_longitude');
 									$mark_attendance->att_remote_applicable = $remote_applicable;
+									$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 									$process = $mark_attendance->save();
 
 									if($process == 1){
@@ -228,6 +232,7 @@ class MarkAttendanceApiController extends Controller
 								$mark_attendance->att_ci_lat = $request->post('location_latitude');
 								$mark_attendance->att_ci_long = $request->post('location_longitude');
 								$mark_attendance->att_remote_applicable = $remote_applicable;
+								$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 								$process = $mark_attendance->save();
 								if($process == 1){
 
@@ -257,6 +262,7 @@ class MarkAttendanceApiController extends Controller
 							$mark_attendance->att_ci_lat = $request->post('location_latitude');
 							$mark_attendance->att_ci_long = $request->post('location_longitude');
 							$mark_attendance->att_remote_applicable = $remote_applicable;
+							$mark_attendance->att_ci_marked_time = date('Y-m-d H:i:s');
 							$process = $mark_attendance->save();
 							if($process == 1){
 
@@ -296,6 +302,7 @@ class MarkAttendanceApiController extends Controller
 							$check_in->att_check_in_source = 2;
 							$check_in->att_ci_lat = $request->post('location_latitude');
 							$check_in->att_ci_long = $request->post('location_longitude');
+							$check_in->att_ci_marked_time = date('Y-m-d H:i:s');
 							$check_in->save();
 
 							return $this->api_response_json(TRUE,"Check In Successfully","",200);
@@ -385,6 +392,7 @@ class MarkAttendanceApiController extends Controller
 							$check_out->att_updated_at = date('Y-m-d H:i:s');
 							$check_out->att_co_lat = $request->post('location_latitude');
 							$check_out->att_co_long = $request->post('location_longitude');
+							$check_out->att_co_marked_time = date('Y-m-d H:i:s');
 							$check_out->save();
 							
 							return $this->api_response_json(TRUE,"Check Out Successfully","",200);
@@ -454,6 +462,7 @@ class MarkAttendanceApiController extends Controller
 									$check_out->att_updated_at = date('Y-m-d H:i:s');
 									$check_out->att_co_lat = $request->post('location_latitude');
 									$check_out->att_co_long = $request->post('location_longitude');
+									$check_out->att_co_marked_time = date('Y-m-d H:i:s');
 									$check_out->save();
 
 									return $this->api_response_json(TRUE,"Check Out Successfully","",200);
@@ -482,6 +491,7 @@ class MarkAttendanceApiController extends Controller
 								$mark_attendance->att_co_lat = $request->post('location_latitude');
 								$mark_attendance->att_co_long = $request->post('location_longitude');
 								// $mark_attendance->att_remote_applicable = $remote_applicable;
+								$mark_attendance->att_co_marked_time = date('Y-m-d H:i:s');
 								$process = $mark_attendance->save();
 								return $this->api_response_json(TRUE,"Check Out Successfully","",200);
 
@@ -509,6 +519,7 @@ class MarkAttendanceApiController extends Controller
 								$mark_attendance->att_co_lat = $request->post('location_latitude');
 								$mark_attendance->att_co_long = $request->post('location_longitude');
 								// $mark_attendance->att_remote_applicable = $remote_applicable;
+								$mark_attendance->att_co_marked_time = date('Y-m-d H:i:s');
 								$process = $mark_attendance->save();
 								return $this->api_response_json(TRUE,"Check Out Successfully","",200);
 							}else{
