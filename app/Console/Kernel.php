@@ -34,7 +34,7 @@ class Kernel extends ConsoleKernel
             //     'execute_time' => date('Y-m-d H:i:s')
             // ]);
             $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
-            $data = $response->json();
+            $data = $response->body();
             DB::table('tbl_attendance_job')->insert([
                 'function_name' => $data,
                 'execute_time' => date('Y-m-d H:i:s')
