@@ -29,17 +29,13 @@ class Kernel extends ConsoleKernel
         // ->dailyAt('00:05');
 
         $schedule->call(function () {
-            // DB::table('tbl_attendance_job')->insert([
-            //     'function_name' => 'Sap Attendance',
-            //     'execute_time' => date('Y-m-d H:i:s')
-            // ]);
             $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
             $data = $response->body();
             DB::table('tbl_attendance_job')->insert([
                 'function_name' => $data,
                 'execute_time' => date('Y-m-d H:i:s')
             ]);
-        })->everyMinute();
+        })->everyFiveMinutes();
     }
 
     /**
