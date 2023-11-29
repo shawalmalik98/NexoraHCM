@@ -4,6 +4,9 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Jobs\AttendancePusherToSAP;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class Kernel extends ConsoleKernel
 {
@@ -22,8 +25,21 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
 
-        $schedule->command('job:cron')
-        ->dailyAt('00:05');
+        // $schedule->command('job:cron')
+        // ->dailyAt('00:05');
+
+        $schedule->call(function () {
+            // DB::table('tbl_attendance_job')->insert([
+            //     'function_name' => 'Sap Attendance',
+            //     'execute_time' => date('Y-m-d H:i:s')
+            // ]);
+            $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
+            $data = $response->json();
+            DB::table('tbl_attendance_job')->insert([
+                'function_name' => $data,
+                'execute_time' => date('Y-m-d H:i:s')
+            ]);
+        })->everyMinute();
     }
 
     /**

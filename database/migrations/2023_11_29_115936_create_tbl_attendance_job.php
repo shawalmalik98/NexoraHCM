@@ -16,7 +16,7 @@ return new class extends Migration
         if(!Schema::hasTable('tbl_attendance_job')){
             Schema::create('tbl_attendance_job', function (Blueprint $table) {
                 $table->id('attendance_job_id');
-                $table->string('function_name', 255);
+                $table->longText('function_name');
                 $table->datetime('execute_time');
             });
         }
