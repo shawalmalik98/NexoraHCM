@@ -162,7 +162,7 @@
                                             <tr>
                                                 <td class="ps-6">{{$leaves_entitlement['employee_code']}} - {{$leaves_entitlement['employee_name']}}</td>
                                                 <td class="text-primary font-weight-bold ps-10">{{ $leaves_entitlement['total_alloted_leave'] }}</td>
-                                                <td class="text-danger font-weight-bold ps-10">{{ $leaves_entitlement['used_get_availed_leaves'] }}</td>
+                                                <td class="text-danger font-weight-bold ps-10">{{ $leaves_entitlement['used_get_availed_leaves'] ?? '0'}}</td>
                                                 
                                                 <td>
                                                     <a href="{{ url('manage-leaves/leave-detail').'/'.$leaves_entitlement['employee_id']}}"  class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View Leave detail">
@@ -224,7 +224,7 @@
                             <span class="indicator-progress">Please wait... 
                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                         </button>
-                        <a href="/portal_assets/location_excel_document/LocationRecord.zip" id="download_btn" class="btn btn-success">Download Format</a>
+                        <a href="/portal_assets/leave_excel_document/LeaveRecord.zip" id="download_btn" class="btn btn-success">Download Format</a>
                     </div>
                 </div>
             </div>

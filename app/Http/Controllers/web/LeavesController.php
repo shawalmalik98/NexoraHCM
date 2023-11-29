@@ -9,6 +9,7 @@ use App\Models\{Attendance, Employees, Leave, OfficeLocation,LeaveManagement,Lea
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class LeavesController extends Controller
 {
@@ -66,8 +67,25 @@ class LeavesController extends Controller
                 
             }
 
-             
-          
+            // $leaves_entitled = DB::select("select e.employee_id, e.employee_code, e.employee_name, sum(e.leaves) total_alloted_leave,sum(a.count_leaves) used_get_availed_leaves from 
+            //     (
+            //     select 
+            //     e.employee_id, e.employee_code, e.employee_name,l.leave_name ,sum(cast(le.leave_allotement as int)) leaves
+            //     from tbl_employees  e
+            //     inner join tbl_leave_entitlement le on le.leaves_employee_id= e.employee_id
+            //     inner join tbl_leave_management l on le.leave_type_id = l.leave_manage_id
+            //     group by e.employee_id, e.employee_code, e.employee_name, leave_name
+            //     ) e
+            //     left join 
+            //     (
+            //     select att_employee_id ,att_check_overall_status , count(att_check_overall_status) count_leaves
+            //     from tbl_attendance
+            //     group by att_employee_id ,att_check_overall_status 
+            //     ) a
+            //     on e.employee_id = a.att_employee_id and e.leave_name = a.att_check_overall_status
+            //     group by e.employee_id, e.employee_code, e.employee_name");
+            //     $leaves_entitled = json_decode(json_encode($leaves_entitled), TRUE);
+
             $send_data = compact('title','login_user','leaves_entitled','employee_locations');
             
             return view('leave.leaves-entitled',$send_data);
@@ -596,26 +614,47 @@ class LeavesController extends Controller
                             $leave_type = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[3];
                             $leave_allotment = iconv('ISO-8859-1', 'UTF-8', $getData[2]);//$getData[4];
 
-                            $all_employees = Employees::where('employee_code', $employee_code)->get('employee_id')->toArray();
-                            $leaves_name = LeaveManagement::where('leave_name', $leave_type)->get('leave_manage_id')->toArray();
+                            // $all_employees = Employees::where('employee_code', $employee_code)->get('employee_id')->toArray();
+                            // $leaves_name = LeaveManagement::where('leave_name', $leave_type)->get('leave_manage_id')->toArray();
 
-                            if(!empty($all_employees) && !empty($leaves_name)){
+                            // if(!empty($all_employees) && !empty($leaves_name)){
                                 
-                                $delete_employee = Leave::where('leaves_employee_id', '=', $all_employees[0]['employee_id'])
-                                ->where('leave_type_id', $leaves_name[0]['leave_manage_id'])->delete();
+                            //     $delete_employee = Leave::where('leaves_employee_id', '=', $all_employees[0]['employee_id'])
+                            //     ->where('leave_type_id', $leaves_name[0]['leave_manage_id'])->delete();
                                 
-                                $new_leave = new Leave();
-                                $new_leave->leaves_employee_id = $all_employees[0]['employee_id'];
-                                $new_leave->leave_type_id = $leaves_name[0]['leave_manage_id'];
-                                $new_leave->leave_allotement = $leave_allotment;
-                                $new_leave->leave_ent_created_at = date('Y-m-d H:i:s');
-                                $new_leave->save();
+                            //     $new_leave = new Leave();
+                            //     $new_leave->leaves_employee_id = $all_employees[0]['employee_id'];
+                            //     $new_leave->leave_type_id = $leaves_name[0]['leave_manage_id'];
+                            //     $new_leave->leave_allotement = $leave_allotment;
+                            //     $new_leave->leave_ent_created_at = date('Y-m-d H:i:s');
+                            //     $new_leave->save();
                                 
 
                                 // $success++;
+                            // }
+
+                            $all_employees = Employees::where('employee_code', $employee_code)->get('employee_id')->toArray();
+                            $leaves_name = LeaveManagement::where('leave_name', $leave_type)->get('leave_manage_id')->toArray();
+
+                            if (!empty($all_employees) && !empty($leaves_name)) {
+                                $update_leave = Leave::where('leaves_employee_id', '=', $all_employees[0]['employee_id'])
+                                    ->where('leave_type_id', '=', $leaves_name[0]['leave_manage_id'])
+                                    ->first();
+
+                                if (!empty($update_leave)) {
+                                    $update_leave->leave_allotement = $leave_allotment;
+                                    $update_leave->save();
+                                } else {
+                                    Leave::create([
+                                        'leaves_employee_id' => $all_employees[0]['employee_id'],
+                                        'leave_type_id' => $leaves_name[0]['leave_manage_id'],
+                                        'leave_allotement' => $leave_allotment,
+                                        'leave_ent_created_at' => date('Y-m-d H:i:s'),
+                                    ]);
+                                }
                             }
                             // 
-                        //  }
+                        // }
 
                     }
                     $count_row ++;
