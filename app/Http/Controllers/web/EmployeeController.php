@@ -4980,6 +4980,7 @@ class EmployeeController extends Controller
                                 $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
                                 $employee_senior = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[8]));
                                 $employee_contact_no = iconv('ISO-8859-1', 'UTF-8', $getData[9]);
+                                $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[10]); //$getData[7];
                                 $employee_personal_email =  'test@gmail.com' . $employeeCode;
                                 // $employee_gender = iconv('ISO-8859-1', 'UTF-8', $getData[6]);
                                 // $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
@@ -5253,7 +5254,7 @@ class EmployeeController extends Controller
                                         $add_employee->employee_status =  3;
                                         $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
                                         $add_employee->employee_department = $departments[0]['department_id'];
-                                        $add_employee->employee_jobtitle = ($designations[0]['designation_id']) ?? 1;
+                                        $add_employee->employee_jobtitle = $employee_job_title;
                                         $add_employee->employee_password = Crypt::encryptString(123);
                                         $add_employee->employee_geofencing_enability = false;
                                         $add_employee->employee_senior_manager = ($check_senior_manager_code[0]['employee_id']) ?? 1;
