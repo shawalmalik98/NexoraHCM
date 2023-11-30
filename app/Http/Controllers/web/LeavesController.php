@@ -39,52 +39,53 @@ class LeavesController extends Controller
                 $where_clause .= ' AND employee_location = "'.$request->employee_location.'"'; 
             }
 
-             $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location')
-             ->get()->toArray();
-
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            $leaves = LeaveManagement::get()->toArray();
+            //  $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location')
+            //  ->get()->toArray();
+
+            // $leaves = LeaveManagement::get()->toArray();
         
-            $leave_name = array_column($leaves, 'leave_name');
+            // $leave_name = array_column($leaves, 'leave_name');
             
-            foreach($all_employees as $employee){
+            // foreach($all_employees as $employee){
 
 
-                $get_availed_total_leaves =  Attendance::selectRaw('Count(att_check_overall_status) as total_alloted_leave')->where('att_employee_id', $employee['leaves_employee_id'])->whereIn('att_check_overall_status',$leave_name)->count();
+            //     $get_availed_total_leaves =  Attendance::selectRaw('Count(att_check_overall_status) as total_alloted_leave')->where('att_employee_id', $employee['leaves_employee_id'])->whereIn('att_check_overall_status',$leave_name)->count();
                 
-                $all_availed_leaves = array('used_get_availed_leaves' => $get_availed_total_leaves);
+            //     $all_availed_leaves = array('used_get_availed_leaves' => $get_availed_total_leaves);
                 
-                $result[] = array_merge($employee , $all_availed_leaves);
+            //     $result[] = array_merge($employee , $all_availed_leaves);
                 
-            }
+            // }
            
-            if(!empty($all_employees)){
-                $leaves_entitled = $result;
+            // if(!empty($all_employees)){
+            //     $leaves_entitled = $result;
                 
-            }else{
-                $leaves_entitled = array();
+            // }else{
+            //     $leaves_entitled = array();
                 
-            }
+            // }
 
-            // $leaves_entitled = DB::select("select e.employee_id, e.employee_code, e.employee_name, sum(e.leaves) total_alloted_leave,sum(a.count_leaves) used_get_availed_leaves from 
-            //     (
-            //     select 
-            //     e.employee_id, e.employee_code, e.employee_name,l.leave_name ,sum(cast(le.leave_allotement as int)) leaves
-            //     from tbl_employees  e
-            //     inner join tbl_leave_entitlement le on le.leaves_employee_id= e.employee_id
-            //     inner join tbl_leave_management l on le.leave_type_id = l.leave_manage_id
-            //     group by e.employee_id, e.employee_code, e.employee_name, leave_name
-            //     ) e
-            //     left join 
-            //     (
-            //     select att_employee_id ,att_check_overall_status , count(att_check_overall_status) count_leaves
-            //     from tbl_attendance
-            //     group by att_employee_id ,att_check_overall_status 
-            //     ) a
-            //     on e.employee_id = a.att_employee_id and e.leave_name = a.att_check_overall_status
-            //     group by e.employee_id, e.employee_code, e.employee_name");
-            //     $leaves_entitled = json_decode(json_encode($leaves_entitled), TRUE);
+            $leaves_entitled = DB::select("select e.employee_id, e.employee_code, e.employee_name, sum(e.leaves) total_alloted_leave,sum(a.count_leaves) used_get_availed_leaves from 
+                (
+                select 
+                e.employee_id, e.employee_code, e.employee_name,l.leave_name ,sum(cast(le.leave_allotement as int)) leaves
+                from tbl_employees  e
+                inner join tbl_leave_entitlement le on le.leaves_employee_id= e.employee_id
+                inner join tbl_leave_management l on le.leave_type_id = l.leave_manage_id
+                group by e.employee_id, e.employee_code, e.employee_name, leave_name
+                ) e
+                left join 
+                (
+                select att_employee_id ,att_check_overall_status , count(att_check_overall_status) count_leaves
+                from tbl_attendance
+                group by att_employee_id ,att_check_overall_status 
+                ) a
+                on e.employee_id = a.att_employee_id and e.leave_name = a.att_check_overall_status
+                group by e.employee_id, e.employee_code, e.employee_name");
+                
+                $leaves_entitled = json_decode(json_encode($leaves_entitled), TRUE);
 
             $send_data = compact('title','login_user','leaves_entitled','employee_locations');
             

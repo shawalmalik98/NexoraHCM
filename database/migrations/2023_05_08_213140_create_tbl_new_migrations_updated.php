@@ -17,15 +17,27 @@ return new class extends Migration
 
         if(Schema::hasTable('tbl_attendance')){
 
-            if (!Schema::hasColumn('tbl_attendance', 'att_ci_marked_time')) {
+            if (!Schema::hasColumn('tbl_attendance', 'sap_ci_flag')) {
                 Schema::table('tbl_attendance', function (Blueprint $table) {
-                    $table->string('att_ci_marked_time', 50)->nullable();
+                    $table->integer('sap_ci_flag')->nullable();
                 });
             }
 
-            if (!Schema::hasColumn('tbl_attendance', 'att_co_marked_time')) {
+            if (!Schema::hasColumn('tbl_attendance', 'sap_co_flag')) {
                 Schema::table('tbl_attendance', function (Blueprint $table) {
-                    $table->string('att_co_marked_time', 50)->nullable();
+                    $table->integer('sap_co_flag')->nullable();
+                });
+            }
+
+            if (!Schema::hasColumn('tbl_attendance', 'sap_ci_timestamp')) {
+                Schema::table('tbl_attendance', function (Blueprint $table) {
+                    $table->datetime('sap_ci_timestamp')->nullable();
+                });
+            }
+
+            if (!Schema::hasColumn('tbl_attendance', 'sap_co_timestamp')) {
+                Schema::table('tbl_attendance', function (Blueprint $table) {
+                    $table->datetime('sap_co_timestamp')->nullable();
                 });
             }
 

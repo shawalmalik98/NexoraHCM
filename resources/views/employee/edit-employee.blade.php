@@ -668,10 +668,10 @@
                                         <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_geofencing_enability" value="1" @if ($employee_detail[0]['employee_geofencing_enability'] == true) checked="" @endif/>
                                         <span class="form-check-label fw-semibold">Geo Fencing Enability</span>&nbsp; <i class="far fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="If this option is checked it means employee has to bee in radius of mapped location, otherwise he can mark attendance from anywhere."></i>
                                     </label>
-                                    <label class="form-check form-check-custom me-10 form-check-solid">
+                                    {{-- <label class="form-check form-check-custom me-10 form-check-solid">
                                         <input class="form-check-input h-20px w-20px" type="checkbox" name="employee_shift_flexibilty" value="1" @if ($employee_detail[0]['employee_shift_flexibilty'] == '1') checked="" @endif />
                                         <span class="form-check-label fw-semibold">Flexible Shift Timings</span>&nbsp; <i class="far fa-question-circle" data-toggle="tooltip" data-placement="right" data-title="If employee has given facility of flexible shift timings, employee can check-in at any time and has to complete their shift total hours. For e.g 8 hours or 9 hours or it can be any."></i>
-                                    </label>
+                                    </label> --}}
                                 </div>
                             </div>
                             
