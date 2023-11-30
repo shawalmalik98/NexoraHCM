@@ -77,14 +77,26 @@ class HomeController extends Controller
             $interviews = Interview::join('tbl_interview_candidate','tbl_interviews.interview_candidate_id','=','tbl_interview_candidate.candidate_id')->whereRaw($where_clause)->get(['interview_id','candidate_name','interview_date','interview_time','interview_interviewer1','interview_interviewer2'])->toArray();
  
             $alert_status = AlertStatus::where('alert_status_employee_id', session('user_session'))->pluck('alert_status_alert_id')->toArray();
+
+            $employee_location = Employees::where('employee_isactive','=',1)
+            ->leftjoin('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+            ->join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
+            ->where('employee_id', $login_user[0]['employee_id'])
+            ->get(['location_id'])->toArray();
            
             $alerts = Alert::whereRaw("CONVERT(DATETIME, scheduled_time, 120) < '" . date('Y-m-d H:i:s') . "' and CONVERT(DATETIME, valid_dates, 120) > '" . date('Y-m-d H:i:s') . "'")
-            ->where(function($query) use($login_user) {
+            ->where(function($query) use ($login_user)  {
                 $query->where('department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('department', 'LIKE', '%*%');
+               
+            })
+            ->where(function($query) use ($employee_location)  {
+                $query->where('location', 'LIKE', '%' .$employee_location[0]['location_id']. '%')->orWhere('location', 'LIKE', '%*%')
+                ->orWhere('location', 'LIKE', 'null');
+               
             })
             ->whereNotIn('alert_id', $alert_status)
-            ->limit(3)->get(['alert_id','title','message'])->toArray();
-            
+            ->limit(3)->get(['alert_id','title','message'])->toArray();                
+                        
             $birthdays = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')
             ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
             ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
@@ -225,7 +237,7 @@ class HomeController extends Controller
 
             $get_check_in_details = $this->get_latest_attendance_record();
     
-            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','alerts','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','pollings','employee_voting','probation_employees_detail','voted_pollings','dynamic_years','get_check_in_details');
+            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','alerts','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','pollings','employee_voting','probation_employees_detail','voted_pollings','dynamic_years','get_check_in_details','employee_location');
             
             return view('dashboard.dashboard', $send_data);
 

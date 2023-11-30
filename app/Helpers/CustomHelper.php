@@ -19,6 +19,7 @@ use App\Models\LeaveManagement;
 use App\Models\SystemModule;
 use App\Models\InterviewCandidate;
 use App\Models\OnBoardingEmployee;
+use App\Models\OfficeLocation;
 use App\Traits\{LogGenerateTrait,LoginEmployee,AttendanceEmployee};
 use App\Helpers\ActivityTracker;
 use DatePeriod,DateTime,DateInterval;
@@ -731,6 +732,31 @@ class CustomHelper
             }
         }catch(\Exception $e){
             LogGenerateTrait::create_error_log('Get Department Name', $e);
+
+        }
+        finally{
+        
+        }
+
+    }
+
+    public static function get_location_name($location_id){
+        try{
+            if(!empty($location_id)){
+
+                if($location_id == "*"){
+
+                    return "All Locations";
+                }else{
+
+                    $location =  OfficeLocation::where('location_id', $location_id)->get(['location_title'])->toArray();
+
+                    return (!empty($location)) ? $location[0]['location_title'] : 'N/A';
+
+                }
+            }
+        }catch(\Exception $e){
+            LogGenerateTrait::create_error_log('Get Location Name', $e);
 
         }
         finally{

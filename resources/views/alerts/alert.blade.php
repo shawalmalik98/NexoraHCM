@@ -65,6 +65,7 @@
                                         <th class="">Title</th>
                                         <th class="">Message</th>
                                         <th class="">Department</th>
+                                        <th class="">Location</th>
                                         <th class="">Created By</th>
                                         <th class="">Viewed By</th>
                                         <th class="">Scheduled Date</th>
@@ -99,6 +100,24 @@
                                                             {!! CustomHelper::get_department_name($department) !!} 
 
                                                         @if( $count  != count($department_name))
+
+                                                            || 
+                                                            
+                                                        @endif
+
+                                                    @endforeach
+                                                </td>
+                                                <td> 
+                                                    @php
+                                                        $location_name = explode("," ,$alert['location']);
+                                                        $loc_count = 0
+                                                    @endphp
+                                                    @foreach ( $location_name as $location )
+                                                        @php $loc_count ++ ; @endphp
+
+                                                            {!! CustomHelper::get_location_name($location) !!} 
+
+                                                        @if( $loc_count  != count($location_name))
 
                                                             || 
                                                             
@@ -180,6 +199,30 @@
                                     <label class="fs-6 fw-semibold mb-2 required">Title</label>
                                     <input type="text" class="form-control " name="title" placeholder="Enter Title" required="">
                                 </div>
+                                <div class ="row">
+                                    <div class="col-md-10 mb-8 mt-3 fv-row" id="selectedlocation"> 
+                                        <label class="fs-6 fw-semibold mb-2">Locations</label>
+                                            <select class="form-select" id="locations_all"  data-control="select2" multiple="multiple" data-hide-search="true" data-placeholder="Select Location" name="location[]">
+                                                @php $loc_count = 0 @endphp
+                                                @if(!empty($office_locations))
+                                                    @foreach ($office_locations as $location)
+                                                    @php $loc_count ++; @endphp
+                                                        <option value="{{$location['location_id']}}">
+                                                            {{ $location['location_title']}}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                    </div>
+                                    <div class="col-md-2 mb-8 mt-3 fv-row">
+                                            
+                                        <label class="fs-6 fw-semibold mb-2">All Locations</label>
+                                            <label class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
+                                            <input type = "hidden" name="loc_count" value="{{$loc_count}}">
+                                            <input class="form-check-input h-20px w-20px" type="checkbox" id="location_all" name="select_all" value="Select All" /> 
+                                        </label>
+                                    </div> 
+                                </div>    
                                 <div class ="row">
                                     <div class="col-md-10 mb-8 mt-3 fv-row" id="selectedepartment">
                                         <label class="fs-6 fw-semibold mb-2 required">Department</label>
@@ -298,6 +341,30 @@
                                     <input type="hidden" name="alert_id">
                                     <input type="text" class="form-control " name="title" id="alert_title" placeholder="Enter Title" required="">
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-10 mb-8 mt-3 fv-row" id="selectelocation2">
+                                        <label class="fs-6 fw-semibold mb-2 ">Locations</label>
+                                            <select class="form-select" id="all_locations_selectbox"  data-control="select2" multiple="multiple" data-hide-search="true" data-placeholder="Select Location" name="locations[]" >
+
+                                                @if(!empty($office_locations))
+                                                    @foreach ($office_locations as $location)
+                                                        <option value="{{$location['location_id']}}">
+                                                            {{ $location['location_title']}}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                    </div>
+                                    <div class="col-md-2 mb-8 mt-3 fv-row">
+                                        
+                                        <label class="fs-6 fw-semibold mb-2">All locations</label>
+                                            <label class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
+                                            <input type = "hidden" name="loc_count" value="{{$loc_count}}">
+                                            <input class="form-check-input h-20px w-20px" type="checkbox" id="all_locations_checkbox" name="select_all" value="Select All" /> 
+                                        </label>
+                                    </div> 
+                                </div>        
+
                                 <div class="row">
                                     <div class="col-md-10 mb-8 mt-3 fv-row" id="selectedepartment2">
                                         <label class="fs-6 fw-semibold mb-2 required">Department</label>

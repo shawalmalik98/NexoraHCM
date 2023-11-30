@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\web;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Alert, Department, Employees, AlertStatus};
+use App\Models\{Alert, Department, Employees, AlertStatus, OfficeLocation};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
@@ -27,13 +27,15 @@ class AlertsController extends Controller
 
             $alerts = Alert::leftJoin('tbl_alert_status', 'tbl_alerts.alert_id', '=', 'tbl_alert_status.alert_status_alert_id')
             ->select('tbl_alerts.*', DB::raw('COUNT(tbl_alert_status.alert_status_id) AS status_count'))
-            ->groupBy('tbl_alerts.alert_id','tbl_alerts.title','tbl_alerts.message','tbl_alerts.department','tbl_alerts.scheduled_time','tbl_alerts.days','tbl_alerts.valid_dates','tbl_alerts.created_by','tbl_alerts.created_at','tbl_alerts.modified_at')
+            ->groupBy('tbl_alerts.alert_id','tbl_alerts.title','tbl_alerts.message','tbl_alerts.department', 'tbl_alerts.location','tbl_alerts.scheduled_time','tbl_alerts.days','tbl_alerts.valid_dates','tbl_alerts.created_by','tbl_alerts.created_at','tbl_alerts.modified_at')
             ->get()
             ->toArray();
+
+            $office_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
            
             $departments = Department::all()->toArray();
             
-            $send_data = compact('title','login_user','alerts','departments');
+            $send_data = compact('title','login_user','alerts','departments','office_locations');
 
             return view('alerts.alert', $send_data);
 
@@ -50,7 +52,7 @@ class AlertsController extends Controller
     }
 
     protected function add_alert(Request $request){
-      
+        
         try{  
            
             $validator = Validator::make($request->all(), [
@@ -79,19 +81,30 @@ class AlertsController extends Controller
             
                 $valid_date = date('Y-m-d H:i:00', strtotime($scheduled_date.' +'.$request->input('days').'days'));
 
+                if(!empty($request->input('location'))){
+                    if(count($request->input('location'))==$request->input('loc_count')){  
+                        $location = "*";
+                    }else{
+                        $location = implode(',', $request->input('location'));
+                    }
+                }
+
                 if(count($request->input('department'))==$request->input('count')){
                     $department = "*";
                     $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token')->pluck('employee_fcm_token')->toArray();
                 }else{
                     $department = implode(',', $request->input('department'));
-                    $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token')->whereRaw('FIND_IN_SET(employee_department, ?)', [$department])
+                    $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token')
+                    ->whereRaw("CHARINDEX(',' + CAST(tbl_employees.employee_department AS VARCHAR) + ',', ',' + ? + ',') > 0", [$department])
+                    // ->whereRaw('FIND_IN_SET(employee_department, ?)', [$department])
                     ->pluck('employee_fcm_token')->toArray();
                 }
-
+                
                 $new_alert = new Alert();
                 $new_alert->title = $request->input('title');
                 $new_alert->message = $request->input('message');
                 $new_alert->department = $department;
+                $new_alert->location = $location ?? 'null';
                 $new_alert->scheduled_time = $scheduled_date;
                 $new_alert->days = $request->input('days');
                 $new_alert->valid_dates = $valid_date;
@@ -141,7 +154,7 @@ class AlertsController extends Controller
     }
 
     protected function update_alert(Request $request){
-    
+        
         try{
 
             $message = ['departments'=>'The department field is required.'];
@@ -168,6 +181,14 @@ class AlertsController extends Controller
                     $scheduled_date = date('Y-m-d H:i:s',strtotime($request->input('scheduled_date')));
                 }
 
+                if(!empty($request->input('locations'))){
+                    if(count($request->input('locations'))==$request->input('loc_count')){
+                        $location = "*";
+                    }else{
+                        $location = implode(',', $request->input('locations'));
+                    }
+                }
+
                 if(count($request->input('departments'))==$request->input('count')){
                     $department = "*";
                 }else{
@@ -178,11 +199,12 @@ class AlertsController extends Controller
 
                 $update_alert = Alert::find($request->input('alert_id'));
 
-                if(!empty( $update_alert)){
+                if(!empty($update_alert)){
 
                     $update_alert->title = $request->input('title');
                     $update_alert->message = $request->input('message');
                     $update_alert->department = $department;
+                    $update_alert->location = $location ?? 'null';
                     $update_alert->scheduled_time = $scheduled_date;
                     $update_alert->days = $request->input('days');
                     $update_alert->valid_dates = $valid_date;

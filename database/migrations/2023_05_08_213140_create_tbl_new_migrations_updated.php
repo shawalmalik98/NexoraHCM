@@ -41,7 +41,16 @@ return new class extends Migration
                 });
             }
 
-        }       
+        }    
+        
+        if(Schema::hasTable('tbl_alerts')){
+
+            if (!Schema::hasColumn('tbl_alerts', 'location')) {
+                Schema::table('tbl_alerts', function (Blueprint $table) {
+                    $table->string('location', 1000)->nullable();
+                });
+            }
+        }    
        
     }
     /**

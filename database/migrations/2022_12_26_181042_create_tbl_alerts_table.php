@@ -19,6 +19,7 @@ return new class extends Migration
                 $table->string('title', 255);
                 $table->longtext('message');
                 $table->string('department', 255);
+                $table->string('location', 1000)->nullable();
                 $table->string('scheduled_time', 255);
                 $table->string('days', 255);
                 $table->string('valid_dates', 255);

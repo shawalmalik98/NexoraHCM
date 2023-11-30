@@ -3,6 +3,35 @@ function deactivate_confirm(delete_url) {
     document.getElementById('delete_button').setAttribute("href", delete_url);
 }
 
+$('#location_all').click(function () {
+
+    var checkbox = $('#location_all').prop('checked');
+
+    if (checkbox) {
+        $('#locations_all option').prop('selected', true);
+        $('#selectedlocation').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-locations_all-container-choice-5nle-Human Resource">All Locations</span>');
+        $('#selectedlocation').find('.select2-search__field').attr('placeholder', '');
+    } else {
+        $('#locations_all option').prop('selected', false);
+        $('#selectedlocation').find('.select2-selection__rendered').html('');
+        $('#selectedlocation').find('.select2-search__field').attr('placeholder', 'Select Location');
+        $('#selectedlocation').find('.select2-search__field').css('width', '100%');
+
+    }
+
+})
+
+$('#locations_all').change(function () {
+    var locations = $('#locations_all').val();
+    var all_length = "{{$count}}";
+    if (locations.length == all_length) {
+        $('#location_all').prop('checked', true);
+    } else {
+        $('#location_all').prop('checked', false);
+
+    }
+});
+
 $('#department_all').click(function () {
 
     var checkbox = $('#department_all').prop('checked');
@@ -28,6 +57,35 @@ $('#departments_all').change(function () {
         $('#department_all').prop('checked', true);
     } else {
         $('#department_all').prop('checked', false);
+
+    }
+});
+
+$('#all_locations_checkbox').click(function () {
+
+    var checkbox = $('#all_locations_checkbox').prop('checked');
+
+    if (checkbox) {
+        $('#all_locations_selectbox option').prop('selected', true);
+        $('#selectelocation2').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-locations_all-container-choice-5nle-Human Resource">All Locations</span>');
+        $('#selectelocation2').find('.select2-search__field').attr('placeholder', '');
+    } else {
+        $('#all_locations_selectbox  option').prop('selected', false);
+        $('#selectelocation2').find('.select2-selection__rendered').html('');
+        $('#selectelocation2').find('.select2-search__field').attr('placeholder', 'Select Location');
+        $('#selectelocation2').find('.select2-search__field').css('width', '100%');
+
+    }
+
+})
+
+$('#all_locations_selectbox').change(function () {
+    var locations = $('#all_locations_selectbox').val();
+    var all_length = "{{$count}}";
+    if (locations.length == all_length) {
+        $('#all_locations_checkbox').prop('checked', true);
+    } else {
+        $('#all_locations_checkbox').prop('checked', false);
 
     }
 });
@@ -149,6 +207,7 @@ function alertEditModel(alertdetail) {
     var title = alertdetail.title;
     var message = alertdetail.message;
     var department = alertdetail.department;
+    var location = alertdetail.location;
     var scheduled_time = alertdetail.scheduled_time;
     var days = alertdetail.days;
 
@@ -165,6 +224,17 @@ function alertEditModel(alertdetail) {
 
     } else {
         $("select[name='departments[]']").val(department.split(",")).trigger('change');
+    }
+
+    if (location == "*") {
+
+        $("select[name='locations[]'] option").prop('selected', true);
+        $('#selectelocation2').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-locations_all-container-choice-5nle-Human Resource">All Locations</span>');
+        $('#selectelocation2').find('.select2-search__field').attr('placeholder', '');
+        $('#all_locations_checkbox').prop('checked', true);
+
+    } else {
+        $("select[name='locations[]']").val(location.split(",")).trigger('change');
     }
 
     $('#scheduled_date2').val(scheduled_time);
