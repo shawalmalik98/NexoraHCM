@@ -104,7 +104,7 @@ class AlertsController extends Controller
                 $new_alert->title = $request->input('title');
                 $new_alert->message = $request->input('message');
                 $new_alert->department = $department;
-                $new_alert->location = $location ?? 'null';
+                $new_alert->location = $location ?? 'NULL';
                 $new_alert->scheduled_time = $scheduled_date;
                 $new_alert->days = $request->input('days');
                 $new_alert->valid_dates = $valid_date;
@@ -204,7 +204,7 @@ class AlertsController extends Controller
                     $update_alert->title = $request->input('title');
                     $update_alert->message = $request->input('message');
                     $update_alert->department = $department;
-                    $update_alert->location = $location ?? 'null';
+                    $update_alert->location = $location ?? 'NULL';
                     $update_alert->scheduled_time = $scheduled_date;
                     $update_alert->days = $request->input('days');
                     $update_alert->valid_dates = $valid_date;

@@ -22,7 +22,7 @@ class HomeController extends Controller
 
 
     protected function index(Request $request){
-        // try{
+        try{
             
             $title = Self::MAIN_TITLE;
 
@@ -79,27 +79,25 @@ class HomeController extends Controller
             $alert_status = AlertStatus::where('alert_status_employee_id', session('user_session'))->pluck('alert_status_alert_id')->toArray();
 
             $employee_location = Employees::where('employee_isactive','=',1)
-            ->leftjoin('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+            ->join('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
             ->join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
-            ->where('employee_id', $login_user[0]['employee_id'])
+            ->where('emp_loc_employee_id', $login_user[0]['employee_id'])
             ->get(['location_id'])->toArray();
            
             $alerts = Alert::whereRaw("CONVERT(DATETIME, scheduled_time, 120) < '" . date('Y-m-d H:i:s') . "' and CONVERT(DATETIME, valid_dates, 120) > '" . date('Y-m-d H:i:s') . "'")
             ->where(function($query) use ($login_user)  {
                 $query->where('department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('department', 'LIKE', '%*%');
-               
             })
             ->where(function($query) use ($employee_location)  {
-
-                if (!empty($employee_location[0]['location_id'])) {
-                    $query->where(function($query) use ($employee_location) {
-                        $query->where('location', 'LIKE', '%' . $employee_location[0]['location_id'] . '%')
-                            ->orWhere('location', 'LIKE', '%*%')
-                            ->orWhere('location', 'LIKE', 'null');
-                    });
+                if (!empty($employee_location)) {
+                    foreach ($employee_location as $location) {
+                        $query->orWhere('location', 'LIKE', '%' . $location['location_id'] . '%');
+                    }
+                    $query->orWhere('location', 'LIKE', '%*%')
+                        ->orWhere('location', 'LIKE', 'NULL');
+                } else {
+                    $query->where('location', 'LIKE', 'NULL');
                 } 
-               
-               
             })
             ->whereNotIn('alert_id', $alert_status)
             ->limit(3)->get(['alert_id','title','message'])->toArray(); 
@@ -248,17 +246,17 @@ class HomeController extends Controller
             
             return view('dashboard.dashboard', $send_data);
 
-        // }catch(\Exception $e){
+        }catch(\Exception $e){
 
-        //     $this->create_error_log('Employees Dashboard', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
+            $this->create_error_log('Employees Dashboard', $e);
+            $send_data = compact('title');
+            return view('errors.500');
 
-        // }finally{
+        }finally{
 
-        //     ActivityTracker::track_activity('Access Dashboard Module');
+            ActivityTracker::track_activity('Access Dashboard Module');
           
-        // }
+        }
     }
 
     protected function expense_graph(Request $request){

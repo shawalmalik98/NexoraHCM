@@ -357,8 +357,8 @@
                                     </div>
                                     <div class="col-md-2 mb-8 mt-3 fv-row">
                                         
-                                        <label class="fs-6 fw-semibold mb-2">All locations</label>
-                                            <label class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
+                                        <label class="fs-6 fw-semibold mb-2">All Locations</label>
+                                        <label class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
                                             <input type = "hidden" name="loc_count" value="{{$loc_count}}">
                                             <input class="form-check-input h-20px w-20px" type="checkbox" id="all_locations_checkbox" name="select_all" value="Select All" /> 
                                         </label>
