@@ -117,9 +117,9 @@ $(function () {
     $('#req_status').on('change', function () {
         var value = $(this).val();
         if (value == '') {
-            dataTable.column(8).search('', false, true).draw();
+            dataTable.column(9).search('', false, true).draw();
         } else {
-            dataTable.column(8).search("^" + value + "$", true, false).draw();
+            dataTable.column(9).search("^" + value + "$", true, false).draw();
         }
     });
 });

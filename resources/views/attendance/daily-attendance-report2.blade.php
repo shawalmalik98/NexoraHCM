@@ -483,6 +483,28 @@
                             </div>
                         
                             <div class="modal-body">
+                                <div class ="row">
+                                    <div class="col-md-10 mb-8 mt-3 fv-row" id="selectedgroup"> 
+                                        <label class="required fs-6 fw-semibold mb-2">Employees Group</label>
+                                            <select class="form-select" id="groups_all"  data-control="select2" multiple="multiple" data-hide-search="true" data-placeholder="Select Group" name="emp_group[]" required> 
+                                                @if(!empty($employee_groups))
+                                                    @foreach ($employee_groups as $groups)
+                                                        <option value="{{$groups['employee_group_id']}}">
+                                                            {{ $groups['group_name']}}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                    </div>
+                                    <div class="col-md-2 mb-4 mt-10 fv-row">
+                                            
+                                        <label class="fs-6 fw-semibold mb-2">All Groups</label>
+                                            <label class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
+                                            {{-- <input type = "hidden" name="loc_count" value="{{$loc_count}}"> --}}
+                                            <input class="form-check-input h-20px w-20px" type="checkbox" id="group_all" name="select_all" value="Select All" /> 
+                                        </label>
+                                    </div> 
+                                </div>  
                                 <div class="row g-9 mb-8">
                                     <div class="col-md-4 fv-row">
                                         <label class="required fs-6 fw-semibold mb-2">From Date</label>

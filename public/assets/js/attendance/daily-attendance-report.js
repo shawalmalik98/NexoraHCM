@@ -246,3 +246,32 @@ $('#delete_attendance_record').submit(function (e) {
         }
     });
 });
+
+$('#group_all').click(function () {
+
+    var checkbox = $('#group_all').prop('checked');
+
+    if (checkbox) {
+
+        $('#groups_all option').prop('selected', true);
+        $('#selectedgroup').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-groups_all-container-choice-5nle-Human Resource">All Groups</span>');
+        $('#selectedgroup').find('.select2-search__field').attr('placeholder', '');
+    } else {
+        $('#groups_all option').prop('selected', false);
+        $('#selectedgroup').find('.select2-selection__rendered').html('');
+        $('#selectedgroup').find('.select2-search__field').attr('placeholder', 'Select Group');
+        $('#selectedgroup').find('.select2-search__field').css('width', '100%');
+
+    }
+
+})
+
+$('#groups_all').change(function () {
+    var groups = $('#groups_all').val();
+    var totalOptions = $('#groups_all option').length;
+    if (groups.length === totalOptions) {
+        $('#group_all').prop('checked', true);
+    } else {
+        $('#group_all').prop('checked', false);
+    }
+});

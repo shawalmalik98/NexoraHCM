@@ -2806,8 +2806,11 @@ class AttendanceController extends Controller
 
             $to_date = $request->input('to_date');
 
+            $emp_group =  $request->input('emp_group');
+
             $validator = Validator::make($request->all(), [
                 'from_date' => 'required',
+                'emp_group' => 'required',
                 'to_date' => 'required|date_format:Y-m-d|before_or_equal:now',
                 // 'to_date' => [
                 //     'required',
@@ -2839,7 +2842,8 @@ class AttendanceController extends Controller
                 DB::raw("CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)"),
                 [$from_date, $to_date]
             )
-            ->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_for_date','att_for_month','att_for_year','tbl_employees.employee_code'])
+            ->whereIn('employee_group', $emp_group)
+            ->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_for_date','att_for_month','att_for_year','tbl_employees.employee_code','tbl_employees.employee_group'])
             ->toArray();
                 
             if(!empty($get_attendance_data)) {
