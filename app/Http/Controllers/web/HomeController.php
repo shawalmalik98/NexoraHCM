@@ -22,7 +22,7 @@ class HomeController extends Controller
 
 
     protected function index(Request $request){
-        try{
+        // try{
             
             $title = Self::MAIN_TITLE;
 
@@ -90,12 +90,19 @@ class HomeController extends Controller
                
             })
             ->where(function($query) use ($employee_location)  {
-                $query->where('location', 'LIKE', '%' .$employee_location[0]['location_id']. '%')->orWhere('location', 'LIKE', '%*%')
-                ->orWhere('location', 'LIKE', 'null');
+
+                if (!empty($employee_location[0]['location_id'])) {
+                    $query->where(function($query) use ($employee_location) {
+                        $query->where('location', 'LIKE', '%' . $employee_location[0]['location_id'] . '%')
+                            ->orWhere('location', 'LIKE', '%*%')
+                            ->orWhere('location', 'LIKE', 'null');
+                    });
+                } 
+               
                
             })
             ->whereNotIn('alert_id', $alert_status)
-            ->limit(3)->get(['alert_id','title','message'])->toArray();                
+            ->limit(3)->get(['alert_id','title','message'])->toArray(); 
                         
             $birthdays = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')
             ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
@@ -241,17 +248,17 @@ class HomeController extends Controller
             
             return view('dashboard.dashboard', $send_data);
 
-        }catch(\Exception $e){
+        // }catch(\Exception $e){
 
-            $this->create_error_log('Employees Dashboard', $e);
-            $send_data = compact('title');
-            return view('errors.500');
+        //     $this->create_error_log('Employees Dashboard', $e);
+        //     $send_data = compact('title');
+        //     return view('errors.500');
 
-        }finally{
+        // }finally{
 
-            ActivityTracker::track_activity('Access Dashboard Module');
+        //     ActivityTracker::track_activity('Access Dashboard Module');
           
-        }
+        // }
     }
 
     protected function expense_graph(Request $request){
