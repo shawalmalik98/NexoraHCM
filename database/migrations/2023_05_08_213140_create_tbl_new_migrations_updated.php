@@ -15,33 +15,6 @@ return new class extends Migration
     public function up()
     {   
 
-        if(Schema::hasTable('tbl_attendance')){
-
-            if (!Schema::hasColumn('tbl_attendance', 'sap_ci_flag')) {
-                Schema::table('tbl_attendance', function (Blueprint $table) {
-                    $table->integer('sap_ci_flag')->nullable();
-                });
-            }
-
-            if (!Schema::hasColumn('tbl_attendance', 'sap_co_flag')) {
-                Schema::table('tbl_attendance', function (Blueprint $table) {
-                    $table->integer('sap_co_flag')->nullable();
-                });
-            }
-
-            if (!Schema::hasColumn('tbl_attendance', 'sap_ci_timestamp')) {
-                Schema::table('tbl_attendance', function (Blueprint $table) {
-                    $table->datetime('sap_ci_timestamp')->nullable();
-                });
-            }
-
-            if (!Schema::hasColumn('tbl_attendance', 'sap_co_timestamp')) {
-                Schema::table('tbl_attendance', function (Blueprint $table) {
-                    $table->datetime('sap_co_timestamp')->nullable();
-                });
-            }
-
-        }    
         
         if(Schema::hasTable('tbl_alerts')){
 
