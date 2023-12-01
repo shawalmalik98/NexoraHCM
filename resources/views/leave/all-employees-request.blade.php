@@ -215,6 +215,7 @@
                                     <tr class="fw-bold text-muted bg-light">
                                         <th></th>
                                         <th class="ps-4 ">Applied By</th>
+                                        <th>Depart &amp; Desig</th>
                                         <th>Date</th>
                                         <th>Type</th>
                                         <th>Reason</th>
@@ -256,7 +257,11 @@
                                                     
                                                 </td>
 
-                                                <td>{!! CustomHelper::getEmpProfileDiv($my_leave['employee_id']) !!}</td>
+                                                <td>{{ $my_leave['employee_code'] }} - {{ $my_leave['employee_name'] }}</td>
+                                                <td>
+                                                    <p class="text-dark fw-bold mb-1 fs-6"> {{ $my_leave['department_name'] }}</p>
+                                                    <p class="text-muted fw-semibold text-muted fs-7">{{$my_leave['designation_name'] }}</p>
+                                                </td>
                                                 
                                                 <td>{{ $my_leave['leave_applied_for_date'] }}</td>
                                                 <td>{{ $my_leave['leave_name'] }}</td>

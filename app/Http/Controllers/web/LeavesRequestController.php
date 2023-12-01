@@ -68,8 +68,10 @@ class LeavesRequestController extends Controller
 
                 $employees_data = Employees::where('employee_isactive', $status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
-                $my_leaves = LeaveRequest::select(['leave_applied_id','leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name'])
+                $my_leaves = LeaveRequest::select(['leave_applied_id','leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name','employee_code','employee_name','department_name','designation_name'])
                 ->join('tbl_employees','tbl_leaves_applied.leave_applied_by','=','tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->whereRaw($where_clause)
                 ->orderBy('leave_applied_id','desc')
                 ->limit($limit_query)
@@ -103,7 +105,12 @@ class LeavesRequestController extends Controller
                 
                 $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
 
-                $my_leaves = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')->whereIn('leave_applied_by',$total_team_member)->whereRaw($where_clause)->orderBy('leave_applied_id','DESC')->limit($limit_query)->get(['leave_applied_id','leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name'])->toArray();
+                $my_leaves = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')
+                ->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->whereIn('leave_applied_by',$total_team_member)->whereRaw($where_clause)->orderBy('leave_applied_id','DESC')->limit($limit_query)
+                ->get(['leave_applied_id','leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name','employee_code','employee_name','department_name','designation_name'])->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id',2)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
 
