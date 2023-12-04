@@ -591,5 +591,5 @@
 
 
 @push('js-link')
-<script src="{{url('assets/js/attendance/daily-attendance-report.js?v=2')}}"></script>
+<script src="{{url('assets/js/attendance/daily-attendance-report.js?v=3')}}"></script>
 @endpush
