@@ -5531,11 +5531,11 @@ class EmployeeController extends Controller
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            if($request->emp_status == "2"){
-                $status = 0;
-            }else{
-                $status = 1;
-            }
+            // if($request->emp_status == "2"){
+            //     $status = 0;
+            // }else{
+            //     $status = 1;
+            // }
 
             $where_clause = '1=1' ;
 
@@ -5543,22 +5543,29 @@ class EmployeeController extends Controller
                 $where_clause .= " AND location_id = '".$request->employee_location."'";
 
             }
-
-            $employee_location_detail = Employees::where('employee_isactive','=',$status)
-            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->join('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
-            ->join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
-            ->whereRaw($where_clause)
-            ->get(['employee_code as Employee ID','employee_name as Employee Name', 'department_name as Department', 'designation_name as Designation', 'business_unit as Business unit', 'location_title as Location title', 'location_latitude as Location latitude', 'location_longitude as Location longitude'])->toArray();
-
-            $send_data = compact('title','login_user','employee_location_detail','employee_locations');
+           
+            if ($request->employee_location != null || $request->employee_location != '') {
+                $employee_location_detail = Employees::where('employee_isactive', 1)
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->join('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+                ->join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
+                ->whereRaw($where_clause)
+                ->get(['employee_code as Employee ID','employee_name as Employee Name', 'department_name as Department', 'designation_name as Designation', 'business_unit as Business unit', 'location_title as Location title', 'location_latitude as Location latitude', 'location_longitude as Location longitude'])->toArray();
+            
+                $send_data = compact('title','login_user','employee_location_detail','employee_locations');
+            }else{
+                $send_data = compact('title','login_user','employee_locations');
+            }
+             
 
             if($request->download == 'TRUE'){
                 $header_style = (new Style())->setFontBold();
                 return (new FastExcel($employee_location_detail))->headerStyle($header_style)->download('Employee-locations.xlsx');
             }else{
-                return view('employee.employee-location', $send_data);
+                // return view('employee.employee-location', $send_data);
+                return view('employee.employee-location2', $send_data);
+                
             }
 
         }
@@ -5942,6 +5949,7 @@ class EmployeeController extends Controller
             select('employee_group_id','group_name','created_at', DB::raw('COUNT(employee_id) as total_employees'))
             ->leftJoin('tbl_employees','tbl_employee_groups.employee_group_id','=','tbl_employees.employee_group')
             ->groupBy('employee_group_id','group_name','created_at')
+            ->where('employee_isactive', 1)
             ->get()
             ->toArray();
 

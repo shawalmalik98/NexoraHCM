@@ -45,6 +45,34 @@ class EmployeeApiController extends Controller
 
     }
 
+    protected function employees_location_api(Request $request){
+
+        try{
+
+            $employee_location_detail = Employees::where('employee_isactive', 1)
+            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->join('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+            ->join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
+            ->get(['employee_code','employee_name', 'department_name', 'designation_name', 'business_unit', 'location_title', 'location_latitude', 'location_longitude'])->toArray();
+                
+            return $this->api_response_json(TRUE,"All Employees Location",$employee_location_detail,200); 
+        
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('View All Employees Location API', $e, $request->header('Bearer-Token'));
+
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+
+        }
+        finally{
+
+            ActivityTracker::track_activity_from_api('View All Employees Location API',  $request->header('Bearer-Token'));
+           
+        }
+
+    }
+
     protected function get_employee_detail(Request $request){
 
         try{

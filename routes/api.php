@@ -243,6 +243,7 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 
 });
 
+Route::get('/get-employee-location', [EmployeeApiController::class, 'employees_location_api']);
 Route::get('/get-all-employees', [EmployeeApiController::class, 'get_all_employees']);
 
 Route::post('insert-machine-attendance', [MachineAttendanceController::class, 'pull_attendance_from_machine_into_portal']);
