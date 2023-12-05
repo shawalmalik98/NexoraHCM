@@ -133,40 +133,50 @@
                             @if (!empty(Request::get('employee_location'))) 
                                 <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="location_datatable" aria-describedby="tableEmployee_info">
                                     
-                        
-                                        <thead>
-                                            <tr class="fw-bold text-muted bg-light">
-                                                <th class="ps-4">Employee Code & Name</th>
-                                                <th>Depart & Desig</th>
-                                                <th>Business Unit</th>
-                                                <th>Location Title</th>
-                                                <th>Latitude</th>
-                                                <th>Longitude</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @if(!empty($employee_location_detail))
-                                                @foreach($employee_location_detail as $employee_location)
-                                                    <tr>
-                                                        <td class="ps-4">{{ $employee_location['Employee ID'] }} - {{ $employee_location['Employee Name'] }}</td>
-                                                        <td>
-                                                            <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee_location['Department'] }}</p>
-                                                            <p class="text-muted fw-semibold text-muted fs-7">{{$employee_location['Designation'] }}</p>
-                                                        </td>
-                                                        <td>{{ $employee_location['Business unit'] ?? '-' }}</td>
-                                                        <td>{{ $employee_location['Location title'] }}</td>
-                                                        <td>{{ $employee_location['Location latitude'] }}</td>
-                                                        <td>{{ $employee_location['Location longitude'] }}</td>
-                                                    </tr>
-                                                @endforeach
-                                            @endif
-                                        </tbody>
+                                    <thead>
+                                        <tr class="fw-bold text-muted bg-light">
+                                            <th class="ps-4">Employee Code & Name</th>
+                                            <th>Depart & Desig</th>
+                                            <th>Business Unit</th>
+                                            <th>Location Title</th>
+                                            <th>Latitude</th>
+                                            <th>Longitude</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if(!empty($employee_location_detail))
+                                            @foreach($employee_location_detail as $employee_location)
+                                                <tr>
+                                                    <td class="ps-4">{{ $employee_location['Employee ID'] }} - {{ $employee_location['Employee Name'] }}</td>
+                                                    <td>
+                                                        <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee_location['Department'] }}</p>
+                                                        <p class="text-muted fw-semibold text-muted fs-7">{{$employee_location['Designation'] }}</p>
+                                                    </td>
+                                                    <td>{{ $employee_location['Business unit'] ?? '-' }}</td>
+                                                    <td>{{ $employee_location['Location title'] }}</td>
+                                                    <td>{{ $employee_location['Location latitude'] }}</td>
+                                                    <td>{{ $employee_location['Location longitude'] }}</td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    </tbody>
                                         
-                                    
                                 </table>
                             @else
                                 <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="location_datatable_ajax" aria-describedby="tableEmployee_info">
-                                    
+                                    <thead>
+                                        <tr class="fw-bold text-muted bg-light">
+                                            <th class="ps-4">Employee Code & Name</th>
+                                            <th>Depart & Desig</th>
+                                            <th>Business Unit</th>
+                                            <th>Location Title</th>
+                                            <th>Latitude</th>
+                                            <th>Longitude</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="loc_datatable_ajax">
+
+                                    </tbody>
                                 </table>     
                             @endif   
                            
@@ -200,33 +210,22 @@
     });  
 
     var location_main_url =  "{{ url('/employee-location') }}";
-
+   
     if (window.location.href == location_main_url) {
+
         $.ajax({
             url: "{{ url('/api/get-employee-location') }}",
             type: 'GET',
             success: function(response) {
-                //  console.log(response);
+                //  console.log(response);   
                 if (response.status == true) {
                     var emp_record = '';
                     var employees_location = response.data; 
-                    // console.log(employees_location);
-                    emp_record = '';
-                    emp_record += `<thead>
-                        <tr class="fw-bold text-muted bg-light">
-                            <th class="ps-4">Employee Code & Name</th>
-                            <th>Depart & Desig</th>
-                            <th>Business Unit</th>
-                            <th>Location Title</th>
-                            <th>Latitude</th>
-                            <th>Longitude</th>
-                        </tr>
-                        </thead>
-                        <tbody>`;
-                
-                    employees_location.forEach(function(employee_loc) {
-                        emp_record += `
-                            <tr>
+
+                    $.each(employees_location, function (key, employee_loc) {
+                        emp_record +=  
+                        
+                            `<tr>
                                 <td class="ps-4">${employee_loc.employee_code} - ${employee_loc.employee_name}</td>
                                 <td>
                                     <p class="text-dark fw-bold mb-1 fs-6">${employee_loc.department_name}</p>
@@ -238,8 +237,7 @@
                                 <td> ${employee_loc.location_longitude}</td>
                             </tr>`;
                     });
-                    emp_record += ` </tbody>`;
-                    $('#location_datatable_ajax').html(emp_record);
+                    $('#loc_datatable_ajax').html(emp_record);
 
                     dataTable = $('#location_datatable_ajax').DataTable({
                         order: false,
