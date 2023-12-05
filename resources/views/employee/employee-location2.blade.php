@@ -16,7 +16,7 @@
 
             <div class="d-flex align-items-center gap-2 gap-lg-3">
 
-                @if(!empty( $employee_location_detail))
+                {{-- @if(!empty( $employee_location_detail)) --}}
                     <div class="m-0">
                         <a href="{{ url('employee-location') }}?download=TRUE" class="btn btn-sm btn-success" method="GET">
                             <span class="svg-icon svg-icon-2">
@@ -28,7 +28,7 @@
                             Download Employee Location Report
                         </a>
                     </div>
-                @endif    
+                {{-- @endif     --}}
 
             </div>
 

@@ -5544,7 +5544,7 @@ class EmployeeController extends Controller
 
             }
            
-            if ($request->employee_location != null || $request->employee_location != '') {
+            if ($request->employee_location != null || $request->employee_location != '' || $request->download == 'TRUE') {
                 $employee_location_detail = Employees::where('employee_isactive', 1)
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
