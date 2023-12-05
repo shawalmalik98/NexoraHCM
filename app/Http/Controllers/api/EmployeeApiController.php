@@ -19,13 +19,14 @@ class EmployeeApiController extends Controller
     const DOCUMENT = 'employee-personal-document';
     const LOCATION = "office-location";
 
-    protected function get_all_employees(Request $request){
+    protected function get_all_employees_api(Request $request){
 
         try{
 
             $all_employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
-            // ->orderBy('employee_code','ASC')
+            ->orderBy('employee_code','ASC')
+            ->where('employee_isactive', 1)
             ->get(['employee_id','employee_code','employee_name','employee_personal_email','department_name','designation_name','employee_is_manager','employee_offdays','business_unit','group_name'])->toArray();
 
             return $this->api_response_json(TRUE,"All Employees",$all_employees,200); 

@@ -30,7 +30,7 @@
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
 
-                @if(!empty($employees))
+                {{-- @if(!empty($employees)) --}}
                     <div class="m-0">
                         <a href="{{ url('employees') }}?download=TRUE" class="btn btn-sm btn-success" method="GET">
                             <span class="svg-icon svg-icon-2">
@@ -42,7 +42,7 @@
                             Download Employees Records
                         </a>
                     </div>
-                @endif
+                {{-- @endif --}}
 
                 {{-- <div class="m-0">
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#employee_information">
@@ -219,73 +219,94 @@
                      
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible">
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
-                            
-                                {{-- <thead>
-                                    <tr class="fw-bold text-muted bg-light">
-                                        <th class="ps-4">ID</th>
-                                        <th class="ps-4">Employee ID</th>
-                                        <th>Name</th>
-                                        <th>Email</th>
-                                        <th>Depart &amp; Desig</th>
-                                        <th>Group</th>
-                                        <th>Business Unit</th>
-                                        <th>Manager Rights</th>
-                                        <th class="text-center">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="employeeTable">
-                                   
-                                    @if(!empty($employees))
-                                        @foreach ($employees as $employee)
-                                            <tr >
-                                                <td class="ps-4">{{ $employee['employee_id'] }}</td>
-                                                <td class="ps-4">{{ $employee['employee_code'] }}</td>
-                                                <td>{{ $employee['employee_name'] }}</td>
-                                            
-                                                <td>{{ $employee['employee_personal_email'] }}</td>
-                                                <td>
-                                                    <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee['department_name'] }}</p>
-                                                    <p class="text-muted fw-semibold text-muted fs-7">{{$employee['designation_name'] }}</p>
-                                                </td>
-                                                <td>{{ $employee['group_name'] ?? '-' }}</td>
-                                                <td>{{ $employee['business_unit'] ?? '-' }}</td>
-                                                <td>
-                                                    @if($employee['employee_is_manager'] != '' && $employee['employee_is_manager'] == 1)
-                                                        <span class="badge badge-light-success font-weight-bold">Yes, Given</span>
-                                                    @else
-                                                        <span class="badge badge-light-danger font-weight-bold">Not, Given</span>
-                                                    @endif
-                                                </td>
+                            @if(!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('employee_group')) || !empty(Request::get('is_active')))
+                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                                
+                                    <thead>
+                                        <tr class="fw-bold text-muted bg-light">
+                                            <th class="ps-4">Employee ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Depart &amp; Desig</th>
+                                            <th>Group</th>
+                                            <th>Business Unit</th>
+                                            <th>Manager Rights</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    
+                                        @if(!empty($employees))
+                                            @foreach ($employees as $employee)
+                                                <tr >
+                                                    {{-- <td class="ps-4">{{ $employee['employee_id'] }}</td> --}}
+                                                    <td class="ps-4">{{ $employee['employee_code'] }}</td>
+                                                    <td>{{ $employee['employee_name'] }}</td>
                                                 
-                                                <td class="text-center">
-                                                    <a href="{{ url('employees/editemployee') . '/' . $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Edit Employee Details">
-                                                        <span class="svg-icon svg-icon-3">
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
-                                                                <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
-                                                            </svg>
-                                                        </span>
-                                                    </a>
-
-                                                    <a href="{{ url('view-employee-information-form') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Information Form" > 
-                                                        <i class="fas fa-user" aria-hidden="true"></i>
-                                                    </a>
+                                                    <td>{{ $employee['employee_personal_email'] }}</td>
+                                                    <td>
+                                                        <p class="text-dark fw-bold mb-1 fs-6"> {{ $employee['department_name'] }}</p>
+                                                        <p class="text-muted fw-semibold text-muted fs-7">{{$employee['designation_name'] }}</p>
+                                                    </td>
+                                                    <td>{{ $employee['group_name'] ?? '-' }}</td>
+                                                    <td>{{ $employee['business_unit'] ?? '-' }}</td>
+                                                    <td>
+                                                        @if($employee['employee_is_manager'] != '' && $employee['employee_is_manager'] == 1)
+                                                            <span class="badge badge-light-success font-weight-bold">Yes, Given</span>
+                                                        @else
+                                                            <span class="badge badge-light-danger font-weight-bold">Not, Given</span>
+                                                        @endif
+                                                    </td>
                                                     
-                                                    <a  href="{{ url('employees/employee-documents') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Document"> 
-                                                        <i class="fas fa-file" aria-hidden="true"></i>
-                                                    </a>
+                                                    <td class="text-center">
+                                                        <a href="{{ url('employees/editemployee') . '/' . $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Edit Employee Details">
+                                                            <span class="svg-icon svg-icon-3">
+                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
+                                                                    <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
+                                                                </svg>
+                                                            </span>
+                                                        </a>
 
-                                                    <a  href="{{ url('employees/employee-allotment') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Employee Allotments"> 
-                                                        <i class="fas fa-car"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endif
-                                </tbody> --}}
-                            
-                            </table>
+                                                        {{-- <a href="{{ url('view-employee-information-form') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Information Form" > 
+                                                            <i class="fas fa-user" aria-hidden="true"></i>
+                                                        </a>
+                                                        
+                                                        <a  href="{{ url('employees/employee-documents') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title=" Employee Document"> 
+                                                            <i class="fas fa-file" aria-hidden="true"></i>
+                                                        </a>
+
+                                                        <a  href="{{ url('employees/employee-allotment') .'/'. $employee['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="Employee Allotments"> 
+                                                            <i class="fas fa-car"></i>
+                                                        </a> --}}
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    </tbody>
+                                
+                                </table>
+                            @else
+                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="employee_datatable_ajax" aria-describedby="tableEmployee_info">
+                                    
+                                    <thead>
+                                        <tr class="fw-bold text-muted bg-light">
+                                            <th class="ps-4">Employee ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Depart &amp; Desig</th>
+                                            <th>Group</th>
+                                            <th>Business Unit</th>
+                                            <th>Manager Rights</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="all_employee_records">
+                                    
+                                    </tbody>
+                                
+                                </table>
+                            @endif    
                         </div>
                     
                     </div>
@@ -417,7 +438,7 @@
 
     <form class="form" id="employee_record_upload">
         @csrf	
-        <div class="modal fade" id="employee_records_upload" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="all__upload" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable mw-650px">
                 <div class="modal-content rounded">
                    
@@ -464,92 +485,107 @@
 <script src="{{url('assets/js/employees/manage-employee.js')}}"></script>
 <script>
 
-$.ajax({
-    url: "{{ url('/api/get-all-employees') }}",
-    type: 'GET',
-    success: function(response) {
-        console.log(response);
-        if (response.status == true) {
-            var emp_record = '';
-            var employees = response.data; 
+var location_main_url =  "{{ url('/employees') }}";
 
-            emp_record = '';
-            emp_record += `<thead>
-                <tr class="fw-bold text-muted bg-light">
-                    <th class="ps-4">Employee ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Depart &amp; Desig</th>
-                    <th>Group</th>
-                    <th>Business Unit</th>
-                    <th>Manager Rights</th>
-                    <th class="text-center">Action</th>
-                </tr>
-                </thead>
-                <tbody>`;
-        
-            employees.forEach(function(employee) {
-                emp_record += `
-                    <tr>
-                        <td class="ps-4">${employee.employee_code}</td>
-                        <td>${employee.employee_name}</td>
-                        <td>${employee.employee_personal_email}</td>
-                        <td>
-                            <p class="text-dark fw-bold mb-1 fs-6">${employee.department_name}</p>
-                            <p class="text-muted fw-semibold text-muted fs-7">${employee.designation_name}</p>
-                        </td>
+    var get_loc =  window.location.href;
+   
+    if (window.location.href == location_main_url) {
 
-                        <td> ${employee.group_name ?? '-'}</td>
-                        <td> ${employee.business_unit ?? '-'}</td>
-                        <td>
-                            ${employee.employee_is_manager !== '' && employee.employee_is_manager == 1 ?
-                                `<span class="badge badge-light-success font-weight-bold">Yes, Given</span>` :
-                                `<span class="badge badge-light-danger font-weight-bold">Not Given</span>`}
-                        </td>
-                        <td class="text-center">
-                            <a href="/employees/editemployee/${employee.employee_id}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Edit Employee Details">
-                                <span class="svg-icon svg-icon-3">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
-                                        <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
-                                    </svg>
-                                </span>
-                            </a>
-                        </td>
-                    </tr>`;
-            });
-            emp_record += ` </tbody>`;
-            $('#system_datatable').html(emp_record);
-          
-        } else {
-            
-            console.error('Failed to retrieve employees:', response.message);
-        }
-    },
-    error: function(jqXHR, textStatus) {
-        var errorStatus = jqXHR.status;
-        if (errorStatus == 0) {
-            Toast.fire({
-                icon: 'warning',
-                title: 'Employee records failed please try again',
-                timer: 4000,
-            });
-            setTimeout(() => {
-                location.reload();
-            }, 4000);
-        } else {
-            if (errorStatus == 419) {
-                location.reload();
-            } else {
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Try Again. Error Code ' + errorStatus,
-                    timer: 3000,
-                })
+       $('#all_employee_records').html(`
+               <td class="text-center"></td>
+               <td class="text-center"></td> 
+               <td class="text-center"></td> 
+               <td class="text-center"></td> 
+               <td class="preloader text-center">
+                   <div style="display: flex; flex-direction: column; align-items: center;">
+                       <div class="spinner-border text-primary" role="status"></div>
+                       <div class="text-muted fs-6 fw-semibold mt-3">Loading...</div>
+                   </div>
+               </td>
+           `);
+
+        $.ajax({
+            url: "{{ url('/get-all-employees') }}",
+            type: 'GET',
+            success: function(response) {
+                // console.log(response);
+                if (response.status == true) {
+                    var emp_record = '';
+                    var employees = response.data; 
+                  
+                    $.each(employees, function (key, employee) {
+                        emp_record += `
+                            <tr>
+                                <td class="ps-4">${employee.employee_code}</td>
+                                <td>${employee.employee_name}</td>
+                                <td>${employee.employee_personal_email}</td>
+                                <td>
+                                    <p class="text-dark fw-bold mb-1 fs-6">${employee.department_name}</p>
+                                    <p class="text-muted fw-semibold text-muted fs-7">${employee.designation_name}</p>
+                                </td>
+
+                                <td> ${employee.group_name ?? '-'}</td>
+                                <td> ${employee.business_unit ?? '-'}</td>
+                                <td>
+                                    ${employee.employee_is_manager !== '' && employee.employee_is_manager == 1 ?
+                                        `<span class="badge badge-light-success font-weight-bold">Yes, Given</span>` :
+                                        `<span class="badge badge-light-danger font-weight-bold">Not Given</span>`}
+                                </td>
+                                <td class="text-center">
+                                    <a href="/employees/editemployee/${employee.employee_id}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Edit Employee Details">
+                                        <span class="svg-icon svg-icon-3">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
+                                                <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
+                                            </svg>
+                                        </span>
+                                    </a>
+                                </td>
+                            </tr>`;
+                    });
+                    $('#all_employee_records').html(emp_record);
+
+                    dataTable = $('#employee_datatable_ajax').DataTable({
+                        order: false,
+                        search: { regex: true },
+                        aLengthMenu: [
+                            [10, 25, 50, 100, -1],
+                            [10, 25, 50, 100, "All"]
+                        ],
+                        iDisplayLength: 100
+                    
+                    });
+                
+                } else {
+                    
+                    console.error('Failed to retrieve employees:', response.message);
+                }
+            },
+            error: function(jqXHR, textStatus) {
+                var errorStatus = jqXHR.status;
+                if (errorStatus == 0) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Employee records failed please try again',
+                        timer: 4000,
+                    });
+                    setTimeout(() => {
+                        location.reload();
+                    }, 4000);
+                } else {
+                    if (errorStatus == 419) {
+                        location.reload();
+                    } else {
+                        Toast.fire({
+                            icon: 'warning',
+                            title: 'Try Again. Error Code ' + errorStatus,
+                            timer: 3000,
+                        })
+                    }
+                }
             }
-        }
-    }
-});
+        });
+    }   
 
 
 </script>

@@ -57,16 +57,6 @@ class EmployeeController extends Controller
                 }
             }
 
-            // if(!empty($request->input('employee_isactive'))){
-
-            //     $where_clause .= " and employee_isactive=".(($request->input('employee_isactive') == 2) ? 0 : $request->input('employee_isactive'));
-
-            // }else{
-
-            //     $where_clause .= " and employee_isactive=1";
-
-            // }
-
             if(!empty($request->input('business_unit')) && $request->input('business_unit') != 'All'){
 
                 $where_clause .= " and business_unit= '".$request->input('business_unit')."'";
@@ -91,33 +81,52 @@ class EmployeeController extends Controller
 
             // }
 
-            $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
-            ->whereRaw($where_clause)
-            ->orderBy('employee_code','ASC')
-            ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit','group_name'])
-            ->toArray();
+            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All' || !empty($request->is_active) || !empty($request->input('business_unit')) && $request->input('business_unit') != 'All' || !empty($request->input('employee_department')) && $request->input('employee_department') != 'All' || $request->download == "TRUE" ){
+                
+                $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
+                ->whereRaw($where_clause)
+                ->orderBy('employee_code','ASC')
+                ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit','group_name'])
+                ->toArray();
 
-            $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
+                $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
-            $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
+                $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
+    
+                $departments_status = Department::get(['department_id','department_name'])->toArray();
+    
+                $employee_active = Employees::where('employee_isactive', 1)->count();
+    
+                $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
+    
+                $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status','employee_groups');
 
-            $departments_status = Department::get(['department_id','department_name'])->toArray();
+            }else{
 
-            $employee_active = Employees::where('employee_isactive', 1)->count();
+                $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
 
-            $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
+                $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
-            $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status','employee_groups');
+                $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
 
+                $departments_status = Department::get(['department_id','department_name'])->toArray();
+
+                $employee_active = Employees::where('employee_isactive', 1)->count();
+
+                $send_data = compact('title','login_user','no_of_employees','employee_groups','employment_status','departments_status','employee_active');
+
+            }
+        
             if($request->download == "TRUE"){
                 
                 $employees  = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->where('employee_isactive','=', 1)
+                ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
                 ->orderBy('employee_id', 'asc')
-                ->get(['employee_code as Employee ID','employee_name as Employee Name','department_name as Department','designation_name as Designation', 'employee_grade as Employee Grade' ,'employee_jobtitle as Employee Job Title', 'business_unit as Business Unit'])
+                ->get(['employee_code as Employee ID','employee_name as Employee Name','department_name as Department','designation_name as Designation', 'employee_grade as Employee Grade' ,'employee_jobtitle as Employee Job Title', 'business_unit as Business Unit','group_name as Group Name'])
                 ->toArray();
 
                 $header_style = (new Style())->setFontBold();
@@ -125,8 +134,8 @@ class EmployeeController extends Controller
                 return (new FastExcel($employees))->headerStyle($header_style)->download('Employee-Records.xlsx');
             }else{
 
-                return view('employee.all-employees',$send_data);
-                // return view('employee.all-employees2',$send_data);
+                // return view('employee.all-employees',$send_data);
+                return view('employee.all-employees2',$send_data);
             }
 
         }catch(\Exception $e){

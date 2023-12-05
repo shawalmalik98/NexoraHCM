@@ -916,7 +916,12 @@ use App\Http\Controllers\api\EmployeeApiController;
     
           });
 
+          //employee api controller start
+
           Route::get('/get-employee-location', [EmployeeApiController::class, 'employees_location_api']);
+          Route::get('/get-all-employees', [EmployeeApiController::class, 'get_all_employees_api']);
+
+          //employee api controller end
 
       });
 
