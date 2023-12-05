@@ -212,9 +212,19 @@
     var location_main_url =  "{{ url('/employee-location') }}";
    
     if (window.location.href == location_main_url) {
+        $('#loc_datatable_ajax').html(`
+                <td class="text-center"></td>
+                <td class="text-center"> </td> 
+                <td class="preloader text-center">
+                    <div style="display: flex; flex-direction: column; align-items: center;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <div class="text-muted fs-6 fw-semibold mt-3">Loading...</div>
+                    </div>
+                </td>
+            `);
 
         $.ajax({
-            url: "{{ url('/api/get-employee-location') }}",
+            url: "{{ url('/get-employee-location') }}",
             type: 'GET',
             success: function(response) {
                 //  console.log(response);   
