@@ -278,7 +278,7 @@
                                     </div>
                                     {{--end::Input--}}
                                 </div>
-                                <div class="d-flex flex-column mb-8 " >
+                                {{-- <div class="d-flex flex-column mb-8 " >
                                     <label class="fs-6 fw-semibold mb-2 required">Valid Till</label>
                                         <select class="form-select " data-control="select2" name="days" data-hide-search="true" data-placeholder="Select days" required>
                                             <option value="">Select days</option> 
@@ -292,7 +292,7 @@
                                             <option value="25">25 days</option>
                                             <option value="30">30 days</option>    
                                         </select>
-                                </div>
+                                </div> --}}
                             </div>
                             
                             
@@ -403,7 +403,7 @@
                                         <input type="datetime-local" class="form-control ps-12" placeholder="Select a date" name="scheduled_date" id="scheduled_date2"  required="">
                                     </div>
                                 </div>
-                                <div class="d-flex flex-column mb-8">
+                                {{-- <div class="d-flex flex-column mb-8">
                                     <label class="fs-6 fw-semibold mb-2 required">Valid Till</label>
                                         <select class="form-select " data-control="select2" name="days" id="alertdays" data-hide-search="true" data-placeholder="Select days" required>
                                             <option value="">Select days</option> 
@@ -417,7 +417,7 @@
                                             <option value="25">25 days</option>
                                             <option value="30">30 days</option>    
                                         </select>       
-                                </div>
+                                </div> --}}
                             </div>
                             
                             

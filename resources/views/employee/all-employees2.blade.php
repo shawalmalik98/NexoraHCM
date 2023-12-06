@@ -485,9 +485,7 @@
 <script src="{{url('assets/js/employees/manage-employee.js')}}"></script>
 <script>
 
-var location_main_url =  "{{ url('/employees') }}";
-
-    var get_loc =  window.location.href;
+    var location_main_url =  "{{ url('/employees') }}";
    
     if (window.location.href == location_main_url) {
 

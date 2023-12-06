@@ -186,11 +186,14 @@ $('#addalertForm').submit(function (e) {
 
 $("#scheduled_date").change(function () {
     var scheduled_date = $(this).val();
+    var currentDate = new Date().toISOString().slice(0, 16);
+  
     if (scheduled_date == "Custom Time") {
-        $('#date_div').removeClass('d-none')
+        $('#date_div').removeClass('d-none');
+        $('#date').attr('min', currentDate);
         $('#date').prop('required', true);
     } else {
-        $('#date_div').addClass('d-none')
+        $('#date_div').addClass('d-none');
         $('#date').prop('required', false);
     }
 

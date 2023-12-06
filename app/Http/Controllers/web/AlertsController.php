@@ -60,8 +60,8 @@ class AlertsController extends Controller
                 'department' => 'required',
                 'message' => 'required',
                 'scheduled_date_option' => 'required',
-                'scheduled_date' => ($request->input('scheduled_date_option') == 'Custom Time' ) ? 'required|date_format:Y-m-d\TH:i' : '' ,
-                'days' => 'required',
+                'scheduled_date' => ($request->input('scheduled_date_option') == 'Custom Time' ) ? 'required|date_format:Y-m-d\TH:i|after_or_equal:now' : '' ,
+                // 'days' => 'required',
             ]);
 
             if($validator->fails()) {
@@ -79,34 +79,62 @@ class AlertsController extends Controller
                     $scheduled_date  = date('Y-m-d H:i:s',strtotime($request->input('scheduled_date')));
                 }
             
-                $valid_date = date('Y-m-d H:i:00', strtotime($scheduled_date.' +'.$request->input('days').'days'));
+                $valid_date = date('Y-m-d H:i:00', strtotime($scheduled_date.' +'.'1'.'days'));
 
                 if(!empty($request->input('location'))){
                     if(count($request->input('location'))==$request->input('loc_count')){  
+
                         $location = "*";
                     }else{
+
                         $location = implode(',', $request->input('location'));
                     }
+
                 }
 
                 if(count($request->input('department'))==$request->input('count')){
                     $department = "*";
-                    $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token')->pluck('employee_fcm_token')->toArray();
+                    // $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token')->pluck('employee_fcm_token')->toArray();
                 }else{
                     $department = implode(',', $request->input('department'));
-                    $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token')
-                    ->whereRaw("CHARINDEX(',' + CAST(tbl_employees.employee_department AS VARCHAR) + ',', ',' + ? + ',') > 0", [$department])
+                    // $all_employees = Employees::where('employee_isactive', 1)
+                    // ->whereNotNull('employee_fcm_token')
+                    // ->whereRaw("CHARINDEX(',' + CAST(tbl_employees.employee_department AS VARCHAR) + ',', ',' + ? + ',') > 0", [$department])
                     // ->whereRaw('FIND_IN_SET(employee_department, ?)', [$department])
-                    ->pluck('employee_fcm_token')->toArray();
+                    // ->pluck('employee_fcm_token')
+                    // ->get(['employee_id','employee_department'])
+                    // ->toArray();
+
+                    
+                }
+            
+                $all_employees = Employees::leftJoin('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+                ->leftJoin('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
+                ->where('employee_isactive', 1)
+                ->whereNotNull('employee_fcm_token');
+                
+                if (!empty($request->input('location')) && $request->input('location') != '*') {
+                    $locations = $request->input('location');
+                    $all_employees->whereIn('tbl_employees_location.emp_loc_loc_id', $locations);
                 }
                 
+                if (!empty($request->input('department')) && $request->input('department') != '*') {
+                    $departments = $request->input('department');
+                    $all_employees->whereIn('tbl_employees.employee_department', $departments);
+                }
+                
+                $all_employees = $all_employees
+                ->pluck('employee_fcm_token')
+                ->unique()
+                ->toArray();
+                  
                 $new_alert = new Alert();
                 $new_alert->title = $request->input('title');
                 $new_alert->message = $request->input('message');
                 $new_alert->department = $department;
                 $new_alert->location = $location ?? 'NULL';
                 $new_alert->scheduled_time = $scheduled_date;
-                $new_alert->days = $request->input('days');
+                $new_alert->days = '1';
                 $new_alert->valid_dates = $valid_date;
                 $new_alert->created_by = session('user_session');
                 $new_alert->created_at = date('Y-m-d H:i:s');
@@ -162,8 +190,8 @@ class AlertsController extends Controller
                 'title' => 'required',
                 'departments' => 'required',
                 'message' => 'required',
-                'scheduled_date' => 'required|date_format:Y-m-d\TH:i' ,
-                'days' => 'required',
+                'scheduled_date' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now' ,
+                // 'days' => 'required',
             ],$message);
 
             if($validator->fails()) {
@@ -195,7 +223,7 @@ class AlertsController extends Controller
                     $department = implode(',', $request->input('departments'));
                 }
 
-                $valid_date = date('Y-m-d H:i:00', strtotime($scheduled_date.' +'.$request->input('days').'days'));
+                $valid_date = date('Y-m-d H:i:00', strtotime($scheduled_date.' +'.'1'.'days'));
 
                 $update_alert = Alert::find($request->input('alert_id'));
 
@@ -206,7 +234,7 @@ class AlertsController extends Controller
                     $update_alert->department = $department;
                     $update_alert->location = $location ?? 'NULL';
                     $update_alert->scheduled_time = $scheduled_date;
-                    $update_alert->days = $request->input('days');
+                    $update_alert->days = '1';
                     $update_alert->valid_dates = $valid_date;
                     $update_alert->created_at = date('Y-m-d H:i:s');
                     
