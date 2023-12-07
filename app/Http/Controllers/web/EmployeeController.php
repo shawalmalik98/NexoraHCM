@@ -3253,18 +3253,29 @@ class EmployeeController extends Controller
 
             }
 
-            $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
-           
-            $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
-            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
-            ->where('device_status','!=','2')
-            ->whereRaw($where_clause)
-            ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name', 'group_name as Employee Group'])->toArray();
+            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'  || !empty($request->business_unit) && $request->business_unit != 'All' || !empty($request->department_id) && $request->department_id != 'All' || $request->download == "TRUE" ){
 
-            $departments = Department::get(['department_id','department_name'])->toArray();
-        
-            $send_data = compact('title','login_user','all_devices','departments','employee_groups');
+                $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
+                ->where('device_status','!=','2')
+                ->whereRaw($where_clause)
+                ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name', 'group_name as Employee Group'])->toArray();
+
+                $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
+
+                $departments = Department::get(['department_id','department_name'])->toArray();
+            
+                $send_data = compact('title','login_user','all_devices','departments','employee_groups');
+
+            }else{
+
+                $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
+
+                $departments = Department::get(['department_id','department_name'])->toArray();
+            
+                $send_data = compact('title','login_user','departments','employee_groups');
+            }
 
             if($request->download == 'TRUE'){
 

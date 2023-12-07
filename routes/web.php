@@ -920,6 +920,8 @@ use App\Http\Controllers\api\EmployeeApiController;
 
           Route::get('/get-employee-location', [EmployeeApiController::class, 'employees_location_api']);
           Route::get('/get-all-employees', [EmployeeApiController::class, 'get_all_employees_api']);
+          Route::get('/get-all-employees-devices', [EmployeeApiController::class, 'employees_devices_api']);
+          
 
           //employee api controller end
 

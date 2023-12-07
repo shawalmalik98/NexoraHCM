@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\File;  
-use App\Models\{Employees, EmployeeDocument, MobileAccess, OfficeLocation, EmployeeLocation, HrmSetting, EmploymentStatus, EmployeeGroup, Department};
+use App\Models\{Employees, EmployeeDevice, EmployeeDocument, MobileAccess, OfficeLocation, EmployeeLocation, HrmSetting, EmploymentStatus, EmployeeGroup, Department};
 use App\Traits\{LoginEmployee, LogGenerateTrait, ApiResponseTrait, NotificationTrait};
 use App\Helpers\ActivityTracker;
 
@@ -45,6 +45,34 @@ class EmployeeApiController extends Controller
         }
 
     }
+
+    protected function employees_devices_api(Request $request){
+
+        try{
+
+            $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
+            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
+            ->where('device_status','!=','2')
+            ->get(['device_id','device_name','department_name','designation_name','device_token','device_status','device_created_at','device_updated_at','employee_code','employee_name', 'group_name'])->toArray();
+
+            return $this->api_response_json(TRUE,"All Devices",$all_devices,200); 
+        
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('View All Devices API', $e, $request->header('Bearer-Token'));
+
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+
+        }
+        finally{
+
+            ActivityTracker::track_activity_from_api('View All Devices API',  $request->header('Bearer-Token'));
+           
+        }
+
+    }
+
 
     protected function employees_location_api(Request $request){
 

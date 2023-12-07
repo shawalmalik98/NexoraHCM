@@ -83,51 +83,36 @@ class AlertsController extends Controller
 
                 if(!empty($request->input('location'))){
                     if(count($request->input('location'))==$request->input('loc_count')){  
-
                         $location = "*";
                     }else{
-
                         $location = implode(',', $request->input('location'));
                     }
-
                 }
 
                 if(count($request->input('department'))==$request->input('count')){
                     $department = "*";
-                    // $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token')->pluck('employee_fcm_token')->toArray();
                 }else{
                     $department = implode(',', $request->input('department'));
-                    // $all_employees = Employees::where('employee_isactive', 1)
-                    // ->whereNotNull('employee_fcm_token')
-                    // ->whereRaw("CHARINDEX(',' + CAST(tbl_employees.employee_department AS VARCHAR) + ',', ',' + ? + ',') > 0", [$department])
-                    // ->whereRaw('FIND_IN_SET(employee_department, ?)', [$department])
-                    // ->pluck('employee_fcm_token')
-                    // ->get(['employee_id','employee_department'])
-                    // ->toArray();
-
-                    
                 }
             
-                $all_employees = Employees::leftJoin('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
-                ->leftJoin('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
-                ->where('employee_isactive', 1)
-                ->whereNotNull('employee_fcm_token');
-                
+                $all_employees = Employees::where('employee_isactive', 1)->whereNotNull('employee_fcm_token');
+
                 if (!empty($request->input('location')) && $request->input('location') != '*') {
                     $locations = $request->input('location');
-                    $all_employees->whereIn('tbl_employees_location.emp_loc_loc_id', $locations);
+                    $all_employees->Join('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+                        ->Join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
+                        ->whereIn('tbl_employees_location.emp_loc_loc_id', $locations);
                 }
-                
                 if (!empty($request->input('department')) && $request->input('department') != '*') {
                     $departments = $request->input('department');
                     $all_employees->whereIn('tbl_employees.employee_department', $departments);
                 }
-                
+
                 $all_employees = $all_employees
-                ->pluck('employee_fcm_token')
-                ->unique()
-                ->toArray();
-                  
+                    ->pluck('employee_fcm_token')
+                    ->unique()
+                    ->toArray();
+                    
                 $new_alert = new Alert();
                 $new_alert->title = $request->input('title');
                 $new_alert->message = $request->input('message');
