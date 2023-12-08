@@ -916,6 +916,7 @@ use App\Http\Controllers\api\EmployeeApiController;
     
           });
 
+          
           //employee api controller start
 
           Route::get('/get-employee-location', [EmployeeApiController::class, 'employees_location_api']);
@@ -1014,3 +1015,9 @@ Route::get('/privacy-policy', [HomeController::class , 'privacy_policy']);
 Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni_attendace_report']);
 Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
 Route::post('update-bisconni-employee-report',[AttendanceController::class, 'update_bisconni_employee_attendance']);
+
+//attendance sap api start
+
+Route::get('/get-employee-attendance-sap-api', [AttendanceController::class, 'get_employee_monthly_attendance']);
+
+//attendance sap api end
