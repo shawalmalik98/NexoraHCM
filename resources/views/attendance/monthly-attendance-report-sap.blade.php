@@ -23,9 +23,9 @@
             <div class="d-flex align-items-center gap-2 gap-lg-3">
                 <div class="d-flex align-items-center gap-2 gap-lg-3">
                     @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')))
-                        <a href="{{ url('my-attendance-report?from_date='.Request::get('from_date').'&to_date='.Request::get('to_date'))}}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
+                        <a href="{{ url('get-employee-attendance-sap-api?from_date='.Request::get('from_date').'&to_date='.Request::get('to_date'))}}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
                     @else
-                        <a href="{{ url('my-attendance-report?from_date='.Request::get('from_date').'&to_date='.Request::get('to_date')) }}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
+                        <a href="{{ url('get-employee-attendance-sap-api?from_date='.Request::get('from_date').'&to_date='.Request::get('to_date')) }}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
                     @endif
                   
                 </div>
@@ -87,7 +87,7 @@
                 <div class="col-md-2 col-6 filter-record mb-4" data-value="{{$leave_name}}"  style="cursor: pointer">
                     <div class="card"> 
                         <div class="p-3">
-                            <div class="text-gray-900 fw-bold fs-2" id="Leaves">{{$t_employee_leaves??''}}</div>
+                            <div class="text-gray-900 fw-bold fs-2" id="Leaves">{{$t_employee_leaves??'0'}}</div>
                             <div class="fw-semibold text-gray-400 ">On Leaves</div>
                         </div>
                     </div>
@@ -123,7 +123,7 @@
                         Filter</a>
                        
                             <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_63347db386dd1" >
-                                <form action="{{ url('my-attendance') }}" method="GET">
+                                <form action="{{ url('get-employee-attendance-sap-api') }}" method="GET">
                                     <div class="px-7 py-5">
                                         <div class="fs-5 text-dark fw-bold">Filter Options</div>
                                     </div>
@@ -143,7 +143,7 @@
                                        
                                         <div class="d-flex justify-content-end">
                                             @if (!empty(Request::get('from_date')) || !empty(Request::get('to_date')) || !empty(Request::get('m')) || !empty(Request::get('y')))
-                                                <a href="{{ url('my-attendance') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
+                                                <a href="{{ url('get-employee-attendance-sap-api') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
                                              @endif
                                             <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
                                             <button type="submit" class="btn btn-sm btn-primary" >Apply</button>
@@ -172,48 +172,87 @@
                                             <th class="text-center">Date &amp; Day</th>
                                             <th class="text-center">Check In Time </th>
                                             <th class="text-center">Check Out Time</th>
-                                            {{-- <th class="text-center">Shift Duration</th>
-                                            <th class="text-center">Leave/Deputation</th>
-                                            <th class="text-center">Att Source</th>
+                                            <th class="text-center">Source In</th>
+                                            <th class="text-center">Source Out</th>
+                                            {{-- <th class="text-center">Att Source</th>
                                             <th class="text-center">Hours Worked</th> --}}
                                             <th class="text-center">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @if (!empty($attendance))
-                                            @foreach ($attendance as $attendances)
-                                                <tr>
-                                                    <td class="ps-8">{{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }} </td>
-                                                    <td class="text-center">
-                                                        <p class="text-dark fw-bold mb-1 fs-6"> {{ $attendances['attendance_date'] }}</p>
-                                                        <p class="text-muted fw-semibold text-muted fs-7">{{$attendances['attendance_day'] }}</p>
-                                                    </td>
-                                                    @php
-                                                        $check_in_duration = $attendances['time_in'];
-                                                        $check_out_duration = $attendances['time_out'];
-                                                        $check_in_time = \Carbon\CarbonInterval::fromString($check_in_duration)->cascade()->format('H:i:s');
-                                                        $check_out_time = \Carbon\CarbonInterval::fromString($check_out_duration)->cascade()->format('H:i:s');
+                                        @php
+                                            $total_working_hours = 0;
+                                            $total_working_hours_actual = 0;
+                                            $in_day_time_actual = $out_day_time_actual = 0 ;
+                                            $present = 0;
+                                            $halfday = 0;
+                                            $late_coming = 0;
+                                            $early_out = 0;
+                                            $offdays = 0;
+                                            $absent_count = 0;
+                                            $holiday_count = 0;
 
-                                                    @endphp
-                                                    <td class="text-center"> 
-                                                        {{ $check_in_time }}
-                                                    </td>
+                                            $attendance_total_count = count($attendance);
+                                            $login_user[0]['employee_offdays'] = (!empty($login_user[0]['employee_offdays'])) ? explode(",",$login_user[0]['employee_offdays']):[]; 
+                                        @endphp
 
-                                                    <td  class="text-center"> 
-                                                        {{ $check_out_time }}
-                                                    </td>
+                                        @for ($month_count = $month_count; $month_count <= $month_days; $month_count++)
+                                        
 
-                                                    <td  class="text-center"> 
-                                                        {{ $attendances['attendance_status'] }}
-                                                    </td> 
+                                            @php
+                                                $current_date = $dates[$month_count];
+                                             	
+                                            @endphp
 
-                            
-                                                </tr>
-                                                
-                                            @endforeach
+                                            @php
+                                                                                            
+                                            $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
+                                            $today = strtotime(date("d-m-Y"));
+                                            @endphp
+                                        @endfor    
+                                            
+                                            @if (!empty($attendance))
+                                                @foreach ($attendance as $attendances)
+                                                    <tr>
 
-                                        @endif
-                            
+                                                        <td class="ps-8">{{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }} </td>
+                                                        <td class="text-center">
+                                                            <p class="text-dark fw-bold mb-1 fs-6"> {{ $current_date}}</p>
+                                                            <p class="text-muted fw-semibold text-muted fs-7">{{$attendances['attendance_day'] }}</p>
+                                                        </td>
+                                                        
+                                                        <td class="text-center"> 
+                                                            {{ $attendances['time_in']}}  
+                                                        
+                                                        </td>
+
+                                                        <td  class="text-center"> 
+                                                            {{ $attendances['time_out']}}  
+                                                        
+                                                        </td>
+                                                        <td class="text-center"> 
+                                                            {{ $attendances['source_in']}}  
+                                                        
+                                                        </td>
+                                                        <td class="text-center"> 
+                                                            {{ $attendances['source_out']}}  
+                                                        
+                                                        </td>
+
+                                                        <td  class="text-center"> 
+                                                            {{ $attendances['attendance_status'] }}
+                                                        </td> 
+                                                       
+                                                        
+                                                       
+
+                                
+                                                    </tr>
+                                                    
+                                                @endforeach
+
+                                            @endif
+                                        
                                     </tbody>
                                   
                                 
@@ -246,6 +285,8 @@ var late_coming_attendance = {{ $late_coming }};
 var early_out_attendance = {{ $early_out }};
 var halfday_attendance = {{ $halfday }};
 var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
+
+
 </script>
 
     

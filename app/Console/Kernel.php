@@ -29,6 +29,9 @@ class Kernel extends ConsoleKernel
                 'function_name' => $data,
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
+
+            $attendanceResponse = Http::get('http://sapapi.ismailglobal.com/get-today-sap-attendance');
+            $attendanceData = $attendanceResponse->body();
         })->everyFiveMinutes()->between('08:00', '11:00');
 
         $schedule->call(function () {
@@ -38,6 +41,9 @@ class Kernel extends ConsoleKernel
                 'function_name' => $data,
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
+
+            $attendanceResponse = Http::get('http://sapapi.ismailglobal.com/get-today-sap-attendance');
+            $attendanceData = $attendanceResponse->body();
         })->hourly()->between('11:00', '18:00');
 
         $schedule->call(function () {
@@ -47,6 +53,9 @@ class Kernel extends ConsoleKernel
                 'function_name' => $data,
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
+
+            $attendanceResponse = Http::get('http://sapapi.ismailglobal.com/get-today-sap-attendance');
+            $attendanceData = $attendanceResponse->body();
         })->everyFiveMinutes()->between('18:00', '20:00');
     }
 
