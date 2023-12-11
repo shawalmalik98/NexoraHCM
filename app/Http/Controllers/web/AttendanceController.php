@@ -278,7 +278,7 @@ class AttendanceController extends Controller
             ActivityTracker::track_activity('View My Personal Attendance');
         }
     }
-
+    
     protected function get_employee_monthly_attendance(Request $request){
 
         // try{
@@ -355,7 +355,6 @@ class AttendanceController extends Controller
                         // ->get()->toArray();
 
                        
-
                         $attendance = DB::select("
                         SELECT emp_code, 
                             emp_name, 
@@ -366,7 +365,14 @@ class AttendanceController extends Controller
                             time_in, 
                             time_out, 
                             attendance_status
-                        FROM sap_attendance_report");
+                            FROM sap_attendance_report
+                            WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
+                            [
+                                'fromDate' => $from_date,
+                                'toDate' => $to_date,
+                            ]
+                        );
+
                                         
                     $attendance = array_filter($attendance, function ($item) use ($login_user) {
                         return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
@@ -424,7 +430,6 @@ class AttendanceController extends Controller
                 if($month_days == 0){
                     $month_days = date('t', strtotime($request->input('from_date')));
                 }
-            
                 $attendance = DB::select("
                 SELECT emp_code, 
                     emp_name, 
@@ -436,18 +441,19 @@ class AttendanceController extends Controller
                     time_out, 
                     attendance_status
                     FROM sap_attendance_report
-                    WHERE CONVERT(DATE, attendance_date) BETWEEN :fromDate AND :toDate",
-                    ['fromDate' => $from_date, 'toDate' => $to_date]);
-                
+                    WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
+                    [
+                        'fromDate' => $from_date,
+                        'toDate' => $to_date,
+                    ]
+                );
                                 
             $attendance = array_filter($attendance, function ($item) use ($login_user) {
                 return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
-              
             });
 
             $attendance = json_decode(json_encode($attendance), TRUE);
-
-            //  dd( $attendance);
+        
 
                 $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
@@ -459,26 +465,7 @@ class AttendanceController extends Controller
 
             
             }
-          
-            
-
-        //     $attendance = DB::select("
-        //     SELECT emp_code, 
-        //         emp_name, 
-        //         source_in,
-        //         source_out,
-        //         attendance_day, 
-        //         attendance_date, 
-        //         time_in, 
-        //         time_out, 
-        //         attendance_status
-        //     FROM sap_attendance_report");
         
-        // $attendance = array_filter($attendance, function ($item) use ($login_user) {
-        //     return substr($item->emp_code, 1) == ($login_user[0]['employee_code']);
-        // });
-        
-        // $attendance = json_decode(json_encode($attendance), TRUE);
 
              $leave_name = implode(',',$manage_leaves);
 
