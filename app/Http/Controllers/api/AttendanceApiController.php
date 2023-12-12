@@ -102,7 +102,7 @@ class AttendanceApiController extends Controller
     }
 
     protected function personal_attendace_sap_api(Request $request){
-        // try{
+        try{
             
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
             // dd($login_user);
@@ -149,56 +149,30 @@ class AttendanceApiController extends Controller
             //     // 'att_for_year'=>$year
             // ])->get()->toArray();
 
-            $attendance = DB::select("
-            SELECT emp_code, 
-                attendance_day, 
-                attendance_date as att_comp_date, 
-                YEAR(attendance_date) AS att_for_year, 
-                FORMAT(attendance_date, 'MM') AS att_for_month, 
-                FORMAT(attendance_date, 'dd') AS att_for_date,   
-                time_in as att_check_in_time, 
-                time_out as att_check_out_time, 
-                attendance_status as att_check_overall_status,
-                NULL AS attendance_id,
-                NULL AS att_employee_id,
-                NULL AS att_check_in_status,
-                NULL AS att_check_out_status,
-                NULL AS att_shift_start_time,
-                NULL AS att_shift_end_time,
-                NULL AS att_ci_lat,
-                NULL AS att_ci_long,
-                NULL AS att_co_lat,
-                NULL AS att_co_long,
-                NULL AS att_remote_applicable,
-                NULL AS att_request_approval,
-                NULL AS att_check_in_source,
-                NULL AS att_check_out_source,
-                NULL AS att_created_at,
-                NULL AS att_updated_at,
-                NULL AS sap_ci_flag,
-                NULL AS sap_co_flag,
-                NULL AS sap_ci_timestamp,
-                NULL AS sap_co_timestamp,
-                NULL AS att_ci_marked_time,
-                NULL AS att_co_marked_time
+       
+            $attendance = DB::table('sap_attendance_report')
+                ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                ->select(
+                    'sap_attendance_report.emp_code', 
+                    'sap_attendance_report.attendance_date as att_comp_date',
+                    DB::raw("YEAR(sap_attendance_report.attendance_date) AS att_for_year"),
+                    DB::raw("FORMAT(MONTH(sap_attendance_report.attendance_date), '00') AS att_for_month"),
+                    DB::raw("FORMAT(DAY(sap_attendance_report.attendance_date), '00') AS att_for_date"),
+                    'sap_attendance_report.time_in as att_check_in_time',
+                    'sap_attendance_report.time_out as att_check_out_time',
+                    'sap_attendance_report.attendance_status as att_check_overall_status',
+                    DB::raw("CASE WHEN (sap_attendance_report.time_in) = '00:00:00' THEN '0' ELSE '1' END AS att_check_in_status"),
+                    DB::raw("CASE WHEN (sap_attendance_report.time_out) = '00:00:00' THEN '0' ELSE '1' END AS att_check_out_status")
+                )
+                ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
+                ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id'])
+                ->get();
 
-                FROM sap_attendance_report
-                WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
-                [
-                    'fromDate' => $from_date,
-                    'toDate' => $to_date,
-                ]
-            );
+            foreach ($attendance as $item) {
+                $item->emp_code = ltrim($item->emp_code, '0');
+            }
 
-                            
-        $attendance = array_filter($attendance, function ($item) use ($login_user) {
-            return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
-
-        });
-
-        $attendance = json_decode(json_encode($attendance), TRUE);
-
-           
+            $attendance = $attendance->toArray();
              
             // $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
 
@@ -218,17 +192,17 @@ class AttendanceApiController extends Controller
             return $this->api_response_json(TRUE,"My Attendance",$data,200);
 
 		
-        // }catch(\Exception $e){
+        }catch(\Exception $e){
             
-        //     $this->create_error_log_from_api('View My Attendance API', $e, $request->header('Bearer-Token'));
+            $this->create_error_log_from_api('View My Attendance API', $e, $request->header('Bearer-Token'));
 
-        //     return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
 
-        // }finally{
+        }finally{
 
-        //     ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'));
 
-        // }
+        }
     }
 
     protected function get_todays_attendance(Request $request){
