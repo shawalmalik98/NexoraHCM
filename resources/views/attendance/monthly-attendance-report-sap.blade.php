@@ -38,7 +38,7 @@
     <div class="app-content flex-column-fluid">
         
         <div class="app-container" >
-            <div class="row" id="card-container">
+            {{-- <div class="row" id="card-container">
                     
                 <div class="col-md-2 col-6 filter-record mb-4" data-value="On Time"  style="cursor: pointer" >
                     <div class="card" >
@@ -93,7 +93,7 @@
                     </div>
                 </div>
 
-            </div>
+            </div> --}}
             <div class="card mb-5 mb-xl-8">
 
                 <div class="card-header border-0 pt-5">
