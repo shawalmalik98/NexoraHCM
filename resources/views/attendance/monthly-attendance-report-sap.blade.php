@@ -20,7 +20,7 @@
                     @endif
                 </h1>   
             </div>
-            <div class="d-flex align-items-center gap-2 gap-lg-3">
+            {{-- <div class="d-flex align-items-center gap-2 gap-lg-3">
                 <div class="d-flex align-items-center gap-2 gap-lg-3">
                     @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')))
                         <a href="{{ url('get-employee-attendance-sap-api?from_date='.Request::get('from_date').'&to_date='.Request::get('to_date'))}}" target="_blank"  class="btn btn-sm fw-bold btn-primary" >View Attendance Report</a>
@@ -29,7 +29,7 @@
                     @endif
                   
                 </div>
-            </div>
+            </div> --}}
             
         </div>
        
@@ -123,7 +123,7 @@
                         Filter</a>
                        
                             <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_63347db386dd1" >
-                                <form action="{{ url('get-employee-attendance-sap-api') }}" method="GET">
+                                <form action="{{ url('/sap-login') }}" method="GET">
                                     <div class="px-7 py-5">
                                         <div class="fs-5 text-dark fw-bold">Filter Options</div>
                                     </div>
@@ -143,7 +143,7 @@
                                        
                                         <div class="d-flex justify-content-end">
                                             @if (!empty(Request::get('from_date')) || !empty(Request::get('to_date')) || !empty(Request::get('m')) || !empty(Request::get('y')))
-                                                <a href="{{ url('get-employee-attendance-sap-api') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
+                                                <a href="{{ url('/sap-login') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
                                              @endif
                                             <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
                                             <button type="submit" class="btn btn-sm btn-primary" >Apply</button>
@@ -173,8 +173,7 @@
                                            
                                             <th class="text-center">Check In Time </th>
                                             <th class="text-center">Check Out Time</th>
-                                            <th class="text-center">Source In</th>
-                                            <th class="text-center">Source Out</th>
+                                          
                                             {{-- <th class="text-center">Att Source</th>
                                             <th class="text-center">Hours Worked</th> --}}
                                             <th class="text-center">Status</th>
@@ -210,8 +209,8 @@
                                                 @endphp
 
                                                 <td class="text-center">
-                                                    <p class="text-dark fw-bold mb-1 fs-6"> {{ $current_date }}</p>
-                                                    <p class="text-muted fw-semibold text-muted fs-7">{{  $name_of_day_short }}</p>
+                                                     {{ $current_date }} - {{  $name_of_day_short }}
+                                                  
                                                 </td>
                                     
                                                
@@ -283,50 +282,7 @@
                                                     @endif
                                                     
                                                 </td>
-                                                <td class="text-center"> 
-                                                    @php
-                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
-                                                        $today = strtotime(date("d-m-Y"));
-                                                        $attendance_found = false;
-                                                    @endphp
-                                                    @if (!empty($attendance))
-                                                        @foreach ($attendance as $attendances)
-                                                            
-                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
-                                                            
-                                                                {{ $attendances['source_in'] }}   
-                                                                @php $attendance_found = true; @endphp
-                                                            @endif
-                                                        @endforeach
-                                                    @endif
-
-                                                    @if (!$attendance_found && $date_filter <= $today)
-                                                    -
-                                                   @endif
-                                                    
-                                                </td>
-                                                <td class="text-center">
-                                                    @php
-                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
-                                                        $today = strtotime(date("d-m-Y"));
-                                                        $attendance_found = false;
-                                                    @endphp
-                                                    @if (!empty($attendance))
-                                                        @foreach ($attendance as $attendances)
-                                                            
-                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
-                                                            
-                                                                {{ $attendances['source_out'] }}    
-                                                                @php $attendance_found = true; @endphp
-                                                            @endif
-                                                        @endforeach
-                                                    @endif 
-
-                                                    @if (!$attendance_found && $date_filter <= $today)
-                                                    -
-                                                   @endif
-                                                    
-                                                </td>
+                                                
                                                 <td class="text-center"> 
                                                     @php
                                                         $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));

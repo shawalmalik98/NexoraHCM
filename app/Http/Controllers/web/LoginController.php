@@ -18,7 +18,7 @@ class LoginController extends Controller
 
     const IP_ADDRESS = ['127.0.0.1','110.39.142.154','113.203.241.197','182.184.117.34','182.176.186.45'];
 
-    protected function login_process(Request $request){
+    protected function login_process_sap(Request $request){
 
         try{
 
@@ -47,24 +47,25 @@ class LoginController extends Controller
                         $filter_user = Employees::where('employee_code',$request->input('employee_id'))->get()->toArray();
                         if(!empty($filter_user)){
 
-                            if($filter_user[0]['employee_web_access'] == 1){
-                            
+                            if (strpos(url()->current(), 'sap-login') !== false) {
+
                                 if(Crypt::decryptString($filter_user[0]['employee_password']) == $request->input('employee_password')){
                                     if($filter_user[0]['employee_isactive'] == 1){
                                         
                                         $current_date  = strtotime(date('Y-m-d'));
                                         $doj  = strtotime($filter_user[0]['employee_doj']);
                                         if($current_date >=  $doj){
-                                        
+
                                             $token = Str::random(20);
                                             $token_value = date('hisymd').$token;
                 
                                             $request->session()->flush();
-                                            $request->session()->put([
-                                                'user_session'=>$filter_user[0]['employee_id'],
+                                            $session = $request->session()->put([
+                                                'user_session' => $filter_user[0]['employee_id'],
                                                 'token' => $token_value,
-                                            ]);
-                
+                                                'sap-login' => true, 
+                                            ]); 
+                                            
                                             $login_history = new LoginHistory();
                                             $login_history->login_history_employee_id = $filter_user[0]['employee_id'];
                                             $login_history->login_history_session_token = session('token');
@@ -80,6 +81,7 @@ class LoginController extends Controller
                                             return response([
                                                 'message' => 'Login successfully',
                                                 'status' => 'TRUE',
+                                                'sap-login' => true,
                                             ], 200);
                                         }else{
                                             return response([
@@ -103,13 +105,76 @@ class LoginController extends Controller
                                         'data' => ''
                                     ], 200);
                                 }
+                        
                             }else{
-                                return response([
-                                    'message' => 'Web application is not accessible for you.',
-                                    'status' => FALSE,
-                                    'data' => ''
-                                ], 200);
-                            }    
+
+                                if($filter_user[0]['employee_web_access'] == 1){
+                            
+                                    if(Crypt::decryptString($filter_user[0]['employee_password']) == $request->input('employee_password')){
+                                        if($filter_user[0]['employee_isactive'] == 1){
+                                            
+                                            $current_date  = strtotime(date('Y-m-d'));
+                                            $doj  = strtotime($filter_user[0]['employee_doj']);
+                                            if($current_date >=  $doj){
+    
+                                                $token = Str::random(20);
+                                                $token_value = date('hisymd').$token;
+                    
+                                                $request->session()->flush();
+                                                $request->session()->put([
+                                                    'user_session' => $filter_user[0]['employee_id'],
+                                                    'token' => $token_value,
+                                                    'sap-login' => false, 
+                                                ]); 
+
+                                                $login_history = new LoginHistory();
+                                                $login_history->login_history_employee_id = $filter_user[0]['employee_id'];
+                                                $login_history->login_history_session_token = session('token');
+                                                $login_history->login_history_time = date('Y-m-d H:i:s');
+                                                $login_history->login_history_ip = request()->ip();
+                                                $login_history->login_history_country = "Pakistan";
+                                                $login_history->login_history_city = "Karachi";
+                                                $login_history->login_history_latitude = $request->input('login_history_longitude') ?? "40.7044985" ;
+                                                $login_history->login_history_longitude = $request->input('login_history_latitude') ?? "-74.0423467";
+                                                $login_history->login_history_source = 1;
+                                                $login_history->save();
+                    
+                                                return response([
+                                                    'message' => 'Login successfully',
+                                                    'status' => 'TRUE',
+                                                    'sap-login' => false,
+                                                ], 200);
+                                            }else{
+                                                return response([
+                                                    'message' => "You can't login before your joining date",
+                                                    'status' => FALSE,
+                                                    'data' => ''
+                                                ], 200);
+                                            }
+                                        
+                                        }else{
+                                            return response([
+                                                'message' => 'Your account has been deactivated.',
+                                                'status' => FALSE,
+                                                'data' => ''
+                                            ], 200);
+                                        }
+                                    }else{
+                                        return response([
+                                            'message' => 'Wrong credentials entered. Please try again.',
+                                            'status' => FALSE,
+                                            'data' => ''
+                                        ], 200);
+                                    }
+                                }else{
+                                    return response([
+                                        'message' => 'Web application is not accessible for you.',
+                                        'status' => FALSE,
+                                        'data' => ''
+                                    ], 200);
+                                }    
+                            }
+                            
                         }else{
                             return response([
                                 'message' => 'Wrong credentials entered. Please try again.',
@@ -154,6 +219,143 @@ class LoginController extends Controller
             }
         }
     }
+
+    // protected function login_process(Request $request){
+
+    //     try{
+
+    //         $validator = Validator::make($request->all(), [
+    //             'employee_id' => 'required|min:0',
+    //             'employee_password' => 'required',
+    //         ]);
+
+    //         if($validator->fails()) {
+    //             foreach($validator->errors()->all() as $error){
+    //                 return response()->json([
+    //                     'message' => $error,
+    //                     'status' => 'FALSE'
+    //                 ]);
+    //             }
+    //         }else {
+
+    //             $ip_address_static = SELF::IP_ADDRESS;
+                 
+    //             $get_ip_address = $request->ip();
+
+    //             // if (in_array($get_ip_address, $ip_address_static)) {
+                    
+    //                 //if(!empty($request->input('login_history_longitude')) && !empty($request->input('login_history_latitude'))  ){
+                            
+    //                     $filter_user = Employees::where('employee_code',$request->input('employee_id'))->get()->toArray();
+    //                     if(!empty($filter_user)){
+
+    //                         if($filter_user[0]['employee_web_access'] == 1){
+                            
+    //                             if(Crypt::decryptString($filter_user[0]['employee_password']) == $request->input('employee_password')){
+    //                                 if($filter_user[0]['employee_isactive'] == 1){
+                                        
+    //                                     $current_date  = strtotime(date('Y-m-d'));
+    //                                     $doj  = strtotime($filter_user[0]['employee_doj']);
+    //                                     if($current_date >=  $doj){
+                                        
+    //                                         $token = Str::random(20);
+    //                                         $token_value = date('hisymd').$token;
+                
+    //                                         $request->session()->flush();
+    //                                         $request->session()->put([
+    //                                             'user_session'=>$filter_user[0]['employee_id'],
+    //                                             'token' => $token_value,
+    //                                         ]);
+                                            
+    //                                         $login_history = new LoginHistory();
+    //                                         $login_history->login_history_employee_id = $filter_user[0]['employee_id'];
+    //                                         $login_history->login_history_session_token = session('token');
+    //                                         $login_history->login_history_time = date('Y-m-d H:i:s');
+    //                                         $login_history->login_history_ip = request()->ip();
+    //                                         $login_history->login_history_country = "Pakistan";
+    //                                         $login_history->login_history_city = "Karachi";
+    //                                         $login_history->login_history_latitude = $request->input('login_history_longitude') ?? "40.7044985" ;
+    //                                         $login_history->login_history_longitude = $request->input('login_history_latitude') ?? "-74.0423467";
+    //                                         $login_history->login_history_source = 1;
+    //                                         $login_history->save();
+                
+    //                                         return response([
+    //                                             'message' => 'Login successfully',
+    //                                             'status' => 'TRUE',
+    //                                         ], 200);
+    //                                     }else{
+    //                                         return response([
+    //                                             'message' => "You can't login before your joining date",
+    //                                             'status' => FALSE,
+    //                                             'data' => ''
+    //                                         ], 200);
+    //                                     }
+                                    
+    //                                 }else{
+    //                                     return response([
+    //                                         'message' => 'Your account has been deactivated.',
+    //                                         'status' => FALSE,
+    //                                         'data' => ''
+    //                                     ], 200);
+    //                                 }
+    //                             }else{
+    //                                 return response([
+    //                                     'message' => 'Wrong credentials entered. Please try again.',
+    //                                     'status' => FALSE,
+    //                                     'data' => ''
+    //                                 ], 200);
+    //                             }
+    //                         }else{
+    //                             return response([
+    //                                 'message' => 'Web application is not accessible for you.',
+    //                                 'status' => FALSE,
+    //                                 'data' => ''
+    //                             ], 200);
+    //                         }    
+    //                     }else{
+    //                         return response([
+    //                             'message' => 'Wrong credentials entered. Please try again.',
+    //                             'status' => FALSE,
+    //                             'data' => ''
+    //                         ], 200);
+    //                     }
+                    
+    //                 //}
+    //                 // else{
+
+    //                 //     return response([
+    //                 //         'message' => 'First turn on your web location. Please try again.',
+    //                 //         'status' => FALSE,
+    //                 //         'data' => ''
+    //                 //     ], 200);
+
+    //                 // }
+    //             // }else{
+    //             //     return response()->json([
+    //             //         'message' => 'You can\'t login from this device.',
+    //             //         'status' => FALSE,
+    //             //         'data' => ''
+    //             //     ], 200);
+    //             // } 
+                      
+    //         }
+    //     }catch(\Exception $e){
+    //         if(!env('APP_DEBUG')){
+    //             return response()->json([
+    //                 'status' => 'FALSE',
+    //                 'msg' => "Something went wrong. Please try again.",
+                   
+    //             ]);
+    //         }else{
+    //             return response()->json([
+    //                 'status' => 'FALSE',
+    //                 'msg' => "Something went wrong. Please try again.",
+    //                 'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+    //             ]);
+               
+    //         }
+    //     }
+    // }
 
     protected function login_history(Request $request){
         try{

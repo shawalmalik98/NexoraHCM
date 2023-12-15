@@ -424,33 +424,42 @@
 
                             <div class="separator my-2"></div>
 
-                            <div class="menu-item px-5">
-                                <a href="{{ url('personal-information') }}" class="menu-link px-5">Personal Information</a>
-                            </div>
-                            <div class="menu-item px-5">
-                                <a href="{{ url('employee-personal-documents') }}" class="menu-link px-5 @if ($title == 'employee-personal-documents') active @endif">Personal Documents</a>
-                            </div>
-                            <div class="menu-item px-5">
-                                <a href="{{ url('my-comapny-letters') }}" class="menu-link px-5 @if ($title == 'my-comapny-letters') active @endif">Company Letters</a>
-                            </div>
-                            <div class="menu-item px-5">
-                                <a href="{{ url('employee-company-assets') }}" class="menu-link px-5 @if ($title == 'employee-company-assets') active @endif">My Personal Assets</a>
-                            </div>
-                            <div class="menu-item px-5">
-                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#change_password_modal" class="menu-link px-5">Change Password</a>
-                            </div>
-
-                            @if (
-                                (!empty($login_user[0]['employee_department']) && $login_user[0]['employee_department'] == 1) ||
-                                    session('proxy_user') == 'TRUE')
+                            @if(strpos(url()->current(), 'sap-login') != false)
                                 <div class="menu-item px-5">
-                                    <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#proxy_user_model" class="menu-link px-5" onclick="proxy_employee_data_trigger()">Proxy User</a>
-                                </div>
-                            @endif
+                                    <a href="{{ url('sap-login/sign-out') }}" onclick="localStorage.clear();" class="menu-link px-5">Sign Out</a>
 
-                            <div class="menu-item px-5">
-                                <a href="{{ url('/sign-out') }}" onclick="localStorage.clear();" class="menu-link px-5">Sign Out</a>
-                            </div>
+                                </div>  
+                            @else     
+                                <div class="menu-item px-5">
+                                    <a href="{{ url('personal-information') }}" class="menu-link px-5">Personal Information</a>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="{{ url('employee-personal-documents') }}" class="menu-link px-5 @if ($title == 'employee-personal-documents') active @endif">Personal Documents</a>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="{{ url('my-comapny-letters') }}" class="menu-link px-5 @if ($title == 'my-comapny-letters') active @endif">Company Letters</a>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="{{ url('employee-company-assets') }}" class="menu-link px-5 @if ($title == 'employee-company-assets') active @endif">My Personal Assets</a>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#change_password_modal" class="menu-link px-5">Change Password</a>
+                                </div>
+
+                                @if (
+                                    (!empty($login_user[0]['employee_department']) && $login_user[0]['employee_department'] == 1) ||
+                                        session('proxy_user') == 'TRUE')
+                                    <div class="menu-item px-5">
+                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#proxy_user_model" class="menu-link px-5" onclick="proxy_employee_data_trigger()">Proxy User</a>
+                                    </div>
+                                @endif
+
+                                <div class="menu-item px-5">
+                                
+                                    <a href="{{ url('/sign-out') }}" onclick="localStorage.clear();" class="menu-link px-5">Sign Out</a>
+                                    
+                                </div>
+                            @endif    
                         </div>
                         {{-- end::User account menu --}}
                         {{-- end::Menu wrapper --}}

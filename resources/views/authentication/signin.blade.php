@@ -146,7 +146,8 @@
 		</div>
 		<script src="{{url('assets/js/authentication/signin.js')}}"></script>
 		<script>
-		 var url = '{{ url('/') }}';
+		 var url = "{{ url('/') }}";
+		 var sap_url = "{{ url('/sap-login') }}";
 		</script>
 
 		{{-- Get Current Location --}}
