@@ -150,30 +150,75 @@ class AttendanceApiController extends Controller
             // ])->get()->toArray();
 
        
-            $attendance = DB::table('sap_attendance_report')
-                ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                ->select(
-                    'sap_attendance_report.emp_code', 
-                    'sap_attendance_report.attendance_date as att_comp_date',
-                    DB::raw("YEAR(sap_attendance_report.attendance_date) AS att_for_year"),
-                    DB::raw("FORMAT(MONTH(sap_attendance_report.attendance_date), '00') AS att_for_month"),
-                    DB::raw("FORMAT(DAY(sap_attendance_report.attendance_date), '00') AS att_for_date"),
-                    'sap_attendance_report.time_in as att_check_in_time',
-                    'sap_attendance_report.time_out as att_check_out_time',
-                    'sap_attendance_report.attendance_status as att_check_overall_status',
-                    DB::raw("CASE WHEN (sap_attendance_report.time_in) = '00:00:00' THEN '0' ELSE '1' END AS att_check_in_status"),
-                    DB::raw("CASE WHEN (sap_attendance_report.time_out) = '00:00:00' THEN '0' ELSE '1' END AS att_check_out_status")
-                )
-                ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
-                ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id'])
-                ->get();
+            // $attendance = DB::table('sap_attendance_report')
+            //     ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+            //     ->select(
+            //         'sap_attendance_report.emp_code', 
+            //         'sap_attendance_report.attendance_date as att_comp_date',
+            //         DB::raw("YEAR(sap_attendance_report.attendance_date) AS att_for_year"),
+            //         DB::raw("FORMAT(MONTH(sap_attendance_report.attendance_date), '00') AS att_for_month"),
+            //         DB::raw("FORMAT(DAY(sap_attendance_report.attendance_date), '00') AS att_for_date"),
+            //         'sap_attendance_report.time_in as att_check_in_time',
+            //         'sap_attendance_report.time_out as att_check_out_time',
+            //         'sap_attendance_report.attendance_status as att_check_overall_status',
+            //         DB::raw("CASE WHEN (sap_attendance_report.time_in) = '00:00:00' THEN '0' ELSE '1' END AS att_check_in_status"),
+            //         DB::raw("CASE WHEN (sap_attendance_report.time_out) = '00:00:00' THEN '0' ELSE '1' END AS att_check_out_status")
+            //     )
+            //     ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
+            //     ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id'])
+            //     ->get();
 
-            foreach ($attendance as $item) {
+            // foreach ($attendance as $item) {
+            //     $item->emp_code = ltrim($item->emp_code, '0');
+            // }
+
+            // $attendance = $attendance->toArray();
+
+            $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
+            ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+            ->join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_employees.employee_department')
+            ->join('tbl_designations', 'tbl_designations.designation_id', '=', 'tbl_employees.employee_designation')
+            ->whereBetween('att_comp_date', [$from_date, $to_date])
+            ->where('department_name', '=', 'Field Force')
+            ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
+            ->select(
+                'employee_code as emp_code',
+                'employee_name as emp_name', 
+                'att_comp_date',
+                'att_check_in_time', 
+                'att_check_out_time',
+                'att_check_overall_status',
+                'att_check_in_status',
+                'att_check_out_status',
+                'att_for_year',
+                'att_for_month',
+                'att_for_date'
+            )->get();
+        
+            $query2 = DB::table('sap_attendance_report')
+            ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+            ->select(
+                'sap_attendance_report.emp_code',
+                'sap_attendance_report.attendance_date as att_comp_date',
+                DB::raw("YEAR(sap_attendance_report.attendance_date) AS att_for_year"),
+                DB::raw("FORMAT(MONTH(sap_attendance_report.attendance_date), '00') AS att_for_month"),
+                DB::raw("FORMAT(DAY(sap_attendance_report.attendance_date), '00') AS att_for_date"),
+                'sap_attendance_report.time_in as att_check_in_time',
+                'sap_attendance_report.time_out as att_check_out_time',
+                'sap_attendance_report.attendance_status as att_check_overall_status',
+                DB::raw("CASE WHEN (sap_attendance_report.time_in) = '00:00:00' THEN '0' ELSE '1' END AS att_check_in_status"),
+                DB::raw("CASE WHEN (sap_attendance_report.time_out) = '00:00:00' THEN '0' ELSE '1' END AS att_check_out_status")
+            )
+            ->whereBetween('sap_attendance_report.attendance_date', [$from_date, $to_date])
+            ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id'])
+            ->get();
+
+             foreach ($query2 as $item) {
                 $item->emp_code = ltrim($item->emp_code, '0');
             }
+        
+            $attendance = $query1->union($query2)->toArray();
 
-            $attendance = $attendance->toArray();
-             
             // $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
 
             // $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_employee_id'=>$login_user[0]['employee_id'],'att_for_month'=>$month,'att_for_year'=>$year])->where(function($query) use($manage_leaves){

@@ -280,7 +280,7 @@ class AttendanceController extends Controller
     }
     
     protected function get_employee_monthly_attendance(Request $request){
-
+     
         try{
         
             $title = Self::TITLE_GLOBAL2;
@@ -355,30 +355,62 @@ class AttendanceController extends Controller
                         // ->get()->toArray();
 
                        
-                        $attendance = DB::select("
-                        SELECT emp_code, 
-                            emp_name, 
-                            source_in,
-                            source_out,
-                            attendance_day, 
-                            attendance_date, 
-                            time_in, 
-                            time_out, 
-                            attendance_status
-                            FROM sap_attendance_report
-                            WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
-                            [
-                                'fromDate' => $from_date,
-                                'toDate' => $to_date,
-                            ]
-                        );
+                    //     $attendance = DB::select("
+                    //     SELECT emp_code, 
+                    //         emp_name, 
+                    //         source_in,
+                    //         source_out,
+                    //         attendance_day, 
+                    //         attendance_date, 
+                    //         time_in, 
+                    //         time_out, 
+                    //         attendance_status
+                    //         FROM sap_attendance_report
+                    //         WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
+                    //         [
+                    //             'fromDate' => $from_date,
+                    //             'toDate' => $to_date,
+                    //         ]
+                    //     );
 
                                         
-                    $attendance = array_filter($attendance, function ($item) use ($login_user) {
-                        return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
-                    });
+                    // $attendance = array_filter($attendance, function ($item) use ($login_user) {
+                    //     return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
+                    // });
 
-                    $attendance = json_decode(json_encode($attendance), TRUE);
+                    // $attendance = json_decode(json_encode($attendance), TRUE);
+
+                    $query1 = Attendance::where('att_employee_id',session('user_session'))
+                    ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+                    ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                     ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->where('department_name', '=', 'Field Force')
+                    ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
+                    ->select('employee_code as emp_code',
+                        'employee_name as emp_name', 
+                        'att_comp_date as attendance_date',
+                        'att_check_in_time as time_in', 
+                        'att_check_out_time as time_out',
+                        'att_check_overall_status as attendance_status');
+                      
+    
+                    $query2 = DB::table('sap_attendance_report')
+                    ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                    ->select(
+                        'employee_code as emp_code', 
+                        'sap_attendance_report.emp_name', 
+                        'sap_attendance_report.attendance_date',
+                        'sap_attendance_report.time_in',
+                        'sap_attendance_report.time_out',
+                        'sap_attendance_report.attendance_status'
+                       
+                    )
+                    ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
+                    ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
+    
+                    $attendance = $query1->union($query2)->get()->toArray();
                     
 
                         $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
@@ -430,29 +462,61 @@ class AttendanceController extends Controller
                 if($month_days == 0){
                     $month_days = date('t', strtotime($request->input('from_date')));
                 }
-                $attendance = DB::select("
-                SELECT emp_code, 
-                    emp_name, 
-                    source_in,
-                    source_out,
-                    attendance_day, 
-                    attendance_date, 
-                    time_in, 
-                    time_out, 
-                    attendance_status
-                    FROM sap_attendance_report
-                    WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
-                    [
-                        'fromDate' => $from_date,
-                        'toDate' => $to_date,
-                    ]
-                );
+                // $attendance = DB::select("
+                // SELECT emp_code, 
+                //     emp_name, 
+                //     source_in,
+                //     source_out,
+                //     attendance_day, 
+                //     attendance_date, 
+                //     time_in, 
+                //     time_out, 
+                //     attendance_status
+                //     FROM sap_attendance_report
+                //     WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
+                //     [
+                //         'fromDate' => $from_date,
+                //         'toDate' => $to_date,
+                //     ]
+                // );
                                 
-                $attendance = array_filter($attendance, function ($item) use ($login_user) {
-                    return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
-                });
+                // $attendance = array_filter($attendance, function ($item) use ($login_user) {
+                //     return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
+                // });
 
-                $attendance = json_decode(json_encode($attendance), TRUE);
+                // $attendance = json_decode(json_encode($attendance), TRUE);
+
+                $query1 = Attendance::where('att_employee_id',session('user_session'))
+                ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->where('department_name', '=', 'Field Force')
+                ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
+                ->select('employee_code as emp_code',
+                    'employee_name as emp_name', 
+                    'att_comp_date as attendance_date',
+                    'att_check_in_time as time_in', 
+                    'att_check_out_time as time_out',
+                    'att_check_overall_status as attendance_status');
+                  
+
+                $query2 = DB::table('sap_attendance_report')
+                ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                ->select(
+                    'employee_code as emp_code', 
+                    'sap_attendance_report.emp_name', 
+                    'sap_attendance_report.attendance_date',
+                    'sap_attendance_report.time_in',
+                    'sap_attendance_report.time_out',
+                    'sap_attendance_report.attendance_status'
+                   
+                )
+                ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
+                ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
+
+                $attendance = $query1->union($query2)->get()->toArray();
 
                 $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")

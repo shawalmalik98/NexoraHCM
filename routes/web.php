@@ -5,30 +5,6 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController,AppFlowController};
 use App\Http\Controllers\api\EmployeeApiController;
 
-
-// Route::middleware(['userAuthentication2'])->group(function () {
-  
-//   Route::get('/sap-login', [AttendanceController::class, 'get_employee_monthly_attendance']);
-
-//   Route::post('sap-login/authenticate2', [LoginController::class, 'login_process_sap'])->withoutmiddleware('userAuthentication2');
-
-//     Route::get('/sap-login/sign-out', function (Request $request) {
-//       $request->session()->flush();
-//       if (strpos(url()->current(), 'sap-login') !== false) {
-//           return redirect('/sap-login');
-//       } else {
-//           return redirect('/');
-//       }
-//     });
-// });
-
-
-
-
-
-
-
-
   Route::middleware(['userAuthentication','userPermission','userStatusChecker'])->group(function (){
 
       Route::prefix('/login-history')->group(function () {
