@@ -138,7 +138,7 @@ class EmployeeApiController extends Controller
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
             $validator = Validator::make($request->post(), [
-                'current_password' => 'required|max:10',
+                // 'current_password' => 'required|max:10',
                 'new_password' => 'required|max:10',
                 'confirm_new_password' => 'required|max:10',
             ]);
@@ -150,13 +150,13 @@ class EmployeeApiController extends Controller
                 }
             }else{
                 
-                $employee_password = Employees::where('employee_id', $login_user[0]['employee_id'])->get(['employee_password'])->toArray();
+                // $employee_password = Employees::where('employee_id', $login_user[0]['employee_id'])->get(['employee_password'])->toArray();
 
-                $current_password = $request->post('current_password');
+                // $current_password = $request->post('current_password');
                 $new_password = $request->post('new_password');
                 $confirm_password = $request->post('confirm_new_password');
                 
-                if(Crypt::decryptString($employee_password[0]['employee_password']) == $current_password){
+                // if(Crypt::decryptString($employee_password[0]['employee_password']) == $current_password){
                 
                     if($new_password == $confirm_password){
                         
@@ -170,10 +170,10 @@ class EmployeeApiController extends Controller
 
                         return $this->api_response_json(FALSE,"Confirm password not match. Please try again.","",200);
                     }
-                }else{
+                // }else{
 
-                    return $this->api_response_json(FALSE,"Wrong current password entered. Please try again.","",200);
-                }
+                //     return $this->api_response_json(FALSE,"Wrong current password entered. Please try again.","",200);
+                // }
             }
         }catch(\Exception $e){
 
