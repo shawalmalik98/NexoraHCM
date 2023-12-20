@@ -490,7 +490,7 @@ class AttendanceController extends Controller
 
                 // $attendance = json_decode(json_encode($attendance), TRUE);
 
-                $query1 = Attendance::where('att_employee_id',session('user_session'))
+                $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                  ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')

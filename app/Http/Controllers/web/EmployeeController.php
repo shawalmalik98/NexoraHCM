@@ -4998,8 +4998,8 @@ class EmployeeController extends Controller
                                 $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[5]); //$getData[10];
                                 $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
                                 $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
-                                $employee_senior = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[8]));
-                                $employee_contact_no = iconv('ISO-8859-1', 'UTF-8', $getData[9]);
+                                $employee_contact_no = iconv('ISO-8859-1', 'UTF-8', $getData[8]);
+                                $employee_senior = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[9]));
                                 $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[10]); //$getData[7];
                                 $employee_personal_email =  'test@gmail.com' . $employeeCode;
                                 // $employee_gender = iconv('ISO-8859-1', 'UTF-8', $getData[6]);
