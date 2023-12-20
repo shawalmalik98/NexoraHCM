@@ -152,7 +152,8 @@ class LeaveRequestApiController extends Controller
     }
 
     protected function applyfor_personalleave(Request $request){
-       
+        
+        return $this->api_response_json(FALSE,"You can't apply leaves at this moment. Please contact HR.","",200);
         try{
 
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
