@@ -6,6 +6,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use App\Jobs\AttendanceGetToSAP;
 
 class Kernel extends ConsoleKernel
 {
@@ -30,8 +31,11 @@ class Kernel extends ConsoleKernel
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
 
-           Http::timeout(120)->get('http://sapapi.ismailglobal.com/get-today-sap-attendance');
-        })->everyFiveMinutes()->between('08:00', '11:00');
+        })->everyMinute()->between('08:00', '11:00');
+
+        $schedule->call(function () {
+            AttendanceGetToSAP::dispatch();
+        })->everyMinute()->between('08:00', '11:00');
 
         $schedule->call(function () {
             $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
@@ -41,7 +45,10 @@ class Kernel extends ConsoleKernel
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
 
-           Http::timeout(120)->get('http://sapapi.ismailglobal.com/get-today-sap-attendance');
+        })->hourly()->between('11:00', '18:00');
+
+        $schedule->call(function () {
+            AttendanceGetToSAP::dispatch();
         })->hourly()->between('11:00', '18:00');
 
         $schedule->call(function () {
@@ -52,7 +59,10 @@ class Kernel extends ConsoleKernel
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
 
-           Http::timeout(120)->get('http://sapapi.ismailglobal.com/get-today-sap-attendance');
+        })->everyFiveMinutes()->between('18:00', '20:00');
+
+        $schedule->call(function () {
+            AttendanceGetToSAP::dispatch();
         })->everyFiveMinutes()->between('18:00', '20:00');
     }
 

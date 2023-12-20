@@ -47,7 +47,7 @@ class LoginController extends Controller
                         $filter_user = Employees::where('employee_code',$request->input('employee_id'))->get()->toArray();
                         if(!empty($filter_user)){
 
-                            if (strpos(url()->current(), 'sap-login') !== false) {
+                            if (strpos(url()->current(), 'sap-login')) {
 
                                 if(Crypt::decryptString($filter_user[0]['employee_password']) == $request->input('employee_password')){
                                     if($filter_user[0]['employee_isactive'] == 1){

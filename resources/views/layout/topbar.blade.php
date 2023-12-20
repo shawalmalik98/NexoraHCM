@@ -42,29 +42,30 @@
                 {{-- begin::Notifications --}}
 
                 <div class="app-navbar-item ms-1 ms-lg-3">
+                    @if(strpos(url()->current(), 'sap-login') == false)
+                        <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px position-relative"
+                            data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end"
+                            >
+                            {{-- onclick="notification_fetch()" --}}
+                            <span class="svg-icon svg-icon-1">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path opacity="0.3"
+                                        d="M20 3H4C2.89543 3 2 3.89543 2 5V16C2 17.1046 2.89543 18 4 18H4.5C5.05228 18 5.5 18.4477 5.5 19V21.5052C5.5 22.1441 6.21212 22.5253 6.74376 22.1708L11.4885 19.0077C12.4741 18.3506 13.6321 18 14.8167 18H20C21.1046 18 22 17.1046 22 16V5C22 3.89543 21.1046 3 20 3Z"
+                                        fill="currentColor"></path>
+                                    <rect x="6" y="12" width="7" height="2" rx="1"
+                                        fill="currentColor"></rect>
+                                    <rect x="6" y="7" width="12" height="2" rx="1"
+                                        fill="currentColor"></rect>
+                                </svg>
+                            </span>
 
-                    <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px position-relative"
-                        data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end"
-                        >
-                        {{-- onclick="notification_fetch()" --}}
-                        <span class="svg-icon svg-icon-1">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path opacity="0.3"
-                                    d="M20 3H4C2.89543 3 2 3.89543 2 5V16C2 17.1046 2.89543 18 4 18H4.5C5.05228 18 5.5 18.4477 5.5 19V21.5052C5.5 22.1441 6.21212 22.5253 6.74376 22.1708L11.4885 19.0077C12.4741 18.3506 13.6321 18 14.8167 18H20C21.1046 18 22 17.1046 22 16V5C22 3.89543 21.1046 3 20 3Z"
-                                    fill="currentColor"></path>
-                                <rect x="6" y="12" width="7" height="2" rx="1"
-                                    fill="currentColor"></rect>
-                                <rect x="6" y="7" width="12" height="2" rx="1"
-                                    fill="currentColor"></rect>
-                            </svg>
-                        </span>
-
-                        @if (!empty($notifications['notification_count']) && $notifications['notification_count'] > 0)
-                            <span
-                                class="bullet bullet-dot bg-success h-9px w-9px position-absolute translate-middle top-0 start-50 animation-blink"></span>
-                        @endif
-                    </div>
+                            @if (!empty($notifications['notification_count']) && $notifications['notification_count'] > 0)
+                                <span
+                                    class="bullet bullet-dot bg-success h-9px w-9px position-absolute translate-middle top-0 start-50 animation-blink"></span>
+                            @endif
+                        </div>
+                    @endif    
                     @if (!empty($notifications['notification']))
                         <div class="menu menu-sub menu-sub-dropdown menu-column w-350px w-lg-375px" data-kt-menu="true">
                             <div class="d-flex flex-column bgi-no-repeat rounded-top"
@@ -424,7 +425,7 @@
 
                             <div class="separator my-2"></div>
 
-                            @if(strpos(url()->current(), 'sap-login') != false)
+                            @if(strpos(url()->current(), 'sap-login'))
                                 <div class="menu-item px-5">
                                     <a href="{{ url('sap-login/sign-out') }}" onclick="localStorage.clear();" class="menu-link px-5">Sign Out</a>
 

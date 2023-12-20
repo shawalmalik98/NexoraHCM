@@ -53,12 +53,12 @@
 
                     </div>
 
-                    @if(strpos(url()->current(), 'sap-login') != false)
+                    @if(strpos(url()->current(), 'sap-login'))
 
                         @if(!empty($permission) && $permission[1]['module_accessibility'] == 1 && $permission[1]['permission_status'] == 1)
 
                             <div class="menu-item search-item">
-                                <a class="menu-link nav-link @if($title == 'my-attendance') active @endif" href="{{url('my-attendance')}}">
+                                <a class="menu-link nav-link @if($title == 'my-attendance') active @endif" href="{{url('sap-login')}}">
                                     <span class="menu-icon">
                                         <span class="menu-icon">
                                             <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/My Attendance.png') }}" />
