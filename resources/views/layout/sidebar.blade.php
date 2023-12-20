@@ -9,18 +9,33 @@
     <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
 
         <div class="app-sidebar-logo px-12" id="kt_app_sidebar_logo">
-            <a href="{{url('/')}}">
-                {{-- <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" /> --}}
+            @if(strpos(url()->current(), 'sap-login'))
+                <a href="{{url('/sap-login')}}">
+                    {{-- <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" /> --}}
 
-                {{-- <img alt="Logo" src="{{$companySetting['company_favicon']}}" class="h-20px app-sidebar-logo-minimize" /> --}}
-                <span class="font-weight-bold text-white text-capitalize text-center">
-                    @if(!empty($companySetting['company_name']))
-                        {{$companySetting['company_name']}}
-                    @else
-                        Ismail Industries Limited
-                    @endif
-                </span>
-            </a>
+                    {{-- <img alt="Logo" src="{{$companySetting['company_favicon']}}" class="h-20px app-sidebar-logo-minimize" /> --}}
+                    <span class="font-weight-bold text-white text-capitalize text-center">
+                        @if(!empty($companySetting['company_name']))
+                            {{$companySetting['company_name']}}
+                        @else
+                            Ismail Industries Limited
+                        @endif
+                    </span>
+                </a>
+            @else
+                <a href="{{url('/')}}">
+                    {{-- <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" /> --}}
+
+                    {{-- <img alt="Logo" src="{{$companySetting['company_favicon']}}" class="h-20px app-sidebar-logo-minimize" /> --}}
+                    <span class="font-weight-bold text-white text-capitalize text-center">
+                        @if(!empty($companySetting['company_name']))
+                            {{$companySetting['company_name']}}
+                        @else
+                            Ismail Industries Limited
+                        @endif
+                    </span>
+                </a>
+            @endif
 
 
             <div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary body-bg h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
