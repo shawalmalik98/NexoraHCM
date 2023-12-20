@@ -61,7 +61,7 @@ class LoginController extends Controller
                 
                                             $request->session()->flush();
                                             $session = $request->session()->put([
-                                                'user_session' => $filter_user[0]['employee_id'],
+                                                'user_session_id' => $filter_user[0]['employee_id'],
                                                 'token' => $token_value,
                                                 'sap-login' => true, 
                                             ]); 

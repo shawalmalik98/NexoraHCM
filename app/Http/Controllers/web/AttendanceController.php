@@ -284,9 +284,13 @@ class AttendanceController extends Controller
         try{
         
             $title = Self::TITLE_GLOBAL2;
-      
-            $login_user = $this->get_login_user_detail();
-          
+
+            if(strpos(url()->current(), 'sap-login')){
+              $login_user = $this->get_sap_login_user_detail();
+            }else{
+              $login_user = $this->get_login_user_detail();
+            }
+    
             $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
 
             if($request->input('from_date') == '' && $request->input('to_date') == ''){

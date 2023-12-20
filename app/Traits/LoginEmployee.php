@@ -18,6 +18,17 @@ trait LoginEmployee {
 
 	}
 
+    public static function get_sap_login_user_detail(){
+
+		$get_login_user_sap = Employees::join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id')
+		->where('employee_id', session('user_session_id'))
+		->get(['employee_id','employee_code','employee_personal_email','employee_name','employee_doj','employee_designation','employee_department','employee_offdays','employee_shift_flexibilty','employee_senior_manager','employee_junior_manager','employee_is_manager','employee_isactive','employee_password','dob','employee_jobtype','profile_avatar','employee_earning_type'])
+		->toArray();
+
+		return $get_login_user_sap;
+
+	}
+
 
     public static function get_token_user_detail($token){
 

@@ -64,6 +64,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'userAuthentication' => \App\Http\Middleware\Session_checker::class,
+        'sapuserAuthentication' => \App\Http\Middleware\Sap_session_checker::class,
         'userPermission' => \App\Http\Middleware\PermissionChecker::class,
         'BearerTokenChecker' => \App\Http\Middleware\BearerTokenChecker::class,
         'BearerTokenVerifier' => \App\Http\Middleware\BearerTokenVerification::class,

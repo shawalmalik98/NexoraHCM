@@ -5,6 +5,11 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController,AppFlowController};
 use App\Http\Controllers\api\EmployeeApiController;
 
+
+
+
+ 
+
   Route::middleware(['userAuthentication','userPermission','userStatusChecker'])->group(function (){
 
       Route::prefix('/login-history')->group(function () {
@@ -733,16 +738,7 @@ use App\Http\Controllers\api\EmployeeApiController;
 
       Route::withoutMiddleware(['userPermission'])->group(function () {
 
-        Route::get('/sap-login', [AttendanceController::class, 'get_employee_monthly_attendance']);
-
-        Route::post('authenticate', [LoginController::class, 'login_process_sap'])->withoutMiddleware('userAuthentication');
-        Route::post('/sap-login/authenticate', [LoginController::class, 'login_process_sap'])->withoutMiddleware('userAuthentication');
-
-          Route::get('/sap-login/sign-out', function (Request $request) {
-            $request->session()->flush();
-              return redirect('/sap-login');
-             
-          });
+          Route::post('authenticate', [LoginController::class, 'login_process_sap'])->withoutMiddleware('userAuthentication');
 
           Route::get('/employee-location', [EmployeeController::class, 'employees_location_detail']);
 
@@ -1032,3 +1028,17 @@ Route::post('update-bisconni-employee-report',[AttendanceController::class, 'upd
 // Route::get('/get-employee-attendance-sap-api', [AttendanceController::class, 'get_employee_monthly_attendance']);
 
 //attendance sap api end
+
+
+Route::middleware(['sapuserAuthentication'])->group(function (){
+  Route::get('/sap-login', [AttendanceController::class, 'get_employee_monthly_attendance']);
+
+  Route::post('/sap-login/authenticate', [LoginController::class, 'login_process_sap'])->withoutMiddleware('sapuserAuthentication');
+
+    Route::get('/sap-login/sign-out', function (Request $request) {
+     
+      $request->session()->flush();
+      return redirect('/sap-login');
+      
+    });
+});    
