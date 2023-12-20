@@ -31,11 +31,11 @@ class Kernel extends ConsoleKernel
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
 
-        })->everyMinute()->between('08:00', '11:00');
+        })->everyFiveMinutes()->between('08:00', '11:00');
 
         $schedule->call(function () {
             AttendanceGetToSAP::dispatch();
-        })->everyMinute()->between('08:00', '11:00');
+        })->everyFiveMinutes()->between('08:00', '11:00');
 
         $schedule->call(function () {
             $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
