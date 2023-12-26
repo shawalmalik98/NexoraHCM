@@ -23,7 +23,7 @@ class LoginController extends Controller
         try{
 
             $validator = Validator::make($request->all(), [
-                'employee_id' => 'required|min:0',
+                'employee_id' => 'required|numeric',
                 'employee_password' => 'required',
             ]);
 
