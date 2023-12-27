@@ -24,6 +24,17 @@ use App\Traits\{LogGenerateTrait,LoginEmployee,AttendanceEmployee};
 use App\Helpers\ActivityTracker;
 use DatePeriod,DateTime,DateInterval;
 
+use Illuminate\Support\Facades\Http;
+
+use Illuminate\Support\Facades\Log;
+
+use Carbon\Carbon;
+
+
+use App\Models\ErrorLog;
+use Illuminate\Support\Facades\URL;
+use Exception;
+
 class CustomHelper
 {
     public static function dateformatDFY($date){
@@ -1085,6 +1096,54 @@ class CustomHelper
             return $setting;
         }
 
+    }
+
+
+    public static function refreshSapAttendance($start_date, $end_date, $employee_Code)
+    {
+        try {
+
+
+            $start_date = date("Ymd", strtotime($start_date));
+            $end_date = date("Ymd", strtotime($end_date));
+
+            if ($employee_Code[0] !== '0') {
+                $employee_Code = '0' . $employee_Code;
+            }
+
+            $endpoint = env("SAP_API") . "/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
+
+            $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
+
+            // $recordExists = DB::table('sap_attendance_report')
+            //     ->whereBetween('sap_attendance_report.attendance_date', [$start_date, $end_date])
+            //     ->where('sap_attendance_report.emp_code', '=', $employee_Code)
+            //     ->where('sap_attendance_report.updated_at', '>=', $thirtyMinutesAgo)
+            //     ->exists();
+
+            $recordExists = false; // hardcoded
+            if (!$recordExists ) {    // Send HTTP GET request
+                $response = Http::get($endpoint);
+                Log::Info($response);
+                // Check if the request was successful
+                if ($response->successful()) {
+                    // Get the response content
+                    $responseData = $response->body();
+                } else {
+                    // Handle the case where the request failed
+                    echo "Failed to fetch data from the SAP API.";
+                }
+            }
+        } catch (Exception $e) {
+            $generate_error_log = new ErrorLog();
+            $generate_error_log->error_log_module = 'refresh Sap Attendance';
+            $generate_error_log->error_log_action_url = URL::current();
+            $generate_error_log->error_log_current_url = URL::previous();
+            $generate_error_log->error_log_message = $e->getMessage();
+            $generate_error_log->error_log_generated_employee =  $this->user_logined;
+            $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
+            $generate_error_log->save();
+        }
     }
 
 
