@@ -434,16 +434,16 @@ class AttendanceController extends Controller
             }else{
 
                 if(empty($request->from_date) && empty($request->to_date)){
-                    if(date('d') >= '26'){
+                    // if(date('d') >= '26'){
                         $from_date = date('Y-m-26');
                         $to_date = date('Y-m-d');
-                    }else{
+                    // }else{
                         $today = new DateTime();
                         $today->modify('first day of previous month');
                         $today->modify('+25 days');
                         $from_date = $today->format('Y-m-d');
                         $to_date = date('Y-m-d');
-                    }
+                    // }
                 }
 
                 $month_count = 0;
