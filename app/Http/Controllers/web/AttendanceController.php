@@ -5,17 +5,26 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation,ShareAttReport, LeaveManagement, AttendanceLocker, DeletedAttendance, EmployeeGroup};
+use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation, ShareAttReport, LeaveManagement, AttendanceLocker, DeletedAttendance, EmployeeGroup};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee};
 use App\Helpers\ActivityTracker;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Helpers\CustomHelper;
-use DatePeriod,DateTime,DateInterval;
+use DatePeriod, DateTime, DateInterval;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\File;
 use Rap2hpoutre\FastExcel\FastExcel;
 use OpenSpout\Common\Entity\Style\Style;
+use Illuminate\Support\Facades\Http;
+
+use Carbon\Carbon;
+
+
+use App\Models\ErrorLog;
+use Illuminate\Support\Facades\URL;
+use Exception;
 
 
 class AttendanceController extends Controller
@@ -384,6 +393,7 @@ class AttendanceController extends Controller
 
                     // $attendance = json_decode(json_encode($attendance), TRUE);
 
+                    $this->refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
                     $query1 = Attendance::where('att_employee_id',session('user_session'))
                     ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                     ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
@@ -3359,5 +3369,53 @@ class AttendanceController extends Controller
         }
     }
 
+    
+    public function refreshSapAttendance($start_date, $end_date, $employee_Code)
+    {
+        try {
+
+
+            $start_date = date("Ymd", strtotime($start_date));
+            $end_date = date("Ymd", strtotime($end_date));
+
+            if ($employee_Code[0] !== '0') {
+                $employee_Code = '0' . $employee_Code;
+            }
+
+
+            $endpoint = "http://sapapi.ismailglobal.com:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
+
+            $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
+
+            // $recordExists = DB::table('sap_attendance_report')
+            //     ->whereBetween('sap_attendance_report.attendance_date', [$start_date, $end_date])
+            //     ->where('sap_attendance_report.emp_code', '=', $employee_Code)
+            //     ->where('sap_attendance_report.updated_at', '>=', $thirtyMinutesAgo)
+            //     ->exists();
+
+            $recordExists = false; // hardcoded
+            if (!$recordExists ) {    // Send HTTP GET request
+                $response = Http::get($endpoint);
+                Log::Info($response);
+                // Check if the request was successful
+                if ($response->successful()) {
+                    // Get the response content
+                    $responseData = $response->body();
+                } else {
+                    // Handle the case where the request failed
+                    echo "Failed to fetch data from the SAP API.";
+                }
+            }
+        } catch (Exception $e) {
+            $generate_error_log = new ErrorLog();
+            $generate_error_log->error_log_module = 'refresh Sap Attendance';
+            $generate_error_log->error_log_action_url = URL::current();
+            $generate_error_log->error_log_current_url = URL::previous();
+            $generate_error_log->error_log_message = $e->getMessage();
+            $generate_error_log->error_log_generated_employee =  $this->user_logined;
+            $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
+            $generate_error_log->save();
+        }
+    }
 
 }
