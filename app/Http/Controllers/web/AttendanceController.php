@@ -387,7 +387,7 @@ class AttendanceController extends Controller
 
                     // $attendance = json_decode(json_encode($attendance), TRUE);
 
-                    CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
+                    // CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
                     $query1 = Attendance::where('att_employee_id',session('user_session'))
                     ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                     ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
@@ -449,6 +449,8 @@ class AttendanceController extends Controller
                         $to_date = date('Y-m-d');
                     }
                 }
+
+                // CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
 
                 $month_count = 0;
                 $period = new DatePeriod(
