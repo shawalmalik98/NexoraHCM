@@ -33,9 +33,9 @@ class Kernel extends ConsoleKernel
 
         })->everyFiveMinutes()->between('08:00', '11:00');
 
-        $schedule->call(function () {
-            AttendanceGetToSAP::dispatch();
-        })->everyFiveMinutes()->between('08:00', '11:00');
+        // $schedule->call(function () {
+        //     AttendanceGetToSAP::dispatch();
+        // })->everyFiveMinutes()->between('08:00', '11:00');
 
         $schedule->call(function () {
             $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
@@ -47,9 +47,9 @@ class Kernel extends ConsoleKernel
 
         })->hourly()->between('11:00', '18:00');
 
-        $schedule->call(function () {
-            AttendanceGetToSAP::dispatch();
-        })->hourly()->between('11:00', '18:00');
+        // $schedule->call(function () {
+        //     AttendanceGetToSAP::dispatch();
+        // })->hourly()->between('11:00', '18:00');
 
         $schedule->call(function () {
             $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
@@ -61,9 +61,9 @@ class Kernel extends ConsoleKernel
 
         })->everyFiveMinutes()->between('18:00', '20:00');
 
-        $schedule->call(function () {
-            AttendanceGetToSAP::dispatch();
-        })->everyFiveMinutes()->between('18:00', '20:00');
+        // $schedule->call(function () {
+        //     AttendanceGetToSAP::dispatch();
+        // })->everyFiveMinutes()->between('18:00', '20:00');
     }
 
     /**

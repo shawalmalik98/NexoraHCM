@@ -564,7 +564,7 @@ class LoginController extends Controller
                             if($afterAtSymbol == 'ismailindustries.com' || $afterAtSymbol == 'ismailindustries.com.pk'){
                                 $data['link'] = 'reset-password-link?xteko=' . Crypt::encryptString($get_employee_detail[0]['employee_id']);
                                 Mail::send('email-template.reset-password',$data,function($message) use ($get_employee_detail) {
-                                    $message->from('goms@ismailglobal.com', 'Ismail - Global');
+                                    $message->from('iilinnovations@ismailindustries.com', 'IIL - Innovations');
                                     $message->to($get_employee_detail[0]['employee_work_email']);
                                     $message->subject('Reset Password');
                                 });
