@@ -51,7 +51,7 @@
 		</div>
 	
 		<div class="d-flex flex-column flex-root" id="kt_app_root">
-			<style>body { background-image: url('/assets/media/auth/bg10.jpg'); } [data-theme="dark"] body { background-image: url('/assets/media/auth/bg10-dark.jpg'); }</style>
+			<style>body { background-image: url('/assets/media/auth/bg10.jpg'); }</style>
 			<div class="d-flex flex-column flex-lg-row flex-column-fluid">
 				
 				<div class="d-flex flex-lg-row-fluid">
@@ -128,9 +128,10 @@
 																	
 								</div> --}}
 
-								{{-- <div class="d-grid mb-10">
-								    <span class="text-center">© {{ date('Y') }} MegaHCM. All Rights Reserved</span>
-								</div> --}}
+								<div class="d-grid mb-10">
+								    {{-- <span class="text-center">© {{ date('Y') }} MegaHCM. All Rights Reserved</span> --}}
+									<a href="{{ url('/forgot-password') }}" class="text-center">Forgot Password</a>
+								</div>
 								
 						
 							</form>

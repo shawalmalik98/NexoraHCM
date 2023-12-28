@@ -9,6 +9,8 @@ use Illuminate\Support\Str;
 use App\Models\{Employees, EmployeeInformation, LoginHistory, ActivityLog, MacAddress};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
+use App\Jobs\{ResetPassword};
+use Mail;
 
 class LoginController extends Controller
 {
@@ -526,5 +528,149 @@ class LoginController extends Controller
             }
         }
 
+    }
+
+    protected function forgot_password(){
+        return view('authentication.forget-password');
+    }
+
+    protected function reset_password(Request $request){
+        try{
+
+            $validator = Validator::make($request->all(), [
+                'employee_cnic' => 'required',
+                'employee_id' => 'required|numeric',
+            ]);
+
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE'
+                    ]);
+                }
+            }else {
+
+                $employee_id = $request->input('employee_id');
+                $cnic = $request->input('employee_cnic');
+
+                $get_employee_detail = Employees::where('employee_code', $employee_id)->where('employee_cnic', $cnic)->where('employee_isactive', '1')->get()->toArray();
+
+                if(!empty($get_employee_detail)){
+                    if($get_employee_detail[0]['employee_work_email'] != ''){
+                        $emailParts = explode('@', $get_employee_detail[0]['employee_work_email']);
+                        if (count($emailParts) === 2) {
+                            $afterAtSymbol = $emailParts[1];
+                            if($afterAtSymbol == 'ismailindustries.com' || $afterAtSymbol == 'ismailindustries.com.pk'){
+                                $data['link'] = 'reset-password-link?xteko=' . Crypt::encryptString($get_employee_detail[0]['employee_id']);
+                                Mail::send('email-template.reset-password',$data,function($message) use ($get_employee_detail) {
+                                    $message->from('goms@ismailglobal.com', 'Ismail - Global');
+                                    $message->to($get_employee_detail[0]['employee_work_email']);
+                                    $message->subject('Reset Password');
+                                });
+                                return response()->json([
+                                    'status' => 'TRUE',
+                                    'msg' => "Password reset link has been sent on your email.",
+                                ]);
+                            }else{
+                                return response()->json([
+                                    'status' => 'FALSE',
+                                    'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                                ]);
+                            }
+                        }
+                    }else{
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                        ]);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Wrong details entered. No record found.",
+                    ]);
+                }
+
+            }
+        }catch(\Exception $e){
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+               
+            }
+        }
+    }
+
+    protected function reset_password_page(){
+        return view('authentication.reset-password');
+    }
+
+    protected function reset_update_password(Request $request){
+        try{
+
+            $validator = Validator::make($request->all(), [
+                'new_password' => 'required',
+                'confirm_new_password' => 'required',
+                'encrypted_id' => 'required',
+            ]);
+
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE'
+                    ]);
+                }
+            }else {
+
+                // dd(Crypt::decryptString($request->input('encrypted_id')));
+
+                $employee_id = $request->input('employee_id');
+                $new_password = $request->input('new_password');
+                $confirm_new_password = $request->input('confirm_new_password');
+
+                $decrypted_employee_id = Crypt::decryptString($request->input('encrypted_id'));
+
+                if($new_password == $confirm_new_password){
+                    $update_employee_password = Employees::find($decrypted_employee_id);
+                    $update_employee_password->employee_password = Crypt::encryptString($confirm_new_password);
+                    $update_employee_password->save();
+                
+                    return response()->json([
+                        'msg' => "Password updated successfully. Please wait",
+                        'status' => 'TRUE'
+                    ]);
+                }else{
+                    return response()->json([
+                        'msg' => "Confirm Password doesn't match. Please try again.",
+                        'status' => 'FALSE'
+                    ]);
+                }
+
+            }
+        }catch(\Exception $e){
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+               
+            }
+        }
     }
 }
