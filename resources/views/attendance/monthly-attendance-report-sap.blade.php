@@ -30,7 +30,23 @@
                   
                 </div>
             </div> --}}
-            
+
+            <div class="d-flex align-items-center gap-2 gap-lg-3">
+                <div class="m-0">
+                    <button id="print_attendance" class="btn btn-md btn-success">Print Attendance Report</button>
+
+                    {{-- <button class="dt-button buttons-print" tabindex="0" aria-controls="example" type="button"><span>Print</span></button> --}}
+                    {{-- <a href="javascript:void(0)" class="btn btn-sm btn-success" id="print_attendance">											
+                        <span class="svg-icon svg-icon-2">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                            </svg>
+                        </span>
+                        Print Attendance Report
+                    </a>   --}}
+                </div>
+            </div>   
         </div>
        
     </div>
@@ -341,6 +357,18 @@ var early_out_attendance = {{ $early_out }};
 var halfday_attendance = {{ $halfday }};
 var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
 
+    $(document).ready(function() {
+
+        $('#print_attendance').on('click', function() {
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Print DataTable</title></head><body>');
+            printWindow.document.write($('#system_datatable').clone().wrap('<p>').parent().html());
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        });
+        
+    });
 
 </script>
 
