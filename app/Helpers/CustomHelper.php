@@ -1135,14 +1135,14 @@ class CustomHelper
                 }
             }
         } catch (Exception $e) {
-            $generate_error_log = new ErrorLog();
-            $generate_error_log->error_log_module = 'refresh Sap Attendance';
-            $generate_error_log->error_log_action_url = URL::current();
-            $generate_error_log->error_log_current_url = URL::previous();
-            $generate_error_log->error_log_message = $e->getMessage();
-            $generate_error_log->error_log_generated_employee =  $this->user_logined;
-            $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
-            $generate_error_log->save();
+            // $generate_error_log = new ErrorLog();
+            // $generate_error_log->error_log_module = 'refresh Sap Attendance';
+            // $generate_error_log->error_log_action_url = URL::current();
+            // $generate_error_log->error_log_current_url = URL::previous();
+            // $generate_error_log->error_log_message = $e->getMessage();
+            // $generate_error_log->error_log_generated_employee =  $this->user_logined;
+            // $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
+            // $generate_error_log->save();
         }
     }
 
