@@ -2,24 +2,21 @@
 <html lang="en">
 
 <head>
-    <title>Metronic - The World's #1 Selling Bootstrap Admin Template - Metronic by KeenThemes</title>
+    <title>IIL - HCM</title>
     <meta charset="utf-8" />
     <meta name="description" content="" />
-    <meta name="keywords" content="" />
+    <meta name="keywords" content="IIL - HCM" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
-    <meta property="og:title"
-        content="Metronic - The World's #1 Selling Bootstrap Admin Template - Metronic by KeenThemes" />
-    <meta property="og:url" content="https://keenthemes.com/metronic" />
-    <meta property="og:site_name" content="Metronic by Keenthemes" />
+    <meta property="og:title" content="Intelligent and Efficient HCM System" />
+    <meta property="og:url" content="{{ url('/') }}" />
+    <meta property="og:site_name" content="IIL - HCM" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
-    <link rel="shortcut icon" href="/metronic8/demo1/assets/media/logos/favicon.ico" />
+    <link rel="canonical" href="{{ url('/') }}" />
+    <link rel="shortcut icon" href="{{ url('portal_assets/images/fav-icons.png') }}" />
 
-    {{--begin::Fonts(mandatory for all pages)--}}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
-    {{--end::Fonts--}}
 
     <link href="{{ url('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
@@ -36,32 +33,20 @@
 
         {{--begin::Authentication - Password reset --}}
         <div class="d-flex flex-column flex-lg-row flex-column-fluid">
-            {{--begin::Aside--}}
             <div class="d-flex flex-lg-row-fluid">
-                {{--begin::Content--}}
                 <div class="d-flex flex-column flex-center pb-0 pb-lg-10 p-10 w-100">
-                    {{--begin::Image--}}
-                    <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
-                        src="{{ URL('/portal_assets/images/main-login.png') }}" alt="" />
-                    <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20"
-                        src="{{ URL('/portal_assets/images/main-login.png') }}" alt="" />
-                    {{--end::Image--}}
+                    <img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20" src="{{ URL('/portal_assets/images/main-login.png') }}" alt="" />
+                    <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20" src="{{ URL('/portal_assets/images/main-login.png') }}" alt="" />
 
-                    {{--begin::Title--}}
                     <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">
                         The Ultimate HR Management Solution
                     </h1>
-                    {{--end::Title--}}
 
-                    {{--begin::Text--}}
                     <div class="text-gray-600 fs-base text-center fw-semibold">At IIL, we have a reliable, secure and adaptable HR management built from the ground up. 
                         <br />We are determined to help our employees to give their best efforts every day to achieve the goals of their job.
                     </div>
-                    {{--end::Text--}}
                 </div>
-                {{--end::Content--}}
             </div>
-            {{--begin::Aside--}}
 
             {{--begin::Body--}}
             <div class="d-flex flex-column-fluid flex-lg-row-auto justify-content-center justify-content-lg-end p-12">
