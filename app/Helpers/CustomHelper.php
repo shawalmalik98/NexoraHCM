@@ -1103,7 +1103,6 @@ class CustomHelper
     {
         try {
 
-
             $start_date = date("Ymd", strtotime($start_date));
             $end_date = date("Ymd", strtotime($end_date));
 
@@ -1111,7 +1110,11 @@ class CustomHelper
                 $employee_Code = '0' . $employee_Code;
             }
 
-            $endpoint = env("SAP_API") . "/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
+            // $endpoint = env("SAP_API") . "/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
+
+            $endpoint = Http::get("http://sapapi.ismailglobal.com:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date");
+
+            // dd($endpoint);
 
             $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
 
@@ -1123,16 +1126,20 @@ class CustomHelper
 
             $recordExists = false; // hardcoded
             if (!$recordExists ) {    // Send HTTP GET request
-                $response = Http::get($endpoint);
+                
+                // $response = Http::get($endpoint);
+                $response = $endpoint;
                 Log::Info($response);
                 // Check if the request was successful
                 if ($response->successful()) {
                     // Get the response content
                     $responseData = $response->body();
-                } else {
-                    // Handle the case where the request failed
-                    echo "Failed to fetch data from the SAP API.";
-                }
+                } 
+                // else {
+
+                //     // Handle the case where the request failed
+                //     echo "Failed to fetch data from the SAP API.";
+                // }
             }
         } catch (Exception $e) {
             $generate_error_log = new ErrorLog();
@@ -1140,7 +1147,7 @@ class CustomHelper
             $generate_error_log->error_log_action_url = URL::current();
             $generate_error_log->error_log_current_url = URL::previous();
             $generate_error_log->error_log_message = $e->getMessage();
-            $generate_error_log->error_log_generated_employee =  $this->user_logined;
+            $generate_error_log->error_log_generated_employee = (session('user_session_id')) ?? 1;
             $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
             $generate_error_log->save();
         }

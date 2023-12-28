@@ -355,40 +355,9 @@ class AttendanceController extends Controller
                         if($month_days == 0){
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
-                 
-                        // $attendance = Attendance::where('att_employee_id',session('user_session'))
-                        // ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        // ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
-                        // ->get()->toArray();
-
-                       
-                    //     $attendance = DB::select("
-                    //     SELECT emp_code, 
-                    //         emp_name, 
-                    //         source_in,
-                    //         source_out,
-                    //         attendance_day, 
-                    //         attendance_date, 
-                    //         time_in, 
-                    //         time_out, 
-                    //         attendance_status
-                    //         FROM sap_attendance_report
-                    //         WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
-                    //         [
-                    //             'fromDate' => $from_date,
-                    //             'toDate' => $to_date,
-                    //         ]
-                    //     );
-
-                                        
-                    // $attendance = array_filter($attendance, function ($item) use ($login_user) {
-                    //     return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
-                    // });
-
-                    // $attendance = json_decode(json_encode($attendance), TRUE);
 
                     CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
-                    $query1 = Attendance::where('att_employee_id',session('user_session'))
+                    $query1 = Attendance::where('att_employee_id',$login_user[0]['employee_id'])
                     ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                     ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                      ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
@@ -441,7 +410,8 @@ class AttendanceController extends Controller
                     if(date('d') >= '26'){
                         $from_date = date('Y-m-26');
                         $to_date = date('Y-m-d');
-                    }else{
+                    }
+                    else{
                         $today = new DateTime();
                         $today->modify('first day of previous month');
                         $today->modify('+25 days');
@@ -470,29 +440,7 @@ class AttendanceController extends Controller
                 if($month_days == 0){
                     $month_days = date('t', strtotime($request->input('from_date')));
                 }
-                // $attendance = DB::select("
-                // SELECT emp_code, 
-                //     emp_name, 
-                //     source_in,
-                //     source_out,
-                //     attendance_day, 
-                //     attendance_date, 
-                //     time_in, 
-                //     time_out, 
-                //     attendance_status
-                //     FROM sap_attendance_report
-                //     WHERE attendance_date >= :fromDate AND attendance_date <= :toDate",
-                //     [
-                //         'fromDate' => $from_date,
-                //         'toDate' => $to_date,
-                //     ]
-                // );
-                                
-                // $attendance = array_filter($attendance, function ($item) use ($login_user) {
-                //     return ltrim($item->emp_code, '0') == ($login_user[0]['employee_code']);
-                // });
-
-                // $attendance = json_decode(json_encode($attendance), TRUE);
+            
 
                 $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
