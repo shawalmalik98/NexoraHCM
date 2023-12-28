@@ -1023,6 +1023,12 @@ Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni
 Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
 Route::post('update-bisconni-employee-report',[AttendanceController::class, 'update_bisconni_employee_attendance']);
 
+
+Route::get('/forgot-password',[LoginController::class, 'forgot_password']);
+Route::post('/reset-password',[LoginController::class, 'reset_password']);
+Route::get('/reset-password-link',[LoginController::class, 'reset_password_page']);
+Route::post('/reset-update-password',[LoginController::class, 'reset_update_password']);
+
 //attendance sap api start
 
 // Route::get('/get-employee-attendance-sap-api', [AttendanceController::class, 'get_employee_monthly_attendance']);
