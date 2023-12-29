@@ -24,7 +24,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
+            $response = Http::get('http://sapapi.ismailglobal.com:8080/sap-attendance/post-attend');
             $data = $response->body();
             DB::table('tbl_attendance_job')->insert([
                 'function_name' => $data,
@@ -33,12 +33,12 @@ class Kernel extends ConsoleKernel
 
         })->everyFiveMinutes()->between('08:00', '11:00');
 
-        $schedule->call(function () {
-            AttendanceGetToSAP::dispatch();
-        })->everyFiveMinutes()->between('08:00', '11:00');
+        // $schedule->call(function () {
+        //     AttendanceGetToSAP::dispatch();
+        // })->everyFiveMinutes()->between('08:00', '11:00');
 
         $schedule->call(function () {
-            $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
+            $response = Http::get('http://sapapi.ismailglobal.com:8080/sap-attendance/post-attend');
             $data = $response->body();
             DB::table('tbl_attendance_job')->insert([
                 'function_name' => $data,
@@ -47,12 +47,12 @@ class Kernel extends ConsoleKernel
 
         })->hourly()->between('11:00', '18:00');
 
-        $schedule->call(function () {
-            AttendanceGetToSAP::dispatch();
-        })->hourly()->between('11:00', '18:00');
+        // $schedule->call(function () {
+        //     AttendanceGetToSAP::dispatch();
+        // })->hourly()->between('11:00', '18:00');
 
         $schedule->call(function () {
-            $response = Http::get('http://sapapi.ismailglobal.com/sap-attendance/post-attend');
+            $response = Http::get('http://sapapi.ismailglobal.com:8080/sap-attendance/post-attend');
             $data = $response->body();
             DB::table('tbl_attendance_job')->insert([
                 'function_name' => $data,
@@ -61,9 +61,9 @@ class Kernel extends ConsoleKernel
 
         })->everyFiveMinutes()->between('18:00', '20:00');
 
-        $schedule->call(function () {
-            AttendanceGetToSAP::dispatch();
-        })->everyFiveMinutes()->between('18:00', '20:00');
+        // $schedule->call(function () {
+        //     AttendanceGetToSAP::dispatch();
+        // })->everyFiveMinutes()->between('18:00', '20:00');
     }
 
     /**
