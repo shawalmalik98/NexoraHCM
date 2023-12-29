@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Metronic - The World's #1 Selling Bootstrap Admin Template - Metronic by KeenThemes</title>
+    <title>IIL - HCM</title>
     <meta charset="utf-8" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
@@ -15,7 +15,7 @@
     <meta property="og:site_name" content="Metronic by Keenthemes" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
-    <link rel="shortcut icon" href="/metronic8/demo1/assets/media/logos/favicon.ico" />
+    <link rel="shortcut icon" href="{{ url('portal_assets/images/fav-icons.png') }}" />
 
     {{--begin::Fonts(mandatory for all pages)--}}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />

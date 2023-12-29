@@ -245,7 +245,11 @@
                                     <option value="Astro">Astro</option>  
                                     <option value="Act Group">Act Group</option>  
                                     <option value="Ismail Nutrition">Ismail Nutrition</option>   
-                                    <option value="Flour">Flour</option>                                 
+                                    <option value="Flour">Flour</option>    
+                                    <option value="Super Cereal">Super Cereal</option>  
+                                    <option value="PET Resin">PET Resin</option>  
+                                    <option value="Ismail Global">Ismail Global</option>  
+                                </option>                               
                                 </select>
                             </div>
                             

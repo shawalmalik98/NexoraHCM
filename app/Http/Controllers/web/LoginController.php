@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Crypt, Validator};
 use Illuminate\Support\Str;
-use App\Models\{Employees, EmployeeInformation, LoginHistory, ActivityLog, MacAddress};
+use App\Models\{Employees, EmployeeInformation, LoginHistory, ActivityLog, MacAddress, ForgetPassword};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
 use App\Jobs\{ResetPassword};
@@ -564,10 +564,16 @@ class LoginController extends Controller
                             if($afterAtSymbol == 'ismailindustries.com' || $afterAtSymbol == 'ismailindustries.com.pk'){
                                 $data['link'] = 'reset-password-link?xteko=' . Crypt::encryptString($get_employee_detail[0]['employee_id']);
                                 Mail::send('email-template.reset-password',$data,function($message) use ($get_employee_detail) {
-                                    $message->from('goms@ismailglobal.com', 'Ismail - Global');
+                                    $message->from('iilinnovations@ismailindustries.com', 'IIL Innovations');
                                     $message->to($get_employee_detail[0]['employee_work_email']);
                                     $message->subject('Reset Password');
                                 });
+
+                                $forget_password = new ForgetPassword();
+                                $forget_password->forget_employee_id = $get_employee_detail[0]['employee_id'];
+                                $forget_password->created_at = date('Y-m-d H:i:s');
+                                $forget_password->save();
+                                
                                 return response()->json([
                                     'status' => 'TRUE',
                                     'msg' => "Password reset link has been sent on your email.",
@@ -610,8 +616,29 @@ class LoginController extends Controller
         }
     }
 
-    protected function reset_password_page(){
+    protected function reset_password_page(Request $request){
+
+        $token = $request->query('xteko');
+
+        $employee_id = Crypt::decryptString($token);
+
+        $thirtyMinutesAgo = date('Y-m-d H:i:s', strtotime('-30 minutes'));
+        
+        $tokenRecord = ForgetPassword::where('forget_employee_id', $employee_id)
+        // ->where('created_at', '<=', $thirtyMinutesAgo)
+        ->orderBy('forget_password_id', 'desc')
+        ->limit(1)
+        ->get()
+        ->toArray();
+
+        if (!empty($tokenRecord) && $tokenRecord[0]['created_at'] <= $thirtyMinutesAgo) {
+
+            return "The reset password link has been expired.";
+        }
+
         return view('authentication.reset-password');
+
+    
     }
 
     protected function reset_update_password(Request $request){

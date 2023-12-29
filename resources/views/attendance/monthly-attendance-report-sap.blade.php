@@ -33,7 +33,7 @@
 
             <div class="d-flex align-items-center gap-2 gap-lg-3">
                 <div class="m-0">
-                    <button id="print_attendance" class="btn btn-md btn-success">Print Attendance Report</button>
+                    <button id="print_attendance" class="btn btn-sm btn-success">Print Attendance Report</button>
 
                     {{-- <button class="dt-button buttons-print" tabindex="0" aria-controls="example" type="button"><span>Print</span></button> --}}
                     {{-- <a href="javascript:void(0)" class="btn btn-sm btn-success" id="print_attendance">											
@@ -184,15 +184,15 @@
                                                             
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
-                                            <th class="text-center">Date &amp; Day</th>
+                                            <th >Date &amp; Day</th>
                                             <th class="ps-8">Employee Code & Name</th>
                                            
-                                            <th class="text-center">Check In Time </th>
-                                            <th class="text-center">Check Out Time</th>
+                                            <th >Check In Time </th>
+                                            <th >Check Out Time</th>
                                           
-                                            {{-- <th class="text-center">Att Source</th>
-                                            <th class="text-center">Hours Worked</th> --}}
-                                            <th class="text-center">Status</th>
+                                            {{-- <th >Att Source</th>
+                                            <th >Hours Worked</th> --}}
+                                            <th >Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -224,7 +224,7 @@
                                                     $name_of_day_short = date("D", strtotime($current_date));	
                                                 @endphp
 
-                                                <td class="text-center">
+                                                <td >
                                                      {{ $current_date }} - {{  $name_of_day_short }}
                                                   
                                                 </td>
@@ -253,7 +253,7 @@
                                                     @endif
                                               
                                                 </td>
-                                                <td class="text-center"> 
+                                                <td > 
 
                                                     @php
                                                         $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
@@ -276,7 +276,7 @@
                                                     @endif
                                                     
                                                 </td>
-                                                <td class="text-center"> 
+                                                <td > 
                                                     @php
                                                         $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
                                                         $today = strtotime(date("d-m-Y"));
@@ -299,7 +299,7 @@
                                                     
                                                 </td>
                                                 
-                                                <td class="text-center"> 
+                                                <td > 
                                                     @php
                                                         $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
                                                         $today = strtotime(date("d-m-Y"));
@@ -357,19 +357,37 @@ var early_out_attendance = {{ $early_out }};
 var halfday_attendance = {{ $halfday }};
 var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
 
+    // $(document).ready(function() {
+
+    //     $('#print_attendance').on('click', function() {
+    //         var printWindow = window.open('', '_blank');
+    //         printWindow.document.write('<html><head><title>Print Attendance Report</title></head><body>');
+    //         printWindow.document.write($('#system_datatable').clone().wrap('<p>').parent().html());
+    //         printWindow.document.write('</body></html>');
+    //         printWindow.document.close();
+    //         printWindow.print();
+    //     });
+        
+    // });
+
     $(document).ready(function() {
+        $('#system_datatable').DataTable();
 
         $('#print_attendance').on('click', function() {
+            var tableHtml = $('#system_datatable').prop('outerHTML');
             var printWindow = window.open('', '_blank');
-            printWindow.document.write('<html><head><title>Print DataTable</title></head><body>');
-            printWindow.document.write($('#system_datatable').clone().wrap('<p>').parent().html());
+            printWindow.document.write('<html><head><title>Print Attendance Report</title>');
+            printWindow.document.write('<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">');
+            printWindow.document.write('<style>body { font-family: Arial, sans-serif; } table th, table td { text-align: center; }</style>'); // Modified style
+            printWindow.document.write('</head><body>');
+            printWindow.document.write(tableHtml);
             printWindow.document.write('</body></html>');
             printWindow.document.close();
             printWindow.print();
         });
-        
     });
 
+   
 </script>
 
     
