@@ -420,7 +420,7 @@ class AttendanceController extends Controller
                     }
                 }
 
-                // CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
+                CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
 
                 $month_count = 0;
                 $period = new DatePeriod(
