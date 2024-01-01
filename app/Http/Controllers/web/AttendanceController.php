@@ -550,13 +550,15 @@ class AttendanceController extends Controller
                     if($daysDifference < 40){
                         $from_date =  $request->input('from_date');
                         $to_date =  $request->input('to_date');
-                        
+
                         $employee_id = $request->input('employee_id');
                         
                         $where_clause = '1=1';
 
                         if (!empty($employee_id)) {
                             $where_clause .= " AND tbl_employees.employee_id = '" . $employee_id . "' ";
+                        }else{
+                            $where_clause .= " AND tbl_employees.employee_id = '" .  $login_user[0]['employee_id'] . "' ";
                         }
 
                         $month_count = 0;
@@ -597,8 +599,7 @@ class AttendanceController extends Controller
                             ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
                             ->where('department_name', '=', 'Field Force')
                             ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
-                            ->whereRaw($where_clause)
-                            ->where('att_employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id']);
+                            ->whereRaw($where_clause);
                             
                             $query2 = DB::table('sap_attendance_report')
                             ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
@@ -613,8 +614,7 @@ class AttendanceController extends Controller
                             
                             )
                             ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
-                            ->whereRaw($where_clause)
-                            ->where('tbl_employees.employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id']);
+                            ->whereRaw($where_clause);
 
                             $attendance = $query1->union($query2)->get()->toArray();
         
