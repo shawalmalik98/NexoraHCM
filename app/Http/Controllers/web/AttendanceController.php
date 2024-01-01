@@ -505,7 +505,7 @@ class AttendanceController extends Controller
 
     protected function get_sap_employee_monthly_attendance(Request $request){
      
-        // try{
+        try{
         
             $title = Self::TITLE_GLOBAL5;
             
@@ -707,7 +707,6 @@ class AttendanceController extends Controller
 
                 $attendance = $query1->union($query2)->get()->toArray();
                 
-
                 $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
@@ -716,7 +715,6 @@ class AttendanceController extends Controller
                     ->orWhere('att_check_overall_status','RPL');
                 })->count();
 
-            
             }
 
             $all_employees = Employees::where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
@@ -726,13 +724,13 @@ class AttendanceController extends Controller
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
 
             return view('attendance.attendance-report-sap',$send_data); 
-        // }catch(\Exception $e){
-        //     $this->create_error_log('View all Personal Attendance Sap api', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
-        // }finally{
-        //     ActivityTracker::track_activity('View all Personal Attendance Sap api');
-        // }
+        }catch(\Exception $e){
+            $this->create_error_log('View all Personal Attendance Sap api', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
+            ActivityTracker::track_activity('View all Personal Attendance Sap api');
+        }
     }
     
     protected function bisconni_employee_report(Request $request){
