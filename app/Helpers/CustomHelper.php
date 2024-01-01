@@ -1112,11 +1112,11 @@ class CustomHelper
 
             // $endpoint = env("SAP_API") . "/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
 
-            $endpoint = Http::get("http://sapapi.ismailglobal.com:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date");
+            $endpoint = Http::get("http://172.19.0.101:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date");
 
             // dd($endpoint);
 
-            $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
+            // $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
 
             // $recordExists = DB::table('sap_attendance_report')
             //     ->whereBetween('sap_attendance_report.attendance_date', [$start_date, $end_date])
