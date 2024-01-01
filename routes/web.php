@@ -774,6 +774,8 @@ use App\Http\Controllers\api\EmployeeApiController;
           Route::get('/my-attendance', [AttendanceController::class, 'personal_attendace']);
           Route::get('/share-attendance-report/{report_id}', [AttendanceController::class, 'access_attendance_sheet_report']);
 
+          Route::get('/sap-attendance',[AttendanceController::class,'get_sap_employee_monthly_attendance']);
+
           Route::get('/my-attendance-request', [AttendanceRequestController::class, 'my_requests']);
           Route::post('/submit_attendance_request', [AttendanceRequestController::class, 'requestfor_attendance']);
 

@@ -347,6 +347,22 @@
                                         
                                     @endif
 
+                                    {{-- @if(!empty($permission) && $permission[1]['module_accessibility'] == 1 && $permission[1]['permission_status'] == 1) --}}
+                                    @if($login_user[0]['employee_department'] == 31 || $login_user[0]['employee_department'] == 58)
+                                        <div class="menu-item search-item">
+                                            <a class="menu-link nav-link @if($title == 'sap-attendance') active @endif" href="{{url('sap-attendance')}}">
+                                                <span class="menu-icon">
+                                                    <span class="menu-icon">
+                                                        <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/My Attendance.png') }}" />
+                                                    </span>
+                                                </span>
+                                                <span class="menu-title">Sap Attendance</span>
+                                            </a>
+                                        </div>
+                                    @endif    
+                                        
+                                    {{-- @endif --}}
+
                                     @if(!empty($permission) && $permission[20]['module_accessibility'] == 1 && $permission[20]['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'attendance-request') active @endif" href="{{url('attendance-requests')}}" >
