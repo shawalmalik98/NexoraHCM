@@ -1098,6 +1098,24 @@ class CustomHelper
 
     }
 
+    public static function hcm_sap_attendance(){
+      
+        try{
+
+            $login_user = session('user_session');
+
+            $sap_permission = Permission::where('employee_id', $login_user)->where('permission_status', '=', 1)->where('module_url', '=', '/sap-attendance')->get()->toArray();
+
+            if(!empty($sap_permission)){
+                return $sap_permission;
+            }
+
+        }catch(\Exception $e){
+            LogGenerateTrait::create_error_log('Get sap permission ', $e);
+        }
+        
+    }
+
 
     public static function refreshSapAttendance($start_date, $end_date, $employee_Code)
     {

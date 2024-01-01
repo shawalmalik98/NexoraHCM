@@ -4,6 +4,7 @@
         $permission = CustomHelper::access_permission();
         $meetings  = CustomHelper::get_my_todays_meeting_status();
         $companySetting = CustomHelper::hcm_default_settings();
+        $sap_permission = CustomHelper::hcm_sap_attendance();
     @endphp
 
     <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
@@ -347,8 +348,8 @@
                                         
                                     @endif
 
-                                    {{-- @if(!empty($permission) && $permission[1]['module_accessibility'] == 1 && $permission[1]['permission_status'] == 1) --}}
-                                    @if($login_user[0]['employee_department'] == 31 || $login_user[0]['employee_department'] == 58)
+                                    @if(!empty($sap_permission))
+                                        
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'sap-attendance') active @endif" href="{{url('sap-attendance')}}">
                                                 <span class="menu-icon">
@@ -358,10 +359,9 @@
                                                 </span>
                                                 <span class="menu-title">Sap Attendance</span>
                                             </a>
-                                        </div>
-                                    @endif    
+                                        </div>    
                                         
-                                    {{-- @endif --}}
+                                    @endif
 
                                     @if(!empty($permission) && $permission[20]['module_accessibility'] == 1 && $permission[20]['permission_status'] == 1)
                                         <div class="menu-item search-item">
