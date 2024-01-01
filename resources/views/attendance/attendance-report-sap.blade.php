@@ -12,11 +12,10 @@
                 
                 <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
                  
-                    @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')))
-                        My Attendance ({{date('F Y',strtotime($year . '-' . $month . '-01')) }})
+                    @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')) && empty(Request::get('employee_id')))
+                        {{ $employee_data[0]['employee_name'] }} ({{date('F Y',strtotime($year . '-' . $month . '-01')) }})
                     @else
-                        
-                        My Attendance ({{date('d-M', strtotime($from_date)) .' to ' .date('d-M-Y', strtotime($to_date))}})
+                        {{ $employee_data[0]['employee_name'] }} ({{date('d-M', strtotime($from_date)) .' to ' .date('d-M-Y', strtotime($to_date))}})
                     @endif
                 </h1>   
             </div>

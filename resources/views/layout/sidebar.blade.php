@@ -357,7 +357,7 @@
                                                         <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/My Attendance.png') }}" />
                                                     </span>
                                                 </span>
-                                                <span class="menu-title">Sap Attendance</span>
+                                                <span class="menu-title">Employee wise Attendance</span>
                                             </a>
                                         </div>    
                                         

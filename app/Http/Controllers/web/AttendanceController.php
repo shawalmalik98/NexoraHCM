@@ -505,7 +505,7 @@ class AttendanceController extends Controller
 
     protected function get_sap_employee_monthly_attendance(Request $request){
      
-        try{
+        // try{
         
             $title = Self::TITLE_GLOBAL5;
             
@@ -582,41 +582,43 @@ class AttendanceController extends Controller
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
 
+                        $employee_data = Employees::where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_name'])->toArray();
+
                         CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
 
-                            $query1 = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-                            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                            ->select(
-                            'tbl_attendance.att_employee_id',
-                            'tbl_employees.employee_code as emp_code',
-                            'tbl_employees.employee_name as emp_name', 
-                            'tbl_attendance.att_comp_date as attendance_date',
-                            'tbl_attendance.att_check_in_time as time_in', 
-                            'tbl_attendance.att_check_out_time as time_out',
-                            'tbl_attendance.att_check_overall_status as attendance_status')
-                            ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                            ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
-                            ->where('department_name', '=', 'Field Force')
-                            ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
-                            ->whereRaw($where_clause);
-                            
-                            $query2 = DB::table('sap_attendance_report')
-                            ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                            ->select(
-                                'tbl_employees.employee_id',
-                                'sap_attendance_report.emp_code', 
-                                'sap_attendance_report.emp_name', 
-                                'sap_attendance_report.attendance_date',
-                                'sap_attendance_report.time_in',
-                                'sap_attendance_report.time_out',
-                                'sap_attendance_report.attendance_status'
-                            
-                            )
-                            ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
-                            ->whereRaw($where_clause);
+                        $query1 = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+                        ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                        ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                        ->select(
+                        'tbl_attendance.att_employee_id',
+                        'tbl_employees.employee_code as emp_code',
+                        'tbl_employees.employee_name as emp_name', 
+                        'tbl_attendance.att_comp_date as attendance_date',
+                        'tbl_attendance.att_check_in_time as time_in', 
+                        'tbl_attendance.att_check_out_time as time_out',
+                        'tbl_attendance.att_check_overall_status as attendance_status')
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->where('department_name', '=', 'Field Force')
+                        ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
+                        ->whereRaw($where_clause);
+                        
+                        $query2 = DB::table('sap_attendance_report')
+                        ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                        ->select(
+                            'tbl_employees.employee_id',
+                            'sap_attendance_report.emp_code', 
+                            'sap_attendance_report.emp_name', 
+                            'sap_attendance_report.attendance_date',
+                            'sap_attendance_report.time_in',
+                            'sap_attendance_report.time_out',
+                            'sap_attendance_report.attendance_status'
+                        
+                        )
+                        ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
+                        ->whereRaw($where_clause);
 
-                            $attendance = $query1->union($query2)->get()->toArray();
+                        $attendance = $query1->union($query2)->get()->toArray();
         
                         $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
                         ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
@@ -670,7 +672,8 @@ class AttendanceController extends Controller
                 if($month_days == 0){
                     $month_days = date('t', strtotime($request->input('from_date')));
                 }
-            
+                
+                $employee_data = Employees::where('employee_id',  $login_user[0]['employee_id'])->get(['employee_name'])->toArray();
 
                 $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
@@ -715,21 +718,21 @@ class AttendanceController extends Controller
 
             
             }
-        
+
             $all_employees = Employees::where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
 
             $leave_name = implode(',',$manage_leaves);
 
-            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees');
+            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
 
             return view('attendance.attendance-report-sap',$send_data); 
-        }catch(\Exception $e){
-            $this->create_error_log('View all Personal Attendance Sap api', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-        }finally{
-            ActivityTracker::track_activity('View all Personal Attendance Sap api');
-        }
+        // }catch(\Exception $e){
+        //     $this->create_error_log('View all Personal Attendance Sap api', $e);
+        //     $send_data = compact('title');
+        //     return view('errors.500');
+        // }finally{
+        //     ActivityTracker::track_activity('View all Personal Attendance Sap api');
+        // }
     }
     
     protected function bisconni_employee_report(Request $request){
