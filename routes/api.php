@@ -56,6 +56,8 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         // login and basic
         // Route::middleware('throttle:200,1')->group(function () {
             Route::post('login-process',[LoginController::class, 'login_process'])->withoutMiddleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerification']);
+
+            Route::post('reset-password', [LoginController::class, 'reset_password_api'])->withoutMiddleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerification']);
         // });
   
         
