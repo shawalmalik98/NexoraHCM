@@ -29,6 +29,7 @@ class AttendanceController extends Controller
     const TITLE_GLOBAL2 = "my-attendance";
     const TITLE_GLOBAL3 = "daily-attendance";
     const TITLE_GLOBAL4 = "monthly-attendance";
+    const TITLE_GLOBAL5 = "sap-attendance";
     const SERVER_ERROR = 'Unknown error occured on server. Please try again after some time.';
     
     protected function all_attendance(Request $request){
@@ -294,8 +295,6 @@ class AttendanceController extends Controller
               $login_user = $this->get_login_user_detail();
             }
     
-            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-
             if($request->input('from_date') == '' && $request->input('to_date') == ''){
                 $month_count = 1;
             }
@@ -389,14 +388,6 @@ class AttendanceController extends Controller
     
                     $attendance = $query1->union($query2)->get()->toArray();
                     
-
-                        $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
-                        ->where(function($query) use($manage_leaves){
-                            $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                            ->orWhere('att_check_overall_status','RPL');
-                        })->count();
                    }else{
 
                         return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
@@ -406,7 +397,7 @@ class AttendanceController extends Controller
                 }
             }else{
 
-                if(empty($request->from_date) && empty($request->to_date)){
+                if(empty($request->from_date) || empty($request->to_date)){
                     if(date('d') >= '26'){
                         $from_date = date('Y-m-26');
                         $to_date = date('Y-m-d');
@@ -476,21 +467,9 @@ class AttendanceController extends Controller
 
                 $attendance = $query1->union($query2)->get()->toArray();
 
-                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
-                ->where(function($query) use($manage_leaves){
-                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                    ->orWhere('att_check_overall_status','RPL');
-                })->count();
-
-            
             }
-        
 
-             $leave_name = implode(',',$manage_leaves);
-
-             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date');
+            $send_data = compact('title','login_user','attendance','month_days','dates','month_count','from_date','to_date');
 
             return view('attendance.monthly-attendance-report-sap',$send_data); 
         }catch(\Exception $e){
@@ -499,6 +478,236 @@ class AttendanceController extends Controller
             return view('errors.500');
         }finally{
             ActivityTracker::track_activity('View My Personal Attendance Sap api');
+        }
+    }
+
+    protected function get_sap_employee_monthly_attendance(Request $request){
+     
+        try{
+        
+            $title = Self::TITLE_GLOBAL5;
+            
+            $login_user = $this->get_login_user_detail();
+            
+            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+
+            if($request->input('from_date') == '' && $request->input('to_date') == ''){
+                $month_count = 1;
+            }
+
+            if($request->input('from_date') && $request->input('to_date')){
+                $validator = Validator::make($request->all(), [
+                    'from_date' => 'required|date_format:Y-m-d|before:to_date',
+                    'to_date' => 'required|date_format:Y-m-d|after:from_date',
+                ]);
+
+                $validator->after(function ($validator) use ($request) {
+                    if ($this->if_to_date_greater_than_today($request->input('to_date'))) {
+                        $validator->errors()->add('to_date', 'The to date must not be greater than today\'s date.');
+                    }
+                });
+        
+                if($validator->fails()) {
+                    foreach($validator->errors()->all() as $error){
+                        
+                        return Redirect::back()->with('error', $error);
+                    }
+                }else {
+
+                    if($request->input('from_date') < $login_user[0]['employee_doj']){
+
+                        return Redirect::back()->with('error', 'You can\'t apply filter before your joining date');
+                    }
+                    $start_date = new DateTime($request->input('from_date'));
+                    $end_date = new DateTime($request->input('to_date'));
+
+                    $interval =  $start_date->diff($end_date);
+                      
+                    $daysDifference = $interval->days;
+                   
+                    if($daysDifference < 40){
+                        $from_date =  $request->input('from_date');
+                        $to_date =  $request->input('to_date');
+
+                        $employee_id = $request->input('employee_id');
+                        
+                        $where_clause = '1=1';
+
+                        if (!empty($employee_id)) {
+                            $where_clause .= " AND tbl_employees.employee_id = '" . $employee_id . "' ";
+                        }else{
+                            $where_clause .= " AND tbl_employees.employee_id = '" .  $login_user[0]['employee_id'] . "' ";
+                        }
+
+                        $month_count = 0;
+                        $period = new DatePeriod(
+                            new DateTime($request->input('from_date')),
+                            new DateInterval('P1D'),
+                            new DateTime($request->input('to_date'))
+                        );
+
+                        $month_days = 0;
+                        foreach ($period as $key => $value) {
+                            $dates[] = $value->format('d-m-Y');
+                            $month_days++;
+                        }
+
+                        if (!in_array($to_date, $dates)){
+                                
+                            $dates[] = date('d-m-Y', strtotime($to_date));
+                        }
+                        if($month_days == 0){
+                            $month_days = date('t', strtotime($request->input('from_date')));
+                        }
+
+                        $employee_data = Employees::where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_name','employee_code'])->toArray();
+
+                        CustomHelper::refreshSapAttendance($from_date, $to_date, $employee_data[0]['employee_code']);
+
+                        $query1 = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+                        ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                        ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                        ->select(
+                        'tbl_attendance.att_employee_id',
+                        'tbl_employees.employee_code as emp_code',
+                        'tbl_employees.employee_name as emp_name', 
+                        'tbl_attendance.att_comp_date as attendance_date',
+                        'tbl_attendance.att_check_in_time as time_in', 
+                        'tbl_attendance.att_check_out_time as time_out',
+                        'tbl_attendance.att_check_overall_status as attendance_status')
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->where('department_name', '=', 'Field Force')
+                        ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
+                        ->whereRaw($where_clause);
+                        
+                        $query2 = DB::table('sap_attendance_report')
+                        ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                        ->select(
+                            'tbl_employees.employee_id',
+                            'sap_attendance_report.emp_code', 
+                            'sap_attendance_report.emp_name', 
+                            'sap_attendance_report.attendance_date',
+                            'sap_attendance_report.time_in',
+                            'sap_attendance_report.time_out',
+                            'sap_attendance_report.attendance_status'
+                        
+                        )
+                        ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
+                        ->whereRaw($where_clause);
+
+                        $attendance = $query1->union($query2)->get()->toArray();
+        
+                        $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->where(function($query) use($manage_leaves){
+                            $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                            ->orWhere('att_check_overall_status','RPL');
+                        })->count();
+                   }else{
+
+                        return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
+                    
+                   }  
+
+                }
+            }else{
+
+                if(empty($request->from_date) && empty($request->to_date)){
+                    if(date('d') >= '26'){
+                        $from_date = date('Y-m-26');
+                        $to_date = date('Y-m-d');
+                    }
+                    else{
+                        $today = new DateTime();
+                        $today->modify('first day of previous month');
+                        $today->modify('+25 days');
+                        $from_date = $today->format('Y-m-d');
+                        $to_date = date('Y-m-d');
+                    }
+                }
+                
+                CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
+
+                $month_count = 0;
+                $period = new DatePeriod(
+                    new DateTime($from_date),
+                    new DateInterval('P1D'),
+                    new DateTime($to_date)
+                );
+
+                $month_days = 0;
+                foreach ($period as $key => $value) {
+                    $dates[] = $value->format('d-m-Y');
+                    $month_days++;
+                }
+
+                if (!in_array($to_date, $dates)){
+                        
+                    $dates[] = date('d-m-Y', strtotime($to_date));
+                }
+                if($month_days == 0){
+                    $month_days = date('t', strtotime($request->input('from_date')));
+                }
+                
+                $employee_data = Employees::where('employee_id',  $login_user[0]['employee_id'])->get(['employee_name'])->toArray();
+
+                $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
+                ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->where('department_name', '=', 'Field Force')
+                ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
+                ->select('employee_code as emp_code',
+                    'employee_name as emp_name', 
+                    'att_comp_date as attendance_date',
+                    'att_check_in_time as time_in', 
+                    'att_check_out_time as time_out',
+                    'att_check_overall_status as attendance_status');
+                  
+
+                $query2 = DB::table('sap_attendance_report')
+                ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                ->select(
+                    'employee_code as emp_code', 
+                    'sap_attendance_report.emp_name', 
+                    'sap_attendance_report.attendance_date',
+                    'sap_attendance_report.time_in',
+                    'sap_attendance_report.time_out',
+                    'sap_attendance_report.attendance_status'
+                   
+                )
+                ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
+                ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
+
+                $attendance = $query1->union($query2)->get()->toArray();
+                
+                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->where(function($query) use($manage_leaves){
+                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                    ->orWhere('att_check_overall_status','RPL');
+                })->count();
+
+            }
+
+            $all_employees = Employees::where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
+
+            $leave_name = implode(',',$manage_leaves);
+
+            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
+
+            return view('attendance.attendance-report-sap',$send_data); 
+        }catch(\Exception $e){
+            $this->create_error_log('View all Personal Attendance Sap api', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
+            ActivityTracker::track_activity('View all Personal Attendance Sap api');
         }
     }
     

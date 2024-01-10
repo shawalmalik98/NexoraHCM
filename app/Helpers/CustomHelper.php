@@ -1098,6 +1098,24 @@ class CustomHelper
 
     }
 
+    public static function hcm_sap_attendance(){
+      
+        try{
+
+            $login_user = session('user_session');
+
+            $sap_permission = Permission::where('employee_id', $login_user)->where('permission_status', '=', 1)->where('module_url', '=', '/sap-attendance')->get()->toArray();
+
+            if(!empty($sap_permission)){
+                return $sap_permission;
+            }
+
+        }catch(\Exception $e){
+            LogGenerateTrait::create_error_log('Get sap permission ', $e);
+        }
+        
+    }
+
 
     public static function refreshSapAttendance($start_date, $end_date, $employee_Code)
     {
@@ -1112,11 +1130,11 @@ class CustomHelper
 
             // $endpoint = env("SAP_API") . "/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
 
-            $endpoint = Http::get("http://sapapi.ismailglobal.com:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date");
+            $endpoint = Http::get("http://172.19.0.101:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date");
 
             // dd($endpoint);
 
-            $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
+            // $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
 
             // $recordExists = DB::table('sap_attendance_report')
             //     ->whereBetween('sap_attendance_report.attendance_date', [$start_date, $end_date])

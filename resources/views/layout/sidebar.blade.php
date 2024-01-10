@@ -4,6 +4,7 @@
         $permission = CustomHelper::access_permission();
         $meetings  = CustomHelper::get_my_todays_meeting_status();
         $companySetting = CustomHelper::hcm_default_settings();
+        $sap_permission = CustomHelper::hcm_sap_attendance();
     @endphp
 
     <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
@@ -344,6 +345,21 @@
                                                 <span class="menu-title">My Attendance</span>
                                             </a>
                                         </div>
+                                        
+                                    @endif
+
+                                    @if(!empty($sap_permission))
+                                        
+                                        <div class="menu-item search-item">
+                                            <a class="menu-link nav-link @if($title == 'sap-attendance') active @endif" href="{{url('sap-attendance')}}">
+                                                <span class="menu-icon">
+                                                    <span class="menu-icon">
+                                                        <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/My Attendance.png') }}" />
+                                                    </span>
+                                                </span>
+                                                <span class="menu-title">Employee wise Attendance</span>
+                                            </a>
+                                        </div>    
                                         
                                     @endif
 
