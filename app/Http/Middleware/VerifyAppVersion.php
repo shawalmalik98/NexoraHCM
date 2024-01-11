@@ -26,7 +26,7 @@ class VerifyAppVersion
                         $apk_version = explode(",",$get_app_version[0]['mobile_app_version']);
                         if(!in_array($request->header('apk-version'), $apk_version)){
                             return response()->json([
-                                'message' => 'Your current application version doesn\'t support this opertaion. Please update the mobile app.',
+                                'msg' => 'Your current application version doesn\'t support this operation. Please update the mobile app.',
                                 'status' => FALSE,
                             ], 403);
                         }
@@ -37,7 +37,7 @@ class VerifyAppVersion
             return $next($request);
         }else{
             return response()->json([
-                'message' => 'Your current application version doesn\'t support this opertaion. Please update the mobile app.',
+                'msg' => 'Your current application version doesn\'t support this operation. Please update the mobile app.',
                 'status' => FALSE,
             ], 403);
         }
