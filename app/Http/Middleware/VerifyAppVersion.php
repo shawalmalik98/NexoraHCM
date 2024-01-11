@@ -18,18 +18,28 @@ class VerifyAppVersion
      */
     public function handle(Request $request, Closure $next)
     {
-        if(Schema::hasTable('tbl_hrm_settings')){
-            if (Schema::hasColumn('tbl_hrm_settings', 'mobile_app_version')) {
-                $get_app_version = HrmSetting::get(['mobile_app_version'])->toArray();
-                if(empty($get_app_version) || $get_app_version[0]['mobile_app_version'] == '' || $get_app_version[0]['mobile_app_version'] == NULL || $get_app_version[0]['mobile_app_version'] != $request->header('apk-version')){
-                    return response()->json([
-                        'message' => 'Your current application version doesn\'t support this opertaion. Please update the mobile app.',
-                        'status' => FALSE,
-                    ], 403);
+        if(!empty($request->header('apk-version'))){
+            if(Schema::hasTable('tbl_hrm_settings')){
+                if (Schema::hasColumn('tbl_hrm_settings', 'mobile_app_version')) {
+                    $get_app_version = HrmSetting::get(['mobile_app_version'])->toArray();
+                    if(!empty($get_app_version) || $get_app_version[0]['mobile_app_version'] != '' || $get_app_version[0]['mobile_app_version'] != NULL){
+                        $apk_version = explode(",",$get_app_version[0]['mobile_app_version']);
+                        if(!in_array($request->header('apk-version'), $apk_version)){
+                            return response()->json([
+                                'message' => 'Your current application version doesn\'t support this opertaion. Please update the mobile app.',
+                                'status' => FALSE,
+                            ], 403);
+                        }
+                    }
                 }
+                return $next($request);
             }
             return $next($request);
+        }else{
+            return response()->json([
+                'message' => 'Your current application version doesn\'t support this opertaion. Please update the mobile app.',
+                'status' => FALSE,
+            ], 403);
         }
-        return $next($request);
     }
 }
