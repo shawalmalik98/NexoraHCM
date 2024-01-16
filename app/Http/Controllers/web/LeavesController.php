@@ -10,6 +10,7 @@ use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class LeavesController extends Controller
 {
@@ -306,7 +307,11 @@ class LeavesController extends Controller
 
             $login_user = $this->get_login_user_detail();
             
-            $leaves = LeaveManagement::get()->toArray();
+            // $leaves = LeaveManagement::get()->toArray();
+
+            $leaves = Cache::remember('users', 60, function () {
+                return LeaveManagement::get()->toArray();
+            });
 
             $leave_name = array_column($leaves, 'leave_name');
 

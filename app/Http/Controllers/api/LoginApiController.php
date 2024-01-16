@@ -4,13 +4,13 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Employees, EmployeeInformation, LoginHistory, ActivityLog, EmployeeToken, EmployeeDevice};
+use App\Models\{Employees, EmployeeInformation, LoginHistory, ActivityLog, EmployeeToken, EmployeeDevice, ForgetPassword};
 use App\Traits\{LoginEmployee, LogGenerateTrait, ApiResponseTrait, NotificationTrait};
 use App\Helpers\{ActivityTracker, CustomHelper};
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
-
+use Mail;
 
 class LoginApiController extends Controller
 {   
@@ -231,5 +231,87 @@ class LoginApiController extends Controller
             ActivityTracker::track_activity_from_api('Store employee FCM token',  $request->header('Bearer-Token'));
         }
 
+    }
+
+    protected function reset_password_api(Request $request){
+        try{
+
+            $validator = Validator::make($request->post(), [
+                'employee_cnic' => 'required',
+                'employee_id' => 'required|numeric',
+            ]);
+
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE'
+                    ]);
+                }
+            }else {
+
+                $employee_id = $request->post('employee_id');
+                $cnic = $request->post('employee_cnic');
+
+                $get_employee_detail = Employees::where('employee_code', $employee_id)->where('employee_cnic', $cnic)->where('employee_isactive', '1')->get()->toArray();
+
+                if(!empty($get_employee_detail)){
+                    if($get_employee_detail[0]['employee_work_email'] != ''){
+                        $emailParts = explode('@', $get_employee_detail[0]['employee_work_email']);
+                        if (count($emailParts) === 2) {
+                            $afterAtSymbol = $emailParts[1];
+                            if($afterAtSymbol == 'ismailindustries.com' || $afterAtSymbol == 'ismailindustries.com.pk'){
+                                $data['link'] = 'reset-password-link?xteko=' . Crypt::encryptString($get_employee_detail[0]['employee_id']);
+                                Mail::send('email-template.reset-password',$data,function($message) use ($get_employee_detail) {
+                                    $message->from('iilinnovations@ismailindustries.com', 'IIL Innovations');
+                                    $message->to($get_employee_detail[0]['employee_work_email']);
+                                    $message->subject('Reset Password');
+                                });
+
+                                $forget_password = new ForgetPassword();
+                                $forget_password->forget_employee_id = $get_employee_detail[0]['employee_id'];
+                                $forget_password->created_at = date('Y-m-d H:i:s');
+                                $forget_password->save();
+                                
+                                return response()->json([
+                                    'status' => 'TRUE',
+                                    'msg' => "Password reset link has been sent on your email.",
+                                ]);
+                            }else{
+                                return response()->json([
+                                    'status' => 'FALSE',
+                                    'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                                ]);
+                            }
+                        }
+                    }else{
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                        ]);
+                    }
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Wrong details entered. No record found.",
+                    ]);
+                }
+
+            }
+        }catch(\Exception $e){
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+               
+            }
+        }
     }
 }
