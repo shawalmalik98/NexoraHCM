@@ -1,12 +1,12 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyCdcNo1C_ktUsH8jMCrV4EwQRgOVVB518c",
-    authDomain: "fir-laravel-7b8ce.firebaseapp.com",
-    databaseURL: "https://fir-laravel-7b8ce-default-rtdb.firebaseio.com",
-    projectId: "fir-laravel-7b8ce",
-    storageBucket: "fir-laravel-7b8ce.appspot.com",
-    messagingSenderId: "567820782772",
-    appId: "1:567820782772:web:4d12c5206a0323d6069be1",
-    measurementId: "G-RRD2F6FG6S"
+    apiKey: "AIzaSyBHrsWxEdlwSSPqeHWNtcF9fTRla75mI48",
+    authDomain: "iil-hcm.firebaseapp.com",
+    databaseURL: "https://iil-hcm-default-rtdb.firebaseio.com",
+    projectId: "iil-hcm",
+    storageBucket: "iil-hcm.appspot.com",
+    messagingSenderId: "788291089347",
+    appId: "1:788291089347:web:c8d3ea42db02d7659cc376",
+    measurementId: "G-GFKQGFN0Z0"
 }
 
 const app = firebase.initializeApp(firebaseConfig);

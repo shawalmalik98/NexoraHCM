@@ -4,7 +4,7 @@ namespace App\Http\Controllers\web;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Alert, Department, Employees, AlertStatus, OfficeLocation};
-use App\Traits\{LoginEmployee, LogGenerateTrait};
+use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait};
 use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
 
@@ -15,7 +15,7 @@ use App\Jobs\{PushNotificationJob};
 
 class AlertsController extends Controller
 {
-    use LoginEmployee, LogGenerateTrait;
+    use LoginEmployee, LogGenerateTrait, NotificationTrait;
     const MAIN_TITLE = "Alerts";
 
     protected function index(){
@@ -52,7 +52,6 @@ class AlertsController extends Controller
     }
 
     protected function add_alert(Request $request){
-        
         try{  
            
             $validator = Validator::make($request->all(), [
