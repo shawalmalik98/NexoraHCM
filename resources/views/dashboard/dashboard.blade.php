@@ -239,7 +239,7 @@
                         @endif
                     </div>
 
-                    @if(!empty($alerts))
+                    {{-- @if(!empty($alerts))
                         @foreach($alerts as $alert)
                             <div class="alert alert-primary d-flex align-items-center p-5 mb-10" id="alert_div{{ $alert['alert_id'] }}">
                                 <span class="svg-icon svg-icon-2hx svg-icon-primary me-4">
@@ -262,7 +262,7 @@
                                 </button>
                             </div>
                         @endforeach
-                    @endif
+                    @endif --}}
 
                     @if(!empty($total_count))
 
