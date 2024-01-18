@@ -228,7 +228,7 @@ class LoginApiController extends Controller
 
         }finally{
 
-            ActivityTracker::track_activity_from_api('Store employee FCM token',  $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('Store employee FCM token',  $request->header('Bearer-Token'), $request->header('apk-version'));
         }
 
     }

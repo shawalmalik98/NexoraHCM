@@ -197,9 +197,6 @@
                                     </thead>
                                     <tbody>
                                         @php
-                                        $total_working_hours = 0;
-                                        $total_working_hours_actual = 0;
-                                        $in_day_time_actual = $out_day_time_actual = 0 ;
                                         $present = 0;
                                         $halfday = 0;
                                         $late_coming = 0;
@@ -225,7 +222,24 @@
                                                 @endphp
 
                                                 <td >
-                                                     {{ $current_date }} - {{  $name_of_day_short }}
+                                                    {{-- @if($attendances['attendance_status'] == 'ABSENT') --}}
+                                                        {{-- <span style="color:red">{{ $current_date }} - {{  $name_of_day_short }}</span> --}}
+                                                    {{-- @else --}}
+                                                        
+                                                    {{-- @endif --}}
+                                                    @if (!empty($attendance))
+                                                        @foreach ($attendance as $attendances)
+                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
+                                                                @if($attendances['attendance_status'] == 'ABSENT')
+                                                                    <span style="color:red">{{ $current_date }} - {{  $name_of_day_short }} </span>
+                                                                @elseif($attendances['attendance_status'] == 'DAY OFF')
+                                                                    <span style="color:#a9a9a9">{{ $current_date }} - {{  $name_of_day_short }} </span>
+                                                                @else
+                                                                    {{ $current_date }} - {{  $name_of_day_short }} 
+                                                                @endif
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
                                                   
                                                 </td>
                                     
@@ -241,8 +255,14 @@
                                                         @foreach ($attendance as $attendances)
                                                             
                                                             @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
-                                                            
-                                                                {{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }} 
+                                                                @if($attendances['attendance_status'] == 'ABSENT')
+                                                                    <span style="color:red">{{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }} </span>
+                                                                @elseif($attendances['attendance_status'] == 'DAY OFF')
+                                                                    <span style="color:#a9a9a9">{{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }}</span>
+                                                                @else
+                                                                    {{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }} 
+                                                                @endif
+                                                                
                                                                 @php $attendance_found = true; @endphp
                                                             @endif
                                                         @endforeach
@@ -264,8 +284,14 @@
                                                         @foreach ($attendance as $attendances)
                                                             
                                                             @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
-                                                            
-                                                             {{ $attendances['time_in'] }}  
+                                                                @if($attendances['attendance_status'] == 'ABSENT')
+                                                                    <span style="color:red">{{ $attendances['time_in'] }}</span>
+                                                                @elseif($attendances['attendance_status'] == 'DAY OFF')
+                                                                    <span style="color:#a9a9a9">{{ $attendances['time_in'] }}</span>
+                                                                @else
+                                                                    {{ $attendances['time_in'] }}
+                                                                @endif
+                                                             {{-- {{ $attendances[''] }}   --}}
                                                                 @php $attendance_found = true; @endphp
                                                             @endif
                                                         @endforeach
@@ -276,7 +302,7 @@
                                                     @endif
                                                     
                                                 </td>
-                                                <td > 
+                                                <td> 
                                                     @php
                                                         $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
                                                         $today = strtotime(date("d-m-Y"));
@@ -286,8 +312,14 @@
                                                         @foreach ($attendance as $attendances)
                                                             
                                                             @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
-                                                            
-                                                                {{ $attendances['time_out'] }}  
+                                                                @if($attendances['attendance_status'] == 'ABSENT')
+                                                                    <span style="color:red">{{ $attendances['time_out'] }}</span>
+                                                                @elseif($attendances['attendance_status'] == 'DAY OFF')
+                                                                    <span style="color:#a9a9a9">{{ $attendances['time_out'] }}</span>
+                                                                @else
+                                                                    {{ $attendances['time_out'] }}
+                                                                @endif
+                                                                {{-- {{ $attendances['time_out'] }}   --}}
                                                                 @php $attendance_found = true; @endphp
                                                             @endif
                                                         @endforeach
@@ -309,8 +341,14 @@
                                                         @foreach ($attendance as $attendances)
                                                             
                                                             @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
-                                                            
-                                                                {{ $attendances['attendance_status'] }} 
+                                                                @if($attendances['attendance_status'] == 'ABSENT')
+                                                                    <span style="color:red">{{ $attendances['attendance_status'] }}</span>
+                                                                @elseif($attendances['attendance_status'] == 'DAY OFF')
+                                                                    <span style="color:#a9a9a9">{{ $attendances['attendance_status'] }}</span>
+                                                                @else
+                                                                    {{ $attendances['attendance_status'] }}
+                                                                @endif
+                                                                
                                                                 @php $attendance_found = true; @endphp  
                                                             @endif
                                                         @endforeach
