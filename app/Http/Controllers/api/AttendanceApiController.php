@@ -98,7 +98,7 @@ class AttendanceApiController extends Controller
 
         }finally{
 
-            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'), $request->header('apk-version'));
 
         }
     }
@@ -248,7 +248,7 @@ class AttendanceApiController extends Controller
 
         }finally{
 
-            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'), $request->header('apk-version'));
 
         }
     }
@@ -264,6 +264,21 @@ class AttendanceApiController extends Controller
                 'att_for_year'=>date('Y'),
                 'att_for_date'=>date('d')
             ])->get(['att_check_in_time as check_in_time','att_check_in_status as check_in_status','att_check_out_time as check_out_time','att_check_out_status as check_out_status','att_check_overall_status as attendance_status'])->toArray();
+            // if(empty($get_todays_attendance)){
+            //     $get_todays_attendance = DB::select("SELECT
+            //         time_in as check_in_time,
+            //         CASE WHEN time_in = '00:00:00' THEN '0' ELSE '1' END as check_in_status,
+            //         time_out as check_out_time,
+            //         CASE WHEN time_out = '00:00:00' THEN '0' ELSE '1' END as check_out_status,
+            //         attendance_status as attendance_status FROM sap_attendance_report WHERE emp_code = :employee_code AND attendance_date = :attendance_date
+            //     ", [
+            //         'employee_code' => '0'.$login_user[0]['employee_code'],
+            //         'attendance_date' => date('Y-m-d'),
+            //     ]);
+            //     $get_todays_attendance = json_decode(json_encode($get_todays_attendance), TRUE);
+            // }
+
+        
 
             return $this->api_response_json(TRUE,"My Today's Attendance",$get_todays_attendance,200);
 
@@ -276,7 +291,7 @@ class AttendanceApiController extends Controller
 
         }finally{
 
-            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('View My Attendance API',  $request->header('Bearer-Token'), $request->header('apk-version'));
 
         }
     }

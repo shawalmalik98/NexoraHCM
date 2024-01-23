@@ -323,7 +323,7 @@ class MarkAttendanceApiController extends Controller
 			return $this->api_response_json(FALSE,"Something went wrong. Please try again.",$e->getMessage(),500);
         }finally{
 
-            ActivityTracker::track_activity_from_api('Employees Attendance CheckIn API', $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('Employees Attendance CheckIn API', $request->header('Bearer-Token'), $request->header('apk-version'));
 
 		}
 	

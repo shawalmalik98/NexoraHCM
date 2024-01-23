@@ -118,14 +118,14 @@ class EmployeeApiController extends Controller
         
         }catch(\Exception $e){
 
-            $this->create_error_log_from_api('View Employee Detail API', $e, $request->header('Bearer-Token'));
+            $this->create_error_log_from_api('View Employee Detail API', $e, $request->header('Bearer-Token'), $request->header('apk-version'));
 
             return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
 
         }
         finally{
 
-            ActivityTracker::track_activity_from_api('View Employee Detail API',  $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('View Employee Detail API',  $request->header('Bearer-Token'), $request->header('apk-version'));
            
         }
 
@@ -183,7 +183,7 @@ class EmployeeApiController extends Controller
 
         }finally{
 
-            ActivityTracker::track_activity_from_api('Change Account Password API',  $request->header('Bearer-Token'));
+            ActivityTracker::track_activity_from_api('Change Account Password API',  $request->header('Bearer-Token'), $request->header('apk-version'));
 
         }
 	
@@ -335,7 +335,7 @@ class EmployeeApiController extends Controller
         }
         finally{
 
-            ActivityTracker::track_activity_from_api('Get Employee Office Location', $request->header('Bearer-Token')); 
+            ActivityTracker::track_activity_from_api('Get Employee Office Location', $request->header('Bearer-Token'), $request->header('apk-version'));
         }
     }
 
@@ -361,7 +361,7 @@ class EmployeeApiController extends Controller
 
         }finally{
 
-            ActivityTracker::track_activity_from_api('Get Employee Button Access', $request->header('Bearer-Token')); 
+            ActivityTracker::track_activity_from_api('Get Employee Button Access', $request->header('Bearer-Token'), $request->header('apk-version')); 
 
         }
 
