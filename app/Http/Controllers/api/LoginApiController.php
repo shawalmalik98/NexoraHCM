@@ -289,15 +289,15 @@ class LoginApiController extends Controller
                                     ]);
                                 }
 
-                                $forget_password = new ForgetPassword();
-                                $forget_password->forget_employee_id = $get_employee_detail[0]['employee_id'];
-                                $forget_password->created_at = date('Y-m-d H:i:s');
-                                $forget_password->save();
+                                // $forget_password = new ForgetPassword();
+                                // $forget_password->forget_employee_id = $get_employee_detail[0]['employee_id'];
+                                // $forget_password->created_at = date('Y-m-d H:i:s');
+                                // $forget_password->save();
                                 
-                                return response()->json([
-                                    'status' => 'TRUE',
-                                    'msg' => "Password reset link has been sent on your email.",
-                                ]);
+                                // return response()->json([
+                                //     'status' => 'TRUE',
+                                //     'msg' => "Password reset link has been sent on your email.",
+                                // ]);
                             // }else{
                             //     return response()->json([
                             //         'status' => 'FALSE',
