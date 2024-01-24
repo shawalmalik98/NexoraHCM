@@ -4994,9 +4994,12 @@ class EmployeeController extends Controller
                                 $employee_name = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
                                 $employee_department =  iconv('ISO-8859-1', 'UTF-8', $getData[2]);
                                 $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[3]);
-                                $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[4]);
-                                $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[5]);
-                                $employee_group =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
+                                $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); 
+                                $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[5]);
+                                $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
+                                $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
+                               
+                                // $employee_group =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
                                 // $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); 
                                 
                                 // $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[6]); //$getData[10];
@@ -5105,12 +5108,12 @@ class EmployeeController extends Controller
                                     $employee_record_insert = "FALSE";
                                 }
 
-                                $employee_groups = EmployeeGroup::where('group_name', $employee_group)->get(['employee_group_id','group_name'])->toArray();
+                                // $employee_groups = EmployeeGroup::where('group_name', $employee_group)->get(['employee_group_id','group_name'])->toArray();
 
                                 
-                                if(empty($employee_groups)){
-                                    $employee_record_insert = "FALSE";
-                                }
+                                // if(empty($employee_groups)){
+                                //     $employee_record_insert = "FALSE";
+                                // }
                                 // if(empty($employee_designation)){
                                 //     $employee_record_insert = "FALSE";
                                 // }
@@ -5143,29 +5146,29 @@ class EmployeeController extends Controller
                                 //     $employee_record_insert = "FALSE";
                                 // }
 
-                                // if(empty($joining_date)){
-                                //     $employee_record_insert = "FALSE";
-                                // }
+                                if(empty($joining_date)){
+                                    $employee_record_insert = "FALSE";
+                                }
 
-                                // $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
+                                $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
 
-                                // if ($dateTime == TRUE) {
-                                //     $joining_date = $dateTime->format('Y-m-d');
-                                // }else {
-                                //     $employee_record_insert = "FALSE";
-                                // }
+                                if ($dateTime == TRUE) {
+                                    $joining_date = $dateTime->format('Y-m-d');
+                                }else {
+                                    $employee_record_insert = "FALSE";
+                                }
 
-                                // if(empty($employee_dob)){
-                                //     $employee_record_insert = "FALSE";
-                                // }
+                                if(empty($employee_dob)){
+                                    $employee_record_insert = "FALSE";
+                                }
 
-                                // $dateTime = DateTime::createFromFormat('Y-m-d', $employee_dob);
+                                $dateTime = DateTime::createFromFormat('Y-m-d', $employee_dob);
 
-                                // if ($dateTime == TRUE) {
-                                //     $employee_dob = $dateTime->format('Y-m-d');
-                                // }else {
-                                //     $employee_record_insert = "FALSE";
-                                // }
+                                if ($dateTime == TRUE) {
+                                    $employee_dob = $dateTime->format('Y-m-d');
+                                }else {
+                                    $employee_record_insert = "FALSE";
+                                }
                                 // if($employee_gender == 'M'){
                                 //     $employee_gender_type = 'Male';
                                 // }elseif($employee_gender == 'F') {
@@ -5294,8 +5297,8 @@ class EmployeeController extends Controller
                                         $add_employee->employee_name = $employee_name;
                                         $add_employee->employee_code =  $employeeCode;
                                         // $add_employee->employee_code = $employeeCode;
-                                        $add_employee->employee_doj = '2023-12-01';
-                                        // $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
+                                        // $add_employee->employee_doj = '2023-12-01';
+                                        $add_employee->employee_doj =  date('Y-m-d',strtotime($joining_date));
                                         $add_employee->employee_cnic = $employee_nic;
                                         $add_employee->employee_personal_email = $employee_personal_email;
                                         $add_employee->employee_work_email = $employee_personal_email;
@@ -5311,7 +5314,7 @@ class EmployeeController extends Controller
                                         $add_employee->employee_is_manager = 0;
                                         $add_employee->employee_offdays = 'Sunday';
                                         $add_employee->employee_jobtype = 'Office';
-                                        $add_employee->employee_group =  ($employee_groups[0]['employee_group_id']) ?? 4;
+                                        $add_employee->employee_group =   3;
                                         // $add_employee->employee_location = $locations[0]['location_id'];
                                         $add_employee->employee_isactive =  1;
                                         $add_employee->employee_earning_type =  1;
@@ -5331,8 +5334,8 @@ class EmployeeController extends Controller
                                             $emp_salary = new EmployeeSalary();
                                             $emp_salary->salary_employee_id = $employee_registration_id;
                                             $emp_salary->salary_amount =  15000;
-                                            // $emp_salary->salary_effected_date = date('Y-m-d',strtotime($joining_date));
-                                            $emp_salary->salary_effected_date = '2023-12-01';
+                                            $emp_salary->salary_effected_date = date('Y-m-d',strtotime($joining_date));
+                                            // $emp_salary->salary_effected_date = '2023-12-01';
                                             $emp_salary->salary_created_date = date('d-m-Y');
                                             $emp_salary->salary_earning_type = 1;
                                             $emp_salary->save();
@@ -5360,8 +5363,8 @@ class EmployeeController extends Controller
 
                                             $add_shift = new ShiftManagement();
                                             $add_shift->employee_id = $employee_registration_id;
-                                            $add_shift->shift_start_from_date = '2023-12-01';
-                                            // $add_shift->shift_start_from_date = date('Y-m-d',strtotime($joining_date));
+                                            // $add_shift->shift_start_from_date = '2023-12-01';
+                                            $add_shift->shift_start_from_date = date('Y-m-d',strtotime($joining_date));
                                             $add_shift->shift_start_time = '09:00:00';
                                             $add_shift->shift_end_time = '18:00:00';
                                             $add_shift->shift_created_by = session('user_session');
@@ -5370,8 +5373,8 @@ class EmployeeController extends Controller
                                             $employment_period = new EmploymentPeriod();
                                             $employment_period->employement_status_id = 3;
                                             $employment_period->employee_id = $employee_registration_id;
-                                            $employment_period->effective_date = '2023-12-01';
-                                            // $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
+                                            // $employment_period->effective_date = '2023-12-01';
+                                            $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
                                             $employment_period->employement_period_created_by = 1;
                                             $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
                                             $process = $employment_period->save();
@@ -5382,21 +5385,22 @@ class EmployeeController extends Controller
 
                                                 $submitInformation = new EmployeeInformation();
                                                 $submitInformation->employeeid = $employee_registration_id;
-                                                $submitInformation->dob = '2020-01-01';
+                                                $submitInformation->dob = $employee_dob;
+                                                // $submitInformation->dob = '2020-01-01';
                                                 // $submitInformation->permanentaddress = $employee_address;
                                                 $submitInformation->save();
 
-                                                $get_holidays =  Holiday::where('holiday_date','>=', '2023-12-01')->where(function ($query) use ($departments) {
-                                                    $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
-                                                    ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
-                                                })
-                                                ->get()->toArray();
-
-                                                // $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
+                                                // $get_holidays =  Holiday::where('holiday_date','>=', '2023-12-01')->where(function ($query) use ($departments) {
                                                 //     $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
                                                 //     ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
                                                 // })
                                                 // ->get()->toArray();
+
+                                                $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
+                                                    $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
+                                                    ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
+                                                })
+                                                ->get()->toArray();
 
                                                 if(!empty($get_holidays)){
                                                     foreach($get_holidays as $get_holiday){
