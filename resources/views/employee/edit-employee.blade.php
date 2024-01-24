@@ -229,7 +229,8 @@
                                     <option value="Flour" @if ($employee_detail[0]['business_unit'] == 'Flour') selected @endif>Flour</option> 
                                     <option value="Super Cereal"@if ($employee_detail[0]['business_unit'] == 'Super Cereal') selected @endif>Super Cereal</option> 
                                     <option value="PET Resin"@if ($employee_detail[0]['business_unit'] == 'PET Resin') selected @endif>PET Resin</option>
-                                    <option value="Ismail Global"@if ($employee_detail[0]['business_unit'] == 'Ismail Global') selected @endif>Ismail Global </option>                               
+                                    <option value="Ismail Global"@if ($employee_detail[0]['business_unit'] == 'Ismail Global') selected @endif>Ismail Global </option>        
+                                    <option value="Plastiflex" @if ($employee_detail[0]['business_unit'] == 'Plastiflex') selected @endif>Plastiflex</option>                         
                                 </select>
                             </div>
                             
