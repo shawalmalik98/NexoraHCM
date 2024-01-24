@@ -256,17 +256,38 @@ class LoginApiController extends Controller
                 $get_employee_detail = Employees::where('employee_code', $employee_id)->where('employee_cnic', $cnic)->where('employee_isactive', '1')->get()->toArray();
 
                 if(!empty($get_employee_detail)){
-                    if($get_employee_detail[0]['employee_work_email'] != ''){
-                        $emailParts = explode('@', $get_employee_detail[0]['employee_work_email']);
-                        if (count($emailParts) === 2) {
-                            $afterAtSymbol = $emailParts[1];
-                            if($afterAtSymbol == 'ismailindustries.com' || $afterAtSymbol == 'ismailindustries.com.pk'){
-                                $data['link'] = 'reset-password-link?xteko=' . Crypt::encryptString($get_employee_detail[0]['employee_id']);
-                                Mail::send('email-template.reset-password',$data,function($message) use ($get_employee_detail) {
-                                    $message->from('iilinnovations@ismailindustries.com', 'IIL Innovations');
-                                    $message->to($get_employee_detail[0]['employee_work_email']);
-                                    $message->subject('Reset Password');
-                                });
+                    // if($get_employee_detail[0]['employee_work_email'] != ''){
+                        // $emailParts = explode('@', $get_employee_detail[0]['employee_work_email']);
+                        // if (count($emailParts) === 2) {
+                            // $afterAtSymbol = $emailParts[1];
+                            // if($afterAtSymbol == 'ismailindustries.com' || $afterAtSymbol == 'ismailindustries.com.pk'){
+                                // $data['link'] = 'reset-password-link?xteko=' . Crypt::encryptString($get_employee_detail[0]['employee_id']);
+                                // Mail::send('email-template.reset-password',$data,function($message) use ($get_employee_detail) {
+                                //     $message->from('iilinnovations@ismailindustries.com', 'IIL Innovations');
+                                //     $message->to($get_employee_detail[0]['employee_work_email']);
+                                //     $message->subject('Reset Password');
+                                // });
+
+                                $update_password = Employees::where('employee_code', $employee_id)->where('employee_cnic', $cnic)->update([
+                                    'employee_password' => Crypt::encryptString('123')
+                                ]);
+
+                                if($update_password){
+                                    $forget_password = new ForgetPassword();
+                                    $forget_password->forget_employee_id = $get_employee_detail[0]['employee_id'];
+                                    $forget_password->created_at = date('Y-m-d H:i:s');
+                                    $forget_password->save();
+                                    
+                                    return response()->json([
+                                        'status' => 'TRUE',
+                                        'msg' => "Your password has been reseted to 123.",
+                                    ]);
+                                }else{
+                                    return response()->json([
+                                        'status' => 'FALSE',
+                                        'msg' => "Somehting went wrong. Please try again.",
+                                    ]);
+                                }
 
                                 $forget_password = new ForgetPassword();
                                 $forget_password->forget_employee_id = $get_employee_detail[0]['employee_id'];
@@ -277,19 +298,19 @@ class LoginApiController extends Controller
                                     'status' => 'TRUE',
                                     'msg' => "Password reset link has been sent on your email.",
                                 ]);
-                            }else{
-                                return response()->json([
-                                    'status' => 'FALSE',
-                                    'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
-                                ]);
-                            }
-                        }
-                    }else{
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
-                        ]);
-                    }
+                            // }else{
+                            //     return response()->json([
+                            //         'status' => 'FALSE',
+                            //         'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                            //     ]);
+                            // }
+                        // }
+                    // }else{
+                    //     return response()->json([
+                    //         'status' => 'FALSE',
+                    //         'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                    //     ]);
+                    // }
                 }else{
                     return response()->json([
                         'status' => 'FALSE',
