@@ -155,11 +155,11 @@
                         Toast.fire({
                             icon: 'success',
                             title: response.msg,
-                            timer: 3000,
+                            timer: 5000,
                         })
                         setTimeout(() => {
                             window.location.href = "{{ url('/sap-login') }}"; 
-                        }, 3000);  
+                        }, 5000);  
 
                     } else {
                         Toast.fire({
