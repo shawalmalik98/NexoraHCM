@@ -249,7 +249,8 @@
                                     <option value="Super Cereal">Super Cereal</option>  
                                     <option value="PET Resin">PET Resin</option>  
                                     <option value="Ismail Global">Ismail Global</option>  
-                                    <option value="Plastiflex">Plastiflex</option>  
+                                    <option value="Plastiflex">Plastiflex</option> 
+                                    <option value="Ismail Resin">Ismail Resin</option>  
                                 </option>                               
                                 </select>
                             </div>

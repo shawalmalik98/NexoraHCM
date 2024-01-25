@@ -162,7 +162,8 @@
                                                 <option value="Flour" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Flour') selected @endif>Flour</option>     
                                                 <option value="Super Cereal" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Super Cereal') selected @endif>Super Cereal</option>                              
                                                 <option value="PET Resin" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'PET Resin') selected @endif>PET Resin</option>                              
-                                                <option value="Ismail Global" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Ismail Global') selected @endif>Ismail Global</option>                              
+                                                <option value="Ismail Global" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Ismail Global') selected @endif>Ismail Global</option>   
+                                                <option value="Ismail Resin" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Ismail Resin') selected @endif>Ismail Resin</option>                        
                                             </select>
                                         </div> 
                                     </div>
