@@ -47,11 +47,11 @@ class LoginApiController extends Controller
                                 $doj = strtotime($filter_user[0]['employee_doj']);
                                 if($current_date >=  $doj){       
 
-                                    $welcome_notification = CustomHelper::employee_welcome_status_api($filter_user[0]['employee_id']);
-                                    if($welcome_notification == 1){
+                                    // $welcome_notification = CustomHelper::employee_welcome_status_api($filter_user[0]['employee_id']);
+                                    // if($welcome_notification == 1){
 
-                                        $this->send_push_notification_mobile_app($filter_user[0]['employee_id'], 'Welcome on MegaHCM Mobile App.','Dear employee, we welcome you on our HCM\'s mobile application. Click here to explore more features in our updated app.');
-                                    }
+                                    //     $this->send_push_notification_mobile_app($filter_user[0]['employee_id'], 'Welcome on MegaHCM Mobile App.','Dear employee, we welcome you on our HCM\'s mobile application. Click here to explore more features in our updated app.');
+                                    // }
                                 
                                     $bearer_token_value = $filter_user[0]['employee_code'].time().rand(1000,9999).bin2hex(random_bytes(2));
                                     
