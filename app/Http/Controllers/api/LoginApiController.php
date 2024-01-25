@@ -164,7 +164,7 @@ class LoginApiController extends Controller
                             }
                         }else{
 
-                            return $this->api_response_json(FALSE,"Wrong credentials entered. Please try again.","",200);
+                            return $this->api_response_json(FALSE,"Wrong Password entered. Please try again.","",200);
                         }
                     }else{
 
