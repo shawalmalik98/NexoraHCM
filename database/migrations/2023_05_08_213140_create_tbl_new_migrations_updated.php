@@ -16,11 +16,20 @@ return new class extends Migration
     {   
 
         
-        if(Schema::hasTable('tbl_alerts')){
+        // if(Schema::hasTable('tbl_alerts')){
 
-            if (!Schema::hasColumn('tbl_alerts', 'location')) {
-                Schema::table('tbl_alerts', function (Blueprint $table) {
-                    $table->string('location', 1000)->nullable();
+        //     if (!Schema::hasColumn('tbl_alerts', 'location')) {
+        //         Schema::table('tbl_alerts', function (Blueprint $table) {
+        //             $table->string('location', 1000)->nullable();
+        //         });
+        //     }
+        // }    
+
+        if(Schema::hasTable('tbl_login_history')){
+
+            if (!Schema::hasColumn('tbl_login_history', 'fingerprint')) {
+                Schema::table('tbl_login_history', function (Blueprint $table) {
+                    $table->integer('fingerprint')->nullable()->comment('0 = deactive, 1 = active');
                 });
             }
         }    

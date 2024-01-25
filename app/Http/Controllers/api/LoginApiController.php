@@ -26,7 +26,7 @@ class LoginApiController extends Controller
                 'employee_code' => 'required|numeric',
                 'employee_password' => 'required',
                 'device_token' => 'required',
-                'device_name' => 'required',
+                'device_name' => 'required', 
             ]);
 
             if($validator->fails()) {
@@ -99,7 +99,8 @@ class LoginApiController extends Controller
                                             $login_history->login_history_latitude = $request->post('login_history_latitude') ?? "40.7044985" ;
                                             $login_history->login_history_longitude = $request->post('login_history_longitude') ?? "-74.0423467";
                                             $login_history->login_history_source = 2;
-                                            $login_history->login_employee_device = $employee_device_id[0]['device_id'] ;
+                                            $login_history->login_employee_device = $employee_device_id[0]['device_id'];
+                                            $login_history->fingerprint = $request->post('fingerprint') ?? 0;
                                             $login_history->save();
                                             
                                             $this->deactivate_previous_logins($filter_user[0]['employee_id'], $bearer_token_value);
@@ -133,6 +134,7 @@ class LoginApiController extends Controller
                                                 $login_history->login_history_longitude = $request->post('login_history_longitude') ?? "-74.0423467";
                                                 $login_history->login_history_source = 2;
                                                 $login_history->login_employee_device =  $employee_device_logged[0]['device_id'];
+                                                $login_history->fingerprint = $request->post('fingerprint') ?? 0 ;
                                                 $login_history->save();
 
                                                 $this->deactivate_previous_logins($filter_user[0]['employee_id'], $bearer_token_value);

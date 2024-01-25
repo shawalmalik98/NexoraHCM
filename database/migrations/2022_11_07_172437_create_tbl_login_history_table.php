@@ -26,6 +26,7 @@ return new class extends Migration
                 $table->string('login_history_longitude', 1000);
                 $table->integer('login_history_source')->default(1)->comment('1 = Web Application, 2 = Mobile Application, 3 = Proxy User');
                 $table->integer('login_employee_device')->nullable();
+                $table->integer('fingerprint')->nullable()->comment('0 = deactive, 1 = active');
             });
         }
     }
