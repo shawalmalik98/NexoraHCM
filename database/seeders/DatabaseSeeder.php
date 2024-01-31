@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             EmailEndPointsSeeder::class,
             LocationSeeder::class,
             EmailConfiguration::class,
+            SalarySeeder::class,
           
         ]);
     }

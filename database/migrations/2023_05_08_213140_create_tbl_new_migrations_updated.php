@@ -25,14 +25,14 @@ return new class extends Migration
         //     }
         // }    
 
-        if(Schema::hasTable('tbl_login_history')){
+        // if(Schema::hasTable('tbl_login_history')){
 
-            if (!Schema::hasColumn('tbl_login_history', 'fingerprint')) {
-                Schema::table('tbl_login_history', function (Blueprint $table) {
-                    $table->integer('fingerprint')->nullable()->comment('0 = deactive, 1 = active');
-                });
-            }
-        }    
+        //     if (!Schema::hasColumn('tbl_login_history', 'fingerprint')) {
+        //         Schema::table('tbl_login_history', function (Blueprint $table) {
+        //             $table->integer('fingerprint')->nullable()->comment('0 = deactive, 1 = active');
+        //         });
+        //     }
+        // }    
        
     }
     /**

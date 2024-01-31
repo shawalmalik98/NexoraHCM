@@ -1085,6 +1085,19 @@
 
                                     @endif
 
+                                    {{-- @if(!empty($permission)  && $permission[81]['module_accessibility'] == 1 && $permission[81]['permission_status'] == 1) --}}
+                                        <div class="menu-item search-item">
+
+                                            <a class="menu-link nav-link  @if($title == 'manage-salary') active @endif" href="{{ url('/employee-salary') }}">
+                                                <span class="menu-icon">
+                                                    <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Gadgets Inventory.png') }}" />
+                                                </span>
+                                                <span class="menu-title">Employee Salary Status</span>
+                                            </a>
+                                        </div>
+
+                                    {{-- @endif --}}
+
                                     @if(!empty($permission)  && $permission[77]['module_accessibility'] == 1 && $permission[77]['permission_status'] == 1)
                                         <div class="menu-item search-item">
 
