@@ -7,6 +7,7 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use App\Jobs\AttendanceGetToSAP;
+use App\Jobs\EmployeesGetToSAP;
 
 class Kernel extends ConsoleKernel
 {
@@ -23,6 +24,11 @@ class Kernel extends ConsoleKernel
 
     protected function schedule(Schedule $schedule)
     {
+
+        $schedule->call(function () {
+            EmployeesGetToSAP::dispatch();
+        })->dailyAt('11:00');
+
         $schedule->call(function () {
             $response = Http::get('http://172.19.0.101:8080/sap-attendance/post-attend');
             $data = $response->body();

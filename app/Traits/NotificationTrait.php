@@ -19,7 +19,7 @@ trait NotificationTrait {
 		$notify->notification_to_employee = $to_employee;
 		$notify->notification_to_manager1  = $to_manager1;
 		$notify->notification_to_manager2  = $to_manager2;
-		$notify->notification_from = session('user_session');
+		$notify->notification_from = session('user_session') ?? 1;
 		$notify->notification_to_hr = $to_hr;
 		$notify->notification_time = date('h:i:s a d F, Y');
 		$process = $notify->save();
