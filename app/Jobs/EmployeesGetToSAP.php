@@ -84,8 +84,7 @@ class EmployeesGetToSAP implements ShouldQueue
 
                 $employee_doj = $employee->DateOfJoining;
 
-                $check_if_employees_exist = DB::table('tbl_employees')
-                ->where('employee_code', $employee_code)
+                $check_if_employees_exist = Employees::where('employee_code', $employee_code)
                 ->get('employee_code')->toArray();
         
                 if(empty($check_if_employees_exist) && !empty($group_id)) {
