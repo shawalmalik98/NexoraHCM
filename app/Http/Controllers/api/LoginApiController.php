@@ -146,14 +146,12 @@ class LoginApiController extends Controller
                                                 return $this->api_response_json(FALSE,$message,"",200);
 
                                             }
-
-
                                         }
                                     }else{
-                                        return $this->api_response_json(FALSE,"You can't login from this device. It's already in use by another user.","",200);
+                                        $message = 'You can\'t login from this device. It\'s already in use by another user and device token is '.$employee_device_exits[0]['device_token'].'';
+                                        return $this->api_response_json(FALSE,$message,"",200);
                                     }
         
-                                    
                                 }else{
 
                                     return $this->api_response_json(FALSE,"You can't login before your joining date.","",200);
