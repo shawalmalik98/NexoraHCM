@@ -60,7 +60,7 @@ class EmployeesGetToSAP implements ShouldQueue
                     $employee_name = $employee->EmployeeName;
                     $department_name = $employee->Department;
                     $job_title = $employee->Designation;
-                    $company_name = $employee->PersonalArea;
+                    $business_unit = $employee->PersonalArea;
                     $status_name = $employee->EmployeeGroup;
 
                     $group_id = DB::table('tbl_employee_groups')
@@ -69,15 +69,15 @@ class EmployeesGetToSAP implements ShouldQueue
 
                     $all_departments = Department::where('department_name',  $department_name)
                     ->get(['department_id','department_name'])->toArray();
-
+                    
                     $all_designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
                     ->where('designation_name', 'like', '%' . $employee_grade . '%')
                     ->where('department_name', $department_name)
                     ->get(['designation_id','designation_name'])->toArray();
 
-                    $employee_company_id = DB::table('tbl_company')
-                    ->where('company_name', $company_name)
-                    ->value('company_id');
+                    $employee_business_unit = DB::table('tbl_employees')
+                    ->where('business_unit', $business_unit)
+                    ->value('business_unit');
 
                     $employee_status_id = DB::table('tbl_employement_status')
                     ->where('employement_status_name', $status_name)
@@ -102,7 +102,7 @@ class EmployeesGetToSAP implements ShouldQueue
                         $add_employee->employee_contactno = "0649-8439872" . $employee_code;
                         $add_employee->employee_gender = 'Male';
                         $add_employee->employee_status =  $employee_status_id;
-                        $add_employee->employee_company =  $employee_company_id;
+                        $add_employee->employee_company =  1;
                         $add_employee->employee_department = $all_departments[0]['department_id'];
                         $add_employee->employee_designation = $all_designations[0]['designation_id'];
                         $add_employee->employee_jobtitle = $job_title;
@@ -114,6 +114,7 @@ class EmployeesGetToSAP implements ShouldQueue
                         $add_employee->employee_jobtype = 'Office';
                         $add_employee->employee_grade =  $employee_grade;
                         $add_employee->employee_group =  $group_id;
+                        $add_employee->business_unit =  $employee_business_unit ?? 'NULL';
                         $add_employee->employee_isactive =  1;
                         $add_employee->employee_earning_type =  1;
                         $add_employee->employee_mobile_access =  1;
@@ -356,6 +357,12 @@ class EmployeesGetToSAP implements ShouldQueue
                     
                 }
 
+                // $groupEmailAddresses = [
+                //     2 =>  'smalik@ismailindustries.com',
+                //     3 =>  'smalik@ismailindustries.com',
+                //     4 =>  'smalik@ismailindustries.com',
+                // ];
+
                 $groupEmailAddresses = [
                     2 =>  'atauseef@ismailindustries.com',
                     3 =>  'hmajeed@ismailindustries.com',
@@ -384,7 +391,7 @@ class EmployeesGetToSAP implements ShouldQueue
             $generate_error_log->error_log_module = 'Get Sap insert employees';
             $generate_error_log->error_log_action_url = URL::current();
             $generate_error_log->error_log_current_url = URL::previous();
-            $generate_error_log->error_log_message = $e->getMessage();
+            $generate_error_log->error_log_message = $e->getLine().' '.$e->getMessage();
             $generate_error_log->error_log_generated_employee =  $this->user_logined ?? 1;
             $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
             $generate_error_log->save();
