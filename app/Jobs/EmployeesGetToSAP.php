@@ -372,7 +372,7 @@ class EmployeesGetToSAP implements ShouldQueue
                 if(!empty($emailData)){
                     foreach ($emailData as $groupId => $all_email_data) {
                         $toEmail = $groupEmailAddresses[$groupId];
-                        $ccEmail = ['oalam@ismailindustries.com', 'saaahmed@ismailindustries.com'];
+                        $ccEmail = ['oalam@ismailindustries.com', 'saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
                         Mail::to($toEmail)
                         ->cc($ccEmail)
                         ->send(new EmployeesOnboardMail($all_email_data));
@@ -396,5 +396,17 @@ class EmployeesGetToSAP implements ShouldQueue
             $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
             $generate_error_log->save();
         }
+    }
+
+    public function failed(\Exception $e)
+    {
+        $generate_error_log = new ErrorLog();
+        $generate_error_log->error_log_module = 'Get Sap insert employees';
+        $generate_error_log->error_log_action_url = URL::current();
+        $generate_error_log->error_log_current_url = URL::previous();
+        $generate_error_log->error_log_message = $e->getLine().' '.$e->getMessage();
+        $generate_error_log->error_log_generated_employee =  $this->user_logined ?? 1;
+        $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
+        $generate_error_log->save();
     }
 }

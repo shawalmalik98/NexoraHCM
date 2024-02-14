@@ -33,7 +33,7 @@ class EmployeesOnboardMail extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'Employees Onboard Email',
+            subject: 'Employees Onboard',
         );
     }
 
