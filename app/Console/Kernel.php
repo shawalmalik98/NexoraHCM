@@ -20,14 +20,14 @@ class Kernel extends ConsoleKernel
 
     protected $commands = [
         \App\Console\Commands\JobCron::class,
+        \App\Console\Commands\EmployeesJob::class,
+
     ];
 
     protected function schedule(Schedule $schedule)
     {
 
-        $schedule->call(function () {
-            EmployeesGetToSAP::dispatch();
-        })->dailyAt('11:00');
+        $schedule->command('employees:job')->dailyAt('11:05');
 
         $schedule->call(function () {
             $response = Http::get('http://172.19.0.101:8080/sap-attendance/post-attend');

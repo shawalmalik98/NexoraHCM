@@ -1,13 +1,8 @@
 <?php
 
-namespace App\Jobs;
+namespace App\Console\Commands;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use App\Models\{ErrorLog, Employees, Department, Designation, EmployeeSalary, Leave, ShiftManagement, EmploymentPeriod, EmployeeInformation, Holiday, Attendance, Permission};
 use Illuminate\Support\Facades\Mail;
@@ -16,32 +11,37 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Http;
 use App\Mail\EmployeesOnboardMail;
 use App\Traits\NotificationTrait;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
-class EmployeesGetToSAP implements ShouldQueue
+class EmployeesJob extends Command
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, NotificationTrait;
+    use NotificationTrait;
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'employees:job';
 
     /**
-     * Create a new job instance.
+     * The console command description.
      *
-     * @return void
+     * @var string
      */
-    public function __construct()
-    {
-        //
-    }
+    protected $description = 'EmployeesJob Command Executed Successfully!';
 
     /**
-     * Execute the job.
+     * Execute the console command.
      *
-     * @return void
+     * @return int
      */
+    
     public function handle()
     {
         try{
             
-            $response = Http::get('http://sapapi.ismailglobal.com:8080/get-employees');
+            $response = Http::timeout(120)->get('http://sapapi.ismailglobal.com:8080/get-employees');
             
             if ($response->successful()) {
             
@@ -169,15 +169,6 @@ class EmployeesGetToSAP implements ShouldQueue
                             $process = $employment_period->save();
 
                             if($process == 1){
-
-                                // if(!empty(env('APP_SERVER_URL')) && (env('APP_SERVER_URL') == 'http://iilhcm.ismailglobal.com/')){
-                                    
-                                    // $toEmail = 'smalik@ismailindustries.com';
-                                    // $ccEmail = 'mfaraz@ismailindustries.com';
-                                    // Mail::to($toEmail)
-                                    //     ->cc($ccEmail)
-                                    //     ->send(new EmployeesOnboardMail($employee_registration_id, $employee_code, $employee_name, '123'));
-                                // }
                                 
                                 $submitInformation = new EmployeeInformation();
                                 $submitInformation->employeeid = $employee_registration_id;
@@ -345,7 +336,6 @@ class EmployeesGetToSAP implements ShouldQueue
                                     'employee_registration_id' => $employee_registration_id,
                                     'employee_code' => $employee_code,
                                     'employee_name' => $employee_name,
-                                    // 'employee_password' => '123',
                                     'employee_department' => $all_departments[0]['department_name'],
                                     'employee_designation' => $all_designations[0]['designation_name'],
                                 ];
@@ -372,13 +362,14 @@ class EmployeesGetToSAP implements ShouldQueue
                 if(!empty($emailData)){
                     foreach ($emailData as $groupId => $all_email_data) {
                         $toEmail = $groupEmailAddresses[$groupId];
-                        $ccEmail = ['oalam@ismailindustries.com', 'saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
+                        $ccEmail = ['oalam@ismailindustries.com', 'saaahmed@ismailindustries.com'];
                         Mail::to($toEmail)
                         ->cc($ccEmail)
                         ->send(new EmployeesOnboardMail($all_email_data));
                     }
                 }    
-            }   
+            } 
+            
             // if(!empty($emailData)){
             //     $toEmail = 'smalik@ismailindustries.com';
             //     // $ccEmail = ['mfaraz@ismailindustries.com', 'saaahmed@ismailindustries.com'];
@@ -386,27 +377,20 @@ class EmployeesGetToSAP implements ShouldQueue
             //     // ->cc($ccEmail)
             //     ->send(new EmployeesOnboardMail($emailData));
             // }
+
+
         }catch(Exception $e){
+
             $generate_error_log = new ErrorLog();
-            $generate_error_log->error_log_module = 'Get Sap insert employees';
+            $generate_error_log->error_log_module = 'Get Sap employees insert hcm';
             $generate_error_log->error_log_action_url = URL::current();
             $generate_error_log->error_log_current_url = URL::previous();
             $generate_error_log->error_log_message = $e->getLine().' '.$e->getMessage();
-            $generate_error_log->error_log_generated_employee =  $this->user_logined ?? 1;
+            $generate_error_log->error_log_generated_employee = 1;
             $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
             $generate_error_log->save();
         }
+
     }
 
-    public function failed(\Exception $e)
-    {
-        $generate_error_log = new ErrorLog();
-        $generate_error_log->error_log_module = 'Get Sap insert employees';
-        $generate_error_log->error_log_action_url = URL::current();
-        $generate_error_log->error_log_current_url = URL::previous();
-        $generate_error_log->error_log_message = $e->getLine().' '.$e->getMessage();
-        $generate_error_log->error_log_generated_employee =  $this->user_logined ?? 1;
-        $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
-        $generate_error_log->save();
-    }
 }
