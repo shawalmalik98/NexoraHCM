@@ -569,22 +569,22 @@ trait AttendanceEmployee {
 		// 	SELECT COUNT(DateInMonth)
 		// 	FROM (
 		// 		SELECT 
-		// 			DATEADD(DAY, number, '2024-01-26') AS DateInMonth
+		// 			DATEADD(DAY, number, '$from_date') AS DateInMonth
 		// 		FROM master.dbo.spt_values
 		// 		WHERE TYPE = 'P'
-		// 			AND number BETWEEN 0 AND DATEDIFF(DAY, '2024-01-26', '2024-02-19')
+		// 			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
 		// 			AND EXISTS (
 		// 				SELECT 1 
 		// 				FROM tbl_attendance 
 		// 				WHERE 
-		// 					att_for_year = YEAR(DATEADD(DAY, number, '2024-01-26')) AND
-		// 					att_for_month = MONTH(DATEADD(DAY, number, '2024-01-26')) AND
-		// 					att_for_date = DAY(DATEADD(DAY, number, '2024-01-26')) AND
+		// 					att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+		// 					att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+		// 					att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
 		// 					att_check_in_status = 1 
 		// 					AND att_employee_id = e.employee_id
 							
 		// 			)
-		// 			AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '2024-01-26')) + '%'
+		// 			AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
 		// 	) AS DateRange
 		// ) AS 'extra_working'
 		
@@ -667,51 +667,51 @@ trait AttendanceEmployee {
 		SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
 		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
 		
-		(DATEDIFF(DAY, '2024-01-26', '2024-02-25') + 1) AS 'salary_days',
+		(DATEDIFF(DAY, '$from_date', '$to_date') + 1) AS 'salary_days',
 
 			(
 				SELECT COUNT(DateInMonth)
 				FROM (
 					SELECT 
-						DATEADD(DAY, number, '2024-01-26') AS DateInMonth
+						DATEADD(DAY, number, '$from_date') AS DateInMonth
 					FROM master.dbo.spt_values
 					WHERE TYPE = 'P'
-						AND number BETWEEN 0 AND DATEDIFF(DAY, '2024-01-26', '2024-02-19')
+						AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
 						AND EXISTS (
 							SELECT 1 
 							FROM tbl_attendance 
 							WHERE 
-								att_for_year = YEAR(DATEADD(DAY, number, '2024-01-26')) AND
-								att_for_month = MONTH(DATEADD(DAY, number, '2024-01-26')) AND
-								att_for_date = DAY(DATEADD(DAY, number, '2024-01-26')) AND
+								att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+								att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+								att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
 								att_check_in_status = 1 
 								AND att_employee_id = e.employee_id
 								
 						)
-						AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '2024-01-26')) + '%'
+						AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
 				) AS DateRange
 			) AS 'extra_working'
 
-		FROM tbl_employees e
-		LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
-		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
-		AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
-		LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
-		LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
-		LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
-		LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-		WHERE $where_clause
-		GROUP BY 
-		e.employee_code, 
-		e.employee_name, 
-		e.business_unit, 
-		dep.department_name, 
-		des.designation_name, 
-		e.employee_offdays,
-		e.employee_id,
-		rep.employee_code,
-		rep.employee_name,
-		e.employee_doj
+			FROM tbl_employees e
+			LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+			AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
+			AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
+			LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
+			LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
+			LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+			LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+			WHERE $where_clause
+			GROUP BY 
+			e.employee_code, 
+			e.employee_name, 
+			e.business_unit, 
+			dep.department_name, 
+			des.designation_name, 
+			e.employee_offdays,
+			e.employee_id,
+			rep.employee_code,
+			rep.employee_name,
+			e.employee_doj
 	
 		");
 
