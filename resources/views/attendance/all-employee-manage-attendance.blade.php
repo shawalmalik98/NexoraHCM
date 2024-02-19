@@ -197,7 +197,7 @@
                                                 <td class="text-center">{{$all_attendance['off_days_count']}}</td>
                                                 <td class="text-center">{{$all_attendance['Patrol']}}</td>
                                                 <td class="text-center">{{$all_attendance['salary_days']}}</td>
-                                                <td class="text-center">{{$all_attendance['salary_days']}}</td>
+                                                <td class="text-center">{{$all_attendance['extra_working']}}</td>
                                                 {{-- <td class="ps-4">
                                                     <a class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="View Attendance">
                                                         <i class="fa fa-eye"></i>
