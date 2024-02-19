@@ -684,7 +684,10 @@ trait AttendanceEmployee {
 								att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
 								att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
 								att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-								att_check_in_status = 1 
+								(
+									att_check_in_status = 1 OR
+									att_check_out_status = 1
+								)
 								AND att_employee_id = e.employee_id
 								
 						)
