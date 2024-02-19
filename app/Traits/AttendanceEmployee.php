@@ -623,7 +623,16 @@ trait AttendanceEmployee {
 		CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
 		
 		(
-			(DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
+			(DATEDIFF(DAY, 
+				CASE 
+					WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+					ELSE '$from_date' 
+				END, 
+				CASE 
+					WHEN GETDATE() < '$to_date' THEN GETDATE()
+					ELSE '$to_date'
+				END
+			) + 1) -  
 			(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
 			SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
@@ -666,8 +675,19 @@ trait AttendanceEmployee {
 		
 		SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
 		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
-		
-		(DATEDIFF(DAY, '$from_date', '$to_date') + 1) AS 'salary_days',
+
+			(
+				DATEDIFF(DAY, 
+					CASE 
+						WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+						ELSE '$from_date' 
+					END, 
+					CASE 
+						WHEN GETDATE() < '$to_date' THEN GETDATE()
+						ELSE '$to_date'
+					END
+				) + 1
+			) AS 'salary_days',
 
 			(
 				SELECT COUNT(DateInMonth)
