@@ -2011,15 +2011,20 @@ class AttendanceController extends Controller
             
             if(!empty($request->input('d'))){
                 $date = date('d', strtotime($request->input('d')));
+                $month = date('m', strtotime($request->input('d')));
+                $year = date('Y', strtotime($request->input('d')));
             }else{
                 $date = date('d');
-            } 
+                $month = date('m');
+                $year = date('Y');
+            }
 
             $all_employees = Employees::
-            leftJoin('tbl_attendance', function($join) use ($date) {
+            leftJoin('tbl_attendance', function($join) use ($date , $month , $year) {
                 $join->on('tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id');
                 $join->where('tbl_attendance.att_for_date', $date);
-               
+                $join->where('tbl_attendance.att_for_month', $month);
+                $join->where('tbl_attendance.att_for_year', $year);
             })
             ->leftjoin('tbl_departments', 'tbl_employees.employee_department', '=', 'tbl_departments.department_id')
             ->leftjoin('tbl_designations', 'tbl_employees.employee_designation', '=', 'tbl_designations.designation_id')
