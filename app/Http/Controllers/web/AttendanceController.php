@@ -2935,30 +2935,55 @@ class AttendanceController extends Controller
                 SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
                 OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
                 
-                (DATEDIFF(DAY, '2024-01-26', '2024-02-25') + 1) AS 'Salary Days',
-
-			    (
-				SELECT COUNT(DateInMonth)
-                 FROM (
-                    SELECT 
-                        DATEADD(DAY, number, '2024-01-26') AS DateInMonth
+                (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - (
+                    (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
+                    (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+                    SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+                    (SELECT COUNT(*) 
+                FROM (
+                    SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
                     FROM master.dbo.spt_values
                     WHERE TYPE = 'P'
-                        AND number BETWEEN 0 AND DATEDIFF(DAY, '2024-01-26', '2024-02-19')
-                        AND EXISTS (
-                            SELECT 1 
-                            FROM tbl_attendance 
-                            WHERE 
-                                att_for_year = YEAR(DATEADD(DAY, number, '2024-01-26')) AND
-                                att_for_month = MONTH(DATEADD(DAY, number, '2024-01-26')) AND
-                                att_for_date = DAY(DATEADD(DAY, number, '2024-01-26')) AND
-                                att_check_in_status = 1 
-                                AND att_employee_id = e.employee_id
-                                
+                    AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                    AND NOT EXISTS (
+                        SELECT 1 FROM tbl_attendance WHERE 
+                        att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+                        att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+                        att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                        att_employee_id = e.employee_id
+                    )
+                ) AS DateRange
+                WHERE 
+                    e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+                        
+                    ) AS 'Salary Days',
+
+                    (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - (
+                        (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
+                        (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
+                        SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
+                        (SELECT COUNT(*) 
+                    FROM (
+                        SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
+                        FROM master.dbo.spt_values
+                        WHERE TYPE = 'P'
+                        AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                        AND NOT EXISTS (
+                            SELECT 1 FROM tbl_attendance WHERE 
+                            att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+                            att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+                            att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                            att_employee_id = e.employee_id
                         )
-                        AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '2024-01-26')) + '%'
                     ) AS DateRange
-                ) AS 'Extra Working'
+                    WHERE 
+                        e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
+                            
+                        ) AS 'Extra Working'
 
                 FROM tbl_employees e
                 LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
