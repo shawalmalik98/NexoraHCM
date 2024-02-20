@@ -623,38 +623,53 @@ trait AttendanceEmployee {
 		CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
 		
 		(
-			(DATEDIFF(DAY, 
+			DATEDIFF(DAY, 
 				CASE 
 					WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
 					ELSE '$from_date' 
-				END, 
-				CASE 
-					WHEN GETDATE() < '$to_date' THEN GETDATE()
-					ELSE '$to_date'
-				END
-			) + 1) -  
-			(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
-			SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
-			SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
-			SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
-			(SELECT COUNT(*) 
-		FROM (
-			SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
-			FROM master.dbo.spt_values
-			WHERE TYPE = 'P'
-			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-			AND NOT EXISTS (
-				SELECT 1 FROM tbl_attendance WHERE 
-				att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-				att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-				att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-				att_employee_id = e.employee_id
+				END, '$to_date'
+		   
+			) + 1
+			- 
+			(
+				SUM(CASE 
+					WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
+					ELSE 0 
+				END) + 
+				(
+					SELECT COUNT(*) 
+					FROM (
+						SELECT DATEADD(DAY, number, 
+							CASE 
+								WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+								ELSE '$from_date' 
+							END
+						) AS DateInMonth
+						FROM master.dbo.spt_values
+						WHERE TYPE = 'P'
+							AND number BETWEEN 0 AND DATEDIFF(DAY, 
+								CASE 
+									WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+									ELSE '$from_date' 
+								END, 
+								'$to_date'
+							)
+							AND NOT EXISTS (
+								SELECT 1 FROM tbl_attendance 
+								WHERE 
+									att_comp_date = DATEADD(DAY, number, 
+										CASE 
+											WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+											ELSE '$from_date' 
+										END
+									) AND
+									att_employee_id = e.employee_id
+							)
+					) AS DateRange
+					WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+				)
 			)
-		) AS DateRange
-		WHERE 
-			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
-				
-			) AS absent,
+		) AS 'absent',
 		
 			SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
 		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'DA',
@@ -664,17 +679,28 @@ trait AttendanceEmployee {
 		
 		(SELECT COUNT(*) 
 		FROM (
-			SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
-			FROM master.dbo.spt_values
-			WHERE TYPE = 'P'
-			AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-		) AS DateRange
-		WHERE 
-			e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
-			) as off_days_count,
-		
-		SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
-		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
+		   SELECT DATEADD(DAY, number, 
+			   CASE 
+				   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+				   ELSE '$from_date' 
+			   END
+		   ) AS DateInMonth
+		   FROM master.dbo.spt_values
+		   WHERE TYPE = 'P'
+		   AND number BETWEEN 0 AND DATEDIFF(DAY, 
+			   CASE 
+				   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+				   ELSE '$from_date' 
+			   END, '$to_date'
+
+		   )
+				) AS DateRange
+				WHERE 
+				e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
+			) as 'off_days_count',
+					
+			SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+			OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
 
 			(
 				DATEDIFF(DAY, 
