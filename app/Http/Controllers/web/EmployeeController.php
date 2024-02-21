@@ -4994,18 +4994,21 @@ class EmployeeController extends Controller
                                 $employee_name = iconv('ISO-8859-1', 'UTF-8', $getData[1]);//$getData[1];
                                 $employee_department =  iconv('ISO-8859-1', 'UTF-8', $getData[2]);
                                 $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[3]);
-                                $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); 
-                                $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[5]);
+                                $employee_jobtitle =  iconv('ISO-8859-1', 'UTF-8', $getData[4]);
+                                $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[5]); 
                                 $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
-                                $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[7]);
+                                $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[7]);
                                
+                                $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[8]);
+                                $employee_contact_no = iconv('ISO-8859-1', 'UTF-8', $getData[9]);
+                                $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[10]);
                                 // $employee_group =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
                                 // $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); 
                                 
                                 // $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[6]); //$getData[10];
                                 // $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[7]);
                                 
-                                $employee_contact_no = '030021' . $employeeCode;
+                                // $employee_contact_no = '030021' . $employeeCode;
                                 // $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[10]);
                                 // $employee_location =  iconv('ISO-8859-1', 'UTF-8', $getData[11]); //$getData[18];
                                 //$getData[7];
@@ -5097,10 +5100,10 @@ class EmployeeController extends Controller
                                 //     $employee_record_insert = "FALSE";
                                 // }
 
-                                // $check_senior_manager_code = Employees::where('employee_code', '=', $employee_senior)->get('employee_id')->toArray();
-                                // if(empty($check_senior_manager_code)){
-                                //     $employee_record_insert = "FALSE";
-                                // }
+                                $check_senior_manager_code = Employees::where('employee_code', '=', $employee_senior)->get('employee_id')->toArray();
+                                if(empty($check_senior_manager_code)){
+                                    $employee_record_insert = "FALSE";
+                                }
 
                                 $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
                                
@@ -5307,10 +5310,10 @@ class EmployeeController extends Controller
                                         $add_employee->employee_status =  3;
                                         $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
                                         $add_employee->employee_department = $departments[0]['department_id'];
-                                        $add_employee->employee_jobtitle = ($designations[0]['designation_id']) ?? 1;
+                                        $add_employee->employee_jobtitle = $employee_jobtitle;
                                         $add_employee->employee_password = Crypt::encryptString(123);
                                         $add_employee->employee_geofencing_enability = false;
-                                        $add_employee->employee_senior_manager =  1;
+                                        $add_employee->employee_senior_manager =  ($check_senior_manager_code[0]['employee_id']) ?? 1;
                                         $add_employee->employee_is_manager = 0;
                                         $add_employee->employee_offdays = 'Sunday';
                                         $add_employee->employee_jobtype = 'Office';
