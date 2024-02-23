@@ -22,8 +22,12 @@
         }
     </style>
 </head>
+@if(!empty($emailError))
+    <p>{{ $emailError[0]['errormsg'] }}</p>
+@endif
 
-<p>Greetings,<br><br>
+@if(!empty($emailData))
+    <p>Greetings,<br><br>
     <p>Some of our newly joined employee(s) accounts are created in IIL-HCM from SAP – IIL HCM integration. Please verify and add the appropriate information for their attendance marking purpose.</p>
     <p>Thanks!</p>
     
@@ -61,6 +65,6 @@
             </tbody>
 
         </table><br>
-
+@endif
     {{-- <p style="font-size:12px " >The information contained in this email and any attachments ("Message") may be confidential. If you are not the intended recipient, please immediately notify the sender, delete this Message and do not disclose, distribute, or copy to any third party or otherwise use this Message. Electronic messages are not secure or error free and can contain viruses or may be delayed. The sender reserves the right to monitor, record, and retain electronic messages.</p> --}}
     
