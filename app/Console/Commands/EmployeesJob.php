@@ -51,6 +51,7 @@ class EmployeesJob extends Command
                 ->get()->toArray();
                 
                 $emailData = []; 
+                $emailError = [];
 
                 foreach ($sap_employee_detail as $employee) {
 
@@ -365,7 +366,7 @@ class EmployeesJob extends Command
                         $ccEmail = ['oalam@ismailindustries.com', 'saaahmed@ismailindustries.com'];
                         Mail::to($toEmail)
                         ->cc($ccEmail)
-                        ->send(new EmployeesOnboardMail($all_email_data));
+                        ->send(new EmployeesOnboardMail($all_email_data, null));
                     }
                 }    
             } 
@@ -389,6 +390,21 @@ class EmployeesJob extends Command
             $generate_error_log->error_log_generated_employee = 1;
             $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
             $generate_error_log->save();
+
+            $emailError[] = [
+                'errormsg' => 'Employees create from SAP to IIL-HCM insertion error. Line: ' . $e->getLine() . '. Message: ' . $e->getMessage(),
+            ];
+
+            if(!empty($emailError)){
+               
+                $toEmail = 'smalik@ismailindustries.com';
+                // $ccEmail = 'saaahmed@ismailindustries.com';
+                Mail::to($toEmail)
+                // ->cc($ccEmail)
+                ->send(new EmployeesOnboardMail(null, $emailError));
+                
+            }    
+
         }
 
     }

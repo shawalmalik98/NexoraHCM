@@ -13,15 +13,17 @@ class EmployeesOnboardMail extends Mailable
 {
     use Queueable, SerializesModels;
     public $emailData;
+    public $emailError;
    
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($emailData)
+    public function __construct($emailData = null, $emailError = null)
     {
         $this->emailData = $emailData;
+        $this->emailError = $emailError;
 
     }
 
@@ -48,8 +50,8 @@ class EmployeesOnboardMail extends Mailable
         return new Content(
             view: 'email-template.employees-onboard',
             with: [
-               
-                'emailData' => $this->emailData,
+                'emailData' => $this->emailError ? null : $this->emailData,
+                'emailError' => $this->emailData ? null : $this->emailError,
             ],
         );
     }
