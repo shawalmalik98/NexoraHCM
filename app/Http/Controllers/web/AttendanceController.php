@@ -221,7 +221,7 @@ class AttendanceController extends Controller
 
                 if(empty($request->from_date) && empty($request->to_date)){
                     if(date('d') >= '26'){
-                        $from_date = date('Y-m-26');
+                        $from_date = date('Y-m-') . '25';
                         $to_date = date('Y-m-d');
                     }else{
                         $today = new DateTime();
@@ -399,7 +399,7 @@ class AttendanceController extends Controller
 
                 if(empty($request->from_date) || empty($request->to_date)){
                     if(date('d') >= '26'){
-                        $from_date = date('Y-m-26');
+                        $from_date = date('Y-m-') . '25';
                         $to_date = date('Y-m-d');
                     }
                     else{
@@ -616,7 +616,7 @@ class AttendanceController extends Controller
 
                 if(empty($request->from_date) && empty($request->to_date)){
                     if(date('d') >= '26'){
-                        $from_date = date('Y-m-26');
+                        $from_date = date('Y-m-') . '25';
                         $to_date = date('Y-m-d');
                     }
                     else{
@@ -2239,7 +2239,7 @@ class AttendanceController extends Controller
 
                 if(empty($request->from_date) && empty($request->to_date)){
                     if(date('d') >= '26'){
-                        $from_date = date('Y-m-26');
+                        $from_date = date('Y-m-') . '25';
                         $to_date = date('Y-m-d');
                     }else{
                         $today = new DateTime();
@@ -2767,7 +2767,7 @@ class AttendanceController extends Controller
 
             if(empty($request->from_date) && empty($request->to_date)){
                 if(date('d') >= '26'){
-                    $from_date = date('Y-m-26');
+                    $from_date = date('Y-m-') . '25';
                     $to_date = date('Y-m-d');
                 }else{
                     $today = new DateTime();
