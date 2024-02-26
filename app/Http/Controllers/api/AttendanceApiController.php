@@ -310,7 +310,7 @@ class AttendanceApiController extends Controller
             }
 
 
-            $endpoint = "http://sapapi.ismailglobal.com:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
+            $endpoint = "http://sapapi.ismailindustries.com.pk:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
 
             $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
 
