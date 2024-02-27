@@ -45,7 +45,7 @@ class EmployeesJob extends Command
             
             if ($response->successful()) {
             
-                $data = $response->body();
+                // $data = $response->body();
 
                 $sap_employee_detail = DB::table('sap_employee_detail')
                 ->get()->toArray();
@@ -63,6 +63,11 @@ class EmployeesJob extends Command
                     $job_title = $employee->Designation;
                     $business_unit = $employee->PersonalArea;
                     $status_name = $employee->EmployeeGroup;
+                    $employee_company = $employee->CompanyName;
+
+                    $employee_company_id = DB::table('tbl_company')
+                    ->where('company_name',  $employee_company)
+                    ->value('company_id');
 
                     $group_id = DB::table('tbl_employee_groups')
                     ->where('group_name',  'like', '%' . $employee_group . '%')
@@ -103,7 +108,7 @@ class EmployeesJob extends Command
                         $add_employee->employee_contactno = "0649-8439872" . $employee_code;
                         $add_employee->employee_gender = 'Male';
                         $add_employee->employee_status =  $employee_status_id;
-                        $add_employee->employee_company =  1;
+                        $add_employee->employee_company =  $employee_company_id ?? 1;
                         $add_employee->employee_department = $all_departments[0]['department_id'];
                         $add_employee->employee_designation = $all_designations[0]['designation_id'];
                         $add_employee->employee_jobtitle = $job_title;
@@ -363,7 +368,7 @@ class EmployeesJob extends Command
                 if(!empty($emailData)){
                     foreach ($emailData as $groupId => $all_email_data) {
                         $toEmail = $groupEmailAddresses[$groupId];
-                        $ccEmail = ['oalam@ismailindustries.com', 'saaahmed@ismailindustries.com'];
+                        $ccEmail = ['oalam@ismailindustries.com','saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
                         Mail::to($toEmail)
                         ->cc($ccEmail)
                         ->send(new EmployeesOnboardMail($all_email_data, null));
@@ -398,9 +403,9 @@ class EmployeesJob extends Command
             if(!empty($emailError)){
                
                 $toEmail = 'smalik@ismailindustries.com';
-                // $ccEmail = 'saaahmed@ismailindustries.com';
+                $ccEmail = 'saaahmed@ismailindustries.com';
                 Mail::to($toEmail)
-                // ->cc($ccEmail)
+                ->cc($ccEmail)
                 ->send(new EmployeesOnboardMail(null, $emailError));
                 
             }    
