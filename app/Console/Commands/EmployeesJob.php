@@ -82,7 +82,7 @@ class EmployeesJob extends Command
                     ->get(['designation_id','designation_name'])->toArray();
 
                     $employee_business_unit = DB::table('tbl_employees')
-                    ->where('business_unit', $business_unit)
+                    ->where('business_unit', 'like', '%' . $business_unit . '%')
                     ->value('business_unit');
 
                     $employee_status_id = DB::table('tbl_employement_status')

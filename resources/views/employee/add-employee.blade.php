@@ -250,7 +250,8 @@
                                     <option value="PET Resin">PET Resin</option>  
                                     <option value="Ismail Global">Ismail Global</option>  
                                     <option value="Plastiflex">Plastiflex</option> 
-                                    <option value="Ismail Resin">Ismail Resin</option>  
+                                    <option value="Ismail Resin">Ismail Resin</option> 
+                                    <option value="Ismail Industries Limited">Ismail Industries Limited</option>   
                                 </option>                               
                                 </select>
                             </div>
