@@ -65,7 +65,7 @@ class Kernel extends ConsoleKernel
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
 
-        })->everyFiveMinutes()->between('15:30', '17:30');
+        })->everyFiveMinutes()->between('15:30', '19:00');
 
         // $schedule->call(function () {
         //     $response = Http::get('http://172.19.0.101:8080/sap-attendance/post-attend');
