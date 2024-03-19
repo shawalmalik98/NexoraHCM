@@ -51,7 +51,7 @@ class Kernel extends ConsoleKernel
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
 
-        })->hourly()->between('11:00', '18:00');
+        })->hourly()->between('11:00', '15:00');
 
         // $schedule->call(function () {
         //     AttendanceGetToSAP::dispatch();
@@ -65,7 +65,17 @@ class Kernel extends ConsoleKernel
                 'execute_time' => now()->format('Y-m-d H:i:s')
             ]);
 
-        })->everyFiveMinutes()->between('18:00', '20:00');
+        })->everyFiveMinutes()->between('15:30', '17:30');
+
+        // $schedule->call(function () {
+        //     $response = Http::get('http://172.19.0.101:8080/sap-attendance/post-attend');
+        //     $data = $response->body();
+        //     DB::table('tbl_attendance_job')->insert([
+        //         'function_name' => $data,
+        //         'execute_time' => now()->format('Y-m-d H:i:s')
+        //     ]);
+
+        // })->everyFiveMinutes()->between('18:00', '20:00');
 
         // $schedule->call(function () {
         //     AttendanceGetToSAP::dispatch();
