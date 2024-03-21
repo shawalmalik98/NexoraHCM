@@ -95,15 +95,34 @@
                                             <span>Department</span>
                                         </label>
                                         <div>
-                                            <select class="form-select" data-kt-select2="true" name="department_id" data-placeholder="Select Department">
+                                            <select class="form-select" data-kt-select2="true" name="department_id" id="department_select" data-placeholder="Select Department">
                                                 <option value="">Select Department</option>
                                                 <option value="All" @if (Request::get('department_id') == 'All') selected @endif>All Departments</option>
                                                 @if(!empty($departments))
                                                     @foreach ($departments as $department)
-                                                        <option value="{{ $department['department_id'] }}" @if (Request::get('department_id') == $department['department_id']) selected @endif>{{ $department['department_name'] }}</option>
+                                                        <option value="{{ $department['department_id'] }}"  data-depart_id="{{ $department['department_id'] }}" @if (Request::get('department_id') == $department['department_id']) selected @endif>{{ $department['department_name'] }}</option>
                                                     @endforeach
                                                 @endif                                                             
                                             </select>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                    
+                                        <label class="form-label fw-semibold">
+                                            <span>Designation</span>
+                                        </label>
+                                        <div>
+
+                                            <select class="form-select" data-kt-select2="true" name="designation_id[]" id="designations" data-placeholder="Select Designation" multiple>
+                                                <option value="">Select Designation</option>
+                                                {{-- <option value="All" @if (is_array(Request::get('designation_id')) && in_array('All', Request::get('designation_id'))) selected @endif>All Designations</option> --}}
+                                                @if(!empty($designations))
+                                                    @foreach ($designations as $designation)
+                                                        <option value="{{ $designation['designation_id'] }}" @if (is_array(Request::get('designation_id')) && in_array($designation['designation_id'], Request::get('designation_id'))) selected @endif>{{ $designation['designation_name'] }}</option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                            
                                         </div>
                                     </div>
                                     <div class="mb-3 row" >
@@ -143,7 +162,7 @@
                                     </div>
 
                                     <div class="d-flex justify-content-end">
-                                        @if (!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) ||  !empty(Request::get('from_date')) || !empty(Request::get('to_date')))
+                                        @if (!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('designation_id')) ||  !empty(Request::get('from_date')) || !empty(Request::get('to_date')))
                                             <a href="{{ url('monthly-attendance') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
                                         @endif
                                         <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" >Close</button>
@@ -281,6 +300,52 @@
 
 
 @push('js-link')
+<script>
+
+$('#department_select').change(function (e) {
+    e.preventDefault();
+    var department = $(this).find(':selected').attr('data-depart_id');
+    $('#designations').html('');
+    $.ajax({
+        url: base_url + '/employees/get_desinations/' + department,
+        type: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            department: department
+        },
+        contentType: false,
+        cache: false,
+        processData: false,
+        success: function (data) {
+
+            $('#designations').find('option:not(:first)').remove();
+            $('#designations').append(data);
+        },
+        error: function (jqXHR, textStatus) {
+            var errorStatus = jqXHR.status;
+            if (errorStatus == 0) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Internet Connection Problem',
+                    timer: 3000,
+                })
+            } else {
+                if (errorStatus == 419) {
+                    location.reload();
+                } else {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Try Again. Error Code ' + errorStatus,
+                        timer: 3000,
+                    })
+                }
+            }
+        }
+    });
+});
+</script>
 
 <script src="{{url('assets/js/attendance/all-employee-manage-attendance.js')}}"></script>
     

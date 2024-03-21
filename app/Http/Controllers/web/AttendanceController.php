@@ -5,7 +5,7 @@ namespace App\Http\Controllers\web;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, HrmSetting, LeaveRequest, Leave, OfficeLocation, ShareAttReport, LeaveManagement, AttendanceLocker, DeletedAttendance, EmployeeGroup};
+use App\Models\{AttRequestTime, AttendanceRequest, Attendance, AttendanceAccess, Employees, Department, Designation, HrmSetting, LeaveRequest, Leave, OfficeLocation, ShareAttReport, LeaveManagement, AttendanceLocker, DeletedAttendance, EmployeeGroup};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee};
@@ -2784,6 +2784,15 @@ class AttendanceController extends Controller
                 $where_clause .= ' AND e.employee_department = '.$request->department_id;
             }
 
+            if (!empty($request->designation_id)) {
+                // if (is_array($request->designation_id)) {
+                    $designation_ids = implode(',', $request->designation_id);
+                    $where_clause .= ' AND des.designation_id IN ('. $designation_ids .')';
+                // } else {
+                //     $where_clause .= ' AND des.designation_id = '. $request->designation_id;
+                // }
+            }
+
             if(!empty($request->business_unit) && $request->business_unit != 'All'){
                 $where_clause .= " AND e.business_unit = '".$request->business_unit."'";
             }
@@ -2869,14 +2878,17 @@ class AttendanceController extends Controller
             // dd($where_clause);
 
             $departments = Department::get(['department_id','department_name'])->toArray();
+            $designations = Designation::where('department_id', $request->department_id)->get(['designation_id','designation_name'])->toArray();
            
             // $all_attendances = $this->get_monthly_attendance($leave_name,$last_date,$year,$month,$employement_status,$where_clause_two);
             $all_attendances = $this->get_monthly_attendance_all_employees($from_date , $to_date , $where_clause);
             $all_attendances = json_decode(json_encode($all_attendances), true);
 
             // dd($all_attendances);
+
+            // dd($all_attendances);
          
-            $send_data = compact('title','login_user','all_attendances','departments','from_date','to_date');
+            $send_data = compact('title','login_user','all_attendances','departments','designations','from_date','to_date');
 
             if($request->download == 'TRUE'){
 
@@ -2946,90 +2958,90 @@ class AttendanceController extends Controller
                 OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS 'Total Leaves',
                 
                 (SELECT COUNT(*) 
-		FROM (
-		   SELECT DATEADD(DAY, number, 
-			   CASE 
-				   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-				   ELSE '$from_date' 
-			   END
-		   ) AS DateInMonth
-		   FROM master.dbo.spt_values
-		   WHERE TYPE = 'P'
-		   AND number BETWEEN 0 AND DATEDIFF(DAY, 
-			   CASE 
-				   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-				   ELSE '$from_date' 
-			   END, '$to_date'
+                FROM (
+                SELECT DATEADD(DAY, number, 
+                    CASE 
+                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+                        ELSE '$from_date' 
+                    END
+                ) AS DateInMonth
+                FROM master.dbo.spt_values
+                WHERE TYPE = 'P'
+                AND number BETWEEN 0 AND DATEDIFF(DAY, 
+                    CASE 
+                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+                        ELSE '$from_date' 
+                    END, '$to_date'
 
-		   )
-				) AS DateRange
-				WHERE 
-				e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
-			) as 'Off Days Count',
-                
-                SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
-                OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
-                
-                (
-                    DATEDIFF(DAY, 
-                        CASE 
-                            WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                            ELSE '$from_date' 
-                        END, 
-                        CASE 
-                            WHEN GETDATE() < '$to_date' THEN GETDATE()
-                            ELSE '$to_date'
-                        END
-                    ) + 1
-                ) AS 'Salary Days',
+                )
+                        ) AS DateRange
+                        WHERE 
+                        e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
+                    ) as 'Off Days Count',
+                        
+                        SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+                        OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
+                        
+                        (
+                            DATEDIFF(DAY, 
+                                CASE 
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+                                    ELSE '$from_date' 
+                                END, 
+                                CASE 
+                                    WHEN GETDATE() < '$to_date' THEN GETDATE()
+                                    ELSE '$to_date'
+                                END
+                            ) + 1
+                        ) AS 'Salary Days',
 
-			(
-				SELECT COUNT(DateInMonth)
-				FROM (
-					SELECT 
-						DATEADD(DAY, number, '$from_date') AS DateInMonth
-					FROM master.dbo.spt_values
-					WHERE TYPE = 'P'
-						AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-						AND EXISTS (
-							SELECT 1 
-							FROM tbl_attendance 
-							WHERE 
-								att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-								att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-								att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-								(
-									att_check_in_status = 1 OR
-									att_check_out_status = 1
-								)
-								AND att_employee_id = e.employee_id
-								
-						)
-						AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
-				) AS DateRange
-			) AS 'Extra Working'
+                    (
+                        SELECT COUNT(DateInMonth)
+                        FROM (
+                            SELECT 
+                                DATEADD(DAY, number, '$from_date') AS DateInMonth
+                            FROM master.dbo.spt_values
+                            WHERE TYPE = 'P'
+                                AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                                AND EXISTS (
+                                    SELECT 1 
+                                    FROM tbl_attendance 
+                                    WHERE 
+                                        att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+                                        att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+                                        att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                                        (
+                                            att_check_in_status = 1 OR
+                                            att_check_out_status = 1
+                                        )
+                                        AND att_employee_id = e.employee_id
+                                        
+                                )
+                                AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+                        ) AS DateRange
+                    ) AS 'Extra Working'
 
-                FROM tbl_employees e
-                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
-                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
-                AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
-                LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
-                LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
-                LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
-                LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-                WHERE $where_clause
-                GROUP BY 
-                e.employee_code, 
-                e.employee_name, 
-                e.business_unit, 
-                dep.department_name, 
-                des.designation_name, 
-                e.employee_offdays,
-                e.employee_id,
-                rep.employee_code,
-                rep.employee_name,
-                e.employee_doj
-                ");
+                        FROM tbl_employees e
+                        LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+                        AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
+                        AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
+                        LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
+                        LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
+                        LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+                        LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+                        WHERE $where_clause
+                        GROUP BY 
+                        e.employee_code, 
+                        e.employee_name, 
+                        e.business_unit, 
+                        dep.department_name, 
+                        des.designation_name, 
+                        e.employee_offdays,
+                        e.employee_id,
+                        rep.employee_code,
+                        rep.employee_name,
+                        e.employee_doj
+                        ");
 
                 $all_attendance = json_decode(json_encode($all_attendances), true);
 
