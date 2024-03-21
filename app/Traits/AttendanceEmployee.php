@@ -749,7 +749,7 @@ trait AttendanceEmployee {
 			LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
 			LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
 			LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-			WHERE $where_clause
+			WHERE $where_clause AND e.employee_isactive = 1
 			GROUP BY 
 			e.employee_code, 
 			e.employee_name, 
