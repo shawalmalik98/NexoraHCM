@@ -2892,6 +2892,8 @@ class AttendanceController extends Controller
 
             if($request->download == 'TRUE'){
 
+                // dd($where_clause);
+
                 $all_attendances = DB::select("
                 SELECT 
                 e.employee_code as 'Employee Code', 
@@ -3029,7 +3031,7 @@ class AttendanceController extends Controller
                         LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
                         LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
                         LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-                        WHERE $where_clause
+                        WHERE $where_clause AND e.employee_isactive = 1
                         GROUP BY 
                         e.employee_code, 
                         e.employee_name, 
@@ -3041,7 +3043,7 @@ class AttendanceController extends Controller
                         rep.employee_code,
                         rep.employee_name,
                         e.employee_doj
-                        ");
+                    ");
 
                 $all_attendance = json_decode(json_encode($all_attendances), true);
 
