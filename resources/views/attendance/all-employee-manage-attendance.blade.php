@@ -320,7 +320,6 @@ $('#department_select').change(function (e) {
         processData: false,
         success: function (data) {
 
-            $('#designations').find('option:not(:first)').remove();
             $('#designations').append(data);
         },
         error: function (jqXHR, textStatus) {
