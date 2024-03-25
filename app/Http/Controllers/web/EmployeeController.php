@@ -4996,12 +4996,14 @@ class EmployeeController extends Controller
                                 $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[3]);
                                 $employee_jobtitle =  iconv('ISO-8859-1', 'UTF-8', $getData[4]);
                                 $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[5]); 
-                                $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
-                                $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[7]);
+                                $joining_date =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
+                                $employee_business_unit =  iconv('ISO-8859-1', 'UTF-8', $getData[7]);
                                
                                 $employee_nic = iconv('ISO-8859-1', 'UTF-8', $getData[8]);
-                                $employee_contact_no = iconv('ISO-8859-1', 'UTF-8', $getData[9]);
-                                $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[10]);
+                                
+                                $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[9]);
+                                $employee_offdays = iconv('ISO-8859-1', 'UTF-8', $getData[10]);
+                                $employee_contact_no = iconv('ISO-8859-1', 'UTF-8', $getData[11]);
                                 // $employee_group =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
                                 // $employee_job_title =  iconv('ISO-8859-1', 'UTF-8', $getData[4]); 
                                 
@@ -5010,7 +5012,7 @@ class EmployeeController extends Controller
                                 
                                 // $employee_contact_no = '030021' . $employeeCode;
                                 // $employee_senior = iconv('ISO-8859-1', 'UTF-8', $getData[10]);
-                                // $employee_location =  iconv('ISO-8859-1', 'UTF-8', $getData[11]); //$getData[18];
+                                $employee_location =  iconv('ISO-8859-1', 'UTF-8', $getData[12]); //$getData[18];
                                 //$getData[7];
                                 // $employee_group =  iconv('ISO-8859-1', 'UTF-8', $getData[6]);
                                 // $employee_dob =  iconv('ISO-8859-1', 'UTF-8', $getData[5]); //$getData[10];
@@ -5305,17 +5307,17 @@ class EmployeeController extends Controller
                                         $add_employee->employee_cnic = $employee_nic;
                                         $add_employee->employee_personal_email = $employee_personal_email;
                                         $add_employee->employee_work_email = $employee_personal_email;
-                                        $add_employee->employee_contactno = $employee_contact_no;
+                                        $add_employee->employee_contactno = $employee_contact_no ?? '012313123'.$employeeCode; 
                                         $add_employee->employee_gender = 'Male';
                                         $add_employee->employee_status =  3;
                                         $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
                                         $add_employee->employee_department = $departments[0]['department_id'];
                                         $add_employee->employee_jobtitle = $employee_jobtitle;
                                         $add_employee->employee_password = Crypt::encryptString(123);
-                                        $add_employee->employee_geofencing_enability = false;
+                                        $add_employee->employee_geofencing_enability = 1;
                                         $add_employee->employee_senior_manager =  ($check_senior_manager_code[0]['employee_id']) ?? 1;
                                         $add_employee->employee_is_manager = 0;
-                                        $add_employee->employee_offdays = 'Sunday';
+                                        $add_employee->employee_offdays = $employee_offdays;
                                         $add_employee->employee_jobtype = 'Office';
                                         $add_employee->employee_group =   3;
                                         // $add_employee->employee_location = $locations[0]['location_id'];
@@ -5328,12 +5330,14 @@ class EmployeeController extends Controller
 
                                         if($employee == 1){
 
-                                            // $new_employee_location = new EmployeeLocation();
-                                            // $new_employee_location->emp_loc_employee_id = $employee_registration_id;
-                                            // $new_employee_location->emp_loc_loc_id =  $employee_location ?? 1;
-                                            // $new_employee_location->created_at = date('Y-m-d H:i:s');
-                                            // $new_employee_location->save();
-
+                                            $check_location = OfficeLocation::where('location_id', '=', (int)$employee_location)->get('location_id')->toArray();
+                                            if(!empty($check_location)){
+                                                $new_employee_location = new EmployeeLocation();
+                                                $new_employee_location->emp_loc_employee_id = $employee_registration_id;
+                                                $new_employee_location->emp_loc_loc_id =  $employee_location;
+                                                $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                                $new_employee_location->save();
+                                            }
                                             $emp_salary = new EmployeeSalary();
                                             $emp_salary->salary_employee_id = $employee_registration_id;
                                             $emp_salary->salary_amount =  15000;
