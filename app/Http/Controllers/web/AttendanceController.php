@@ -3059,8 +3059,8 @@ class AttendanceController extends Controller
         }catch(\Exception $e){
             $this->create_error_log('View All Employees Monthly Attendance', $e);
             $send_data = compact('title');
-            return $e->getMessage();
-            // return view('errors.500');
+            // return $e->getMessage();
+            return view('errors.500');
         }finally{
 
             ActivityTracker::track_activity('View All Employees Monthly  Attendance');
