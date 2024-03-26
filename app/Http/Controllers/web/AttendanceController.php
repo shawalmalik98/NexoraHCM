@@ -2885,14 +2885,10 @@ class AttendanceController extends Controller
             $all_attendances = json_decode(json_encode($all_attendances), true);
 
             // dd($all_attendances);
-
-            // dd($all_attendances);
-         
+                    // dd($from_date);
             $send_data = compact('title','login_user','all_attendances','departments','designations','from_date','to_date');
 
             if($request->download == 'TRUE'){
-
-                // dd($where_clause);
 
                 $all_attendances = DB::select("
                 SELECT 
@@ -2953,10 +2949,10 @@ class AttendanceController extends Controller
                     )
                 ) AS 'Absent',
                 
-                    SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+                SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
                 OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'DA',
                 
-                    SUM(CASE WHEN att_check_overall_status = 'leaves' 
+                SUM(CASE WHEN att_check_overall_status = 'leaves' 
                 OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS 'Total Leaves',
                 
                 (SELECT COUNT(*) 
@@ -2995,6 +2991,66 @@ class AttendanceController extends Controller
                                     ELSE '$to_date'
                                 END
                             ) + 1
+                        ) AS 'Month Days',
+
+                        (
+                            DATEDIFF(DAY, 
+                                CASE 
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+                                    ELSE '$from_date' 
+                                END, 
+                                CASE 
+                                    WHEN GETDATE() < '$to_date' THEN GETDATE()
+                                    ELSE '$to_date'
+                                END
+                            ) + 1
+                        ) - 
+                        (
+                            DATEDIFF(DAY, 
+                                CASE 
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+                                    ELSE '$from_date' 
+                                END, '$to_date'
+                            ) + 1
+                            - 
+                            (
+                                SUM(CASE 
+                                    WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
+                                    ELSE 0 
+                                END) + 
+                                (
+                                    SELECT COUNT(*) 
+                                    FROM (
+                                        SELECT DATEADD(DAY, number, 
+                                            CASE 
+                                                WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+                                                ELSE '$from_date' 
+                                            END
+                                        ) AS DateInMonth
+                                        FROM master.dbo.spt_values
+                                        WHERE TYPE = 'P'
+                                            AND number BETWEEN 0 AND DATEDIFF(DAY, 
+                                                CASE 
+                                                    WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+                                                    ELSE '$from_date' 
+                                                END, 
+                                                '$to_date'
+                                            )
+                                            AND NOT EXISTS (
+                                                SELECT 1 FROM tbl_attendance 
+                                                WHERE 
+                                                    att_comp_date = DATEADD(DAY, number, 
+                                                        CASE 
+                                                            WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+                                                            ELSE '$from_date' 
+                                                        END
+                                                    ) AND
+                                                    att_employee_id = e.employee_id
+                                            )
+                                    ) AS DateRange
+                                    WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+                                )
+                            )
                         ) AS 'Salary Days',
 
                     (
@@ -3059,8 +3115,8 @@ class AttendanceController extends Controller
         }catch(\Exception $e){
             $this->create_error_log('View All Employees Monthly Attendance', $e);
             $send_data = compact('title');
-            // return $e->getMessage();
-            return view('errors.500');
+            return $e->getline().$e->getMessage();
+            // return view('errors.500');
         }finally{
 
             ActivityTracker::track_activity('View All Employees Monthly  Attendance');

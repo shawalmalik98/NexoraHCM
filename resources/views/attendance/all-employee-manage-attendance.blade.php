@@ -39,7 +39,7 @@
 
             @if(!empty($all_attendances))
             <div class="m-0">
-                @if(!empty(Request::get('department_id')) || !empty(Request::get('designation_id')) || !empty(Request::get('business_unit')) || !empty(Request::get('from_date')) || !empty(Request::get('to_date')))
+                {{-- @if(!empty(Request::get('department_id')) || !empty(Request::get('designation_id')) || !empty(Request::get('business_unit')) || !empty(Request::get('from_date')) || !empty(Request::get('to_date')))
 
                     <a href="{{ url('monthly-attendance') }}?download=TRUE&department_id={{ Request::get('department_id') }}&designation_id[]={{ implode('&designation_id[]=', (array) Request::get('designation_id')) }}&business_unit={{ Request::get('business_unit') }}&from_date={{ Request::get('from_date') }}&to_date={{ Request::get('to_date') }}" class="btn btn-sm btn-success" method="GET">
                         <span class="svg-icon svg-icon-2">
@@ -60,7 +60,41 @@
                         </span>
                         Download Payroll Attendance Report
                     </a>
-                @endif    
+                @endif     --}}
+
+                @if (!empty(Request::get('department_id')) || 
+                    !empty(Request::get('business_unit')) || 
+                    !empty(Request::get('from_date')) || 
+                    !empty(Request::get('to_date')))
+                    @php
+                        $designation_ids = Request::get('designation_id');
+                        $designation_query = '';
+                        if (!empty($designation_ids)) {
+                            $designation_query = '&designation_id[]=' . implode('&designation_id[]=', (array) $designation_ids);
+                        }
+                    @endphp
+
+                    <a href="{{ url('monthly-attendance') }}?download=TRUE&department_id={{ Request::get('department_id') }}{{ $designation_query }}&business_unit={{ Request::get('business_unit') }}&from_date={{ Request::get('from_date') }}&to_date={{ Request::get('to_date') }}" class="btn btn-sm btn-success" method="GET">
+                        <span class="svg-icon svg-icon-2">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                            </svg>
+                        </span>
+                        Download Payroll Attendance Report
+                    </a>
+                @else
+                    <a href="{{ url('monthly-attendance') }}?download=TRUE" class="btn btn-sm btn-success" method="GET">
+                        <span class="svg-icon svg-icon-2">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                            </svg>
+                        </span>
+                        Download Payroll Attendance Report
+                    </a>
+                @endif
+
             </div>
         @endif
 
@@ -206,6 +240,7 @@
                                         <th class="text-center">Leave Days</th>
                                         <th class="text-center">Off Days</th>
                                         <th class="text-center">Patrol</th>
+                                        <th class="text-center">Month Days</th>
                                         <th class="text-center">Salary Days</th>
                                         <th class="text-center">Extra Working</th>
                                         <th class="text-center">View Attendance</th>
@@ -229,6 +264,7 @@
                                                 <td class="text-center">{{$all_attendance['total_leaves']}}</td>
                                                 <td class="text-center">{{$all_attendance['off_days_count']}}</td>
                                                 <td class="text-center">{{$all_attendance['Patrol']}}</td>
+                                                <td class="text-center">{{$all_attendance['month_days']}}</td>
                                                 <td class="text-center">{{$all_attendance['salary_days']}}</td>
                                                 <td class="text-center">{{$all_attendance['extra_working']}}</td>
                                                 <td class="text-center">
