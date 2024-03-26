@@ -821,6 +821,9 @@ trait AttendanceEmployee {
 			rep.employee_code,
 			rep.employee_name,
 			e.employee_doj
+
+			ORDER BY 
+    			e.employee_code ASC
 	
 		");
 

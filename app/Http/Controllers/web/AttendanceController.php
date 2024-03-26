@@ -3099,6 +3099,9 @@ class AttendanceController extends Controller
                         rep.employee_code,
                         rep.employee_name,
                         e.employee_doj
+
+                        ORDER BY 
+    			            e.employee_code ASC
                     ");
 
                 $all_attendance = json_decode(json_encode($all_attendances), true);
