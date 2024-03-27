@@ -2894,7 +2894,7 @@ class AttendanceController extends Controller
                 SELECT 
                 e.employee_code as 'Employee Code', 
                 e.employee_name as 'Employee Name',
-                FORMAT(CAST(e.employee_doj AS DATE), 'dd MMM, yyyy') as 'Employee Doj',
+                FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'Employee Doj',
                 dep.department_name as 'Department Name', 
                 des.designation_name as 'Designation Name',
                 e.business_unit as 'Business Unit',
