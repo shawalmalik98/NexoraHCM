@@ -675,6 +675,7 @@ use App\Http\Controllers\api\EmployeeApiController;
 
         Route::get('/', [AttendanceController::class, 'monthly_attendance']);
         Route::post('/download-monthly-attendance',[AttendanceController::class, 'download_monthly_attendance']);
+        Route::get('/download-day-wise-attendance-report',[AttendanceController::class, 'download_day_wise_attendance_report']);
 
 
       });

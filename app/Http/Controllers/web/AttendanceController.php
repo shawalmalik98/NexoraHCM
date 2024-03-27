@@ -698,7 +698,7 @@ class AttendanceController extends Controller
             $all_employees = Employees::where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
 
             $leave_name = implode(',',$manage_leaves);
-
+            // dd($month_days);
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
 
             return view('attendance.attendance-report-sap',$send_data); 
@@ -3622,5 +3622,58 @@ class AttendanceController extends Controller
         }finally{
             ActivityTracker::track_activity('Delete Attendance Record');
         }
-    } 
+    }
+
+    protected function download_day_wise_attendance_report(Request $request){
+        ini_set('max_execution_time',3000);
+        // dd($request->from_date);
+        $employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', 1)->get(['employee_id'])->toArray();
+        // dd($employees);
+        if(!empty($employees)){
+            $attendance_array = [];
+            foreach($employees as $employee){
+                $employee_id = $employee['employee_id'];
+                $attendance = DB::select("SELECT 
+                    employee_code as 'Employee ID', 
+                    employee_name as  'Name', 
+                    CONVERT(date, dates.date_between) as 'Date', 
+                    DATENAME(dw, dates.date_between) as 'Day', 
+                    CASE 
+                        WHEN emp.employee_doj <= dates.date_between THEN
+                            CASE 
+                                WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                                WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
+                            END
+                        ELSE '-' 
+                    END AS 'Attendance Status',
+                    CASE 
+                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
+                        ELSE '' 
+                    END AS 'Check In', 
+                    CASE 
+                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
+                        ELSE '' 
+                    END AS 'Check Out'
+                FROM (
+                    SELECT DATEADD(DAY, n, '$request->from_date') AS date_between
+                    FROM (
+                        SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
+                        FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
+                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
+                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                    ) AS numbers
+                    WHERE DATEADD(DAY, n, '$request->from_date') BETWEEN '$request->from_date' AND '$request->to_date'
+                ) AS dates
+                LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id
+                LEFT JOIN tbl_employees AS emp ON $employee_id = emp.employee_id 
+                ORDER BY dates.date_between ASC");
+                $attendance = json_decode(json_encode($attendance), TRUE);
+                $attendance_array = array_merge($attendance_array, $attendance);
+            }
+            // dd($attendance_array);
+            $header_style = (new Style())->setFontBold();
+
+            return (new FastExcel($attendance_array))->headerStyle($header_style)->download('Detailed Attendance Report.xlsx');
+        }
+    }
 }
