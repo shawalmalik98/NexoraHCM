@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController,AppFlowController, SalaryController};
-use App\Http\Controllers\api\EmployeeApiController;
+use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
+
 
 
 
@@ -776,6 +777,10 @@ use App\Http\Controllers\api\EmployeeApiController;
 
           Route::get('/sap-attendance',[AttendanceController::class,'get_sap_employee_monthly_attendance']);
 
+          Route::get('/attendance-adjustment',[AttendanceController::class,'attendance_adjustment']);
+          Route::post('/attendance-adjustment-update',[AttendanceController::class,'update_attendance_adjustment']);
+       
+
           Route::get('/my-attendance-request', [AttendanceRequestController::class, 'my_requests']);
           Route::post('/submit_attendance_request', [AttendanceRequestController::class, 'requestfor_attendance']);
 
@@ -924,7 +929,6 @@ use App\Http\Controllers\api\EmployeeApiController;
             Route::post('/update-button', [EmployeeController::class, 'update_mobile_access_button']);
     
           });
-
           
           //employee api controller start
 

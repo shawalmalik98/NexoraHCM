@@ -30,6 +30,7 @@ class AttendanceController extends Controller
     const TITLE_GLOBAL3 = "daily-attendance";
     const TITLE_GLOBAL4 = "monthly-attendance";
     const TITLE_GLOBAL5 = "sap-attendance";
+    const TITLE_GLOBAL6 = "attendance-adjustment";
     const SERVER_ERROR = 'Unknown error occured on server. Please try again after some time.';
     
     protected function all_attendance(Request $request){
@@ -281,6 +282,406 @@ class AttendanceController extends Controller
         }finally{
             ActivityTracker::track_activity('View My Personal Attendance');
         }
+    }
+
+    protected function attendance_adjustment(Request $request){
+        try{
+        
+            $title = Self::TITLE_GLOBAL6;
+            
+            $login_user = $this->get_login_user_detail();
+            
+            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+
+            if($request->input('from_date') == '' && $request->input('to_date') == ''){
+                $month_count = 1;
+            }
+
+            if($request->input('from_date') && $request->input('to_date')){
+                $validator = Validator::make($request->all(), [
+                    'from_date' => 'required|date_format:Y-m-d|before:to_date',
+                    'to_date' => 'required|date_format:Y-m-d|after:from_date',
+                ]);
+
+                $validator->after(function ($validator) use ($request) {
+                    if ($this->if_to_date_greater_than_today($request->input('to_date'))) {
+                        $validator->errors()->add('to_date', 'The to date must not be greater than today\'s date.');
+                    }
+                });
+        
+                if($validator->fails()) {
+                    foreach($validator->errors()->all() as $error){
+                        
+                        return Redirect::back()->with('error', $error);
+                    }
+                }else {
+
+                    if($request->input('from_date') < $login_user[0]['employee_doj']){
+
+                        return Redirect::back()->with('error', 'You can\'t apply filter before your joining date');
+                    }
+                    $start_date = new DateTime($request->input('from_date'));
+                    $end_date = new DateTime($request->input('to_date'));
+
+                    $interval =  $start_date->diff($end_date);
+                      
+                    $daysDifference = $interval->days;
+                   
+                    if($daysDifference < 40){
+                        $from_date =  $request->input('from_date');
+                        $to_date =  $request->input('to_date');
+
+                        $employee_id = $request->input('employee_id');
+                        
+                        $where_clause = '1=1';
+
+                        if (!empty($employee_id)) {
+                            $where_clause .= " AND att_employee_id = '" . $employee_id . "' ";
+                        }else{
+                            $where_clause .= " AND att_employee_id = '" .  $login_user[0]['employee_id'] . "' ";
+                        }
+
+                        $month_count = 0;
+                        $period = new DatePeriod(
+                            new DateTime($request->input('from_date')),
+                            new DateInterval('P1D'),
+                            new DateTime($request->input('to_date'))
+                        );
+
+                        $month_days = 0;
+                        foreach ($period as $key => $value) {
+                            $dates[] = $value->format('d-m-Y');
+                            $month_days++;
+                        }
+
+                        if (!in_array($to_date, $dates)){
+                                
+                            $dates[] = date('d-m-Y', strtotime($to_date));
+                        }
+                        if($month_days == 0){
+                            $month_days = date('t', strtotime($request->input('from_date')));
+                        }
+
+                        $employee_data = Employees::where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_name','employee_code'])->toArray();
+
+                        CustomHelper::refreshSapAttendance($from_date, $to_date, $employee_data[0]['employee_code']);
+                        $attendance = Attendance::
+                        whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->whereRaw($where_clause)
+                        ->get()->toArray();
+        
+                        $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->where(function($query) use($manage_leaves){
+                            $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                            ->orWhere('att_check_overall_status','RPL');
+                        })->count();
+                   }else{
+
+                        return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
+                    
+                   }  
+
+                }
+            }else{
+
+                if(empty($request->from_date) && empty($request->to_date)){
+                    if(date('d') >= '26'){
+                        $from_date = date('Y-m-') . '25';
+                        $to_date = date('Y-m-d');
+                    }
+                    else{
+                        $today = new DateTime();
+                        $today->modify('first day of previous month');
+                        $today->modify('+25 days');
+                        $from_date = $today->format('Y-m-d');
+                        $to_date = date('Y-m-d');
+                    }
+                }
+                
+                CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
+
+                $month_count = 0;
+                $period = new DatePeriod(
+                    new DateTime($from_date),
+                    new DateInterval('P1D'),
+                    new DateTime($to_date)
+                );
+
+                $month_days = 0;
+                foreach ($period as $key => $value) {
+                    $dates[] = $value->format('d-m-Y');
+                    $month_days++;
+                }
+
+                if (!in_array($to_date, $dates)){
+                        
+                    $dates[] = date('d-m-Y', strtotime($to_date));
+                }
+                if($month_days == 0){
+                    $month_days = date('t', strtotime($request->input('from_date')));
+                }
+                
+                $employee_data = Employees::where('employee_id',  $login_user[0]['employee_id'])->get(['employee_name'])->toArray();
+
+                $attendance = Attendance::where('att_employee_id',  $login_user[0]['employee_id'])
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->get()->toArray();
+                
+                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->where(function($query) use($manage_leaves){
+                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                    ->orWhere('att_check_overall_status','RPL');
+                })->count();
+
+            }
+
+            $all_employees = Employees::where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
+
+            $leave_name = implode(',',$manage_leaves);
+
+            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
+
+            return view('attendance.att-adjustment-screen',$send_data); 
+        }catch(\Exception $e){
+            $this->create_error_log('View all Attendance adjustment', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
+            ActivityTracker::track_activity('View all Attendance adjustment');
+        }
+    }
+
+    protected function update_attendance_adjustment(Request $request_data){
+
+        try{
+          
+            $process = '';
+            $validator = Validator::make($request_data->all(), [
+                'attendance_date' => 'required|date_format:Y-m-d|before_or_equal:now' ,
+                'attendance_type' => 'required',
+            ]);
+              
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE'
+                    ]);
+                }
+            }
+            else{
+                
+                $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+
+                $get_employee_decoded = Employees::where('employee_id',$request_data->input('employee_code'))->get(['employee_name','employee_doj','employee_senior_manager','employee_junior_manager'])->toArray();
+
+                $doj  = strtotime($get_employee_decoded[0]['employee_doj']);
+
+                if($request_data->input('attendance_date') < $doj){
+                    return response()->json([
+                        'msg' => 'You can\'t apply attendance request before your joining date.',
+                        'status' => 'FALSE'
+                    ]);
+                }
+
+                $payroll_exists = $this->check_if_payroll_exist($request_data->input('attendance_date'),$request_data->input('employee_code'),$custom_message = NULL);
+
+                if($payroll_exists['status'] == TRUE){
+                    return response()->json([
+                        'msg' => $payroll_exists['msg'],
+                        'status' => 'FALSE'
+                    ]);
+                }
+
+                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('attendance_date'));
+
+                if($check_attendance_sheet_availability['status'] == FALSE){
+                    return response()->json([
+                        'msg' => $check_attendance_sheet_availability['msg'],
+                        'status' => 'FALSE'
+                    ]);
+                }
+                
+                $attendance_date = $request_data->input('attendance_date');
+                
+                $day = date("d", strtotime($attendance_date));
+
+                $month = date("m", strtotime($attendance_date));
+                
+                $year = date("Y", strtotime($attendance_date));
+        
+                $attendance = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['attendance_id'])->toArray();
+
+                $employee_shift_start = $this->get_employee_today_shift($request_data->input('employee_code'),"in",$attendance_date);
+                $employees_shift_end_time = $this->get_employee_today_shift($request_data->input('employee_code'),"out",$attendance_date);
+                
+                if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
+                        
+                    $date = explode('-',$request_data->input('attendance_date'));
+                
+                    $get_attendance_check_out_time = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$date[2])->where('att_for_month',$date[1])->where('att_for_year',$date[0])->get('attendance_id')->toArray();
+                    if(empty($get_attendance_check_out_time)){
+                        return response()->json([
+                            'status' => 'False',
+                            'msg' => "You can't request for check out on ". $request_data->input('attendance_date') ." beacuse you didn't mark the attendance.",
+                        ]);
+                    }
+                    
+                    $get_attendances = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where(function($query) use($manage_leaves){
+                    $query->where('att_check_overall_status','LIKE', '%Holiday%')
+                    ->orwhereIn('att_check_overall_status',$manage_leaves);
+                    })
+                    ->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)
+                    ->get(['attendance_id','att_check_overall_status'])->toArray();
+
+                    if(!empty($get_attendances)){
+                        return response()->json([
+                            'status' => 'False',
+                            'msg' => "You can't request on this date ". $request_data->input('attendance_date')." beacuse your attendanced already marked as " .$get_attendances[0]['att_check_overall_status'],
+                        ]);
+                    }   
+                }
+              
+                if(empty($attendance)){
+                        
+                    $employee_shift_start = $this->get_employee_today_shift($request_data->input('employee_code'),"in",$attendance_date);
+                    $employees_shift_end_time = $this->get_employee_today_shift($request_data->input('employee_code'),"out",$attendance_date);
+
+                    if($request_data->input('attendance_type') == "On Time Check Out" || $request_data->input('attendance_type') == "On Time Check In" || $request_data->input('attendance_type') == "Official Tour" || $request_data->input('attendance_type') == "Present"
+                    ){
+
+                        $create_attendance = new Attendance();
+                        if ($request_data->input('attendance_type') == "On Time Check In") {
+                            $create_attendance->att_check_in_time = $employee_shift_start;
+                        } else {
+                            $create_attendance->att_check_in_time = $employee_shift_start;
+                            $create_attendance->att_check_out_time = $employees_shift_end_time;
+                        }
+                        $create_attendance->att_employee_id = $request_data->input('employee_code');
+                        $create_attendance->att_check_in_status = 1;
+                        $create_attendance->att_check_out_status = 1;
+                        $create_attendance->att_check_in_source = 3;
+                        $create_attendance->att_check_out_source = 3;
+                        $create_attendance->att_shift_start_time = $employee_shift_start;
+                        $create_attendance->att_shift_end_time = $employees_shift_end_time;
+                        if($request_data->input('attendance_type') == "Official Tour" || $request_data->input('attendance_type') == "On Time Check In" || $request_data->input('attendance_type') == "On Time Check Out"){
+                            $create_attendance->att_check_overall_status = 'Present';
+                        }else{
+                            $create_attendance->att_check_overall_status = $request_data->input('attendance_type');
+                        }
+                        $create_attendance->att_for_date = $day;
+                        $create_attendance->att_for_month = $month;
+                        $create_attendance->att_for_year = $year;
+                        $create_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+                        $create_attendance->att_request_approval = 1;
+                        $process = $create_attendance->save();
+                    }else{
+
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'msg' => "You've already applied a request for this date. ".$request_data->input('attendance_date'),
+                        ]);
+                    
+                    }
+                }else{
+
+                                
+                    $update_attendance = Attendance::find($attendance[0]['attendance_id']);
+                
+                    $employee_shift_start = $this->get_employee_today_shift($request_data->input('employee_code'),"in",$attendance_date);
+                    $employees_shift_end_time = $this->get_employee_today_shift($request_data->input('employee_code'),"out",$attendance_date);
+
+                    if($request_data->input('attendance_type') == "On Time Check Out" || $request_data->input('attendance_type') == "On Time Check In" || $request_data->input('attendance_type') == "Official Tour" || $request_data->input('attendance_type') == "Late Coming" ||$request_data->input('attendance_type') == "Present" 
+                    ){
+                        if ($request_data->input('attendance_type') == "On Time Check In") {
+                            $update_attendance->att_check_in_time = $employee_shift_start;
+                        } elseif ($request_data->input('attendance_type') == "On Time Check Out") {
+                            $update_attendance->att_check_out_time = $employees_shift_end_time;
+                        } else {
+                            $update_attendance->att_check_in_time = $employee_shift_start;
+                            $update_attendance->att_check_out_time = $employees_shift_end_time;
+                        }
+                        
+                        if ($request_data->input('attendance_type') == "Official Tour" || 
+                            $request_data->input('attendance_type') == "On Time Check In" || 
+                            $request_data->input('attendance_type') == "On Time Check Out") {
+                            $update_attendance->att_check_overall_status = 'Present';
+                        } else {
+                            $update_attendance->att_check_overall_status = $request_data->input('attendance_type');
+                        }
+                        
+                        $update_attendance->att_request_approval = 1;
+                        $update_attendance->att_check_in_source = 3;
+                        $update_attendance->att_check_out_source = 3;
+                        $update_attendance->att_check_in_status = 1;
+                        $update_attendance->att_check_out_status = 1;
+                        $update_attendance->att_request_approval = 1;
+                        
+                        $update_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+                        $process = $update_attendance->save();                        
+                       
+                    }else{
+
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'msg' => "You've already applied a request for this date. ".$request_data->input('attendance_date'),
+                        ]);
+                    
+                    }
+                }     
+                if($process == 1){
+
+                    if(!empty($get_employee_decoded[0]['employee_senior_manager']) || $get_employee_decoded[0]['employee_senior_manager'] != ''){
+                        $to_mngr1 = $get_employee_decoded[0]['employee_senior_manager'];
+                    }
+                    if(!empty($get_employee_decoded[0]['employee_junior_manager']) || $get_employee_decoded[0]['employee_junior_manager'] != ''){
+                        $to_mngr2 = $get_employee_decoded[0]['employee_junior_manager'];
+                    }
+                    
+                    $this->send_notification('New Attendance Request ', '' . $get_employee_decoded[0]['employee_name']. ' applied for an attendance request as ('. $request_data->input('attendance_type') .') for the date of '. $request_data->input('attendance_date').'. Please click here to view.','attendance-requests?employee_id='.$request_data->input('employee_code').'&date='.$request_data->input('attendance_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+
+                    return response()->json([
+                        'status' => 'TRUE',
+                        'msg' => "Attendance has been submitted. Please wait for response",
+                    ]);
+                }else{
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "You can't apply request because already marked attendance.",
+                    ]);
+                }
+                
+            }
+
+        }catch(\Exception $e){
+            $this->create_error_log('Add New Attendance Request', $e);
+            
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                   
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+               
+            }
+        }
+        finally{
+            ActivityTracker::track_activity('Create an Attendance Request');
+        }
+
+		
     }
     
     protected function get_employee_monthly_attendance(Request $request){
@@ -986,7 +1387,7 @@ class AttendanceController extends Controller
                         
                         $this->send_notification('New Attendance Request ', '' . $get_employee_decoded[0]['employee_name']. ' applied for an attendance request as ('. $request_data->input('attendance_type') .') for the date of '. $request_data->input('attendance_date').'. Please click here to view.','attendance-requests?employee_id='.$request_data->input('employee_code').'&date='.$request_data->input('attendance_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
 
-                        $this->send_push_notification_mobile_app($get_employee_decoded, 'Attendance Request','You\'ve successfully applied an attendance request and has been forwarded to your reporting authorities.');
+                        // $this->send_push_notification_mobile_app($get_employee_decoded, 'Attendance Request','You\'ve successfully applied an attendance request and has been forwarded to your reporting authorities.');
 
                         return response()->json([
                             'status' => 'TRUE',
