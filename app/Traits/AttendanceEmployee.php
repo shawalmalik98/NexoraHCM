@@ -616,7 +616,7 @@ trait AttendanceEmployee {
 		e.employee_id,
 		e.employee_code, 
 		e.employee_name,
-		FORMAT(CAST(e.employee_doj AS DATE), 'dd MMM, yyyy') as 'employee_doj',
+		FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'employee_doj',
 		dep.department_name, 
 		des.designation_name,
 		e.business_unit,
