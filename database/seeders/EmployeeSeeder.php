@@ -190,7 +190,8 @@ class EmployeeSeeder extends Seeder
                 '/funds',
                 '/employee-fund',
                 '/employee-location',
-                '/sap-attendance'
+                '/sap-attendance',
+                '/attendance-adjustment'
             ];
             foreach($permissionRecords as $permission){
                 DB::table('tbl_employee_permission')->insert([

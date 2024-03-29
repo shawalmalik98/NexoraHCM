@@ -1352,6 +1352,7 @@ class EmployeeController extends Controller
                     // $update_employee->employee_location = $employee_data->input('employee_location');
                     $update_employee->employee_grade = $employee_data->input('employee_grade');
                     $update_employee->employee_group = $employee_data->input('employee_group');
+                    $update_employee->employee_jobtitle = $employee_data->input('employee_jobtitle');
                     $update_employee->employee_deactivation_type = $employee_data->input('employee_deactive_type');
                     $update_employee->employee_web_access = $employee_data->input('employee_web_access');
                     $update_employee->employee_mobile_access = $employee_data->input('employee_mobile_access');

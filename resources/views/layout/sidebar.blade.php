@@ -5,6 +5,7 @@
         $meetings  = CustomHelper::get_my_todays_meeting_status();
         $companySetting = CustomHelper::hcm_default_settings();
         $sap_permission = CustomHelper::hcm_sap_attendance();
+        $att_attendance_permission = CustomHelper::hcm_attendance_adjustment();
     @endphp
 
     <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
@@ -309,7 +310,7 @@
 
                                     @endif
 
-                                    {{-- @if(!empty($permission) && $permission[1]['module_accessibility'] == 1 && $permission[1]['permission_status'] == 1) --}}
+                                    @if(!empty($att_attendance_permission))
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'attendance-adjustment') active @endif" href="{{url('attendance-adjustment')}}">
@@ -321,8 +322,8 @@
                                                 <span class="menu-title">Attendance Adjustment</span>
                                             </a>
                                         </div>
-                                        
-                                    {{-- @endif --}}
+                                    
+                                    @endif
 
                                     {{-- @if(!empty($permission) && $permission[21]['module_accessibility'] == 1 && $permission[21]['permission_status'] == 1) --}}
 
@@ -365,7 +366,7 @@
                                     @endif
 
                                     @if(!empty($sap_permission))
-                                        
+
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'sap-attendance') active @endif" href="{{url('sap-attendance')}}">
                                                 <span class="menu-icon">

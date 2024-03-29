@@ -111,7 +111,7 @@ class EmployeesJob extends Command
                         $add_employee->employee_company =  $employee_company_id ?? 1;
                         $add_employee->employee_department = $all_departments[0]['department_id'];
                         $add_employee->employee_designation = $all_designations[0]['designation_id'];
-                        $add_employee->employee_jobtitle = $job_title ?? $department_name;
+                        $add_employee->employee_jobtitle = $job_title ?? $all_designations[0]['designation_name'];
                         $add_employee->employee_password = $employee_password;
                         $add_employee->employee_geofencing_enability = false;
                         $add_employee->employee_senior_manager =  1;

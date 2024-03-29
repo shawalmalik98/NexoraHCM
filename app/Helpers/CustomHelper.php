@@ -1104,7 +1104,7 @@ class CustomHelper
 
             $login_user = session('user_session');
 
-            $sap_permission = Permission::where('employee_id', $login_user)->where('permission_status', '=', 1)->where('module_url', '=', '/sap-attendance')->get()->toArray();
+            $sap_permission = Permission::where('employee_id', $login_user)->where('permission_status', '=', 1)->where('module_url', '=', '/sap-attendance')->get()->toArray();           
 
             if(!empty($sap_permission)){
                 return $sap_permission;
@@ -1112,6 +1112,24 @@ class CustomHelper
 
         }catch(\Exception $e){
             LogGenerateTrait::create_error_log('Get sap permission ', $e);
+        }
+        
+    }
+
+    public static function hcm_attendance_adjustment(){
+      
+        try{
+
+            $login_user = session('user_session');
+
+            $att_adjustment_permission = Permission::where('employee_id', $login_user)->where('permission_status', '=', 1)->where('module_url', '=', '/attendance-adjustment')->get()->toArray();           
+
+            if(!empty($att_adjustment_permission)){
+                return $att_adjustment_permission;
+            }
+
+        }catch(\Exception $e){
+            LogGenerateTrait::create_error_log('Get attendance adjustment permission ', $e);
         }
         
     }

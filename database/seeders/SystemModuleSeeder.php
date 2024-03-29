@@ -103,7 +103,8 @@ class SystemModuleSeeder extends Seeder
                 ('All Funds','/funds', '1',1),
                 ('Employee Funds','/employee-fund', '1',1),
                 ('Employee Locations','/employee-location', '1',1),
-                ('Sap Attendance','/sap-attendance', '1',1)
+                ('Sap Attendance','/sap-attendance', '1',1),
+                ('Attendance Adjustment','/attendance-adjustment', '1',1)
             ");
         }
       
