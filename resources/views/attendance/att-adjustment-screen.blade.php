@@ -173,15 +173,54 @@
                                         <tr class="fw-bold text-muted bg-light">
                                             <th class="ps-8">Date</th>
                                             <th class="ps-8">Employee Name</th>
-                                            <th class="text-center">Check In Time </th>
-                                            <th class="text-center">Check Out Time</th>
-                                            <th class="text-center">Shift Duration</th>
+                                            {{-- <th class="text-center">Check In Time </th>
+                                            <th class="text-center">Check Out Time</th> --}}
+                                            {{-- <th class="text-center">Shift Duration</th> --}}
                                             <th class="text-center">Status</th>
                                             <th class="text-center">Action</th>
                                         
                                         </tr>
                                     </thead>
+
                                     <tbody>
+
+                                        @if (!empty($attendance))
+                                            @foreach ($attendance as $attendances)
+                                                <tr>
+                                                
+                                                    <td class="ps-8">
+                                                        {{ $attendances['Date'] }} -  {{ $attendances['Day'] }}
+                                                    </td>
+                                                    <td class="ps-8">
+                                                        {{ $attendances['employee_code'] }} - {{ $attendances['employee_name'] }}
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {{ $attendances['Attendance Status']}} 
+                                                    </td>
+
+                                                    <td class="text-center ps-15">
+                                                        
+                                                        <form id="add_new_adjustment">
+                                                            @csrf
+                                                            <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                                                <input class="form-check-input" type="checkbox">
+                                                                <input type="hidden" name="attendance_type" value="Present"/>
+                                                                <input type="hidden" name="employee_code" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
+                                                                <input type="hidden" name="attendance_date" value="{{ date('Y-m-d', strtotime($attendances['Date'])) }}"/>
+                                                            
+                                                            </div>
+
+                                                        </form>       
+                                                            
+                                                    </td>
+
+                                                </tr>
+                                            @endforeach
+                                        @endif   
+                                   
+                                    </tbody>
+
+                                    {{-- <tbody>
                                         @php
                                         $total_working_hours = 0;
                                         $total_working_hours_actual = 0;
@@ -357,7 +396,7 @@
                                                 <td class="text-center"> 
                                                     @if (!empty($attendance))
                                                         @foreach ($attendance as $attendances)
-                                                            {{-- {{dd($month_count)}} --}}
+                                                           
                                                            @if ($attendances['att_for_date'].'-'.$attendances['att_for_month'].'-'.$attendances['att_for_year'] == $dates[$month_count])
                                                                 @php $absent = false; @endphp
                                                                 @if ($attendances['att_check_overall_status'] == 'Present')
@@ -404,9 +443,21 @@
                                                 </td> 
 
                                                 <td class="text-center">
-                                                    {{-- @if (!empty($attendance)) --}}
-                                                        <a href="#" class="btn btn-sm btn-light btn-active-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions 
                                                     
+                                                    <form id="add_new_adjustment">
+                                                        @csrf
+                                                        <div class="form-check form-check-sm form-check-custom form-check-solid">
+                                                            <input class="form-check-input " type="checkbox">
+                                                            <input type="hidden" name="attendance_type" value="Present"/>
+                                                            <input type="hidden" name="employee_id" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
+                                                            <input type="hidden" name="attendance_date" value="{{ date('Y-m-d', strtotime($current_date)) }}"/>
+                                                        
+                                                        </div>
+
+                                                    </form>    
+                                                    @if (!empty($attendance))
+                                                        <a href="#" class="btn btn-sm btn-light btn-active-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions 
+                                                            
                                                             <span class="svg-icon svg-icon-5 m-0">
                                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
@@ -416,15 +467,17 @@
                                                     
                                                         <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4" data-kt-menu="true">
                                                             <div class="menu-item px-3">
-                                                                {{-- <a href="javascript:void(0)" class="menu-link px-3"  onclick="editAttendanceadjustment('{{$attendances['att_employee_id']}}','{{date('Y-m-d', strtotime($current_date))}}')">
+
+                                                              
+                                                                <a href="javascript:void(0)" class="menu-link px-3"  onclick="editAttendanceadjustment('{{$attendances['att_employee_id']}}','{{date('Y-m-d', strtotime($current_date))}}')">
                                                                     Adjustment
                                                                   
-                                                                </a> --}}
+                                                                </a>
 
                                                                 <a href="javascript:void(0)" class="menu-link px-3" onclick="editAttendanceadjustment('{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}','{{ date('Y-m-d', strtotime($current_date)) }}')">
                                                                     Adjustment
                                                                 </a>
-                                                                {{-- <form id="add_new_adjustment" class="form ">
+                                                                <form id="add_new_adjustment" class="form ">
                                                                     @csrf
 
                                                                     <a href="#" class="menu-link px-3" >
@@ -439,12 +492,12 @@
                                                                         </select>
                                                                     </a>
                                                                     
-                                                                </form>     --}}
+                                                                </form>    
                                                                 
                                                             </div>    
                                                         
                                                         </div>
-                                                    {{-- @endif     --}}
+                                                    @endif    
                                                          
                                                 </td>
 
@@ -454,37 +507,37 @@
                                         
                                         @endfor
                                    
-                                    {{-- <tr class="bg-light">
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                      
-                                        <td class="text-center"> 
-                                            @if (!empty($month) && !empty($year))
-                                                @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,$from_date=NUll,$to_date=Null); @endphp
-                                            @else
-                                                 @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,Request::get('from_date'),Request::get('to_date')); @endphp
-                                            @endif
-                                            @php 
-                                             
-                                                $total_shift_calculation =  $calculate_absent_shift + $total_working_hours_actual;
-                                                $total_shift_calculation =  $total_working_hours_actual;
-                                                $total_working_hours_actual = CustomHelper::calculate_total_overtime($total_shift_calculation); @endphp
-                                                {{$total_working_hours_actual['overtime']}}
-                                        </td>
-                                    
-                                        <td></td>
-                                        <td></td>
-                                        <td class="text-center">
-                                            @php $total_working_hours = CustomHelper::calculate_total_overtime($total_working_hours); @endphp
-                                            {{$total_working_hours['overtime'] }}
+                                        <tr class="bg-light">
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        
+                                            <td class="text-center"> 
+                                                @if (!empty($month) && !empty($year))
+                                                    @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,$from_date=NUll,$to_date=Null); @endphp
+                                                @else
+                                                    @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,Request::get('from_date'),Request::get('to_date')); @endphp
+                                                @endif
+                                                @php 
+                                                
+                                                    $total_shift_calculation =  $calculate_absent_shift + $total_working_hours_actual;
+                                                    $total_shift_calculation =  $total_working_hours_actual;
+                                                    $total_working_hours_actual = CustomHelper::calculate_total_overtime($total_shift_calculation); @endphp
+                                                    {{$total_working_hours_actual['overtime']}}
+                                            </td>
+                                        
+                                            <td></td>
+                                            <td></td>
+                                            <td class="text-center">
+                                                @php $total_working_hours = CustomHelper::calculate_total_overtime($total_working_hours); @endphp
+                                                {{$total_working_hours['overtime'] }}
 
-                                        </td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr> --}}
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
                             
-                                    </tbody>
+                                    </tbody> --}}
                                   
                                 
                                 </table>
@@ -500,7 +553,7 @@
         
         </div>
 
-        <form id="add_new_adjustment" class="form">
+        {{-- <form id="add_new_adjustment" class="form">
             @csrf
             <div class="modal fade" id="attendance_adjustment" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-scrollable mw-650px">
@@ -544,7 +597,7 @@
                                     </select>
                                 </div>
 
-                                    {{-- <div class="main-check-in-div col-md-12 mb-8 fv-row d-none">
+                                    <div class="main-check-in-div col-md-12 mb-8 fv-row d-none">
                                         <label class="required fs-6 fw-semibold mb-2">Check In Time</label>
                                         <div class="position-relative d-flex align-items-center">
                                             <input type="time" step="1" class="form-control" name="check_in_time" placeholder="Enter in Time" id="check_in_time">
@@ -565,7 +618,7 @@
                                         <label class="fs-6 fw-semibold mb-2 required">Enter Reason</label>
                                         <textarea class="form-control " rows="3" name="attendance_message" id="kt_docs_maxlength_threshold3" maxlength="500" placeholder="Message" required></textarea>
                                     </div>
-                                </div> --}}
+                                </div>
                             <div class="modal-footer justify-content-center">
                                 <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
                                 <button type="submit" id="submit_btn" class="btn btn-primary">
@@ -578,7 +631,7 @@
                     </div>
                 </div>
             </div>
-        </form>
+        </form> --}}
     
     </div>
 </div>
@@ -590,136 +643,57 @@
 @push('js-link')
 <script src="{{url('assets/js/attendance/my-attendance.js')}}"></script>
 <script>
-var present_attendance = {{ $present }};
-var absent_count_attendance = {{ $absent_count }};
-var late_coming_attendance = {{ $late_coming }};
-var early_out_attendance = {{ $early_out }};
-var halfday_attendance = {{ $halfday }};
-var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
 
+    $('#add_new_adjustment input[type="checkbox"]').click(function() {
+        var checkbox = $(this);
+        var form = checkbox.closest('form');
 
-function editAttendanceadjustment(att_employee_id ,att_for_date) {
-    // $('input[name=attendance_id]').val(attendance_id);
-    $('input[name=employee_code]').val(att_employee_id);
-    $("#update_dated").val(att_for_date);
-    $('#attendance_adjustment').modal('show');
-}
-
-
-
-    $('#add_new_adjustment').submit(function (e) {
-        $('#submit_btn').prop('disabled', true);
-        $("#submit_btn").attr('data-kt-indicator', 'on');
-        $('#submit_btn').css('cursor', 'pointer');
-
-        e.preventDefault();
-        $.ajax({
-            url: base_url + '/attendance-adjustment-update',
-            type: 'POST',
-            data: new FormData(this),
-            contentType: false,
-            cache: false,
-            processData: false,
-            success: function (data) {
-
-                if (data.status == 'TRUE') {
-                    Toast.fire({
-                        icon: 'success',
-                        title: data.msg,
-                        timer: 3000,
-                    })
-                    setTimeout(() => {
-                        location.reload();
-                    }, 3000);
-                } else {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: data.msg,
-                        timer: 5000,
-                    })
-                    $('#submit_btn').prop('disabled', false);
-                    $('#submit_btn').css('cursor', 'pointer');
-                    $("#submit_btn").removeAttr('data-kt-indicator');
-                }
-            },
-            error: function (jqXHR, textStatus) {
-                var errorStatus = jqXHR.status;
-                $('#submit_btn').prop('disabled', false);
-                $('#submit_btn').css('cursor', 'pointer');
-                $("#submit_btn").removeAttr('data-kt-indicator');
-                if (errorStatus == 0) {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Internet Connection Problem',
-                        timer: 3000,
-                    })
-                } else {
-                    if (errorStatus == 419) {
-                        location.reload();
+        if (checkbox.is(':checked')) {
+            $.ajax({
+                url: base_url + '/attendance-adjustment-update',
+                type: 'POST',
+                data: form.serialize(), 
+                success: function (data) {
+                    if (data.status == 'TRUE') {
+                        Toast.fire({
+                            icon: 'success',
+                            title: data.msg,
+                            timer: 3000,
+                        });
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
                     } else {
                         Toast.fire({
                             icon: 'warning',
-                            title: 'Try Again. Error Code ' + errorStatus,
+                            title: data.msg,
+                            timer: 5000,
+                        });
+                    }
+                },
+                error: function (jqXHR, textStatus) {
+                    var errorStatus = jqXHR.status;
+                    if (errorStatus == 0) {
+                        Toast.fire({
+                            icon: 'warning',
+                            title: 'Internet Connection Problem',
                             timer: 3000,
-                        })
+                        });
+                    } else {
+                        if (errorStatus == 419) {
+                            location.reload();
+                        } else {
+                            Toast.fire({
+                                icon: 'warning',
+                                title: 'Try Again. Error Code ' + errorStatus,
+                                timer: 3000,
+                            });
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     });
-
-// $(document).ready(function() {
-    // $('#add_new_adjustment select[name="attendance_type"]').on('change', function() {
-
-    //     // Submit the form
-    //     var selectedValue = $(this).val();
-    //     // Set the value of the hidden input
-    //     $('#attendance_type').val(selectedValue);
-
-    //     // Disable the select element again
-    
-    //     // Perform AJAX request
-    //     $.ajax({
-    //         url: base_url + '/attendance-adjustment-update',
-    //         type: 'POST',
-    //         headers: {
-    //         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    //         },
-    //         data: $('#add_new_adjustment').serialize(),
-    //         success: function(data) {
-    //             if (data.status == 'TRUE') {
-    //                 // Show success message
-    //                 Toast.fire({
-    //                     icon: 'success',
-    //                     title: data.msg,
-    //                     timer: 3000,
-    //                 });
-    //                 setTimeout(() => {
-    //                     location.reload();
-    //                 }, 3000);
-    //             } else {
-    //                 // Show error message
-    //                 Toast.fire({
-    //                     icon: 'warning',
-    //                     title: data.msg,
-    //                     timer: 5000,
-    //                 });
-    //             }
-    //         },
-    //         error: function(jqXHR, textStatus, errorThrown) {
-    //             // Show error message
-    //             Toast.fire({
-    //                 icon: 'error',
-    //                 title: 'Error occurred. Please try again.',
-    //                 timer: 3000,
-    //             });
-    //         }
-    //     });
-    // });
-// });
-
-
-
 
    
 </script>

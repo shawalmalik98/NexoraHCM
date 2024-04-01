@@ -291,6 +291,8 @@ class AttendanceController extends Controller
             
             $login_user = $this->get_login_user_detail();
 
+            $status = 1;
+
             if($request->input('from_date') == '' && $request->input('to_date') == ''){
                 $month_count = 1;
             }
@@ -326,10 +328,11 @@ class AttendanceController extends Controller
                     $daysDifference = $interval->days;
                    
                     if($daysDifference < 40){
+
                         $from_date =  $request->input('from_date');
                         $to_date =  $request->input('to_date');
 
-                       $employee_id = $request->input('employee_id');
+                        $employee_id = $request->input('employee_id');
                         
                         $where_clause = '1=1';
 
@@ -360,21 +363,78 @@ class AttendanceController extends Controller
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
 
-                        $employee_data = Employees::where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_name','employee_code'])->toArray();
+                        $employee_data = Employees::where('employee_isactive','=', $status)->where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_id','employee_name','employee_code'])->toArray();
+
+                        $att_login_employee =  $employee_data[0]['employee_id'];
 
                         CustomHelper::refreshSapAttendance($from_date, $to_date, $employee_data[0]['employee_code']);
                         
-                        $attendance = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
-                        ->whereRaw($where_clause)
-                        ->get(['attendance_id','att_employee_id','att_check_in_time','att_check_out_time','att_for_date','att_for_month','att_for_year','att_check_in_status','att_check_out_status','att_shift_start_time','att_shift_end_time','att_request_approval','att_check_in_source','att_check_out_source','att_created_at','att_updated_at','att_check_overall_status','att_comp_date','employee_name','employee_code'])->toArray();
+                        // $attendance = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+                        // ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                        // ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        // ->whereRaw($where_clause)
+                        // ->get(['attendance_id','att_employee_id','att_check_in_time','att_check_out_time','att_for_date','att_for_month','att_for_year','att_check_in_status','att_check_out_status','att_shift_start_time','att_shift_end_time','att_request_approval','att_check_in_source','att_check_out_source','att_created_at','att_updated_at','att_check_overall_status','att_comp_date','employee_name','employee_code'])->toArray();
 
-                   }else{
+
+                        $attendance = DB::select("SELECT  
+                            employee_id,
+                            employee_name,
+                            employee_code,
+                            CONVERT(date, dates.date_between) as 'Date', 
+                            DATENAME(dw, dates.date_between) as 'Day', 
+                            CASE 
+                                WHEN emp.employee_doj <= dates.date_between THEN
+                                    CASE 
+                                        WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                                        WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
+                                    END
+                                ELSE '-' 
+                            END AS 'Attendance Status',
+                            CASE 
+                                WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
+                                ELSE '' 
+                            END AS 'Check In', 
+                            CASE 
+                                WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
+                                ELSE '' 
+                            END AS 'Check Out'
+                        FROM (
+                            SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                            FROM (
+                                SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
+                                FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
+                                    (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
+                                    (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                            ) AS numbers
+                            WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
+                        ) AS dates
+                        LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
+                        LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id 
+                        where att.att_check_overall_status IS NULL 
+                        -- AND $where_clause
+                        ORDER BY dates.date_between ASC");
+                    $attendance = json_decode(json_encode($attendance), TRUE);
+
+                        if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 28 || $login_user[0]['employee_id'] == 1){
+
+                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+
+                        }
+                        elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 28 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
+
+                            $login_employee_id = $login_user[0]['employee_id'];
+
+                            $total_team_member = $this->get_employee_hierarchy_unique($login_employee_id, $status);
+
+                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+
+                        }    
+
+                    }else{
 
                         return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
                     
-                   }  
+                    }  
 
                 }
             }else{
@@ -413,20 +473,69 @@ class AttendanceController extends Controller
                     $dates[] = date('d-m-Y', strtotime($to_date));
                 }
                 if($month_days == 0){
-                    $month_days = date('t', strtotime($request->input('from_date')));
+                    $month_days = date('t', strtotime($request->input('from_date'))); 
                 }
+                if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 28 || $login_user[0]['employee_id'] == 1){
                 
-                $employee_data = Employees::where('employee_id',  $login_user[0]['employee_id'])->get(['employee_code','employee_name'])->toArray();
+                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+                }
+                elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 28 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
+                                
+                    $login_employee_id = $login_user[0]['employee_id'];
 
-                $attendance = Attendance::leftjoin('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-                ->where('att_employee_id',  $login_user[0]['employee_id'])
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
-                ->get(['attendance_id','att_employee_id','att_check_in_time','att_check_out_time','att_for_date','att_for_month','att_for_year','att_check_in_status','att_check_out_status','att_shift_start_time','att_shift_end_time','att_request_approval','att_check_in_source','att_check_out_source','att_created_at','att_updated_at','att_check_overall_status','att_comp_date','employee_name','employee_code'])->toArray();
-                
+                    $total_team_member = $this->get_employee_hierarchy_unique($login_employee_id, $status);
+
+                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+                }
+
+               $employee_data = Employees::where('employee_isactive','=', $status)->where('employee_id',  $login_user[0]['employee_id'])->get(['employee_id','employee_code','employee_name'])->toArray();
+
+               $employee_id = $login_user[0]['employee_id'];
+
+               $attendance = DB::select("SELECT 
+                employee_id,
+                employee_name,
+                employee_code,
+                CONVERT(date, dates.date_between) as 'Date', 
+                DATENAME(dw, dates.date_between) as 'Day', 
+                CASE 
+                    WHEN emp.employee_doj <= dates.date_between THEN
+                        CASE 
+                            WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                            WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
+                        END
+                    ELSE '-' 
+                END AS 'Attendance Status',
+                CASE 
+                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
+                    ELSE '' 
+                END AS 'Check In', 
+                CASE 
+                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
+                    ELSE '' 
+                END AS 'Check Out'
+            FROM (
+                SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                FROM (
+                    SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
+                    FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
+                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
+                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                ) AS numbers
+                WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
+            ) AS dates
+            LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id 
+            LEFT JOIN tbl_employees AS emp ON $employee_id  = emp.employee_id 
+            WHERE att.att_check_overall_status IS NULL 
+            ORDER BY dates.date_between ASC");
+            $attendance = json_decode(json_encode($attendance), TRUE);
+           
+            //    $attendance = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
+            //    ->where('att_employee_id',  $login_user[0]['employee_id'])
+            //    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+            //    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+            //    ->get(['attendance_id','att_employee_id','att_check_in_time','att_check_out_time','att_for_date','att_for_month','att_for_year','att_check_in_status','att_check_out_status','att_shift_start_time','att_shift_end_time','att_request_approval','att_check_in_source','att_check_out_source','att_created_at','att_updated_at','att_check_overall_status','att_comp_date','employee_name','employee_code'])->toArray();
             }
-
-            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
 
             $send_data = compact('title','login_user','attendance','month_days','dates','month_count','from_date','to_date','all_employees','employee_data');
 
