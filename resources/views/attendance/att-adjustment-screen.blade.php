@@ -45,7 +45,7 @@
                         <div class="card" >
                             <div class="p-3">
                                 <label class="form-label fw-semibold @if(!empty(Request::get('from_date'))) required  @endif" id="label-from-date">Form Date</label>
-                                <input class="form-control" type="date" name="from_date" id="from_date" value="{{ $from_date}}" @if(!empty(Request::get('from_date'))) required  @endif max="{{date('Y-m-d')}}" />
+                                <input class="form-control" type="date" name="from_date" id="from_date" value="{{$from_date}}" @if(!empty(Request::get('from_date'))) required  @endif max="{{date('Y-m-d')}}" />
                             </div>
                         </div>
                     </div>
@@ -73,7 +73,6 @@
                                             @foreach ($all_employees as $employees)
                                                 <option value="{{ $employees['employee_id'] }}" @if (Request::get('employee_id') == $employees['employee_id']) selected @endif>{{$employees['employee_code']. ' - ' .$employees['employee_name']}} </option>
                                             @endforeach
-                                    
                                         @endif                                                             
                                     </select>
                                     
@@ -109,54 +108,9 @@
                                 </svg>
                             </span>
                             <input type="text" class="form-control  w-250px ps-15" placeholder="Search Record ..." id="searchFilter">
-                        </div>
-                        
+                        </div>  
                       
                     </div>
-                    {{-- <div class="card-toolbar" >
-                         @php $filter = 'btn-color-primary'; @endphp
-                        
-                        <a href="#" class="btn btn-sm btn-flex btn-light fw-bold {{ !empty(Request::get('m')) ? $filter : '' }} {{ !empty(Request::get('y')) ? $filter : '' }}" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-                    
-                        <span class="svg-icon svg-icon-6 svg-icon-muted me-1">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M19.0759 3H4.72777C3.95892 3 3.47768 3.83148 3.86067 4.49814L8.56967 12.6949C9.17923 13.7559 9.5 14.9582 9.5 16.1819V19.5072C9.5 20.2189 10.2223 20.7028 10.8805 20.432L13.8805 19.1977C14.2553 19.0435 14.5 18.6783 14.5 18.273V13.8372C14.5 12.8089 14.8171 11.8056 15.408 10.964L19.8943 4.57465C20.3596 3.912 19.8856 3 19.0759 3Z" fill="currentColor"></path>
-                            </svg>
-                        </span>
-                        Filter</a>
-                       
-                            <div class="menu menu-sub menu-sub-dropdown w-250px w-md-300px" data-kt-menu="true" id="kt_menu_63347db386dd1" >
-                                <form action="{{ url('my-attendance') }}" method="GET">
-                                    <div class="px-7 py-5">
-                                        <div class="fs-5 text-dark fw-bold">Filter Options</div>
-                                    </div>
-
-                                    <div class="separator border-gray-200"></div>
-                                    <div class="px-7 py-5">
-                                    
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold @if(!empty(Request::get('from_date'))) required  @endif" id="label-from-date">Form Date</label>
-                                            <input class="form-control" type="date" name="from_date" id="from_date" value="{{ $from_date}}" @if(!empty(Request::get('from_date'))) required  @endif max="{{date('Y-m-d')}}" />
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold @if(!empty(Request::get('to_date'))) required  @endif" id="label-to-date">To Date</label>
-                                            <input class="form-control" type="date" name="to_date" id="to_date" value="{{$to_date}}" @if(!empty(Request::get('to_date'))) required  @endif max="{{date('Y-m-d')}}"/>
-                                        </div>
-                                       
-                                        <div class="d-flex justify-content-end">
-                                            @if (!empty(Request::get('from_date')) || !empty(Request::get('to_date')) || !empty(Request::get('m')) || !empty(Request::get('y')))
-                                                <a href="{{ url('my-attendance') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
-                                             @endif
-                                            <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
-                                            <button type="submit" class="btn btn-sm btn-primary" >Apply</button>
-                                        </div>
-                                        
-                                    </div>
-                                 </form>
-                            </div>
-                       
-                    </div> --}}
                 </div>
                 @if(Session::has('error'))
                     <script>
@@ -173,9 +127,6 @@
                                         <tr class="fw-bold text-muted bg-light">
                                             <th class="ps-8">Date</th>
                                             <th class="ps-8">Employee Name</th>
-                                            {{-- <th class="text-center">Check In Time </th>
-                                            <th class="text-center">Check Out Time</th> --}}
-                                            {{-- <th class="text-center">Shift Duration</th> --}}
                                             <th class="text-center">Status</th>
                                             <th class="text-center">Action</th>
                                         
@@ -197,349 +148,33 @@
                                                     <td class="text-center">
                                                         {{ $attendances['Attendance Status']}} 
                                                     </td>
-
+                                                    
                                                     <td class="text-center ps-15">
-                                                        
-                                                        <form id="add_new_adjustment">
+
+                                                        <form class="add_new_adjustment">
                                                             @csrf
-                                                            <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                                                <input class="form-check-input" type="checkbox">
-                                                                <input type="hidden" name="attendance_type" value="Present"/>
-                                                                <input type="hidden" name="employee_code" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
-                                                                <input type="hidden" name="attendance_date" value="{{ date('Y-m-d', strtotime($attendances['Date'])) }}"/>
-                                                            
-                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-md-10">
+                                                                <input type="text" class="form-control" placeholder="Enter Remarks" name="attendance_remarks" required/>
+                                                                </div>
+                                                                <div class="form-check form-check-sm form-check-custom form-check-solid col-md-2">
+                                                                    <input class="form-check-input" type="checkbox">
+                                                                    <input type="hidden" name="attendance_type" value="Present"/>
+                                                                    <input type="hidden" name="employee_code" class="auth_employee_Code" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
+                                                                    <input type="hidden" name="attendance_date" value="{{ date('Y-m-d', strtotime($attendances['Date'])) }}"/>
+                                                                
+                                                                </div>
+                                                            </div>    
+                                                        </form>   
 
-                                                        </form>       
-                                                            
                                                     </td>
-
+                                                    
                                                 </tr>
                                             @endforeach
                                         @endif   
                                    
                                     </tbody>
 
-                                    {{-- <tbody>
-                                        @php
-                                        $total_working_hours = 0;
-                                        $total_working_hours_actual = 0;
-                                        $in_day_time_actual = $out_day_time_actual = 0 ;
-                                        $present = 0;
-                                        $halfday = 0;
-                                        $late_coming = 0;
-                                        $early_out = 0;
-                                        $offdays = 0;
-                                        $absent_count = 0;
-                                        $holiday_count = 0;
-
-                                        $attendance_total_count = count($attendance);
-                                        $login_user[0]['employee_offdays'] = (!empty($login_user[0]['employee_offdays'])) ? explode(",",$login_user[0]['employee_offdays']):[]; 
-                                        @endphp
-                                       
-                                        @for ($month_count = $month_count; $month_count <= $month_days; $month_count++)
-                                            @php $absent = true;
-                                            $loop_count = 0;
-                                            $helper_absent = false;
-
-                                            @endphp
-                                            <tr>
-                                            
-                                                @php
-                                                    $current_date = $dates[$month_count];
-                                                    $name_of_day = date("l", strtotime($current_date ));	
-                                                    $name_of_day_short = date("D", strtotime($current_date ));	
-                                                @endphp
-                                                
-                                                <td class="ps-8">
-                                                    {{ $current_date }} - {{  $name_of_day_short }}
-                                                </td>
-
-                                                <td class="ps-8">
-                                                    @if (!empty($employee_data))
-                                                        {{$employee_data[0]['employee_code'] }} - {{ $employee_data[0]['employee_name']}}
-                                                    @endif    
-                                                      
-                                                </td>
-                                                
-                                                <td  class="text-center"> 
-                                                    @if (!empty($attendance))
-                                                        @foreach ($attendance as $attendances)
-                                                         
-                                                            @if ($attendances['att_for_date'].'-'.$attendances['att_for_month'].'-'.$attendances['att_for_year'] == $dates[$month_count])
-                                                                
-                                                                @php $absent = false; @endphp
-                                                            
-                                                                @if ($attendances['att_check_overall_status'] == 'Present')
-                                                                    {{ $attendances['att_check_in_time'] }}
-                                                                @elseif($attendances['att_check_overall_status'] == 'Half day')
-                                                                    {{ $attendances['att_check_in_time'] }}
-                                                                @elseif($attendances['att_check_overall_status'] == 'Late Coming')
-                                                                    {{ $attendances['att_check_in_time'] }}
-                                                                @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                        -
-                                                                @elseif($attendances['att_check_overall_status'] == 'Early out')
-                                                                    {{ $attendances['att_check_in_time'] }}
-                                                               
-                                                                @endif
-                                                            @endif  
-                                                        @endforeach
-                                                    @endif
-
-                                                    @php
-                                                
-                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
-                                                        $today = strtotime(date("d-m-Y"));
-                                                    @endphp
-                                                    
-                                                    @if($absent )
-                                                    
-                                                        @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
-                                                            00:00:00
-                                                        @elseif($date_filter< $today)
-                                                            -
-                                                        @else
-                                                            -    
-                                                        @endif
-                                                    @endif
-                                                
-                                                </td> 
-
-                                                <td  class="text-center"> 
-                                                    @if (!empty($attendance))
-                                                    
-                                                        @foreach ($attendance as $attendances)
-
-                                                            @if ($attendances['att_for_date'].'-'.$attendances['att_for_month'].'-'.$attendances['att_for_year'] == $dates[$month_count])
-                                                                @php $absent = false; @endphp
-                                                                @if($attendances['att_check_out_status'] == 0)
-                                                                    -
-                                                                @elseif ($attendances['att_check_overall_status'] == 'Present')
-                                                                    {{ $attendances['att_check_out_time'] }}
-                                                                @elseif($attendances['att_check_overall_status'] == 'Half day')
-                                                                    {{ $attendances['att_check_out_time'] }}
-                                                                @elseif($attendances['att_check_overall_status'] == 'Late Coming')
-                                                                    {{ $attendances['att_check_out_time'] }}
-                                                                
-                                                                @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                        -
-                                                                @elseif($attendances['att_check_overall_status'] == 'Early out')
-                                                                    {{ $attendances['att_check_out_time'] }}
-                                                                
-                                                                @endif
-                                                            @endif 
-                                                                
-                                                        @endforeach
-                                                        
-                                                    @endif
-
-                                                    @php
-                                                    
-                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
-                                                        $today = strtotime(date("d-m-Y"));
-                                                    @endphp
-                                                    
-                                                    @if($absent )
-                                                        @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
-                                                            00:00:00
-
-                                                        @elseif($date_filter< $today)
-                                                            -
-                                                        @else
-                                                            -    
-                                                        @endif
-                                                    @endif
-                                                
-                                                    
-                                                </td> 
-                                                    
-                                                <td  class="text-center"> 
-
-                                                    @if (!empty($attendance))
-                                                        @foreach ($attendance as $attendances)
-                                                            
-                                                            @if ($attendances['att_for_date'].'-'.$attendances['att_for_month'].'-'.$attendances['att_for_year'] == $dates[$month_count])
-                                                                @php $absent = false; @endphp
-                                                                @if ($attendances['att_check_overall_status'] == 'Present')
-                                                                    {{ CustomHelper::calculate_shift_timings_shift_management($attendances['att_shift_start_time'],$attendances['att_shift_end_time']); }}                                                               
-                                                                @elseif($attendances['att_check_overall_status'] == 'Half day')
-                                                                    {{ CustomHelper::calculate_shift_timings_shift_management($attendances['att_shift_start_time'],$attendances['att_shift_end_time']); }}
-                                                                
-                                                                @elseif($attendances['att_check_overall_status'] == 'Late Coming')
-                                                                    {{ CustomHelper::calculate_shift_timings_shift_management($attendances['att_shift_start_time'],$attendances['att_shift_end_time']); }} 
-                                                                                    
-                                                                @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                    -
-                                                                    
-                                                                @elseif($attendances['att_check_overall_status'] == 'Early out')
-                                                                    {{ CustomHelper::calculate_shift_timings_shift_management($attendances['att_shift_start_time'],$attendances['att_shift_end_time']); }}
-                                                                
-                                                               
-                                                                @endif
-                                                            @endif 
-                                                        @endforeach
-
-
-                                                        @if($absent )
-                                                            @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
-                                                                00:00:00
-                                                            @elseif($date_filter < $today)
-                                                                -
-                                                            @else
-                                                                -    
-                                                            @endif
-                                                        @endif
-
-                                                    @endif
-                                                </td> 
-                                                
-                                                <td class="text-center"> 
-                                                    @if (!empty($attendance))
-                                                        @foreach ($attendance as $attendances)
-                                                           
-                                                           @if ($attendances['att_for_date'].'-'.$attendances['att_for_month'].'-'.$attendances['att_for_year'] == $dates[$month_count])
-                                                                @php $absent = false; @endphp
-                                                                @if ($attendances['att_check_overall_status'] == 'Present')
-                                                                    @php  $present++; @endphp
-                                                                    <p class="text-success"><i class="fa-solid fa-calendar-check text-success" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Check In Time : {{ $attendances['att_check_in_time'] }}  &nbsp; &nbsp; Check Out Time : {{ $attendances['att_check_out_time'] }}" ></i> -- Present</p>
-                                                                @elseif($attendances['att_check_overall_status'] == 'Half day')
-                                                                    @php  $halfday++; @endphp
-                                                                    <p class="text-success"><i class="fa-solid fa-calendar-check text-success" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Check In Time : {{ $attendances['att_check_in_time'] }}  &nbsp; &nbsp; Check Out Time : {{ $attendances['att_check_out_time'] }}" ></i> -- Present</p>
-                                                                @elseif($attendances['att_check_overall_status'] == 'Late Coming')
-                                                                    @php  $late_coming++; @endphp
-                                                                    <p class="text-success"><i class="fa-solid fa-calendar-check text-success" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Check In Time : {{ $attendances['att_check_in_time'] }}  &nbsp; &nbsp; Check Out Time : {{ $attendances['att_check_out_time'] }}" ></i> -- Present</p>
-                                                                @elseif($attendances['att_check_overall_status'] == 'Absent')
-                                                                    <p class="text-danger"><i class="fa-solid fa-xmark text-danger" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Absent"></i> -- Absent</p>
-                                                                @elseif($attendances['att_check_overall_status'] == 'Early out')
-                                                                    @php $early_out++; @endphp
-                                                                    <p class="text-success"><i class="fa-solid fa-calendar-check text-success" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Check In Time : {{ $attendances['att_check_in_time'] }}  &nbsp; &nbsp; Check Out Time : {{ $attendances['att_check_out_time'] }}" ></i> -- Present</p>
-                                                                
-                                                                @endif
-                                                            @endif
-                                                        @endforeach
-                                                    @endif
-                                                    @php
-                                                       
-                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
-                                                        $today = strtotime(date("d-m-Y"));
-                                                    @endphp
-                                                    
-                                                    @if($absent )
-                                                        
-                                                        @if(in_array($name_of_day,$login_user[0]['employee_offdays']) )
-                                                            @php $offdays++; @endphp
-                                                            <p class="text-warning">
-                                                            <i class="fa-solid fa-sun text-warning" data-bs-toggle="tooltip"
-                                                            data-bs-placement="top" data-bs-title="Off Day"></i> -- Off Day</p>
-
-                                                        @elseif($date_filter < $today)
-                                                            @php $absent_count++; @endphp
-                                                            <p class="text-danger">
-                                                                <i class="fa-solid fa-xmark text-danger" data-bs-toggle="tooltip"
-                                                                data-bs-placement="top" data-bs-title="Absent"></i> -- Absent</p>
-                                                        @endif
-                                                    @endif
-                                                    
-                                                </td> 
-
-                                                <td class="text-center">
-                                                    
-                                                    <form id="add_new_adjustment">
-                                                        @csrf
-                                                        <div class="form-check form-check-sm form-check-custom form-check-solid">
-                                                            <input class="form-check-input " type="checkbox">
-                                                            <input type="hidden" name="attendance_type" value="Present"/>
-                                                            <input type="hidden" name="employee_id" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
-                                                            <input type="hidden" name="attendance_date" value="{{ date('Y-m-d', strtotime($current_date)) }}"/>
-                                                        
-                                                        </div>
-
-                                                    </form>    
-                                                    @if (!empty($attendance))
-                                                        <a href="#" class="btn btn-sm btn-light btn-active-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions 
-                                                            
-                                                            <span class="svg-icon svg-icon-5 m-0">
-                                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M11.4343 12.7344L7.25 8.55005C6.83579 8.13583 6.16421 8.13584 5.75 8.55005C5.33579 8.96426 5.33579 9.63583 5.75 10.05L11.2929 15.5929C11.6834 15.9835 12.3166 15.9835 12.7071 15.5929L18.25 10.05C18.6642 9.63584 18.6642 8.96426 18.25 8.55005C17.8358 8.13584 17.1642 8.13584 16.75 8.55005L12.5657 12.7344C12.2533 13.0468 11.7467 13.0468 11.4343 12.7344Z" fill="currentColor" />
-                                                                </svg>
-                                                            </span>
-                                                        </a>
-                                                    
-                                                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4" data-kt-menu="true">
-                                                            <div class="menu-item px-3">
-
-                                                              
-                                                                <a href="javascript:void(0)" class="menu-link px-3"  onclick="editAttendanceadjustment('{{$attendances['att_employee_id']}}','{{date('Y-m-d', strtotime($current_date))}}')">
-                                                                    Adjustment
-                                                                  
-                                                                </a>
-
-                                                                <a href="javascript:void(0)" class="menu-link px-3" onclick="editAttendanceadjustment('{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}','{{ date('Y-m-d', strtotime($current_date)) }}')">
-                                                                    Adjustment
-                                                                </a>
-                                                                <form id="add_new_adjustment" class="form ">
-                                                                    @csrf
-
-                                                                    <a href="#" class="menu-link px-3" >
-                                                                        <input type="hidden" name="employee_id" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
-                                                                        <input type="hidden" name="attendance_date" value="{{ date('Y-m-d', strtotime($current_date)) }}"/>
-                                                                        <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Attendance type" id="attendance_type" name="attendance_type"> 
-                                                                            <option value="" >Select Attendance Type</option>
-                                                                            <option value="Official Tour">Official Tour</option>
-                                                                            <option value="On Time Check In">Update Check In Time</option>
-                                                                            <option value="On Time Check Out">Update Check Out Time</option>
-                                                                            <option value="Present">Present</option>
-                                                                        </select>
-                                                                    </a>
-                                                                    
-                                                                </form>    
-                                                                
-                                                            </div>    
-                                                        
-                                                        </div>
-                                                    @endif    
-                                                         
-                                                </td>
-
-                                                
-                                                
-                                            </tr>
-                                        
-                                        @endfor
-                                   
-                                        <tr class="bg-light">
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                        
-                                            <td class="text-center"> 
-                                                @if (!empty($month) && !empty($year))
-                                                    @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,$from_date=NUll,$to_date=Null); @endphp
-                                                @else
-                                                    @php  $calculate_absent_shift = CustomHelper::employee_shift_time_calculation_absent($login_user[0]['employee_id'],$month,$year,Request::get('from_date'),Request::get('to_date')); @endphp
-                                                @endif
-                                                @php 
-                                                
-                                                    $total_shift_calculation =  $calculate_absent_shift + $total_working_hours_actual;
-                                                    $total_shift_calculation =  $total_working_hours_actual;
-                                                    $total_working_hours_actual = CustomHelper::calculate_total_overtime($total_shift_calculation); @endphp
-                                                    {{$total_working_hours_actual['overtime']}}
-                                            </td>
-                                        
-                                            <td></td>
-                                            <td></td>
-                                            <td class="text-center">
-                                                @php $total_working_hours = CustomHelper::calculate_total_overtime($total_working_hours); @endphp
-                                                {{$total_working_hours['overtime'] }}
-
-                                            </td>
-                                            <td></td>
-                                            <td></td>
-                                        </tr>
-                            
-                                    </tbody> --}}
-                                  
-                                
                                 </table>
                             
                             </div>
@@ -552,86 +187,6 @@
             </div>
         
         </div>
-
-        {{-- <form id="add_new_adjustment" class="form">
-            @csrf
-            <div class="modal fade" id="attendance_adjustment" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-scrollable mw-650px">
-                    <div class="modal-content rounded">
-                        <div class="modal-content rounded">
-                            <div class="modal-header">
-                                <h4 class="modal-title pl-4">Attendance Adjustment </h4>
-                                <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
-                                    <span class="svg-icon svg-icon-1">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
-                                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
-                                        </svg>
-                                    </span>
-                                </button>
-                            </div>
-                            <div class="modal-body scroll-y">
-                                    
-                                <input type="hidden" name="attendance_id" />
-                                <input type="hidden" name="employee_code" />
-
-                                <div class="d-flex flex-column mb-8 fv-row">
-                                    <label class="required fs-6 fw-semibold mb-2">Attendance Date</label>
-                                    <div class="position-relative d-flex align-items-center">
-
-                                        <input type="date" class="form-control" name="attendance_date" id="update_dated" required/>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex flex-column mb-8 fv-row">
-                                    <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
-                                        <span class="required">Update Attendance</span>
-                                        <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Please select the option below which you are willing to mark your attendance."></i>
-                                    </label>
-                                    <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Attendance type" id="" name="attendance_type" required> 
-                                        <option value="" >Select Attendance Type</option>
-                                        <option value="Official Tour">Official Tour</option>
-                                        <option value="On Time Check In">Update Check In Time</option>
-                                        <option value="On Time Check Out">Update Check Out Time</option>
-                                        <option value="Present">Present</option>
-                                    </select>
-                                </div>
-
-                                    <div class="main-check-in-div col-md-12 mb-8 fv-row d-none">
-                                        <label class="required fs-6 fw-semibold mb-2">Check In Time</label>
-                                        <div class="position-relative d-flex align-items-center">
-                                            <input type="time" step="1" class="form-control" name="check_in_time" placeholder="Enter in Time" id="check_in_time">
-                                        </div>
-                                    </div>
-
-                                    <div class="main-check-out-div col-md-12 mb-8 fv-row d-none">
-                                        <label class="required fs-6 fw-semibold mb-2">Check Out Time</label>
-                                        <div class="position-relative d-flex align-items-center">
-                                        
-                                            <input type="time" step="1" class="form-control" name="check_out_time"
-                                                    placeholder="Enter out Time"  id="check_out_time"  >
-                                        </div>
-                                    </div>
-
-
-                                    <div class="d-flex flex-column mb-8">
-                                        <label class="fs-6 fw-semibold mb-2 required">Enter Reason</label>
-                                        <textarea class="form-control " rows="3" name="attendance_message" id="kt_docs_maxlength_threshold3" maxlength="500" placeholder="Message" required></textarea>
-                                    </div>
-                                </div>
-                            <div class="modal-footer justify-content-center">
-                                <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" id="submit_btn" class="btn btn-primary">
-                                    <span class="indicator-label">Submit</span>
-                                    <span class="indicator-progress">Please wait 
-                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </form> --}}
     
     </div>
 </div>
@@ -641,14 +196,24 @@
 
 
 @push('js-link')
-<script src="{{url('assets/js/attendance/my-attendance.js')}}"></script>
+{{-- <script src="{{url('assets/js/attendance/my-attendance.js')}}"></script> --}}
 <script>
+    
+    var valid_employee_code = $('.auth_employee_Code').val();
 
-    $('#add_new_adjustment input[type="checkbox"]').click(function() {
+    $('.add_new_adjustment input[type="checkbox"]').click(function() {
         var checkbox = $(this);
         var form = checkbox.closest('form');
 
         if (checkbox.is(':checked')) {
+
+            var current_employee_code = form.find('.auth_employee_Code').val();
+
+                if (valid_employee_code !== current_employee_code) {
+                    alert('Employee code cannot be changed.');
+                    return; 
+                }
+
             $.ajax({
                 url: base_url + '/attendance-adjustment-update',
                 type: 'POST',
@@ -692,6 +257,12 @@
                     }
                 }
             });
+        }
+    });
+
+    $('.add_new_adjustment input[name="attendance_remarks"]').keydown(function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
         }
     });
 
