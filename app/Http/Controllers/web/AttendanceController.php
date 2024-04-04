@@ -379,8 +379,6 @@ class AttendanceController extends Controller
 
                         $att_login_employee =  $employee_data[0]['employee_id'];
 
-                        CustomHelper::refreshSapAttendance($from_date, $to_date, $employee_data[0]['employee_code']);
-
                         $attendance = DB::select("SELECT  
                             employee_id,
                             employee_name,
@@ -458,8 +456,6 @@ class AttendanceController extends Controller
                     }
                 }
                 
-                CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
-
                 $month_count = 0;
                 $period = new DatePeriod(
                     new DateTime($from_date),
