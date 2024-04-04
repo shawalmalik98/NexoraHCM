@@ -209,10 +209,11 @@
 
             var current_employee_code = form.find('.auth_employee_Code').val();
 
-                if (valid_employee_code !== current_employee_code) {
-                    alert('Employee code cannot be changed.');
-                    return; 
-                }
+            if (valid_employee_code !== current_employee_code) {
+                alert('Employee code cannot be changed.');
+                checkbox.prop('checked', false);
+                return; 
+            }
 
             $.ajax({
                 url: base_url + '/attendance-adjustment-update',
@@ -232,7 +233,7 @@
                         Toast.fire({
                             icon: 'warning',
                             title: data.msg,
-                            timer: 5000,
+                            timer: 3000,
                         });
                     }
                 },

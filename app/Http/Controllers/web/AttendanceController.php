@@ -395,28 +395,28 @@ class AttendanceController extends Controller
                             END AS 'Attendance Status',
                             CASE 
                                 WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                                ELSE '' 
+                                ELSE '-' 
                             END AS 'Check In', 
                             CASE 
                                 WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                                ELSE '' 
+                                ELSE '-' 
                             END AS 'Check Out'
-                        FROM (
-                            SELECT DATEADD(DAY, n, '$from_date') AS date_between
                             FROM (
-                                SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-                                FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-                                    (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-                                    (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
-                            ) AS numbers
-                            WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
-                        ) AS dates
-                        LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
-                        LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id 
-                        where att.att_check_overall_status IS NULL 
-                        -- AND $where_clause
-                        ORDER BY dates.date_between ASC");
-                    $attendance = json_decode(json_encode($attendance), TRUE);
+                                SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                                FROM (
+                                    SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
+                                    FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
+                                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
+                                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                                ) AS numbers
+                                WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
+                            ) AS dates
+                            LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
+                            LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id 
+                            where att.att_check_overall_status IS NULL 
+                            -- AND $where_clause
+                            ORDER BY dates.date_between ASC");
+                        $attendance = json_decode(json_encode($attendance), TRUE);
 
                         if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 28 || $login_user[0]['employee_id'] == 1){
 
@@ -507,11 +507,11 @@ class AttendanceController extends Controller
                 END AS 'Attendance Status',
                 CASE 
                     WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                    ELSE '' 
+                    ELSE '-' 
                 END AS 'Check In', 
                 CASE 
                     WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                    ELSE '' 
+                    ELSE '-' 
                 END AS 'Check Out'
                  FROM (
                 SELECT DATEADD(DAY, n, '$from_date') AS date_between
@@ -625,11 +625,11 @@ class AttendanceController extends Controller
                         $create_attendance->att_for_month = $month;
                         $create_attendance->att_for_year = $year;
                         $create_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
-                        $create_attendance->att_request_approval = 1;
                         $create_attendance->att_updated_by = session('user_session');
                         $create_attendance->att_updated_remarks = $request_data->input('attendance_remarks');
                         $process = $create_attendance->save();
-                    } else{
+
+                    }else{
 
                         return response()->json([
                             'status' => 'FALSE',
