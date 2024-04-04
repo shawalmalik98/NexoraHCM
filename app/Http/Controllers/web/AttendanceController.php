@@ -488,10 +488,8 @@ class AttendanceController extends Controller
 
                     $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
                 }
-
-               $employee_data = Employees::where('employee_isactive','=', $status)->where('employee_id',  $login_user[0]['employee_id'])->get(['employee_id','employee_code','employee_name'])->toArray();
-
-               $employee_id = $login_user[0]['employee_id'];
+               
+               $employee_data = $login_user[0]['employee_id'];
 
                $attendance = DB::select("SELECT 
                 employee_id,
@@ -525,8 +523,8 @@ class AttendanceController extends Controller
                     ) AS numbers
                     WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
                 ) AS dates
-                LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id 
-                LEFT JOIN tbl_employees AS emp ON $employee_id  = emp.employee_id 
+                LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_data 
+                LEFT JOIN tbl_employees AS emp ON $employee_data  = emp.employee_id 
                 WHERE att.att_check_overall_status IS NULL 
                 ORDER BY dates.date_between ASC");
                 $attendance = json_decode(json_encode($attendance), TRUE);
