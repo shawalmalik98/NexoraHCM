@@ -350,8 +350,17 @@ class AttendanceController extends Controller
                                     'message' => 'Employee not found',
                                 ]);
                             }    
-                        } else{
-                            $where_clause .= " AND att_employee_id = '" .  $login_user[0]['employee_id'] . "' ";
+                        } 
+                        else{
+
+                            $request_employee = Employees::whereIn('employee_designation', [400,453,478])
+                            ->where('employee_id', $login_user[0]['employee_id'])
+                            ->where('employee_isactive', '=', $status)
+                            ->get(['employee_id','employee_name','employee_code'])->toArray();
+
+                            if(!empty($request_employee)){
+                                $where_clause .= " AND att_employee_id = '" .  $login_user[0]['employee_id']. "' ";
+                            }
                         }
                         
                         $month_count = 0;
@@ -375,48 +384,52 @@ class AttendanceController extends Controller
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
 
-                        $employee_data = Employees::where('employee_isactive','=', $status)->where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_id','employee_name','employee_code'])->toArray();
+                        $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'] )->get(['employee_id','employee_name','employee_code'])->toArray();
 
-                        $att_login_employee =  $employee_data[0]['employee_id'];
+                        if(!empty($employee_data)){
+                            $att_login_employee =  $employee_data[0]['employee_id'];
 
-                        $attendance = DB::select("SELECT  
-                            employee_id,
-                            employee_name,
-                            employee_code,
-                            CONVERT(date, dates.date_between) as 'Date', 
-                            DATENAME(dw, dates.date_between) as 'Day', 
-                            CASE 
-                                WHEN emp.employee_doj <= dates.date_between THEN
-                                    CASE 
-                                        WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
-                                        WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
-                                    END
-                                ELSE '-' 
-                            END AS 'Attendance Status',
-                            CASE 
-                                WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                                ELSE '-' 
-                            END AS 'Check In', 
-                            CASE 
-                                WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                                ELSE '-' 
-                            END AS 'Check Out'
-                            FROM (
-                                SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                            $attendance = DB::select("SELECT  
+                                employee_id,
+                                employee_name,
+                                employee_code,
+                                CONVERT(date, dates.date_between) as 'Date', 
+                                DATENAME(dw, dates.date_between) as 'Day', 
+                                CASE 
+                                    WHEN emp.employee_doj <= dates.date_between THEN
+                                        CASE 
+                                            WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                                            WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
+                                        END
+                                    ELSE '-' 
+                                END AS 'Attendance Status',
+                                CASE 
+                                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
+                                    ELSE '-' 
+                                END AS 'Check In', 
+                                CASE 
+                                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
+                                    ELSE '-' 
+                                END AS 'Check Out'
                                 FROM (
-                                    SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-                                    FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-                                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-                                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
-                                ) AS numbers
-                                WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
-                            ) AS dates
-                            LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
-                            LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id 
-                            where att.att_check_overall_status IS NULL 
-                            -- AND $where_clause
-                            ORDER BY dates.date_between ASC");
-                        $attendance = json_decode(json_encode($attendance), TRUE);
+                                    SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                                    FROM (
+                                        SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
+                                        FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
+                                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
+                                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                                    ) AS numbers
+                                    WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
+                                ) AS dates
+                                LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
+                                LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id 
+                                where att.att_check_overall_status IS NULL 
+                                ORDER BY dates.date_between ASC");
+                            $attendance = json_decode(json_encode($attendance), TRUE);
+
+                        }else{
+                            $attendance = [];
+                        }    
 
                         if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 28 || $login_user[0]['employee_id'] == 1){
 
@@ -440,7 +453,8 @@ class AttendanceController extends Controller
                     }  
 
                 }
-            }else{
+            }
+            else{
 
                 if(empty($request->from_date) && empty($request->to_date)){
                     if(date('d') >= '26'){
@@ -488,46 +502,54 @@ class AttendanceController extends Controller
 
                     $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
                 }
-               
-               $employee_data = $login_user[0]['employee_id'];
+                
+                $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', $login_user[0]['employee_id'])->get(['employee_id','employee_name','employee_code'])->toArray();
 
-               $attendance = DB::select("SELECT 
-                employee_id,
-                employee_name,
-                employee_code,
-                CONVERT(date, dates.date_between) as 'Date', 
-                DATENAME(dw, dates.date_between) as 'Day', 
-                CASE 
-                    WHEN emp.employee_doj <= dates.date_between THEN
-                        CASE 
-                            WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
-                            WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
-                        END
-                    ELSE '-' 
-                END AS 'Attendance Status',
-                CASE 
-                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                    ELSE '-' 
-                END AS 'Check In', 
-                CASE 
-                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                    ELSE '-' 
-                END AS 'Check Out'
-                 FROM (
-                SELECT DATEADD(DAY, n, '$from_date') AS date_between
-                FROM (
-                    SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-                    FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
-                    ) AS numbers
-                    WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
-                ) AS dates
-                LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_data 
-                LEFT JOIN tbl_employees AS emp ON $employee_data  = emp.employee_id 
-                WHERE att.att_check_overall_status IS NULL 
-                ORDER BY dates.date_between ASC");
-                $attendance = json_decode(json_encode($attendance), TRUE);
+                if (!empty($employee_data)) {
+
+                 $employee_dsr = $employee_data[0]['employee_id'];
+
+                    $attendance = DB::select("SELECT 
+                    employee_id,
+                    employee_name,
+                    employee_code,
+                    CONVERT(date, dates.date_between) as 'Date', 
+                    DATENAME(dw, dates.date_between) as 'Day', 
+                    CASE 
+                        WHEN emp.employee_doj <= dates.date_between THEN
+                            CASE 
+                                WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                                WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
+                            END
+                        ELSE '-' 
+                    END AS 'Attendance Status',
+                    CASE 
+                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
+                        ELSE '-' 
+                    END AS 'Check In', 
+                    CASE 
+                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
+                        ELSE '-' 
+                    END AS 'Check Out'
+                    FROM (
+                    SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                    FROM (
+                        SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
+                        FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
+                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
+                                (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                        ) AS numbers
+                        WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
+                    ) AS dates
+                    LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_dsr 
+                    LEFT JOIN tbl_employees AS emp ON $employee_dsr  = emp.employee_id 
+                    WHERE att.att_check_overall_status IS NULL 
+                    ORDER BY dates.date_between ASC");
+                    $attendance = json_decode(json_encode($attendance), TRUE);
+
+                }else{
+                    $attendance = [];
+                } 
            
             }
 
@@ -547,11 +569,12 @@ class AttendanceController extends Controller
 
         try{
 
+            // dd($request_data->all());
+
             $validator = Validator::make($request_data->all(), [
-                'attendance_date' => 'required|date_format:Y-m-d|before_or_equal:now' ,
-                'attendance_type' => 'required',
-                'employee_code' => 'required',
-                'attendance_remarks' => 'required',
+                'data.*.attendance_remarks' => 'required',
+                'data.*.employee_code' => 'required',
+                'data.*.attendance_date' => 'required|date_format:Y-m-d|before_or_equal:now',
             ]);
               
             if($validator->fails()) {
@@ -562,93 +585,100 @@ class AttendanceController extends Controller
                     ]);
                 }
             }
-            else{
+            else
+            {
 
-                $get_employee_decoded = Employees::where('employee_id',$request_data->input('employee_code'))->get(['employee_name','employee_doj','employee_senior_manager','employee_junior_manager'])->toArray();
+                $process = '';
 
-                $doj  = strtotime($get_employee_decoded[0]['employee_doj']);
+                if ($request_data->has('data')) {
 
-                if($request_data->input('attendance_date') < $doj){
-                    return response()->json([
-                        'msg' => 'You can\'t apply attendance request before your joining date.',
-                        'status' => 'FALSE'
-                    ]);
-                }
+                    $attendance_data = $request_data->input('data');
 
-                $payroll_exists = $this->check_if_payroll_exist($request_data->input('attendance_date'),$request_data->input('employee_code'),$custom_message = NULL);
+                    foreach ($attendance_data as $data) {
 
-                if($payroll_exists['status'] == TRUE){
-                    return response()->json([
-                        'msg' => $payroll_exists['msg'],
-                        'status' => 'FALSE'
-                    ]);
-                }
+                        $attendance_date = $data['attendance_date'];
+                        $employee_code = $data['employee_code'];
+                        $attendance_remarks = $data['attendance_remarks']; 
 
-                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('attendance_date'));
+                        $get_employee_decoded = Employees::where('employee_id',$employee_code)->first();
 
-                if($check_attendance_sheet_availability['status'] == FALSE){
-                    return response()->json([
-                        'msg' => $check_attendance_sheet_availability['msg'],
-                        'status' => 'FALSE'
-                    ]);
-                }
-                
-                $attendance_date = $request_data->input('attendance_date');
-                
-                $day = date("d", strtotime($attendance_date));
-
-                $month = date("m", strtotime($attendance_date));
-                
-                $year = date("Y", strtotime($attendance_date));
+                        $doj  = strtotime($get_employee_decoded->employee_doj);
         
-                $attendance = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['attendance_id'])->toArray();
-
-                $employee_shift_start = $this->get_employee_today_shift($request_data->input('employee_code'),"in",$attendance_date);
-                $employees_shift_end_time = $this->get_employee_today_shift($request_data->input('employee_code'),"out",$attendance_date);
-                
-                if(empty($attendance)){
+                        if(strtotime($attendance_date) < $doj){
+                            return response()->json([
+                                'msg' => 'You can\'t apply attendance request before your joining date.',
+                                'status' => 'FALSE'
+                            ]);
+                        }
+        
+                        $payroll_exists = $this->check_if_payroll_exist($attendance_date,$employee_code,$custom_message = NULL);
+        
+                        if($payroll_exists['status'] == TRUE){
+                            return response()->json([
+                                'msg' => $payroll_exists['msg'],
+                                'status' => 'FALSE'
+                            ]);
+                        }
+        
+                        $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($attendance_date);
+        
+                        if($check_attendance_sheet_availability['status'] == FALSE){
+                            return response()->json([
+                                'msg' => $check_attendance_sheet_availability['msg'],
+                                'status' => 'FALSE'
+                            ]);
+                        }
                         
-                    if($request_data->input('attendance_type') == "Present"){
+                        $day = date("d", strtotime($attendance_date));
+                        $month = date("m", strtotime($attendance_date));
+                        $year = date("Y", strtotime($attendance_date));
+                        
+                        $attendance = Attendance::where('att_employee_id', $employee_code)
+                            ->where('att_for_date', $day)
+                            ->where('att_for_month', $month)
+                            ->where('att_for_year', $year)
+                            ->get(['attendance_id'])
+                            ->toArray();
+                        
+                        if (empty($attendance)) {
 
-                        $create_attendance = new Attendance();
-                        $create_attendance->att_check_in_time = $employee_shift_start;
-                        $create_attendance->att_check_out_time = $employees_shift_end_time;
-                        $create_attendance->att_employee_id = $request_data->input('employee_code');
-                        $create_attendance->att_check_in_status = 1;
-                        $create_attendance->att_check_out_status = 1;
-                        $create_attendance->att_check_in_source = 3;
-                        $create_attendance->att_check_out_source = 3;
-                        $create_attendance->att_shift_start_time = $employee_shift_start;
-                        $create_attendance->att_shift_end_time = $employees_shift_end_time;
-                        $create_attendance->att_check_overall_status = $request_data->input('attendance_type');
-                        $create_attendance->att_for_date = $day;
-                        $create_attendance->att_for_month = $month;
-                        $create_attendance->att_for_year = $year;
-                        $create_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
-                        $create_attendance->att_updated_by = session('user_session');
-                        $create_attendance->att_updated_remarks = $request_data->input('attendance_remarks');
-                        $process = $create_attendance->save();
-
-                    }else{
-
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "Attendance type is invalid",
-                        ]);
-                    
+                            $employee_shift_start = $this->get_employee_today_shift($employee_code, "in", $attendance_date);
+                            $employees_shift_end_time = $this->get_employee_today_shift($employee_code, "out", $attendance_date);
+                            
+                            $create_attendance = new Attendance();
+                            $create_attendance->att_check_in_time = $employee_shift_start;
+                            $create_attendance->att_check_out_time = $employees_shift_end_time;
+                            $create_attendance->att_employee_id = $employee_code;
+                            $create_attendance->att_check_in_status = 1;
+                            $create_attendance->att_check_out_status = 1;
+                            $create_attendance->att_check_in_source = 3;
+                            $create_attendance->att_check_out_source = 3;
+                            $create_attendance->att_shift_start_time = $employee_shift_start;
+                            $create_attendance->att_shift_end_time = $employees_shift_end_time;
+                            $create_attendance->att_check_overall_status =  'Present';
+                            $create_attendance->att_for_date = $day;
+                            $create_attendance->att_for_month = $month;
+                            $create_attendance->att_for_year = $year;
+                            $create_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+                            $create_attendance->att_updated_by = session('user_session');
+                            $create_attendance->att_updated_remarks = $attendance_remarks;
+                            $process = $create_attendance->save();
+                            
+                        } else {
+                            return response()->json([
+                                'status' => 'FALSE',
+                                'msg' => "Attendance already exists for employee $employee_code on $attendance_date.",
+                            ]);
+                        }
                     }
+                } else {
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Attendance data is invalid",
+                    ]);
                 }
-              
-                if($process == 1){
-
-                    // if(!empty($get_employee_decoded[0]['employee_senior_manager']) || $get_employee_decoded[0]['employee_senior_manager'] != ''){
-                    //     $to_mngr1 = $get_employee_decoded[0]['employee_senior_manager'];
-                    // }
-                    // if(!empty($get_employee_decoded[0]['employee_junior_manager']) || $get_employee_decoded[0]['employee_junior_manager'] != ''){
-                    //     $to_mngr2 = $get_employee_decoded[0]['employee_junior_manager'];
-                    // }
                     
-                    // $this->send_notification('New Attendance Request ', '' . $get_employee_decoded[0]['employee_name']. ' applied for an attendance request as ('. $request_data->input('attendance_type') .') for the date of '. $request_data->input('attendance_date').'. Please click here to view.','attendance-requests?employee_id='.$request_data->input('employee_code').'&date='.$request_data->input('attendance_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+                if($process == 1){
 
                     return response()->json([
                         'status' => 'TRUE',
@@ -685,7 +715,6 @@ class AttendanceController extends Controller
             ActivityTracker::track_activity('Create an Attendance Request');
         }
 
-		
     }
     
     protected function get_employee_monthly_attendance(Request $request){

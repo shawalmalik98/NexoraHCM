@@ -109,6 +109,25 @@
                             </span>
                             <input type="text" class="form-control  w-250px ps-15" placeholder="Search Record ..." id="searchFilter">
                         </div>  
+
+                        <div class="" style="width:6.5rem">  
+                        <div class="d-flex align-items-center  on-check d-none">
+
+                            <a href="javascript:void(0)"  class="request_submit text-white btn btn-sm fw-bold btn-success" data-bs-toggle="tooltip" data-bs-placement="top" title="Approve Attendance" >Approve</a>
+                        </div>
+                                
+                        </div>
+                        <div class="d-flex ps-15" style="width: 58.7rem; justify-content: end;">
+                            <div class="row" style="width: 100%; justify-content:flex-end;">
+                                <div class="col-md-6" style="width: 46% !important">
+                                <input type="text" class="form-control th-remarks-input" placeholder="Enter Remarks" />
+                                </div>
+                                <div class="form-check form-check-sm form-check-custom form-check-solid col-md-1" style="width: 6.3333%">
+                                    <input class="form-check-input th-checkbox" type="checkbox"> 
+                                
+                                </div>
+                            </div> 
+                        </div>    
                       
                     </div>
                 </div>
@@ -128,7 +147,10 @@
                                             <th class="ps-8">Date</th>
                                             <th class="ps-8">Employee Name</th>
                                             <th class="text-center">Status</th>
-                                            <th class="text-center">Action</th>
+                                            <th class="text-center ps-15"> remarks
+
+                                                  
+                                            </th>
                                         
                                         </tr>
                                     </thead>
@@ -155,13 +177,12 @@
                                                             @csrf
                                                             <div class="row">
                                                                 <div class="col-md-10">
-                                                                <input type="text" class="form-control" placeholder="Enter Remarks" name="attendance_remarks" required/>
+                                                                <input type="text" class="form-control td-remarks-input" placeholder="Enter Remarks" name="attendance_remarks" required/>
                                                                 </div>
                                                                 <div class="form-check form-check-sm form-check-custom form-check-solid col-md-2">
-                                                                    <input class="form-check-input" type="checkbox">
-                                                                    <input type="hidden" name="attendance_type" value="Present"/>
+                                                                    <input class="form-check-input td-checkbox" type="checkbox">
                                                                     <input type="hidden" name="employee_code" class="auth_employee_Code" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
-                                                                    <input type="hidden" name="attendance_date" value="{{ date('Y-m-d', strtotime($attendances['Date'])) }}"/>
+                                                                    <input type="hidden" name="attendance_date" class="att_date" value="{{ date('Y-m-d', strtotime($attendances['Date'])) }}"/>
                                                                 
                                                                 </div>
                                                             </div>    
@@ -171,6 +192,7 @@
                                                     
                                                 </tr>
                                             @endforeach
+                                         
                                         @endif   
                                    
                                     </tbody>
@@ -199,15 +221,110 @@
 {{-- <script src="{{url('assets/js/attendance/my-attendance.js')}}"></script> --}}
 <script>
     
-    var valid_employee_code = $('.auth_employee_Code').val();
 
-    $('.add_new_adjustment input[type="checkbox"]').click(function() {
-        var checkbox = $(this);
-        var form = checkbox.closest('form');
+    // $('.add_new_adjustment input[type="checkbox"]').click(function() {
+    //     var checkbox = $(this);
+    //     var form = checkbox.closest('form');
 
-        if (checkbox.is(':checked')) {
+    //     if (checkbox.is(':checked')) {
 
-            var current_employee_code = form.find('.auth_employee_Code').val();
+    //         var current_employee_code = form.find('.auth_employee_Code').val();
+
+    //         if (valid_employee_code !== current_employee_code) {
+    //             alert('Employee code cannot be changed.');
+    //             checkbox.prop('checked', false);
+    //             return; 
+    //         }
+
+    //         $.ajax({
+    //             url: base_url + '/attendance-adjustment-update',
+    //             type: 'POST',
+    //             data: form.serialize(), 
+    //             success: function (data) {
+    //                 if (data.status == 'TRUE') {
+    //                     Toast.fire({
+    //                         icon: 'success',
+    //                         title: data.msg,
+    //                         timer: 3000,
+    //                     });
+    //                     setTimeout(() => {
+    //                         location.reload();
+    //                     }, 1000);
+    //                 } else {
+    //                     Toast.fire({
+    //                         icon: 'warning',
+    //                         title: data.msg,
+    //                         timer: 3000,
+    //                     });
+    //                 }
+    //             },
+    //             error: function (jqXHR, textStatus) {
+    //                 var errorStatus = jqXHR.status;
+    //                 if (errorStatus == 0) {
+    //                     Toast.fire({
+    //                         icon: 'warning',
+    //                         title: 'Internet Connection Problem',
+    //                         timer: 3000,
+    //                     });
+    //                 } else {
+    //                     if (errorStatus == 419) {
+    //                         location.reload();
+    //                     } else {
+    //                         Toast.fire({
+    //                             icon: 'warning',
+    //                             title: 'Try Again. Error Code ' + errorStatus,
+    //                             timer: 3000,
+    //                         });
+    //                     }
+    //                 }
+    //             }
+    //         });
+    //     }
+    // });
+
+    $('.add_new_adjustment input[name="attendance_remarks"]').keydown(function(event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+        }
+    });
+
+    $(document).ready(function() {
+        $('.th-checkbox').change(function() {
+            var isChecked = $(this).is(':checked');
+            $('.td-checkbox').prop('checked', isChecked);
+
+            if (isChecked) {
+                $('.on-check').removeClass('d-none');
+            }
+            else {
+                $('.on-check').addClass('d-none');
+            }
+        });
+
+        $('.td-checkbox').change(function() {
+            var isChecked = $(this).is(':checked');
+                
+            if (isChecked) {
+                $('.on-check').removeClass('d-none');
+            }
+            else {
+                $('.on-check').addClass('d-none');
+            }
+        });
+
+        $('.th-remarks-input').keyup(function() {
+            var remarks = $(this).val();
+            $('.td-remarks-input').val(remarks);
+        });
+
+        var valid_employee_code = $('.auth_employee_Code').val();
+
+        $('.request_submit').click(function() {
+
+            var button = $(this); 
+            event.preventDefault(); 
+
+            var current_employee_code = $('.auth_employee_Code').val();
 
             if (valid_employee_code !== current_employee_code) {
                 alert('Employee code cannot be changed.');
@@ -215,56 +332,84 @@
                 return; 
             }
 
-            $.ajax({
-                url: base_url + '/attendance-adjustment-update',
-                type: 'POST',
-                data: form.serialize(), 
-                success: function (data) {
-                    if (data.status == 'TRUE') {
-                        Toast.fire({
-                            icon: 'success',
-                            title: data.msg,
-                            timer: 3000,
-                        });
-                        setTimeout(() => {
-                            location.reload();
-                        }, 1000);
-                    } else {
-                        Toast.fire({
-                            icon: 'warning',
-                            title: data.msg,
-                            timer: 3000,
-                        });
-                    }
-                },
-                error: function (jqXHR, textStatus) {
-                    var errorStatus = jqXHR.status;
-                    if (errorStatus == 0) {
-                        Toast.fire({
-                            icon: 'warning',
-                            title: 'Internet Connection Problem',
-                            timer: 3000,
-                        });
-                    } else {
-                        if (errorStatus == 419) {
-                            location.reload();
-                        } else {
-                            Toast.fire({
-                                icon: 'warning',
-                                title: 'Try Again. Error Code ' + errorStatus,
-                                timer: 3000,
-                            });
-                        }
-                    }
+            var dataToSend = []; 
+
+            $('tbody td').each(function() {
+                var remarks = $(this).find('.td-remarks-input').val();
+                var employeeCode = $(this).find('[name="employee_code"]').val();
+                var attendanceDate = $(this).find('.att_date').val();
+                var isChecked = $(this).find('.td-checkbox').prop('checked');
+
+                if (isChecked && remarks.trim() !== '') {
+                    var rowData = {
+                        attendance_remarks: remarks,
+                        employee_code: employeeCode,
+                        attendance_date: attendanceDate,
+                        is_checked: isChecked 
+                    };
+
+                    dataToSend.push(rowData);
                 }
             });
-        }
-    });
 
-    $('.add_new_adjustment input[name="attendance_remarks"]').keydown(function(event) {
-        if (event.keyCode === 13) {
-            event.preventDefault();
-        }
+            button.addClass('disabled');
+            
+            if (dataToSend.length > 0) {
+                
+                $.ajax({
+                    url: base_url + '/attendance-adjustment-update',
+                    type: 'POST',
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    data: { data: dataToSend }, 
+                    success: function (data) {
+                        if (data.status == 'TRUE') {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.msg,
+                                timer: 3000,
+                            });
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1000);
+                        
+                        } else {
+                            button.removeClass('disabled');
+                            Toast.fire({
+                                icon: 'warning',
+                                title: data.msg,
+                                timer: 3000,
+                            });
+
+                            
+                        }
+                    },
+                    error: function (jqXHR, textStatus) {
+                        var errorStatus = jqXHR.status;
+                        if (errorStatus == 0) {
+                            Toast.fire({
+                                icon: 'warning',
+                                title: 'Internet Connection Problem',
+                                timer: 3000,
+                            });
+                        } else {
+                            if (errorStatus == 419) {
+                                location.reload();
+                            } else {
+                                Toast.fire({
+                                    icon: 'warning',
+                                    title: 'Try Again. Error Code ' + errorStatus,
+                                    timer: 3000,
+                                });
+                            }
+                        }
+                    }
+                });
+            } else {
+                button.removeClass('disabled');
+                alert('Please check at least one checkbox and ensure remarks are not empty.');
+            }
+        });
+
     });
 
    
