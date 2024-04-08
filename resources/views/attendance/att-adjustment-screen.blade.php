@@ -41,7 +41,7 @@
             <form action="{{ url('attendance-adjustment') }}" method="GET">
                 <div class="row" id="card-container">
                         
-                    <div class="col-md-3 col-6 mb-4"  >
+                    <div class="col-md-2 col-6 mb-4"  >
                         <div class="card" >
                             <div class="p-3">
                                 <label class="form-label fw-semibold @if(!empty(Request::get('from_date'))) required  @endif" id="label-from-date">Form Date</label>
@@ -50,7 +50,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-3 col-6 mb-4"  >
+                    <div class="col-md-2 col-6 mb-4"  >
                         <div class="card" >
                             <div class="p-3">
                                 <label class="form-label fw-semibold @if(!empty(Request::get('to_date'))) required  @endif" id="label-to-date">To Date</label>
@@ -63,11 +63,11 @@
                         <div class="card" >
                             <div class="p-3">
                                         
-                                <label class="form-label fw-semibold">
+                                <label class="form-label fw-semibold required">
                                     <span>Select Employee</span>
                                 </label>
                                 <div>
-                                    <select class="form-select" data-kt-select2="true" name="employee_id" data-placeholder="Select employees">
+                                    <select class="form-select" data-kt-select2="true" name="employee_id" data-placeholder="Select employees" required>
                                         <option value="">Select Employee</option>
                                         @if(!empty($all_employees))
                                             @foreach ($all_employees as $employees)
@@ -81,11 +81,30 @@
                         </div>    
                     </div>
 
+                    <div class="col-md-2 col-6 mb-4"  >
+                        <div class="card" >
+                            <div class="p-3">
+                                <label class="form-label fw-semibold required">
+                                    <span>Select Status</span>
+                                </label>
+                                <div>
+                                    <select class="form-select " data-kt-select2="true" data-placeholder="Select attendance status" name="att_status" required>
+                                        <option value="">Select Attendance status</option>
+                                        <option value="All" @if (Request::get('att_status') == 'All') selected @endif>All Status</option>
+                                        <option value="Absent" @if (!empty(Request::get('att_status')) && Request::get('att_status') == 'Absent') selected @endif>Absent</option>
+                                        <option value="Off Day" @if (!empty(Request::get('att_status')) && Request::get('att_status') == 'Off Day') selected @endif>Off Day</option>
+                                       
+                                    </select>
+                                </div> 
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-md-3 col-6 mb-4"  >
                         <div class="card" style="width:max-content !important; height: 6.9rem; justify-content: center;" >
                             <div class="p-4">
 
-                                @if (!empty(Request::get('from_date')) || !empty(Request::get('to_date')) || !empty(Request::get('employee_id')))
+                                @if (!empty(Request::get('from_date')) || !empty(Request::get('to_date')) || !empty(Request::get('employee_id')) || !empty(Request::get('att_status')))
                                     <a href="{{ url('attendance-adjustment') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2">Reset Filter</a>
                                 @endif
                                 <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
@@ -159,38 +178,40 @@
 
                                         @if (!empty($attendance))
                                             @foreach ($attendance as $attendances)
-                                                <tr>
-                                                
-                                                    <td class="ps-8">
-                                                        {{ $attendances['Date'] }} -  {{ $attendances['Day'] }}
-                                                    </td>
-                                                    <td class="ps-8">
-                                                        {{ $attendances['employee_code'] }} - {{ $attendances['employee_name'] }}
-                                                    </td>
-                                                    <td class="text-center">
-                                                        {{ $attendances['Attendance Status']}} 
-                                                    </td>
+                                                @if($attendances['Attendance Status'] == Request::get('att_status') || Request::get('att_status') == 'All')
+                                                    <tr>
                                                     
-                                                    <td class="text-center ps-15">
+                                                        <td class="ps-8">
+                                                            {{ $attendances['Date'] }} -  {{ $attendances['Day'] }}
+                                                        </td>
+                                                        <td class="ps-8">
+                                                            {{ $attendances['employee_code'] }} - {{ $attendances['employee_name'] }}
+                                                        </td>
+                                                        <td class="text-center">
+                                                            {{ $attendances['Attendance Status']}} 
+                                                        </td>
+                                                        
+                                                        <td class="text-center ps-15">
 
-                                                        <form class="add_new_adjustment">
-                                                            @csrf
-                                                            <div class="row">
-                                                                <div class="col-md-10">
-                                                                <input type="text" class="form-control td-remarks-input" placeholder="Enter Remarks" name="attendance_remarks" required/>
-                                                                </div>
-                                                                <div class="form-check form-check-sm form-check-custom form-check-solid col-md-2">
-                                                                    <input class="form-check-input td-checkbox" type="checkbox">
-                                                                    <input type="hidden" name="employee_code" class="auth_employee_Code" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
-                                                                    <input type="hidden" name="attendance_date" class="att_date" value="{{ date('Y-m-d', strtotime($attendances['Date'])) }}"/>
-                                                                
-                                                                </div>
-                                                            </div>    
-                                                        </form>   
+                                                            <form class="add_new_adjustment">
+                                                                @csrf
+                                                                <div class="row">
+                                                                    <div class="col-md-10">
+                                                                    <input type="text" class="form-control td-remarks-input" placeholder="Enter Remarks" name="attendance_remarks" required/>
+                                                                    </div>
+                                                                    <div class="form-check form-check-sm form-check-custom form-check-solid col-md-2">
+                                                                        <input class="form-check-input td-checkbox" type="checkbox">
+                                                                        <input type="hidden" name="employee_code" class="auth_employee_Code" value="{{ Request::get('employee_id') ?? $login_user[0]['employee_id'] }}" />
+                                                                        <input type="hidden" name="attendance_date" class="att_date" value="{{ date('Y-m-d', strtotime($attendances['Date'])) }}"/>
+                                                                    
+                                                                    </div>
+                                                                </div>    
+                                                            </form>   
 
-                                                    </td>
-                                                    
-                                                </tr>
+                                                        </td>
+                                                        
+                                                    </tr>
+                                                @endif    
                                             @endforeach
                                          
                                         @endif   
@@ -220,7 +241,6 @@
 @push('js-link')
 {{-- <script src="{{url('assets/js/attendance/my-attendance.js')}}"></script> --}}
 <script>
-    
 
     // $('.add_new_adjustment input[type="checkbox"]').click(function() {
     //     var checkbox = $(this);
@@ -353,7 +373,7 @@
             });
 
             button.addClass('disabled');
-            
+
             if (dataToSend.length > 0) {
                 
                 $.ajax({

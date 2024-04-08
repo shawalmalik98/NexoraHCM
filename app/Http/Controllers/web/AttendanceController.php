@@ -333,9 +333,11 @@ class AttendanceController extends Controller
                         $to_date =  $request->input('to_date');
                       
                         $employee_id = $request->input('employee_id');
+
+                        $attendance_status = $request->input('att_status');
                         
                         $where_clause = '1=1';
-
+                    
                         if (!empty($employee_id)) {
 
                             $request_employee = Employees::whereIn('employee_designation', [400,453,478])
@@ -423,7 +425,7 @@ class AttendanceController extends Controller
                                 ) AS dates
                                 LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
                                 LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id 
-                                where att.att_check_overall_status IS NULL 
+                                WHERE att.att_check_overall_status IS NULL 
                                 ORDER BY dates.date_between ASC");
                             $attendance = json_decode(json_encode($attendance), TRUE);
 
@@ -553,6 +555,8 @@ class AttendanceController extends Controller
            
             }
 
+           
+
             $send_data = compact('title','login_user','attendance','month_days','dates','month_count','from_date','to_date','all_employees','employee_data');
 
             return view('attendance.att-adjustment-screen',$send_data); 
@@ -568,8 +572,6 @@ class AttendanceController extends Controller
     protected function update_attendance_adjustment(Request $request_data){
 
         try{
-
-            // dd($request_data->all());
 
             $validator = Validator::make($request_data->all(), [
                 'data.*.attendance_remarks' => 'required',
@@ -590,9 +592,9 @@ class AttendanceController extends Controller
 
                 $process = '';
 
-                if ($request_data->has('data')) {
+                $attendance_data = $request_data->input('data');
 
-                    $attendance_data = $request_data->input('data');
+                if (!empty($attendance_data)) {
 
                     foreach ($attendance_data as $data) {
 
@@ -662,6 +664,7 @@ class AttendanceController extends Controller
                             $create_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
                             $create_attendance->att_updated_by = session('user_session');
                             $create_attendance->att_updated_remarks = $attendance_remarks;
+                            $create_attendance->adjustment_updated = date('Y-m-d H:i:s');
                             $process = $create_attendance->save();
                             
                         } else {
