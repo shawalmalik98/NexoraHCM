@@ -88,8 +88,8 @@
                                     <span>Select Status</span>
                                 </label>
                                 <div>
-                                    <select class="form-select " data-kt-select2="true" data-placeholder="Select attendance status" name="att_status" required>
-                                        <option value="">Select Attendance status</option>
+                                    <select class="form-select " data-kt-select2="true" data-placeholder="Attendance Status" name="att_status" required>
+                                        <option value="">Attendance status</option>
                                         <option value="All" @if (Request::get('att_status') == 'All') selected @endif>All Status</option>
                                         <option value="Absent" @if (!empty(Request::get('att_status')) && Request::get('att_status') == 'Absent') selected @endif>Absent</option>
                                         <option value="Off Day" @if (!empty(Request::get('att_status')) && Request::get('att_status') == 'Off Day') selected @endif>Off Day</option>
@@ -166,11 +166,8 @@
                                             <th class="ps-8">Date</th>
                                             <th class="ps-8">Employee Name</th>
                                             <th class="text-center">Status</th>
-                                            <th class="text-center ps-15"> remarks
+                                            <th class="text-center ps-15">Remarks </th>
 
-                                                  
-                                            </th>
-                                        
                                         </tr>
                                     </thead>
 

@@ -205,12 +205,9 @@
                                         <tr class="fw-bold text-muted bg-light">
                                             <th >Date &amp; Day</th>
                                             <th class="ps-8">Employee Code & Name</th>
-                                           
                                             <th >Check In Time </th>
                                             <th >Check Out Time</th>
-                                          
-                                            {{-- <th >Att Source</th>
-                                            <th >Hours Worked</th> --}}
+                                            <th >Leave/Deputation</th>
                                             <th >Status</th>
                                         </tr>
                                     </thead>
@@ -317,6 +314,34 @@
                                                     @endif
                                                     
                                                 </td>
+
+                                                <td> 
+                                                    @php
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                        $attendance_found = false;
+                                                    @endphp
+                                                    @if (!empty($attendance))
+                                                        @foreach ($attendance as $attendances)
+                                                            
+                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
+
+                                                                @if($attendances['request_approval'] == 3)
+                                                                    <span class="badge badge-light-success text-center font-weight-bold" data-bs-toggle="tooltip" data-bs-placement="top">Attendance Adjustment</span>
+                                                                @else
+                                                                    -
+                                                                @endif
+                                                                
+                                                                @php $attendance_found = true; @endphp  
+                                                            @endif
+                                                        @endforeach
+                                                    @endif 
+
+                                                    @if (!$attendance_found && $date_filter <= $today)
+                                                    -
+                                                   @endif
+                                                    
+                                                </td> 
                                                 
                                                 <td > 
                                                     @php
@@ -375,19 +400,6 @@ var late_coming_attendance = {{ $late_coming }};
 var early_out_attendance = {{ $early_out }};
 var halfday_attendance = {{ $halfday }};
 var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
-
-    // $(document).ready(function() {
-
-    //     $('#print_attendance').on('click', function() {
-    //         var printWindow = window.open('', '_blank');
-    //         printWindow.document.write('<html><head><title>Print Attendance Report</title></head><body>');
-    //         printWindow.document.write($('#system_datatable').clone().wrap('<p>').parent().html());
-    //         printWindow.document.write('</body></html>');
-    //         printWindow.document.close();
-    //         printWindow.print();
-    //     });
-        
-    // });
 
     $(document).ready(function() {
         $('#system_datatable').DataTable();

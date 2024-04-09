@@ -657,11 +657,12 @@ class AttendanceController extends Controller
                             $create_attendance->att_check_out_source = 3;
                             $create_attendance->att_shift_start_time = $employee_shift_start;
                             $create_attendance->att_shift_end_time = $employees_shift_end_time;
-                            $create_attendance->att_check_overall_status =  'Present';
+                            $create_attendance->att_check_overall_status = 'Present';
                             $create_attendance->att_for_date = $day;
                             $create_attendance->att_for_month = $month;
                             $create_attendance->att_for_year = $year;
                             $create_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+                            $create_attendance->att_request_approval = 3;
                             $create_attendance->att_updated_by = session('user_session');
                             $create_attendance->att_updated_remarks = $attendance_remarks;
                             $create_attendance->adjustment_updated = date('Y-m-d H:i:s');
@@ -674,7 +675,7 @@ class AttendanceController extends Controller
                             ]);
                         }
                     }
-                } else {
+                }else {
                     return response()->json([
                         'status' => 'FALSE',
                         'msg' => "Attendance data is invalid",
@@ -715,7 +716,7 @@ class AttendanceController extends Controller
             }
         }
         finally{
-            ActivityTracker::track_activity('Create an Attendance Request');
+            ActivityTracker::track_activity('Create an Attendance Adjustment');
         }
 
     }
@@ -1011,7 +1012,8 @@ class AttendanceController extends Controller
                         'tbl_attendance.att_comp_date as attendance_date',
                         'tbl_attendance.att_check_in_time as time_in', 
                         'tbl_attendance.att_check_out_time as time_out',
-                        'tbl_attendance.att_check_overall_status as attendance_status')
+                        'tbl_attendance.att_check_overall_status as attendance_status',
+                        'tbl_attendance.att_request_approval as request_approval')
                         ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
                         ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
                         ->where('department_name', '=', 'Field Force')
@@ -1020,6 +1022,7 @@ class AttendanceController extends Controller
                         
                         $query2 = DB::table('sap_attendance_report')
                         ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                        ->join('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                         ->select(
                             'tbl_employees.employee_id',
                             'sap_attendance_report.emp_code', 
@@ -1027,7 +1030,8 @@ class AttendanceController extends Controller
                             'sap_attendance_report.attendance_date',
                             'sap_attendance_report.time_in',
                             'sap_attendance_report.time_out',
-                            'sap_attendance_report.attendance_status'
+                            'sap_attendance_report.attendance_status',
+                            'tbl_attendance.att_request_approval as request_approval'
                         
                         )
                         ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
@@ -1093,7 +1097,7 @@ class AttendanceController extends Controller
                 $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
                 ->where('department_name', '=', 'Field Force')
@@ -1103,18 +1107,21 @@ class AttendanceController extends Controller
                     'att_comp_date as attendance_date',
                     'att_check_in_time as time_in', 
                     'att_check_out_time as time_out',
-                    'att_check_overall_status as attendance_status');
+                    'att_check_overall_status as attendance_status',
+                    'tbl_attendance.att_request_approval as request_approval');
                   
 
                 $query2 = DB::table('sap_attendance_report')
                 ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
+                ->join('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                 ->select(
                     'employee_code as emp_code', 
                     'sap_attendance_report.emp_name', 
                     'sap_attendance_report.attendance_date',
                     'sap_attendance_report.time_in',
                     'sap_attendance_report.time_out',
-                    'sap_attendance_report.attendance_status'
+                    'sap_attendance_report.attendance_status',
+                    'tbl_attendance.att_request_approval as request_approval'
                    
                 )
                 ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
@@ -1135,7 +1142,7 @@ class AttendanceController extends Controller
             $all_employees = Employees::where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
 
             $leave_name = implode(',',$manage_leaves);
-            // dd($month_days);
+            
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
 
             return view('attendance.attendance-report-sap',$send_data); 
