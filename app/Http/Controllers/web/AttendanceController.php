@@ -301,6 +301,8 @@ class AttendanceController extends Controller
                 $validator = Validator::make($request->all(), [
                     'from_date' => 'required|date_format:Y-m-d|before:to_date',
                     'to_date' => 'required|date_format:Y-m-d|after:from_date',
+                    'employee_id' => 'required|numeric',
+                    'att_status' => 'required',
                 ]);
 
                 $validator->after(function ($validator) use ($request) {
