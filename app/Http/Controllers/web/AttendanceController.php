@@ -435,12 +435,12 @@ class AttendanceController extends Controller
                             $attendance = [];
                         }    
 
-                        if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 28 || $login_user[0]['employee_id'] == 1){
+                        if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_id'] == 1){
 
                             $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
 
                         }
-                        elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 28 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
+                        elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
 
                             $login_employee_id = $login_user[0]['employee_id'];
 
