@@ -239,66 +239,6 @@
 {{-- <script src="{{url('assets/js/attendance/my-attendance.js')}}"></script> --}}
 <script>
 
-    // $('.add_new_adjustment input[type="checkbox"]').click(function() {
-    //     var checkbox = $(this);
-    //     var form = checkbox.closest('form');
-
-    //     if (checkbox.is(':checked')) {
-
-    //         var current_employee_code = form.find('.auth_employee_Code').val();
-
-    //         if (valid_employee_code !== current_employee_code) {
-    //             alert('Employee code cannot be changed.');
-    //             checkbox.prop('checked', false);
-    //             return; 
-    //         }
-
-    //         $.ajax({
-    //             url: base_url + '/attendance-adjustment-update',
-    //             type: 'POST',
-    //             data: form.serialize(), 
-    //             success: function (data) {
-    //                 if (data.status == 'TRUE') {
-    //                     Toast.fire({
-    //                         icon: 'success',
-    //                         title: data.msg,
-    //                         timer: 3000,
-    //                     });
-    //                     setTimeout(() => {
-    //                         location.reload();
-    //                     }, 1000);
-    //                 } else {
-    //                     Toast.fire({
-    //                         icon: 'warning',
-    //                         title: data.msg,
-    //                         timer: 3000,
-    //                     });
-    //                 }
-    //             },
-    //             error: function (jqXHR, textStatus) {
-    //                 var errorStatus = jqXHR.status;
-    //                 if (errorStatus == 0) {
-    //                     Toast.fire({
-    //                         icon: 'warning',
-    //                         title: 'Internet Connection Problem',
-    //                         timer: 3000,
-    //                     });
-    //                 } else {
-    //                     if (errorStatus == 419) {
-    //                         location.reload();
-    //                     } else {
-    //                         Toast.fire({
-    //                             icon: 'warning',
-    //                             title: 'Try Again. Error Code ' + errorStatus,
-    //                             timer: 3000,
-    //                         });
-    //                     }
-    //                 }
-    //             }
-    //         });
-    //     }
-    // });
-
     $('.add_new_adjustment input[name="attendance_remarks"]').keydown(function(event) {
         if (event.keyCode === 13) {
             event.preventDefault();
@@ -350,6 +290,7 @@
             }
 
             var dataToSend = []; 
+            var isValid = true;
 
             $('tbody td').each(function() {
                 var remarks = $(this).find('.td-remarks-input').val();
@@ -357,21 +298,25 @@
                 var attendanceDate = $(this).find('.att_date').val();
                 var isChecked = $(this).find('.td-checkbox').prop('checked');
 
-                if (isChecked && remarks.trim() !== '') {
+                if (isChecked) {
+                    if (remarks.trim() === '') {
+                        alert('Remarks cannot be empty for selected checkboxes.');
+                        isValid = false;
+                        return false; 
+                    }
                     var rowData = {
                         attendance_remarks: remarks,
                         employee_code: employeeCode,
                         attendance_date: attendanceDate,
-                        is_checked: isChecked 
+                        is_checked: isChecked
                     };
 
-                    dataToSend.push(rowData);
+                    dataToSend.push(rowData);   
+
                 }
             });
 
-            button.addClass('disabled');
-
-            if (dataToSend.length > 0) {
+            if (isValid && dataToSend.length > 0) {
                 
                 $.ajax({
                     url: base_url + '/attendance-adjustment-update',
@@ -388,7 +333,8 @@
                             setTimeout(() => {
                                 location.reload();
                             }, 1000);
-                        
+
+                            button.addClass('disabled');
                         } else {
                             button.removeClass('disabled');
                             Toast.fire({
@@ -397,7 +343,6 @@
                                 timer: 3000,
                             });
 
-                            
                         }
                     },
                     error: function (jqXHR, textStatus) {
@@ -417,14 +362,16 @@
                                     title: 'Try Again. Error Code ' + errorStatus,
                                     timer: 3000,
                                 });
+
                             }
                         }
                     }
                 });
-            } else {
-                button.removeClass('disabled');
-                alert('Please check at least one checkbox and ensure remarks are not empty.');
-            }
+            } 
+            // else {
+            //     button.removeClass('disabled');
+            //     alert('Please check at least one checkbox and ensure remarks are not empty.');
+            // }
         });
 
     });

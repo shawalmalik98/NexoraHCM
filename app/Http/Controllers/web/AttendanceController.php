@@ -602,8 +602,8 @@ class AttendanceController extends Controller
 
                         $attendance_date = $data['attendance_date'];
                         $employee_code = $data['employee_code'];
-                        $attendance_remarks = $data['attendance_remarks']; 
-
+                        $attendance_remarks = $data['attendance_remarks'];
+                        
                         $get_employee_decoded = Employees::where('employee_id',$employee_code)->first();
 
                         $doj  = strtotime($get_employee_decoded->employee_doj);
@@ -636,15 +636,15 @@ class AttendanceController extends Controller
                         $day = date("d", strtotime($attendance_date));
                         $month = date("m", strtotime($attendance_date));
                         $year = date("Y", strtotime($attendance_date));
-                        
+                    
                         $attendance = Attendance::where('att_employee_id', $employee_code)
                             ->where('att_for_date', $day)
                             ->where('att_for_month', $month)
                             ->where('att_for_year', $year)
                             ->get(['attendance_id'])
                             ->toArray();
-                        
-                        if (empty($attendance)) {
+                    
+                        if(empty($attendance)) {
 
                             $employee_shift_start = $this->get_employee_today_shift($employee_code, "in", $attendance_date);
                             $employees_shift_end_time = $this->get_employee_today_shift($employee_code, "out", $attendance_date);
@@ -676,6 +676,7 @@ class AttendanceController extends Controller
                                 'msg' => "Attendance already exists for employee $employee_code on $attendance_date.",
                             ]);
                         }
+
                     }
                 }else {
                     return response()->json([
@@ -688,12 +689,12 @@ class AttendanceController extends Controller
 
                     return response()->json([
                         'status' => 'TRUE',
-                        'msg' => "Attendance has been submitted. Please wait for response",
+                        'msg' => "Attendance adjustment approved successfully.",
                     ]);
                 }else{
                     return response()->json([
                         'status' => 'FALSE',
-                        'msg' => "You can't apply request because already marked attendance.",
+                        'msg' => "You can't approve attendance adjustment because already marked attendance.",
                     ]);
                 }
                 
