@@ -247,10 +247,10 @@
 
     $(document).ready(function() {
         $('.th-checkbox').change(function() {
-            var isChecked = $(this).is(':checked');
-            $('.td-checkbox').prop('checked', isChecked);
+            var th_Checked = $(this).is(':checked');
+            $('.td-checkbox').prop('checked', th_Checked);
 
-            if (isChecked) {
+            if (th_Checked) {
                 $('.on-check').removeClass('d-none');
             }
             else {
@@ -259,7 +259,7 @@
         });
 
         $('.td-checkbox').change(function() {
-            var isChecked = $(this).is(':checked');
+            var isChecked = $('.td-checkbox').is(':checked');
                 
             if (isChecked) {
                 $('.on-check').removeClass('d-none');
@@ -317,6 +317,8 @@
             });
 
             if (isValid && dataToSend.length > 0) {
+
+                button.addClass('disabled');
                 
                 $.ajax({
                     url: base_url + '/attendance-adjustment-update',
@@ -334,7 +336,6 @@
                                 location.reload();
                             }, 1000);
 
-                            button.addClass('disabled');
                         } else {
                             button.removeClass('disabled');
                             Toast.fire({
@@ -368,10 +369,6 @@
                     }
                 });
             } 
-            // else {
-            //     button.removeClass('disabled');
-            //     alert('Please check at least one checkbox and ensure remarks are not empty.');
-            // }
         });
 
     });
