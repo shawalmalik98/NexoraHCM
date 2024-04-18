@@ -350,9 +350,7 @@ class AttendanceController extends Controller
                             if(!empty($request_employee)){
                                 $where_clause .= " AND att_employee_id = '" . $request_employee[0]['employee_id'] . "' ";
                             }else{
-                                return response()->json([
-                                    'message' => 'Employee not found',
-                                ]);
+                                return view('errors.attendance-restriction');
                             }    
                         } 
                         else{
