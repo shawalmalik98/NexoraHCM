@@ -113,7 +113,7 @@ class EmployeesJob extends Command
                         $add_employee->employee_designation = $all_designations[0]['designation_id'];
                         $add_employee->employee_jobtitle = $job_title ?? $all_designations[0]['designation_name'];
                         $add_employee->employee_password = $employee_password;
-                        $add_employee->employee_geofencing_enability = false;
+                        $add_employee->employee_geofencing_enability = 1;
                         $add_employee->employee_senior_manager =  1;
                         $add_employee->employee_is_manager = 0;
                         $add_employee->employee_offdays = 'Sunday';
