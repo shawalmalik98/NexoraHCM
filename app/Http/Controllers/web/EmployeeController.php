@@ -5312,7 +5312,7 @@ class EmployeeController extends Controller
                                         $add_employee->employee_gender = 'Male';
                                         $add_employee->employee_status =  3;
                                         $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
-                                        $add_employee->employee_department = $departments[0]['department_id'];
+                                        $add_employee->employee_department = ($departments[0]['department_id']) ?? 14;
                                         $add_employee->employee_jobtitle = $employee_jobtitle;
                                         $add_employee->employee_password = Crypt::encryptString(123);
                                         $add_employee->employee_geofencing_enability = 1;
