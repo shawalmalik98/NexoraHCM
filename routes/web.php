@@ -1060,3 +1060,6 @@ Route::middleware(['sapuserAuthentication'])->group(function (){
       
     });
 });    
+
+Route::get('/update_eid', [CustomController::class, 'update_attendance_adjustment_eid']);
+

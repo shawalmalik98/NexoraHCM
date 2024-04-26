@@ -304,4 +304,48 @@ class CustomController extends Controller
         ]);
     }
 
+    protected function update_attendance_adjustment_eid(){
+        dd('48735893475897349');
+        set_time_limit(18000);
+        // $date = '2024-04-10';
+      
+        // $employees = Employees::where('employee_isactive', 1)
+        // ->whereIn('employee_designation',[400,453,478])
+        // ->where('employee_offdays', 'not like', '%wed%')
+        // ->get(['employee_id'])
+        // ->toArray();
+
+        // if(!empty($employees)){
+        //     foreach($employees as $employee){
+        //         $check_attendance = Attendance::where('att_employee_id', $employee['employee_id'])->where('att_comp_date', $date)->get()->toArray();
+        //         if(empty($check_attendance)){
+        //             $create_attendance = new Attendance();
+        //             $create_attendance->att_check_in_time = '00:00:00';
+        //             $create_attendance->att_check_out_time = '00:00:00';
+        //             $create_attendance->att_employee_id = $employee['employee_id'];
+        //             $create_attendance->att_check_in_status = 0;
+        //             $create_attendance->att_check_out_status = 0;
+        //             // $create_attendance->att_check_in_source = 3;
+        //             // $create_attendance->att_check_out_source = 3;
+        //             $create_attendance->att_shift_start_time = '09:00:00';
+        //             $create_attendance->att_shift_end_time = '18:00:00';
+        //             $create_attendance->att_check_overall_status = 'Off Day';
+        //             $create_attendance->att_for_date = date('d', strtotime($date));
+        //             $create_attendance->att_for_month = date('m', strtotime($date));
+        //             $create_attendance->att_for_year = date('Y', strtotime($date));
+        //             $create_attendance->att_comp_date = $date;
+        //             // $create_attendance->att_request_approval = 3;
+        //             // $create_attendance->att_updated_by = session('user_session');
+        //             // $create_attendance->att_updated_remarks = $attendance_remarks;
+        //             // $create_attendance->adjustment_updated = date('Y-m-d H:i:s');
+        //             $create_attendance->save();
+        //         }
+        //     }
+        // }
+          
+            dd('Data inserted done');
+            exit();
+            
+    }
+
 }

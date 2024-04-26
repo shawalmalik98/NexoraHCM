@@ -4071,7 +4071,8 @@ class AttendanceController extends Controller
     }
 
     protected function download_day_wise_attendance_report(Request $request){
-        ini_set('max_execution_time',3000);
+        // ini_set('max_execution_time',3000);
+        set_time_limit(1800);
         // dd($request->from_date);
         $employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', 1)->get(['employee_id'])->toArray();
         // dd($employees);
@@ -4080,39 +4081,42 @@ class AttendanceController extends Controller
             foreach($employees as $employee){
                 $employee_id = $employee['employee_id'];
                 $attendance = DB::select("SELECT 
-                    employee_code as 'Employee ID', 
-                    employee_name as  'Name', 
-                    CONVERT(date, dates.date_between) as 'Date', 
-                    DATENAME(dw, dates.date_between) as 'Day', 
-                    CASE 
-                        WHEN emp.employee_doj <= dates.date_between THEN
-                            CASE 
-                                WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
-                                WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
-                            END
-                        ELSE '-' 
-                    END AS 'Attendance Status',
-                    CASE 
-                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                        ELSE '' 
-                    END AS 'Check In', 
-                    CASE 
-                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                        ELSE '' 
-                    END AS 'Check Out'
+                emp.employee_code as 'Employee ID', 
+                emp.employee_name as  'Name', 
+                CONCAT(LM.employee_code , ' - ' , LM.employee_name) as 'Line Manager',
+                emp.business_unit as 'Business Unit',
+                CONVERT(date, dates.date_between) as 'Date', 
+                DATENAME(dw, dates.date_between) as 'Day', 
+                CASE 
+                    WHEN emp.employee_doj <= dates.date_between THEN
+                        CASE 
+                            WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                            WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
+                        END
+                    ELSE '-' 
+                END AS 'Attendance Status',
+                CASE 
+                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
+                    ELSE '' 
+                END AS 'Check In', 
+                CASE 
+                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
+                    ELSE '' 
+                END AS 'Check Out'
+            FROM (
+                SELECT DATEADD(DAY, n, '$request->from_date') AS date_between
                 FROM (
-                    SELECT DATEADD(DAY, n, '$request->from_date') AS date_between
-                    FROM (
-                        SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-                        FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
-                    ) AS numbers
-                    WHERE DATEADD(DAY, n, '$request->from_date') BETWEEN '$request->from_date' AND '$request->to_date'
-                ) AS dates
-                LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id
-                LEFT JOIN tbl_employees AS emp ON $employee_id = emp.employee_id 
-                ORDER BY dates.date_between ASC");
+                    SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
+                    FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
+                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
+                        (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                ) AS numbers
+                WHERE DATEADD(DAY, n, '$request->from_date') BETWEEN '$request->from_date' AND '$request->to_date'
+            ) AS dates
+            LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id
+            LEFT JOIN tbl_employees AS emp ON $employee_id = emp.employee_id 
+            left join tbl_employees as LM ON emp.employee_senior_manager = LM.employee_id
+            ORDER BY dates.date_between ASC");
                 $attendance = json_decode(json_encode($attendance), TRUE);
                 $attendance_array = array_merge($attendance_array, $attendance);
             }
