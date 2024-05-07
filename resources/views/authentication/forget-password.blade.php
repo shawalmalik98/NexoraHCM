@@ -21,7 +21,7 @@
     <link href="{{ url('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
     <script src="https://code.jquery.com/jquery-3.6.1.js"></script>
-	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="https://unpkg.com/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js"></script>
 </head>
 

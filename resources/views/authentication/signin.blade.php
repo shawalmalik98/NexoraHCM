@@ -23,7 +23,7 @@
 	<link href="{{ url('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 	{{--end::Global Stylesheets Bundle--}}
 	<script src="https://code.jquery.com/jquery-3.6.1.js"></script>
-	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="https://unpkg.com/sweetalert2@11"></script>
 
 	<style>
 		.vertical-center {
