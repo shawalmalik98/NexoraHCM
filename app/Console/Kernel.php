@@ -55,9 +55,9 @@ class Kernel extends ConsoleKernel
 
         })->everyFiveMinutes()->between('08:00', '11:00');
 
-        // $schedule->call(function () {
-        //     AttendanceGetToSAP::dispatch();
-        // })->everyFiveMinutes()->between('08:00', '11:00');
+        $schedule->call(function () {
+            AttendanceGetToSAP::dispatch();
+        })->everyThirtyMinutes()->between('01:00', '23:00');
 
         $schedule->call(function () {
 

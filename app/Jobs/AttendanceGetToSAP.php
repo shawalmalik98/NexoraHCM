@@ -35,7 +35,7 @@ class AttendanceGetToSAP implements ShouldQueue
     public function handle()
     {
         try{
-            Http::get('http://sapapi.ismailindustries.com.pk:8080/get-today-sap-attendance');
+            Http::timeout(600)->get('http://sapapi.ismailindustries.com.pk:8080/get-today-sap-attendance');
         }catch(Exception $e){
             $generate_error_log = new ErrorLog();
             $generate_error_log->error_log_module = 'Get Sap today Attendance';

@@ -1024,7 +1024,7 @@ class AttendanceController extends Controller
                         
                         $query2 = DB::table('sap_attendance_report')
                         ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                        ->join('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
+                        ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                         ->select(
                             'tbl_employees.employee_id',
                             'sap_attendance_report.emp_code', 
@@ -1115,7 +1115,7 @@ class AttendanceController extends Controller
 
                 $query2 = DB::table('sap_attendance_report')
                 ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                ->join('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
+                ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                 ->select(
                     'employee_code as emp_code', 
                     'sap_attendance_report.emp_name', 
@@ -1146,7 +1146,7 @@ class AttendanceController extends Controller
             $leave_name = implode(',',$manage_leaves);
             
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
-
+            // dd($attendance);
             return view('attendance.attendance-report-sap',$send_data); 
         }catch(\Exception $e){
             $this->create_error_log('View all Personal Attendance Sap api', $e);
