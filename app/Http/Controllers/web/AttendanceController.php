@@ -799,7 +799,7 @@ class AttendanceController extends Controller
                     $query1 = Attendance::where('att_employee_id',$login_user[0]['employee_id'])
                     ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                     ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                     ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                    ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                     ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
                     ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
                     ->where('department_name', '=', 'Field Force')
@@ -878,7 +878,7 @@ class AttendanceController extends Controller
                 $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
                 ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
                 ->where('department_name', '=', 'Field Force')
@@ -931,6 +931,12 @@ class AttendanceController extends Controller
             
             $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
 
+            if($request->emp_status == "2"){
+                $status = 0;
+            }else{
+                $status = 1;
+            }
+
             if($request->input('from_date') == '' && $request->input('to_date') == ''){
                 $month_count = 1;
             }
@@ -977,6 +983,10 @@ class AttendanceController extends Controller
                             $where_clause .= " AND tbl_employees.employee_id = '" . $employee_id . "' ";
                         }else{
                             $where_clause .= " AND tbl_employees.employee_id = '" .  $login_user[0]['employee_id'] . "' ";
+                        }
+
+                        if(!empty($request->emp_status)){
+                            $where_clause .= " AND employee_isactive = '".$status."'";
                         }
 
                         $month_count = 0;
@@ -1141,8 +1151,8 @@ class AttendanceController extends Controller
 
             }
 
-            $all_employees = Employees::where('employee_isactive', '=', 1)->get(['employee_id','employee_name','employee_code'])->toArray();
-
+            $all_employees = Employees::where('employee_isactive', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+            
             $leave_name = implode(',',$manage_leaves);
             
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
