@@ -342,6 +342,8 @@
 
                                                                 @if($attendances['request_approval'] == 3)
                                                                     <span class="badge badge-light-success text-center font-weight-bold" data-bs-toggle="tooltip" data-bs-placement="top">Attendance Adjustment</span>
+                                                                @elseif($attendances['request_approval'] == 2)
+                                                                    <span class="badge badge-light-primary text-center font-weight-bold" data-bs-toggle="tooltip" data-bs-placement="top">Leave Request</span>
                                                                 @else
                                                                     -
                                                                 @endif

@@ -678,6 +678,7 @@ class LeavesRequestController extends Controller
                                     $update_attendance->att_for_date = date("d", strtotime($update_leave['leave_applied_for_date']));
                                     $update_attendance->att_for_month = date("m", strtotime($update_leave['leave_applied_for_date']));
                                     $update_attendance->att_for_year = date("Y", strtotime($update_leave['leave_applied_for_date']));
+                                    $update_attendance->att_comp_date = date("Y-m-d", strtotime($update_leave['leave_applied_for_date']));
                                     $update_attendance->att_request_approval = 2;
                                     $process = $update_attendance->save();
                                 }else{
