@@ -729,6 +729,8 @@ class AttendanceController extends Controller
         
             $title = Self::TITLE_GLOBAL2;
 
+            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
+
             if(strpos(url()->current(), 'sap-login')){
               $login_user = $this->get_sap_login_user_detail();
             }else{
@@ -827,6 +829,14 @@ class AttendanceController extends Controller
                     ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
     
                     $attendance = $query1->union($query2)->get()->toArray();
+
+                    $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$login_user[0]['employee_id'])
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->where(function($query) use($manage_leaves){
+                        $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                        ->orWhere('att_check_overall_status','RPL');
+                    })->count();
                     
                    }else{
 
@@ -906,10 +916,20 @@ class AttendanceController extends Controller
                 ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
 
                 $attendance = $query1->union($query2)->get()->toArray();
-
+               
+                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$login_user[0]['employee_id'])
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
+                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->where(function($query) use($manage_leaves){
+                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
+                    ->orWhere('att_check_overall_status','RPL');
+                })->count();
+                
             }
+          
+            $leave_name = implode(',',$manage_leaves);
 
-            $send_data = compact('title','login_user','attendance','month_days','dates','month_count','from_date','to_date');
+            $send_data = compact('title','login_user','attendance','month_days','dates','month_count','from_date','to_date','t_employee_leaves','leave_name','manage_leaves');
 
             return view('attendance.monthly-attendance-report-sap',$send_data); 
         }catch(\Exception $e){
@@ -1156,7 +1176,7 @@ class AttendanceController extends Controller
             $leave_name = implode(',',$manage_leaves);
             
             $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
-            // dd($attendance);
+
             return view('attendance.attendance-report-sap',$send_data); 
         }catch(\Exception $e){
             $this->create_error_log('View all Personal Attendance Sap api', $e);

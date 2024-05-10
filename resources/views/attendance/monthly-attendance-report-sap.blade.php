@@ -221,26 +221,8 @@
                                                     $name_of_day_short = date("D", strtotime($current_date));	
                                                 @endphp
 
-                                                <td >
-                                                    {{-- @if($attendances['attendance_status'] == 'ABSENT') --}}
-                                                        {{-- <span style="color:red">{{ $current_date }} - {{  $name_of_day_short }}</span> --}}
-                                                    {{-- @else --}}
-                                                        
-                                                    {{-- @endif --}}
-                                                    @if (!empty($attendance))
-                                                        @foreach ($attendance as $attendances)
-                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
-                                                                @if($attendances['attendance_status'] == 'ABSENT')
-                                                                    <span style="color:red">{{ $current_date }} - {{  $name_of_day_short }} </span>
-                                                                @elseif($attendances['attendance_status'] == 'DAY OFF')
-                                                                    <span style="color:#a9a9a9">{{ $current_date }} - {{  $name_of_day_short }} </span>
-                                                                @else
-                                                                    {{ $current_date }} - {{  $name_of_day_short }} 
-                                                                @endif
-                                                            @endif
-                                                        @endforeach
-                                                    @endif
-                                                  
+                                                <td>
+                                                    {{ $current_date }} - {{  $name_of_day_short }} 
                                                 </td>
                                     
                                                
@@ -291,7 +273,7 @@
                                                                 @else
                                                                     {{ $attendances['time_in'] }}
                                                                 @endif
-                                                             {{-- {{ $attendances[''] }}   --}}
+                                                            
                                                                 @php $attendance_found = true; @endphp
                                                             @endif
                                                         @endforeach
@@ -319,7 +301,6 @@
                                                                 @else
                                                                     {{ $attendances['time_out'] }}
                                                                 @endif
-                                                                {{-- {{ $attendances['time_out'] }}   --}}
                                                                 @php $attendance_found = true; @endphp
                                                             @endif
                                                         @endforeach
