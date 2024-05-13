@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use App\Models\ErrorLog;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use Exception;
 
@@ -35,7 +36,7 @@ class AttendanceGetToSAP implements ShouldQueue
     public function handle()
     {
         try{
-            Http::timeout(600)->get('http://sapapi.ismailindustries.com.pk:8080/get-today-sap-attendance');
+            Http::timeout(6000)->get('http://172.19.0.101:8080/get-today-sap-attendance');
         }catch(Exception $e){
             $generate_error_log = new ErrorLog();
             $generate_error_log->error_log_module = 'Get Sap today Attendance';
