@@ -287,9 +287,9 @@ $(function () {
     $('#req_status').on('change', function () {
         var value = $(this).val();
         if (value == '') {
-            dataTable.column(6).search('', false, true).draw();
+            dataTable.column(5).search('', false, true).draw();
         } else {
-            dataTable.column(6).search("^" + value + "$", true, false).draw();
+            dataTable.column(5).search("^" + value + "$", true, false).draw();
         }
     });
 });

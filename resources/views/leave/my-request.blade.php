@@ -86,7 +86,7 @@
                                         <th class="text-center">Message</th>
                                         <th class="text-center">Leave Attachment</th>
                                         <th class="text-center">Applied Date</th>
-                                        <th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Approval(s)">Approval(s)</th>
+                                        {{-- <th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Approval(s)">Approval(s)</th> --}}
                                         <th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Response By HR">Status</th>
                                         <th class="text-center">Action</th>
                                     </tr>
@@ -117,7 +117,7 @@
                                                 </td>
                                                 <td class="text-center">{{ date('h:i A d M, Y', strtotime( $my_leave['leave_applied_date'] )) }}</td>
                                                 
-                                                <td class="text-center">
+                                                {{-- <td class="text-center">
                                                   
                                                     <a href="javascript:void(0);" class="manager_modal_status_btn"  data-request-id="{{$my_leave['leave_applied_id'] }}"  data-bs-toggle="tooltip" data-bs-placement="top" title="Approval(s)">
                                                         @if(in_array($my_leave['leave_applied_id'],$responsed_request))
@@ -126,7 +126,7 @@
                                                             <i class="fas fa-user-check"></i>
                                                         @endif
                                                     </a>
-                                                </td>
+                                                </td> --}}
                                                 <td class="text-center">
                                                     @if($my_leave['leave_approved_by_hr'] == 1)
                                                         <span class="badge badge-secondary text-center text-muted font-weight-bold" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="HR didn't respond to this request yet.">Pending</span>

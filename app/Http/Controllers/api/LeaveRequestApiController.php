@@ -29,6 +29,7 @@ class LeaveRequestApiController extends Controller
             }else{
                 $status = 1;
             }
+            
             $employees_data = Employees::where('employee_isactive', $status)->get(['employee_id','employee_code','employee_name'])->toArray();
             
             $my_leaves = array();
@@ -40,24 +41,24 @@ class LeaveRequestApiController extends Controller
                 $limit_query = '*';
             }
 
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
-
+            if($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1){
             
-                $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
+                $where_clause = '1=1';
+
                 if(!empty($request->get('emp_status')) || !empty($request->get('emp_name')) || !empty($request->get('request_for_date')) || !empty($request->get('request_submited_date')) || !empty($request->get('req_status'))){
                 
                     if(!empty($request->get('emp_name'))){
-                        $where_clause .= ' AND leave_applied_by = "'.$request->get('emp_name').'"';
+                        $where_clause .= " AND leave_applied_by = '".$request->get('emp_name')."'";
                     }
                     if(!empty($request->get('request_for_date'))){
-                        $where_clause .= ' AND leave_applied_for_date = "'.$request->get('request_for_date').'"';
+                        $where_clause .= " AND leave_applied_for_date = '".$request->get('request_for_date')."'";
                     }
                     if(!empty($request->get('request_submited_date'))){
-                        $submition_date = date("d-m-Y", strtotime($request->get('request_submited_date')));
-                        $where_clause .= ' AND leave_applied_date LIKE "%'.$submition_date.'%"';
+                        $submition_date = date("d-m-Y", strtotime($request_data->request_submited_date));
+                        $where_clause .= " AND leave_applied_date LIKE '%".$submition_date."%'";
                     }
                     if(!empty($request->get('req_status'))){
-                        $where_clause .= ' AND leave_approved_by_hr = '.$request->get('req_status').'';
+                        $where_clause .= " AND leave_approved_by_hr = '".$request->get('req_status')."'";
                     }
                 }
 
@@ -71,7 +72,7 @@ class LeaveRequestApiController extends Controller
 
             }
             
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif($login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -79,15 +80,15 @@ class LeaveRequestApiController extends Controller
 
                 $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->get(['employee_id','employee_code','employee_name'])->toArray();
 
-                $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
+                $where_clause = '1=1';
 
                 if(!empty($request->get('emp_status')) || !empty($request->get('emp_name')) || !empty($request->get('req_status'))){
                 
                     if(!empty($request->get('emp_name'))){
-                        $where_clause .= ' AND leave_applied_by = "'.$request->get('emp_name').'"';
+                        $where_clause .= " AND leave_applied_by = '".$request->get('emp_name')."'";
                     }
                     if(!empty($request->get('req_status'))){
-                        $where_clause .= ' AND leave_approved_by_hr = '.$request->get('req_status').'';
+                        $where_clause .= " AND leave_approved_by_hr = '".$request->get('req_status')."'";
                     }
                 }
                

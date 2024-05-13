@@ -2558,7 +2558,7 @@ class EmployeeController extends Controller
             $where_clause .= " AND employee_location = '".$request->employee_location."'";
         }
 
-        if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2 || $login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 3){
+        if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 34 || $login_user[0]['employee_department'] == 9){
 
             $get_employees = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
 

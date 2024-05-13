@@ -67,7 +67,7 @@
 
                         <div class="d-flex align-items-center  on-check d-none">
                         
-                            @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                            @if($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1)
 
                                 <a href="javascript:void(0)" class="leave_request text-white  btn btn-sm fw-bold btn-success mx-2" data-value="Approve" data-bs-toggle="tooltip" data-bs-placement="top" title="Approve Request"  >Approve</a>
                                 
@@ -177,7 +177,7 @@
                                             </div>
                                         </div>
 
-                                        @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2)
+                                        @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 34 || $login_user[0]['employee_department']== 9)
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Request Date (Leave Date)</label>
                                                 <input type="date" class="form-control" placeholder="Select a date"  name="request_for_date"  @if(!empty(Request::get('request_for_date'))) value="{{ Request::get('request_for_date') }}" @endif/>
@@ -185,12 +185,12 @@
 
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Applied Date</label>
-                                                <input type="date" class="form-control" placeholder="Select a date" name="request_submited_date" max="{{ date('Y-m-d') }}" @if(!empty(Request::get('request_submited_date'))) value="{{ Request::get('request_submited_date') }}" @endif >
+                                                <input type="date" class="form-control" placeholder="Select a date" name="request_submited_date" max="{{ date('d-m-Y') }}" @if(!empty(Request::get('request_submited_date'))) value="{{ Request::get('request_submited_date') }}" @endif >
                                             </div>
                                         @endif
 
                                         <div class="d-flex justify-content-end">
-                                            @if (!empty(Request::get('employee_location')) || !empty(Request::get('emp_name')) || !empty(Request::get('request_for_date')) || !empty(Request::get('request_submited_date')))
+                                            @if (!empty(Request::get('employee_location')) || !empty(Request::get('emp_name')) || !empty(Request::get('request_for_date')) || !empty(Request::get('request_submited_date')) || !empty(Request::get('emp_status')))
                                                 <a href="{{ url('employees-leaves') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2 ">Reset Filter</a>
                                             @endif
                                                 <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
@@ -221,8 +221,8 @@
                                         <th>Reason</th>
                                         <th class="text-center">Attachment</th>
                                         <th>Applied Date</th>
-                                        <th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Approval(s)">Approval(s)</th>
-                                        <th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Response By HR">Status</th>
+                                        {{-- <th data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Approval(s)">Approval(s)</th> --}}
+                                        <th class="text-center" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Response By HR">Status</th>
                                         <th class="text-center">Action</th>
                                     </tr>
                                 </thead>
@@ -284,9 +284,9 @@
                                                         <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-sm me-1 " disabled style="cursor: not-allowed;" data-bs-toggle="tooltip"><i class="fa fa-download" aria-hidden="true"></i></a>
                                                     @endif
                                                 </td>
-                                                <td>{{ date('h:i A d M, Y', strtotime( $my_leave['leave_applied_date'])) }}</td>
+                                                <td>{{ date('d M, Y H:i:s', strtotime( $my_leave['leave_applied_date'])) }}</td>
                                             
-                                                <td class="text-center">
+                                                {{-- <td class="text-center">
                                                     <a href="javascript:void(0);" class="manager_modal_status_btn"  data-request-id="{{$my_leave['leave_applied_id'] }}"  data-bs-toggle="tooltip" data-bs-placement="top" title="Approval(s)">
                                                         
                                                         @if(in_array($my_leave['leave_applied_id'],$responsed_request))
@@ -296,7 +296,7 @@
                                                             <i class="fas fa-user-check"></i>
                                                         @endif
                                                     </a>
-                                                </td>
+                                                </td> --}}
 
                                                 <td class="text-center">
                                                     @if ($my_leave['leave_approved_by_hr'] == 1)
@@ -308,7 +308,7 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
-                                                    @if ($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                                    @if ($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1)
                                                     
                                                         @if ($my_leave['leave_approved_by_hr'] != 1)
 
@@ -384,7 +384,7 @@
 
                         <div class="modal-body pt-0">
                             <p class="pt-4 fs-6 msg">Are you sure to approve this leave request(s) ?</p>
-                            @if($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                            @if($login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 1)
                                 <textarea class="form-control " rows="3" name="approvermessage" placeholder="Message" id="approvermessage" required></textarea>
                             @endif
                         </div>
@@ -423,7 +423,7 @@
 
                         <div class="modal-body pt-0">
                             <p class="pt-5 fs-6 msg">Are you sure to disapprove this leave request(s) ?</p>
-                            @if($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                            @if($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 1)
                                 <textarea class="form-control " rows="3" name="disapprovermessage" placeholder="Message" id="disapprovermessage" required></textarea>
                             @endif
                         </div>
