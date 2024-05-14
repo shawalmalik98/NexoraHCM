@@ -39,7 +39,7 @@ class EmployeeController extends Controller
     protected function index(Request $request){
 
         try{
-
+            
             $title = Self::MAIN_TITLE;
 
             $login_user = $this->get_login_user_detail();
@@ -123,10 +123,24 @@ class EmployeeController extends Controller
                 
                 $employees  = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                ->where('employee_isactive','=', 1)
+                ->join('tbl_personal_informations','tbl_employees.employee_id','=','tbl_personal_informations.employeeid')
+                ->leftJoin('tbl_employees_location', function ($join) {
+                    $join->on('tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
+                        ->where('tbl_employees_location.employee_location_id', function ($query) {
+                            $query->from('tbl_employees_location as el')
+                                ->select('employee_location_id')
+                                ->whereRaw('el.emp_loc_employee_id = tbl_employees_location.emp_loc_employee_id')
+                                ->orderBy('el.employee_location_id')
+                                ->limit(1);
+                        });
+                })
+                ->leftJoin('tbl_office_locations','tbl_employees_location.emp_loc_loc_id','=','tbl_office_locations.location_id')
                 ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
-                ->orderBy('employee_id', 'asc')
-                ->get(['employee_code as Employee ID','employee_name as Employee Name','department_name as Department','designation_name as Designation', 'employee_grade as Employee Grade' ,'employee_jobtitle as Employee Job Title', 'business_unit as Business Unit','group_name as Group Name'])
+                ->leftJoin('tbl_employement_status','tbl_employees.employee_status','=','tbl_employement_status.employement_status_id')
+                ->leftJoin('tbl_employees as emp_ra', 'emp_ra.employee_id', '=', 'tbl_employees.employee_senior_manager')           
+                ->where('tbl_employees.employee_isactive','=', 1)
+                ->orderBy('tbl_employees.employee_id', 'asc')
+                ->get(['tbl_employees.employee_code as Employee ID','tbl_employees.employee_name as Employee Name','tbl_employees.employee_gender as Gender','tbl_employees.employee_jobtitle as Position','designation_name as Grade','department_name as Department', 'location_title as Location','group_name as Category' ,'tbl_employees.employee_doj as Join Date', 'tbl_employees.employee_cnic as CNIC','employement_status_name as Status' ,'dob as Date of Birth','tbl_employees.employee_contactno as Mobile','tbl_employees.employee_work_email as Email','emp_ra.employee_name as Supervisor', 'emp_ra.employee_code as Supervisor Id'])
                 ->toArray();
 
                 $header_style = (new Style())->setFontBold();
