@@ -81,16 +81,16 @@ $('#applyforleave_form').submit(function (e) {
                 Toast.fire({
                     icon: 'success',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
                 setTimeout(() => {
                     location.reload();
-                }, 5000);
+                }, 3000);
             } else {
                 Toast.fire({
                     icon: 'warning',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
                 $('#submit_btn').prop('disabled', false);
                 $('#submit_btn').css('cursor', 'pointer');
@@ -141,27 +141,27 @@ $('#edit_applyforleave_form').submit(function (e) {
                 Toast.fire({
                     icon: 'success',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
                 setTimeout(() => {
                     location.reload();
-                }, 5000);
+                }, 3000);
             } else {
                 if (data.autoreload == "TRUE") {
 
                     Toast.fire({
                         icon: 'warning',
                         title: data.msg,
-                        timer: 5000,
+                        timer: 3000,
                     })
                     setTimeout(() => {
                         location.reload();
-                    }, 5000);
+                    }, 3000);
                 }
                 Toast.fire({
                     icon: 'warning',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
 
                 $('#edit_submit_btn').prop('disabled', false);
@@ -212,27 +212,27 @@ $('#delete_leave_request').submit(function (e) {
                 Toast.fire({
                     icon: 'success',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
                 setTimeout(() => {
                     location.reload();
-                }, 5000);
+                }, 3000);
             } else {
                 if (data.autoreload == "TRUE") {
 
                     Toast.fire({
                         icon: 'warning',
                         title: data.msg,
-                        timer: 5000,
+                        timer: 3000,
                     })
                     setTimeout(() => {
                         location.reload();
-                    }, 5000);
+                    }, 3000);
                 }
                 Toast.fire({
                     icon: 'warning',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
 
                 $('#delete_submit_btn').prop('disabled', false);

@@ -67,21 +67,21 @@
 
                         <div class="d-flex align-items-center  on-check d-none">
                         
-                            @if($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1)
+                            {{-- @if($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1) --}}
 
                                 <a href="javascript:void(0)" class="leave_request text-white  btn btn-sm fw-bold btn-success mx-2" data-value="Approve" data-bs-toggle="tooltip" data-bs-placement="top" title="Approve Request"  >Approve</a>
                                 
                                 <a href="javascript:void(0)"  class="leave_request text-white  btn btn-sm fw-bold btn-danger mx-2" data-value="DisApprove" data-bs-toggle="tooltip" data-bs-placement="top" title="Disapprove Request">DisApprove</a>
                                 
                             
-                            @else
+                            {{-- @else
 
                                 <a href="javascript:void(0)" class="leave_request text-white  btn btn-sm fw-bold btn-success mx-2" data-value="LeadApprove" data-bs-toggle="tooltip" data-bs-placement="top" title="Approve Request"  >Approve</a>
                                 
                                 <a href="javascript:void(0)"  class="leave_request text-white  btn btn-sm fw-bold btn-danger mx-2" data-value="LeadDisApprove" data-bs-toggle="tooltip" data-bs-placement="top" title="Disapprove Request">DisApprove</a>
 
                               
-                            @endif
+                            @endif --}}
                         </div>
                        
 
@@ -232,7 +232,7 @@
                                             <tr @if(request()->get('employee_id') != '' && $my_leave['leave_applied_by'] == request()->get('employee_id') && in_array($my_leave['leave_applied_for_date'],$dates)) style="background-color:bisque;" @endif>
                                                 <td>
 
-                                                    @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                                    {{-- @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 34 || $login_user[0]['employee_department']== 9) --}}
 
                                                         @if ($my_leave['leave_approved_by_hr'] != 1 )
                                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
@@ -243,7 +243,8 @@
                                                                 <input class="form-check-input checked"  type="checkbox" data-id="{{$my_leave['leave_applied_id']}}" value="{{$my_leave['leave_applied_id']}}"  data-hr="{{ $my_leave['leave_approved_by_hr']}}" />
                                                             </div>                                                            
                                                         @endif
-                                                    @else
+
+                                                    {{-- @else
                                                         @if (in_array($my_leave['leave_applied_id'],$responsed_request) || $my_leave['leave_approved_by_hr'] != 1)
                                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
                                                                 <i class="form-check-input checked" type="checkbox"  style="cursor: not-allowed;" disabled></i>
@@ -253,7 +254,7 @@
                                                                 <input class="form-check-input checked"  type="checkbox" data-id="{{$my_leave['leave_applied_id']}}" value="{{$my_leave['leave_applied_id']}}"  data-hr="{{ $my_leave['leave_approved_by_hr']}}" />
                                                             </div>
                                                         @endif    
-                                                    @endif 
+                                                    @endif  --}}
                                                     
                                                 </td>
 
@@ -308,7 +309,7 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
-                                                    @if ($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1)
+                                                    {{-- @if ($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1) --}}
                                                     
                                                         @if ($my_leave['leave_approved_by_hr'] != 1)
 
@@ -328,7 +329,7 @@
                                                         @endif
 
                                                        
-                                                    @else
+                                                    {{-- @else
                                                        
                                                         @if(in_array($my_leave['leave_applied_id'],$responsed_request) || $my_leave['leave_approved_by_hr'] != 1)
                                                             <i class="fa-regular fa-circle-check text-success mx-2" disabled style="font-size: 20px; cursor: not-allowed;"></i>
@@ -341,8 +342,8 @@
                                                         @else
                                                             <i class="fa-regular fa-circle-xmark leave_request text-warning mx-2" data-value="LeadDisApprove" data-bs-toggle="tooltip" data-bs-placement="top" title="Disapprove Request"  data-id="{{ $my_leave['leave_applied_id'] }}" style="font-size: 20px; cursor: pointer;"></i>
                                                         @endif
-                                                    @endif
- 
+                                                      @endif
+                                                   --}}
                                                 </td>
 
                                             </tr>
@@ -384,14 +385,14 @@
 
                         <div class="modal-body pt-0">
                             <p class="pt-4 fs-6 msg">Are you sure to approve this leave request(s) ?</p>
-                            @if($login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 1)
+                            {{-- @if($login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 1) --}}
                                 <textarea class="form-control " rows="3" name="approvermessage" placeholder="Message" id="approvermessage" required></textarea>
-                            @endif
+                            {{-- @endif --}}
                         </div>
 
                         <div class= "modal-footer">
                             <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" id="approve_btn" class="btn btn-primary">
+                            <button type="submit" id="approve_btn" class="btn btn-primary approve_btn">
                                 <span class="indicator-label">Yes, Approve</span>
                                 <span class="indicator-progress">Please wait... 
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
@@ -423,14 +424,14 @@
 
                         <div class="modal-body pt-0">
                             <p class="pt-5 fs-6 msg">Are you sure to disapprove this leave request(s) ?</p>
-                            @if($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 1)
+                            {{-- @if($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 1) --}}
                                 <textarea class="form-control " rows="3" name="disapprovermessage" placeholder="Message" id="disapprovermessage" required></textarea>
-                            @endif
+                            {{-- @endif --}}
                         </div>
 
                         <div class="modal-footer">
                             <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" id="disapprove_btn" class="btn btn-primary">
+                            <button type="submit" id="disapprove_btn" class="btn btn-primary approve_btn">
                                 <span class="indicator-label">Yes, Disapprove</span>
                                 <span class="indicator-progress">Please wait... 
                                 <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>

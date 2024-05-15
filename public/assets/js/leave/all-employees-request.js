@@ -33,12 +33,15 @@ $('.leave_request').on('click', function (e) {
 });
 
 $('.request_submit').submit(function (e) {
+    $('.approve_btn').prop('disabled', true);
+    $(".approve_btn").attr('data-kt-indicator', 'on');
+    $('.approve_btn').css('cursor', 'pointer');
     e.preventDefault();
     approvermessage = $('#approvermessage').val();
     disapprovermessage = $('#disapprovermessage').val();
-    $('#modal-danger').modal('hide');
-    $('#modal-success').modal('hide');
 
+    // $('#modal-danger').modal('hide');
+    // $('#modal-success').modal('hide');
 
     var values = [];
     var checkbox = dataTable.$(".checked:checked", { "page": "all" })
@@ -66,22 +69,29 @@ $('.request_submit').submit(function (e) {
                 Toast.fire({
                     icon: 'success',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
                 setTimeout(() => {
                     location.reload();
-                }, 5000);
+                }, 2000);
 
             } else if (data.status == "FALSE") {
                 Toast.fire({
                     icon: 'warning',
                     title: data.msg,
-                    timer: 5000,
+                    timer: 3000,
                 })
+
+                $('.approve_btn').prop('disabled', false);
+                $('.approve_btn').css('cursor', 'pointer');
+                $(".approve_btn").removeAttr('data-kt-indicator');
             }
         },
         error: function (jqXHR, textStatus) {
             var errorStatus = jqXHR.status;
+            $('.approve_btn').prop('disabled', false);
+            $('.approve_btn').css('cursor', 'pointer');
+            $(".approve_btn").removeAttr('data-kt-indicator');
             if (errorStatus == 0) {
                 Toast.fire({
                     icon: 'warning',

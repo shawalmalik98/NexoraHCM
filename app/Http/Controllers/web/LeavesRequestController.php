@@ -138,7 +138,9 @@ class LeavesRequestController extends Controller
             $send_data = compact('title','login_user','employees_data','my_leaves','employee_locations','responsed_request','dates');
             
             return view('leave.all-employees-request', $send_data);
+
         }catch(\Exception $e){
+            
             $this->create_error_log('Access All Employees Leaves Request Module', $e);
             $send_data = compact('title','login_user');
             return view('errors.500');
@@ -536,11 +538,21 @@ class LeavesRequestController extends Controller
                             $update_leave->leave_approved_by_hr = 3;
                             $update_leave->leave_approved_date_hr = 'Dis-Approved By : '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
                             $process = $update_leave->save();
-                            if($process == 1){
-                    
-                                $this->send_notification('Leave Request Disapproval ', ' HR disapproved your leave request(s) for '.$update_leave['leave_applied_for_date'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
 
-                                $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request has been disapproved by HR.');
+                            if($process == 1){
+
+                                $leave_approval = new RequestApproval();
+                                $leave_approval->request_module_id = 2;
+                                $leave_approval->request_id = $leave_request_id;
+                                $leave_approval->request_approver_id =  $login_user[0]['employee_id'];
+                                $leave_approval->request_approver_status = 3;
+                                $leave_approval->request_approver_msg = $request['disapprovermsg'];
+                                $leave_approval->request_approval_time = date('h:i A d M, Y');
+                                $leave_approval->save();
+                    
+                                // $this->send_notification('Leave Request Disapproval ', ' HR disapproved your leave request(s) for '.$update_leave['leave_applied_for_date'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
+
+                                // $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request has been disapproved by HR.');
                             
                             }else{
                                 return response()->json([
@@ -683,6 +695,7 @@ class LeavesRequestController extends Controller
                                     $update_attendance->att_comp_date = date("Y-m-d", strtotime($update_leave['leave_applied_for_date']));
                                     $update_attendance->att_request_approval = 2;
                                     $process = $update_attendance->save();
+
                                 }else{
                                     
                                     $update_attendance = Attendance::find($get_attendance[0]['attendance_id']);
@@ -697,10 +710,19 @@ class LeavesRequestController extends Controller
                                     $update_attendance->att_check_overall_status = $leave_name[0]['leave_name'];
                                     $process = $update_attendance->save();
                                 }
-                            
-                                $this->send_notification('Leave Request Approval ', ' HR approved your leave request(s) for '.$update_leave['leave_applied_for_date'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
                                 
-                                $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request has been approved by HR.');
+                                $leave_approval = new RequestApproval();
+                                $leave_approval->request_module_id = 2;
+                                $leave_approval->request_id = $leave_request_id;
+                                $leave_approval->request_approver_id =  $login_user[0]['employee_id'];
+                                $leave_approval->request_approver_status = 2;
+                                $leave_approval->request_approver_msg = $request['approvermsg'];
+                                $leave_approval->request_approval_time = date('h:i A d M, Y');
+                                $leave_approval->save();
+
+                                // $this->send_notification('Leave Request Approval ', ' HR approved your leave request(s) for '.$update_leave['leave_applied_for_date'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
+                                
+                                // $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request has been approved by HR.');
 
                             }else{
                                 return response()->json([
@@ -728,318 +750,319 @@ class LeavesRequestController extends Controller
                 }
             }
 
-            if($request['status'] == "LeadApprove"){
+            // if($request['status'] == "LeadApprove"){
 
-                $process = '';
+            //     $process = '';
         
-                $leave_request_ids = explode(",",$request['ids']) ;
+            //     $leave_request_ids = explode(",",$request['ids']) ;
             
-                $login_user = $this->get_login_user_detail();
+            //     $login_user = $this->get_login_user_detail();
                 
-                $approval_maker = session('user_session');
+            //     $approval_maker = session('user_session');
 
-                $status = 1;
+            //     $status = 1;
 
-                $leave_applied_by = LeaveRequest::join('tbl_employees','tbl_leaves_applied.leave_applied_by','=','tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')->whereIn('leave_applied_id', $leave_request_ids)->orderBy('leave_applied_id','DESC')->get(['leave_applied_id','leave_applied_by','leave_applied_type','employee_name','leave_manage_id','leave_name'])->toArray();
+            //     $leave_applied_by = LeaveRequest::join('tbl_employees','tbl_leaves_applied.leave_applied_by','=','tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')->whereIn('leave_applied_id', $leave_request_ids)->orderBy('leave_applied_id','DESC')->get(['leave_applied_id','leave_applied_by','leave_applied_type','employee_name','leave_manage_id','leave_name'])->toArray();
             
-                foreach($leave_applied_by as $single_leave){
+            //     foreach($leave_applied_by as $single_leave){
                     
-                    $leave_name = LeaveManagement::where('leave_manage_id',$single_leave['leave_manage_id'])->get('leave_name')->toArray();
+            //         $leave_name = LeaveManagement::where('leave_manage_id',$single_leave['leave_manage_id'])->get('leave_name')->toArray();
                     
-                    $leave_alloted = Leave::where('leaves_employee_id',$single_leave['leave_applied_by'])->where('leave_type_id',$single_leave['leave_manage_id'])->get(['leave_allotement'])->toArray();
+            //         $leave_alloted = Leave::where('leaves_employee_id',$single_leave['leave_applied_by'])->where('leave_type_id',$single_leave['leave_manage_id'])->get(['leave_allotement'])->toArray();
 
-                    $leave_request_applied = LeaveRequest::whereIn('leave_applied_id',$leave_request_ids)
-                    ->where('leave_applied_by',$single_leave['leave_applied_by'])
-                    ->where('leave_applied_type',$single_leave['leave_manage_id'])
-                    ->where('leave_approved_by_hr',1)
-                    ->count();
+            //         $leave_request_applied = LeaveRequest::whereIn('leave_applied_id',$leave_request_ids)
+            //         ->where('leave_applied_by',$single_leave['leave_applied_by'])
+            //         ->where('leave_applied_type',$single_leave['leave_manage_id'])
+            //         ->where('leave_approved_by_hr',1)
+            //         ->count();
                 
-                    $get_availed_leaves =  Attendance::where('att_employee_id',$single_leave['leave_applied_by'])
-                    ->where('att_check_overall_status', $single_leave['leave_name']) 
-                    ->count();
+            //         $get_availed_leaves =  Attendance::where('att_employee_id',$single_leave['leave_applied_by'])
+            //         ->where('att_check_overall_status', $single_leave['leave_name']) 
+            //         ->count();
 
-                    $reamining_leaves = $leave_alloted[0]['leave_allotement'] - $get_availed_leaves;
+            //         $reamining_leaves = $leave_alloted[0]['leave_allotement'] - $get_availed_leaves;
                     
-                    if(!empty($leave_alloted) &&  $reamining_leaves < $leave_request_applied){
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "There are only ". $reamining_leaves .' '.$single_leave['leave_name'] ."(s) remaining of ".$single_leave['employee_name'],
-                        ]);
-                    }
+            //         if(!empty($leave_alloted) &&  $reamining_leaves < $leave_request_applied){
+            //             return response()->json([
+            //                 'status' => 'FALSE',
+            //                 'msg' => "There are only ". $reamining_leaves .' '.$single_leave['leave_name'] ."(s) remaining of ".$single_leave['employee_name'],
+            //             ]);
+            //         }
 
-                }
+            //     }
         
-                foreach($leave_request_ids as $leave_request_id){
+            //     foreach($leave_request_ids as $leave_request_id){
                     
-                    $update_leave = LeaveRequest::find($leave_request_id);
+            //         $update_leave = LeaveRequest::find($leave_request_id);
 
-                    $checking_request = RequestApproval::where('request_module_id',2)->where('request_approver_id',session('user_session'))->where('request_id',$leave_request_id)->get()->toArray();
+            //         $checking_request = RequestApproval::where('request_module_id',2)->where('request_approver_id',session('user_session'))->where('request_id',$leave_request_id)->get()->toArray();
 
-                    if(!empty($update_leave)){
+            //         if(!empty($update_leave)){
 
-                        if($update_leave->leave_applied_type == '3'){
-                            $employement_status_check = $this->check_if_employee_permanent( $update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'msg');
-                            if(!$employement_status_check['status']){
-                                return response()->json([
-                                    'msg' => $employement_status_check['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
-                        }
-                        $payroll_exists = $this->check_if_payroll_exist($update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'True');
+            //             if($update_leave->leave_applied_type == '3'){
+            //                 $employement_status_check = $this->check_if_employee_permanent( $update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'msg');
+            //                 if(!$employement_status_check['status']){
+            //                     return response()->json([
+            //                         'msg' => $employement_status_check['msg'],
+            //                         'status' => 'FALSE'
+            //                     ]);
+            //                 }
+            //             }
+            //             $payroll_exists = $this->check_if_payroll_exist($update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'True');
 
-                        if($payroll_exists['status'] == TRUE){
-                            return response()->json([
-                                'msg' => $payroll_exists['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
+            //             if($payroll_exists['status'] == TRUE){
+            //                 return response()->json([
+            //                     'msg' => $payroll_exists['msg'],
+            //                     'status' => 'FALSE'
+            //                 ]);
+            //             }
 
-                        $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($update_leave->leave_applied_for_date);
+            //             $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($update_leave->leave_applied_for_date);
 
-                        if($check_attendance_sheet_availability['status'] == FALSE){
-                            return response()->json([
-                                'msg' => $check_attendance_sheet_availability['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
-                    }
+            //             if($check_attendance_sheet_availability['status'] == FALSE){
+            //                 return response()->json([
+            //                     'msg' => $check_attendance_sheet_availability['msg'],
+            //                     'status' => 'FALSE'
+            //                 ]);
+            //             }
+            //         }
                 
-                    if(empty($checking_request)){
+            //         if(empty($checking_request)){
     
-                        if(!empty($update_leave) && $update_leave->leave_approved_by_hr == 1 && in_array($update_leave->leave_applied_by,$this->get_employee_hierarchy_unique($approval_maker,  $status))){
+            //             if(!empty($update_leave) && $update_leave->leave_approved_by_hr == 1 && in_array($update_leave->leave_applied_by,$this->get_employee_hierarchy_unique($approval_maker,  $status))){
                              
-                            $update_leave->leave_approved_by_hr = 2;
-                            $update_leave->leave_approved_date_hr = 'Approved By : '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
-                            $process = $update_leave->save();
+            //                 $update_leave->leave_approved_by_hr = 2;
+            //                 $update_leave->leave_approved_date_hr = 'Approved By : '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
+            //                 $process = $update_leave->save();
             
-                            $get_attendance = Attendance::where('att_employee_id',$update_leave['leave_applied_by'])->where('att_for_date',date("d", strtotime($update_leave['leave_applied_for_date'])))->where('att_for_month', date("m", strtotime($update_leave['leave_applied_for_date'])))->where('att_for_year', date("Y", strtotime($update_leave['leave_applied_for_date'])))->get()->toArray();
+            //                 $get_attendance = Attendance::where('att_employee_id',$update_leave['leave_applied_by'])->where('att_for_date',date("d", strtotime($update_leave['leave_applied_for_date'])))->where('att_for_month', date("m", strtotime($update_leave['leave_applied_for_date'])))->where('att_for_year', date("Y", strtotime($update_leave['leave_applied_for_date'])))->get()->toArray();
                             
-                            $employee_shift_start = $this->get_employee_today_shift($update_leave['leave_applied_by'],"in",$update_leave['leave_applied_for_date']);
-                            $employee_shift_end = $this->get_employee_today_shift($update_leave['leave_applied_by'],"out",$update_leave['leave_applied_for_date']);
+            //                 $employee_shift_start = $this->get_employee_today_shift($update_leave['leave_applied_by'],"in",$update_leave['leave_applied_for_date']);
+            //                 $employee_shift_end = $this->get_employee_today_shift($update_leave['leave_applied_by'],"out",$update_leave['leave_applied_for_date']);
                             
-                            if($process == 1){
+            //                 if($process == 1){
                     
-                                if(empty($get_attendance)){
+            //                     if(empty($get_attendance)){
                                     
-                                    $update_attendance = new Attendance();
-                                    $update_attendance->att_employee_id = $update_leave['leave_applied_by'];
-                                    $update_attendance->att_check_in_time = '00:00:00';
-                                    $update_attendance->att_check_out_time = '00:00:00';
-                                    $update_attendance->att_check_in_status = 0;
-                                    $update_attendance->att_check_out_status = 0;
-                                    $update_attendance->att_check_out_source = 1;
-                                    $update_attendance->att_shift_start_time = $employee_shift_start;
-                                    $update_attendance->att_shift_end_time = $employee_shift_end;
-                                    $update_attendance->att_check_overall_status = $leave_name[0]['leave_name'];
-                                    $update_attendance->att_for_date = date("d", strtotime($update_leave['leave_applied_for_date']));
-                                    $update_attendance->att_for_month = date("m", strtotime($update_leave['leave_applied_for_date']));
-                                    $update_attendance->att_for_year = date("Y", strtotime($update_leave['leave_applied_for_date']));
-                                    $update_attendance->att_comp_date = date("Y-m-d", strtotime($update_leave['leave_applied_for_date']));
-                                    $update_attendance->att_request_approval = 2;
-                                    $process = $update_attendance->save();
-                                }else{
+            //                         $update_attendance = new Attendance();
+            //                         $update_attendance->att_employee_id = $update_leave['leave_applied_by'];
+            //                         $update_attendance->att_check_in_time = '00:00:00';
+            //                         $update_attendance->att_check_out_time = '00:00:00';
+            //                         $update_attendance->att_check_in_status = 0;
+            //                         $update_attendance->att_check_out_status = 0;
+            //                         $update_attendance->att_check_out_source = 1;
+            //                         $update_attendance->att_shift_start_time = $employee_shift_start;
+            //                         $update_attendance->att_shift_end_time = $employee_shift_end;
+            //                         $update_attendance->att_check_overall_status = $leave_name[0]['leave_name'];
+            //                         $update_attendance->att_for_date = date("d", strtotime($update_leave['leave_applied_for_date']));
+            //                         $update_attendance->att_for_month = date("m", strtotime($update_leave['leave_applied_for_date']));
+            //                         $update_attendance->att_for_year = date("Y", strtotime($update_leave['leave_applied_for_date']));
+            //                         $update_attendance->att_comp_date = date("Y-m-d", strtotime($update_leave['leave_applied_for_date']));
+            //                         $update_attendance->att_request_approval = 2;
+            //                         $process = $update_attendance->save();
+
+            //                     }else{
                                     
-                                    $update_attendance = Attendance::find($get_attendance[0]['attendance_id']);
-                                    $update_attendance->att_check_in_time = '00:00:00';
-                                    $update_attendance->att_check_out_time = '00:00:00';
-                                    $update_attendance->att_check_in_status = 0;
-                                    $update_attendance->att_check_out_status = 0;
-                                    $update_attendance->att_check_out_source = 1;
-                                    $update_attendance->att_shift_start_time = $employee_shift_start;
-                                    $update_attendance->att_shift_end_time = $employee_shift_end;
-                                    $update_attendance->att_request_approval = 2;
-                                    $update_attendance->att_check_overall_status = $leave_name[0]['leave_name'];
-                                    $process = $update_attendance->save();
-                                }
+            //                         $update_attendance = Attendance::find($get_attendance[0]['attendance_id']);
+            //                         $update_attendance->att_check_in_time = '00:00:00';
+            //                         $update_attendance->att_check_out_time = '00:00:00';
+            //                         $update_attendance->att_check_in_status = 0;
+            //                         $update_attendance->att_check_out_status = 0;
+            //                         $update_attendance->att_check_out_source = 1;
+            //                         $update_attendance->att_shift_start_time = $employee_shift_start;
+            //                         $update_attendance->att_shift_end_time = $employee_shift_end;
+            //                         $update_attendance->att_request_approval = 2;
+            //                         $update_attendance->att_check_overall_status = $leave_name[0]['leave_name'];
+            //                         $process = $update_attendance->save();
+            //                     }
 
-                                $leave_approval = new RequestApproval();
-                                $leave_approval->request_module_id = 2;
-                                $leave_approval->request_id = $leave_request_id;
-                                $leave_approval->request_approver_id =  $approval_maker;
-                                $leave_approval->request_approver_status = 2;
-                                $leave_approval->request_approver_msg = $request['approvermsg'];
-                                $leave_approval->request_approval_time = date('h:i A d M, Y');
-                                $leave_approval->save();
+            //                     $leave_approval = new RequestApproval();
+            //                     $leave_approval->request_module_id = 2;
+            //                     $leave_approval->request_id = $leave_request_id;
+            //                     $leave_approval->request_approver_id =  $approval_maker;
+            //                     $leave_approval->request_approver_status = 2;
+            //                     $leave_approval->request_approver_msg = $request['approvermsg'];
+            //                     $leave_approval->request_approval_time = date('h:i A d M, Y');
+            //                     $leave_approval->save();
                             
-                                $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
+            //                     $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
                             
-                                $notification_msg = 'Dear employee, ' .$login_user[0]['employee_name']. ' marked your leave request(s) as approved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
+            //                     $notification_msg = 'Dear employee, ' .$login_user[0]['employee_name']. ' marked your leave request(s) as approved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
                             
-                                $this->send_notification('Leave Request Approval ', $notification_msg , 'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
+            //                     $this->send_notification('Leave Request Approval ', $notification_msg , 'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
 
-                                $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request been approved by your line manager.');
+            //                     // $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request been approved by your line manager.');
                             
-                                $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager approved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
+            //                     $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager approved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
 
-                                $this->send_notification('Leave Request Approval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
+            //                     $this->send_notification('Leave Request Approval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
 
-                            }else{
-                                return response()->json([
-                                    'status' => 'FALSE',
-                                    'msg' => "Request(s) not approved successfully",
-                                ]);
-                            }
+            //                 }else{
+            //                     return response()->json([
+            //                         'status' => 'FALSE',
+            //                         'msg' => "Request(s) not approved successfully",
+            //                     ]);
+            //                 }
 
-                            // $leave_approval = new RequestApproval();
-                            // $leave_approval->request_module_id = 2;
-                            // $leave_approval->request_id = $leave_request_id;
-                            // $leave_approval->request_approver_id =  $approval_maker;
-                            // $leave_approval->request_approver_status = 2;
-                            // $leave_approval->request_approver_msg = $request['approvermsg'];
-                            // $leave_approval->request_approval_time = date('h:i A d M, Y');
-                            // $process = $leave_approval->save();
+            //                 // $leave_approval = new RequestApproval();
+            //                 // $leave_approval->request_module_id = 2;
+            //                 // $leave_approval->request_id = $leave_request_id;
+            //                 // $leave_approval->request_approver_id =  $approval_maker;
+            //                 // $leave_approval->request_approver_status = 2;
+            //                 // $leave_approval->request_approver_msg = $request['approvermsg'];
+            //                 // $leave_approval->request_approval_time = date('h:i A d M, Y');
+            //                 // $process = $leave_approval->save();
                             
-                            // if($process == 1){
+            //                 // if($process == 1){
 
-                            //     $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
+            //                 //     $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
                             
-                            //     $notification_msg = 'Dear employee, ' .$login_user[0]['employee_name']. ' marked your leave request(s) as approved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
+            //                 //     $notification_msg = 'Dear employee, ' .$login_user[0]['employee_name']. ' marked your leave request(s) as approved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
                             
-                            //     $this->send_notification('Leave Request Approval ', $notification_msg , 'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
+            //                 //     $this->send_notification('Leave Request Approval ', $notification_msg , 'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
 
-                            //     $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request been approved by your line manager.');
+            //                 //     $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request been approved by your line manager.');
                             
-                            //     $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager approved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
+            //                 //     $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager approved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
 
-                            //     $this->send_notification('Leave Request Approval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
+            //                 //     $this->send_notification('Leave Request Approval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
                             
         
-                            // }else{
+            //                 // }else{
                 
-                            //     return response()->json([
-                            //         'status' => 'FALSE',
-                            //         'msg' => "Request(s) not approved successfully ",
+            //                 //     return response()->json([
+            //                 //         'status' => 'FALSE',
+            //                 //         'msg' => "Request(s) not approved successfully ",
                                     
-                            //     ]);
-                            // }
-                        }
-                    }
-                }
+            //                 //     ]);
+            //                 // }
+            //             }
+            //         }
+            //     }
                     
-                if($process){
-                    return response()->json([
-                        'status' => 'TRUE',
-                        'msg' => "Request(s) approved successfully ",
+            //     if($process){
+            //         return response()->json([
+            //             'status' => 'TRUE',
+            //             'msg' => "Request(s) approved successfully ",
                         
-                    ]);
-                }else{
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => "Already responded to this request",
+            //         ]);
+            //     }else{
+            //         return response()->json([
+            //             'status' => 'FALSE',
+            //             'msg' => "Already responded to this request",
                         
-                    ]);
-                }
-            }
+            //         ]);
+            //     }
+            // }
 
-            if($request['status'] == "LeadDisApprove"){
+            // if($request['status'] == "LeadDisApprove"){
 
-                $process = '';
+            //     $process = '';
         
-                $leave_request_ids = explode(",",$request['ids']);
+            //     $leave_request_ids = explode(",",$request['ids']);
 
-                $login_user = $this->get_login_user_detail();
+            //     $login_user = $this->get_login_user_detail();
 
-                $approval_maker = session('user_session');
+            //     $approval_maker = session('user_session');
 
-                $status = 1;
+            //     $status = 1;
     
-                foreach($leave_request_ids as  $leave_request_id){
+            //     foreach($leave_request_ids as  $leave_request_id){
                     
-                    $checking_request = RequestApproval::where('request_module_id',2)->where('request_approver_id',session('user_session'))->where('request_id',$leave_request_id)->get()->toArray();
+            //         $checking_request = RequestApproval::where('request_module_id',2)->where('request_approver_id',session('user_session'))->where('request_id',$leave_request_id)->get()->toArray();
 
                 
-                    if(empty($checking_request)){
+            //         if(empty($checking_request)){
 
-                        $update_leave = LeaveRequest::find($leave_request_id);
+            //             $update_leave = LeaveRequest::find($leave_request_id);
                     
-                        if(!empty($update_leave) && $update_leave->leave_approved_by_hr == 1 && in_array($update_leave->leave_applied_by,$this->get_employee_hierarchy_unique($approval_maker,  $status))){
+            //             if(!empty($update_leave) && $update_leave->leave_approved_by_hr == 1 && in_array($update_leave->leave_applied_by,$this->get_employee_hierarchy_unique($approval_maker,  $status))){
                             
-                            $update_leave->leave_approved_by_hr = 3;
-                            $update_leave->leave_approved_date_hr = 'Dis-Approved By : '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
-                            $process = $update_leave->save();
+            //                 $update_leave->leave_approved_by_hr = 3;
+            //                 $update_leave->leave_approved_date_hr = 'Dis-Approved By : '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
+            //                 $process = $update_leave->save();
                             
-                            if($process == 1){
+            //                 if($process == 1){
 
-                                $leave_approval = new RequestApproval();
-                                $leave_approval->request_module_id = 2;
-                                $leave_approval->request_id = $leave_request_id;
-                                $leave_approval->request_approver_id =  $approval_maker;
-                                $leave_approval->request_approver_status = 3;
-                                $leave_approval->request_approver_msg = $request['disapprovermsg'];
-                                $leave_approval->request_approval_time = date('h:i A d M, Y');
-                                $leave_approval->save();
+            //                     $leave_approval = new RequestApproval();
+            //                     $leave_approval->request_module_id = 2;
+            //                     $leave_approval->request_id = $leave_request_id;
+            //                     $leave_approval->request_approver_id =  $approval_maker;
+            //                     $leave_approval->request_approver_status = 3;
+            //                     $leave_approval->request_approver_msg = $request['disapprovermsg'];
+            //                     $leave_approval->request_approval_time = date('h:i A d M, Y');
+            //                     $leave_approval->save();
                     
-                                $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
+            //                     $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
                         
-                                $notification_msg = 'Dear employee, ' . $login_user[0]['employee_name']. ' marked your leave request(s) as Disapproved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
+            //                     $notification_msg = 'Dear employee, ' . $login_user[0]['employee_name']. ' marked your leave request(s) as Disapproved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
                             
-                                $this->send_notification('Leave Request Disapproval ', $notification_msg ,'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
+            //                     $this->send_notification('Leave Request Disapproval ', $notification_msg ,'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
 
-                                $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request Disapproval','Your Leave request has been disapproved by your line manager.');
+            //                     // $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request Disapproval','Your Leave request has been disapproved by your line manager.');
                             
-                                $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager Disapproved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
+            //                     $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager Disapproved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
 
-                                $this->send_notification('Leave Request Disapproval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
+            //                     $this->send_notification('Leave Request Disapproval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
                             
-                            }else{
-                                return response()->json([
-                                    'status' => 'TRUE',
-                                    'msg'   =>"Request(s) disapproved not successfully ",
+            //                 }else{
+            //                     return response()->json([
+            //                         'status' => 'TRUE',
+            //                         'msg'   =>"Request(s) disapproved not successfully ",
                                     
-                                ]);
-                            }
+            //                     ]);
+            //                 }
 
-                            // $leave_approval = new RequestApproval();
-                            // $leave_approval->request_module_id = 2;
-                            // $leave_approval->request_id = $leave_request_id;
-                            // $leave_approval->request_approver_id =  $approval_maker;
-                            // $leave_approval->request_approver_status = 3;
-                            // $leave_approval->request_approver_msg = $request['disapprovermsg'];
-                            // $leave_approval->request_approval_time = date('h:i A d M, Y');
-                            // $process = $leave_approval->save();
+            //                 // $leave_approval = new RequestApproval();
+            //                 // $leave_approval->request_module_id = 2;
+            //                 // $leave_approval->request_id = $leave_request_id;
+            //                 // $leave_approval->request_approver_id =  $approval_maker;
+            //                 // $leave_approval->request_approver_status = 3;
+            //                 // $leave_approval->request_approver_msg = $request['disapprovermsg'];
+            //                 // $leave_approval->request_approval_time = date('h:i A d M, Y');
+            //                 // $process = $leave_approval->save();
                             
-                            // if($process == 1){
+            //                 // if($process == 1){
 
-                            //     $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
+            //                 //     $employee_name = Employees::where('employee_id', $update_leave['leave_applied_by'])->get(['employee_id','employee_code','employee_name'])->toArray();
                         
-                            //     $notification_msg = 'Dear employee, ' . $login_user[0]['employee_name']. ' marked your leave request(s) as Disapproved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
+            //                 //     $notification_msg = 'Dear employee, ' . $login_user[0]['employee_name']. ' marked your leave request(s) as Disapproved for the date of '.$update_leave['leave_applied_for_date']. ' Please click here to view.';
                             
-                            //     $this->send_notification('Leave Request Disapproval ', $notification_msg ,'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
+            //                 //     $this->send_notification('Leave Request Disapproval ', $notification_msg ,'my-leaves?request-id='. $update_leave->leave_applied_id .'',$update_leave['leave_applied_by'],NULL,NULL,'no');
 
-                            //     $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request Disapproval','Your Leave request has been disapproved by your line manager.');
+            //                 //     $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request Disapproval','Your Leave request has been disapproved by your line manager.');
                             
-                            //     $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager Disapproved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
+            //                 //     $notification_msg_hr= ''.$employee_name[0]['employee_name'].''."'s".' Manager Disapproved their leave request(s) for the date of '.$update_leave['leave_applied_for_date'].'. Please click here to view.';
 
-                            //     $this->send_notification('Leave Request Disapproval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
+            //                 //     $this->send_notification('Leave Request Disapproval ',  $notification_msg_hr , 'employees-leaves?request-id='. $update_leave->leave_applied_id .'',NULL,NULL,NULL,'yes');
                             
-                            // }else{
+            //                 // }else{
                 
-                            //     return response()->json([
-                            //         'status' => 'FALSE',
-                            //         'msg' => "Request(s) not disapproved successfully",
+            //                 //     return response()->json([
+            //                 //         'status' => 'FALSE',
+            //                 //         'msg' => "Request(s) not disapproved successfully",
                                     
-                            //     ]);
-                            // }
-                        }
-                    }
-                }
+            //                 //     ]);
+            //                 // }
+            //             }
+            //         }
+            //     }
                     
-                if($process){
-                    return response()->json([
-                        'status' => 'TRUE',
-                        'msg' => "Request(s) disapproved successfully ",
+            //     if($process){
+            //         return response()->json([
+            //             'status' => 'TRUE',
+            //             'msg' => "Request(s) disapproved successfully ",
                         
-                    ]);
-                }else{
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => "Already responded to this request",
+            //         ]);
+            //     }else{
+            //         return response()->json([
+            //             'status' => 'FALSE',
+            //             'msg' => "Already responded to this request",
                         
-                    ]);
-                }
+            //         ]);
+            //     }
         
-            } 
+            // } 
 
         }catch(\Exception $e){
             $this->create_error_log('Approved And Disapproved Leave Request by Manager', $e);
