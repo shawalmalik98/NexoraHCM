@@ -38,7 +38,7 @@ class EmployeeController extends Controller
 
     protected function index(Request $request){
 
-        // try{
+        try{
             
             $title = Self::MAIN_TITLE;
 
@@ -153,15 +153,15 @@ class EmployeeController extends Controller
                 return view('employee.all-employees2',$send_data);
             }
 
-        // }catch(\Exception $e){
-        //     $this->create_error_log('View All Employees', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
-        // }
-        // finally{
-        //     ActivityTracker::track_activity('View All Employees');
+        }catch(\Exception $e){
+            $this->create_error_log('View All Employees', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }
+        finally{
+            ActivityTracker::track_activity('View All Employees');
            
-        // }
+        }
 
     }
 
