@@ -38,7 +38,7 @@ class EmployeeController extends Controller
 
     protected function index(Request $request){
 
-        try{
+        // try{
             
             $title = Self::MAIN_TITLE;
 
@@ -47,31 +47,31 @@ class EmployeeController extends Controller
             $where_clause = "1=1";
 
             if(empty($request->is_active)){
-                $where_clause .= ' AND employee_isactive = '."1".'';
+                $where_clause .= ' AND tbl_employees.employee_isactive = '."1".'';
             }else{
                 if(!empty($request->is_active) && $request->is_active == 1){
-                    $where_clause .= ' AND employee_isactive = '."1".''; 
+                    $where_clause .= ' AND tbl_employees.employee_isactive = '."1".''; 
                 }
                 elseif(!empty($request->is_active) && $request->is_active == 2){
-                    $where_clause .= ' AND employee_isactive = '."0".''; 
+                    $where_clause .= ' AND tbl_employees.employee_isactive = '."0".''; 
                 }
             }
 
             if(!empty($request->input('business_unit')) && $request->input('business_unit') != 'All'){
 
-                $where_clause .= " and business_unit= '".$request->input('business_unit')."'";
+                $where_clause .= " and tbl_employees.business_unit= '".$request->input('business_unit')."'";
 
             }
 
             if(!empty($request->input('employee_department')) && $request->input('employee_department') != 'All'){
 
-                $where_clause .= " and employee_department= '".$request->input('employee_department')."'";
+                $where_clause .= " and tbl_employees.employee_department= '".$request->input('employee_department')."'";
 
             }
 
             if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'){
 
-                $where_clause .= " and employee_group= '".$request->input('employee_group')."'";
+                $where_clause .= " and tbl_employees.employee_group= '".$request->input('employee_group')."'";
 
             }
 
@@ -81,7 +81,7 @@ class EmployeeController extends Controller
 
             // }
 
-            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All' || !empty($request->is_active) || !empty($request->input('business_unit')) && $request->input('business_unit') != 'All' || !empty($request->input('employee_department')) && $request->input('employee_department') != 'All' || $request->download == "TRUE" ){
+            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All' || !empty($request->is_active) || !empty($request->input('business_unit')) && $request->input('business_unit') != 'All' || !empty($request->input('employee_department')) && $request->input('employee_department') != 'All' ){
                 
                 $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
@@ -138,9 +138,10 @@ class EmployeeController extends Controller
                 ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
                 ->leftJoin('tbl_employement_status','tbl_employees.employee_status','=','tbl_employement_status.employement_status_id')
                 ->leftJoin('tbl_employees as emp_ra', 'emp_ra.employee_id', '=', 'tbl_employees.employee_senior_manager')           
-                ->where('tbl_employees.employee_isactive','=', 1)
+                // ->where('tbl_employees.employee_isactive','=', 1)
+                ->whereRaw($where_clause)
                 ->orderBy('tbl_employees.employee_id', 'asc')
-                ->get(['tbl_employees.employee_code as Employee ID','tbl_employees.employee_name as Employee Name','tbl_employees.employee_gender as Gender','tbl_employees.employee_jobtitle as Position','designation_name as Grade','department_name as Department', 'location_title as Location','group_name as Category' ,'tbl_employees.employee_doj as Join Date', 'tbl_employees.employee_cnic as CNIC','employement_status_name as Status' ,'dob as Date of Birth','tbl_employees.employee_contactno as Mobile','tbl_employees.employee_work_email as Email','emp_ra.employee_name as Supervisor', 'emp_ra.employee_code as Supervisor Id'])
+                ->get(['tbl_employees.employee_code as Employee ID','tbl_employees.employee_name as Employee Name','tbl_employees.employee_gender as Gender','tbl_employees.employee_jobtitle as Position','designation_name as Grade','department_name as Department', 'location_title as Location','group_name as Category' ,'tbl_employees.employee_doj as Join Date', 'tbl_employees.employee_cnic as CNIC','employement_status_name as Status' ,'dob as Date of Birth','tbl_employees.employee_contactno as Mobile','tbl_employees.employee_work_email as Email','emp_ra.employee_name as Supervisor', 'emp_ra.employee_code as Supervisor Id','tbl_employees.employee_deactivate_date as Last Working Day'])
                 ->toArray();
 
                 $header_style = (new Style())->setFontBold();
@@ -152,15 +153,15 @@ class EmployeeController extends Controller
                 return view('employee.all-employees2',$send_data);
             }
 
-        }catch(\Exception $e){
-            $this->create_error_log('View All Employees', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-        }
-        finally{
-            ActivityTracker::track_activity('View All Employees');
+        // }catch(\Exception $e){
+        //     $this->create_error_log('View All Employees', $e);
+        //     $send_data = compact('title');
+        //     return view('errors.500');
+        // }
+        // finally{
+        //     ActivityTracker::track_activity('View All Employees');
            
-        }
+        // }
 
     }
 

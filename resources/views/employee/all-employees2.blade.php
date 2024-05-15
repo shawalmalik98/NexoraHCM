@@ -32,15 +32,32 @@
 
                 {{-- @if(!empty($employees)) --}}
                     <div class="m-0">
-                        <a href="{{ url('employees') }}?download=TRUE" class="btn btn-sm btn-success" method="GET">
-                            <span class="svg-icon svg-icon-2">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
-                                    <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
-                                </svg>
-                            </span>
-                            Download Employees Records
-                        </a>
+
+                        @if (!empty(Request::get('is_active')) || 
+                            !empty(Request::get('business_unit')) || 
+                            !empty(Request::get('department_id')) || 
+                            !empty(Request::get('employee_group')))
+        
+                            <a href="{{ url('employees') }}?download=TRUE&is_active={{ Request::get('is_active') }}&business_unit={{ Request::get('business_unit') }}&department_id={{ Request::get('department_id') }}&employee_group={{ Request::get('employee_group') }}" class="btn btn-sm btn-success" method="GET">
+                                <span class="svg-icon svg-icon-2">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                        <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                                    </svg>
+                                </span>
+                                Download Employees Records
+                            </a>
+                        @else
+                            <a href="{{ url('employees') }}?download=TRUE" class="btn btn-sm btn-success" method="GET">
+                                <span class="svg-icon svg-icon-2">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
+                                        <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
+                                    </svg>
+                                </span>
+                                Download Employees Records
+                            </a>
+                        @endif    
                     </div>
                 {{-- @endif --}}
 
