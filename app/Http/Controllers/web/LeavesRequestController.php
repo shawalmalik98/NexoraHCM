@@ -539,7 +539,7 @@ class LeavesRequestController extends Controller
                         if($update_leave->leave_approved_by_hr == 1){
 
                             $update_leave->leave_approved_by_hr = 3;
-                            $update_leave->leave_approved_date_hr = 'Dis-Approved By : '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
+                            $update_leave->leave_approved_date_hr = 'Dis-Approved By : '.$login_user[0]['employee_code'].' '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
                             $process = $update_leave->save();
 
                             if($process == 1){
@@ -670,7 +670,7 @@ class LeavesRequestController extends Controller
                         if($update_leave->leave_approved_by_hr == 1){
                             
                             $update_leave->leave_approved_by_hr = 2;
-                            $update_leave->leave_approved_date_hr = 'Approved By : '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
+                            $update_leave->leave_approved_date_hr = 'Approved By : '.$login_user[0]['employee_code'].' '.$login_user[0]['employee_name'].', at : '.date('h:i A d M, Y').'';
                             $process = $update_leave->save();
             
                             $get_attendance = Attendance::where('att_employee_id',$update_leave['leave_applied_by'])->where('att_for_date',date("d", strtotime($update_leave['leave_applied_for_date'])))->where('att_for_month', date("m", strtotime($update_leave['leave_applied_for_date'])))->where('att_for_year', date("Y", strtotime($update_leave['leave_applied_for_date'])))->get()->toArray();
@@ -1256,7 +1256,7 @@ class LeavesRequestController extends Controller
                                             'status' => 'TRUE',
                                             'msg' => 'Leave request has been updated. Please wait for response',
                                         ]);
-                                        
+
                                     }else{
                                         return response()->json([
                                             'status' => 'FALSE',
