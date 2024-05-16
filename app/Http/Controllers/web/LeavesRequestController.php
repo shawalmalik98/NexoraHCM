@@ -140,7 +140,7 @@ class LeavesRequestController extends Controller
             return view('leave.all-employees-request', $send_data);
 
         }catch(\Exception $e){
-            
+
             $this->create_error_log('Access All Employees Leaves Request Module', $e);
             $send_data = compact('title','login_user');
             return view('errors.500');
@@ -278,33 +278,33 @@ class LeavesRequestController extends Controller
         
                                 $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', session('user_session'))->whereIn('leave_applied_for_date',[$request_leave_date])->get(['leave_applied_for_date'])->toArray();
 
-                                if($leave_data->leave_type == "3"){
-                                    $employement_status_check = $this->check_if_employee_permanent($request_leave_date,session('user_session'),$custom_message = NULL);
-                                    if(!$employement_status_check['status']){
-                                        return response()->json([
-                                            'msg' => $employement_status_check['msg'],
-                                            'status' => 'FALSE'
-                                        ]);
-                                    }
-                                }
+                                // if($leave_data->leave_type == "3"){
+                                //     $employement_status_check = $this->check_if_employee_permanent($request_leave_date,session('user_session'),$custom_message = NULL);
+                                //     if(!$employement_status_check['status']){
+                                //         return response()->json([
+                                //             'msg' => $employement_status_check['msg'],
+                                //             'status' => 'FALSE'
+                                //         ]);
+                                //     }
+                                // }
 
-                                $payroll_exists = $this->check_if_payroll_exist($request_leave_date,session('user_session'),$custom_message = NULL);
+                                // $payroll_exists = $this->check_if_payroll_exist($request_leave_date,session('user_session'),$custom_message = NULL);
         
-                                if($payroll_exists['status'] == TRUE){
-                                    return response()->json([
-                                        'msg' => $payroll_exists['msg'],
-                                        'status' => 'FALSE'
-                                    ]);
-                                }
+                                // if($payroll_exists['status'] == TRUE){
+                                //     return response()->json([
+                                //         'msg' => $payroll_exists['msg'],
+                                //         'status' => 'FALSE'
+                                //     ]);
+                                // }
 
-                                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_leave_date);
+                                // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_leave_date);
 
-                                if($check_attendance_sheet_availability['status'] == FALSE){
-                                    return response()->json([
-                                        'msg' => $check_attendance_sheet_availability['msg'],
-                                        'status' => 'FALSE'
-                                    ]);
-                                }
+                                // if($check_attendance_sheet_availability['status'] == FALSE){
+                                //     return response()->json([
+                                //         'msg' => $check_attendance_sheet_availability['msg'],
+                                //         'status' => 'FALSE'
+                                //     ]);
+                                // }
 
                                 foreach($checking_applied_leave_request as $request_date){
                                 
@@ -331,33 +331,34 @@ class LeavesRequestController extends Controller
                                     'status' => 'FALSE'
                                 ]);
                             }
-                            if($leave_data->leave_type == "3"){
-                                $employement_status_check = $this->check_if_employee_permanent($leave_data->input('leave_date'),session('user_session'),$custom_message = NULL);
-                                if(!$employement_status_check['status']){
-                                    return response()->json([
-                                        'msg' => $employement_status_check['msg'],
-                                        'status' => 'FALSE'
-                                    ]);
-                                }
-                            }
-                            $payroll_exists = $this->check_if_payroll_exist($leave_data->input('leave_date'),session('user_session'),$custom_message = NULL);
-                            
 
-                            if($payroll_exists['status'] == TRUE){
-                                return response()->json([
-                                    'msg' => $payroll_exists['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
+                            // if($leave_data->leave_type == "3"){
+                            //     $employement_status_check = $this->check_if_employee_permanent($leave_data->input('leave_date'),session('user_session'),$custom_message = NULL);
+                            //     if(!$employement_status_check['status']){
+                            //         return response()->json([
+                            //             'msg' => $employement_status_check['msg'],
+                            //             'status' => 'FALSE'
+                            //         ]);
+                            //     }
+                            // }
 
-                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($leave_data->input('leave_date'));
+                            // $payroll_exists = $this->check_if_payroll_exist($leave_data->input('leave_date'),session('user_session'),$custom_message = NULL);
 
-                            if($check_attendance_sheet_availability['status'] == FALSE){
-                                return response()->json([
-                                    'msg' => $check_attendance_sheet_availability['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
+                            // if($payroll_exists['status'] == TRUE){
+                            //     return response()->json([
+                            //         'msg' => $payroll_exists['msg'],
+                            //         'status' => 'FALSE'
+                            //     ]);
+                            // }
+
+                            // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($leave_data->input('leave_date'));
+
+                            // if($check_attendance_sheet_availability['status'] == FALSE){
+                            //     return response()->json([
+                            //         'msg' => $check_attendance_sheet_availability['msg'],
+                            //         'status' => 'FALSE'
+                            //     ]);
+                            // }
         
                             $leave_date = $leave_data->input('leave_date');
                             $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', session('user_session'))->where('leave_applied_for_date', $leave_data->input('leave_date'))->where('leave_approved_by_hr', '!=', 3)->get()->toArray();
@@ -432,25 +433,26 @@ class LeavesRequestController extends Controller
                             if($process == 1){
                 
         
-                                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
-                                    $to_mngr1 = $login_user[0]['employee_senior_manager'];
-                                }
-                                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
-                                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
-                                }
+                                // if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                //     $to_mngr1 = $login_user[0]['employee_senior_manager'];
+                                // }
+                                // if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                //     $to_mngr2 = $login_user[0]['employee_junior_manager'];
+                                // }
 
-                                if(!empty($leave_data->input('from_date')) && !empty($leave_data->input('to_date'))){
-                                    $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request(s) as ('. $leave_name[0]['leave_name'] .') from '. $leave_data->input('from_date').' to '.$leave_data->input('to_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&from_date='.$leave_data->input('from_date').'&to_date='.$leave_data->input('to_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+                                // if(!empty($leave_data->input('from_date')) && !empty($leave_data->input('to_date'))){
 
-                                    $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request(s) and has been forwarded to your reporting authorities.');
+                                //     $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request(s) as ('. $leave_name[0]['leave_name'] .') from '. $leave_data->input('from_date').' to '.$leave_data->input('to_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&from_date='.$leave_data->input('from_date').'&to_date='.$leave_data->input('to_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+
+                                //     $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request(s) and has been forwarded to your reporting authorities.');
 
         
-                                }else{
-                                    $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $leave_data->input('leave_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$leave_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+                                // }else{
+                                //     $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $leave_data->input('leave_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$leave_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
 
-                                    $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request and has been forwarded to your reporting authorities.');
+                                //     $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request and has been forwarded to your reporting authorities.');
 
-                                }
+                                // }
                 
                                 return response()->json([
                                     'status' => 'TRUE',
@@ -525,14 +527,15 @@ class LeavesRequestController extends Controller
 
                     if(!empty($update_leave)){
                     
-                        $request_approve_permission = $this->hr_employees_activity_blocker($login_user[0]['employee_id'],$update_leave->leave_applied_by);
+                        // $request_approve_permission = $this->hr_employees_activity_blocker($login_user[0]['employee_id'],$update_leave->leave_applied_by);
                         
-                        if($request_approve_permission != null){
-                            return response()->json([
-                                'msg' => $request_approve_permission['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
+                        // if($request_approve_permission != null){
+                        //     return response()->json([
+                        //         'msg' => $request_approve_permission['msg'],
+                        //         'status' => 'FALSE'
+                        //     ]);
+                        // }
+
                         if($update_leave->leave_approved_by_hr == 1){
 
                             $update_leave->leave_approved_by_hr = 3;
@@ -627,42 +630,42 @@ class LeavesRequestController extends Controller
 
                         $leave_name = LeaveManagement::where('leave_manage_id',$update_leave['leave_applied_type'])->get('leave_name')->toArray();
                         
-                        $request_approve_permission = $this->hr_employees_activity_blocker($login_user[0]['employee_id'],$update_leave->leave_applied_by);
+                        // $request_approve_permission = $this->hr_employees_activity_blocker($login_user[0]['employee_id'],$update_leave->leave_applied_by);
                         
-                        if($request_approve_permission != null){
-                            return response()->json([
-                                'msg' => $request_approve_permission['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
+                        // if($request_approve_permission != null){
+                        //     return response()->json([
+                        //         'msg' => $request_approve_permission['msg'],
+                        //         'status' => 'FALSE'
+                        //     ]);
+                        // }
 
-                        if($update_leave->leave_applied_type == '3'){
-                            $employement_status_check = $this->check_if_employee_permanent( $update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'msg');
-                            if(!$employement_status_check['status']){
-                                return response()->json([
-                                    'msg' => $employement_status_check['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
-                        }
+                        // if($update_leave->leave_applied_type == '3'){
+                        //     $employement_status_check = $this->check_if_employee_permanent( $update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'msg');
+                        //     if(!$employement_status_check['status']){
+                        //         return response()->json([
+                        //             'msg' => $employement_status_check['msg'],
+                        //             'status' => 'FALSE'
+                        //         ]);
+                        //     }
+                        // }
 
-                        $payroll_exists = $this->check_if_payroll_exist($update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'True');
+                        // $payroll_exists = $this->check_if_payroll_exist($update_leave->leave_applied_for_date,$update_leave->leave_applied_by,$custom_message = 'True');
 
-                        if($payroll_exists['status'] == TRUE){
-                            return response()->json([
-                                'msg' => $payroll_exists['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
+                        // if($payroll_exists['status'] == TRUE){
+                        //     return response()->json([
+                        //         'msg' => $payroll_exists['msg'],
+                        //         'status' => 'FALSE'
+                        //     ]);
+                        // }
 
-                        $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($update_leave->leave_applied_for_date);
+                        // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($update_leave->leave_applied_for_date);
 
-                        if($check_attendance_sheet_availability['status'] == FALSE){
-                            return response()->json([
-                                'msg' => $check_attendance_sheet_availability['msg'],
-                                'status' => 'FALSE'
-                            ]);
-                        }
+                        // if($check_attendance_sheet_availability['status'] == FALSE){
+                        //     return response()->json([
+                        //         'msg' => $check_attendance_sheet_availability['msg'],
+                        //         'status' => 'FALSE'
+                        //     ]);
+                        // }
 
                         if($update_leave->leave_approved_by_hr == 1){
                             
@@ -1175,32 +1178,33 @@ class LeavesRequestController extends Controller
     
                         if(!empty($leave_update_request)){
                             
-                            if($request_data->edit_leave_type == "3"){
-                                $employement_status_check = $this->check_if_employee_permanent($request_data->input('leave_date'),session('user_session'),$custom_message = NULL);
-                                if(!$employement_status_check['status']){
-                                    return response()->json([
-                                        'msg' => $employement_status_check['msg'],
-                                        'status' => 'FALSE'
-                                    ]);
-                                }
-                            }
-                            $payroll_exists = $this->check_if_payroll_exist($request_data->input('leave_date'),session('user_session'),$custom_message = NULL);
+                            // if($request_data->edit_leave_type == "3"){
+                            //     $employement_status_check = $this->check_if_employee_permanent($request_data->input('leave_date'),session('user_session'),$custom_message = NULL);
+                            //     if(!$employement_status_check['status']){
+                            //         return response()->json([
+                            //             'msg' => $employement_status_check['msg'],
+                            //             'status' => 'FALSE'
+                            //         ]);
+                            //     }
+                            // }
+
+                            // $payroll_exists = $this->check_if_payroll_exist($request_data->input('leave_date'),session('user_session'),$custom_message = NULL);
     
-                            if($payroll_exists['status'] == TRUE){
-                                return response()->json([
-                                    'msg' => $payroll_exists['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
+                            // if($payroll_exists['status'] == TRUE){
+                            //     return response()->json([
+                            //         'msg' => $payroll_exists['msg'],
+                            //         'status' => 'FALSE'
+                            //     ]);
+                            // }
 
-                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('leave_date'));
+                            // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('leave_date'));
 
-                            if($check_attendance_sheet_availability['status'] == FALSE){
-                                return response()->json([
-                                    'msg' => $check_attendance_sheet_availability['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
+                            // if($check_attendance_sheet_availability['status'] == FALSE){
+                            //     return response()->json([
+                            //         'msg' => $check_attendance_sheet_availability['msg'],
+                            //         'status' => 'FALSE'
+                            //     ]);
+                            // }
     
                             $checking_request_responsed = RequestApproval::where('request_module_id',2)->where('request_id',$request_data->leave_id)->get()->toArray();
                         
@@ -1235,26 +1239,28 @@ class LeavesRequestController extends Controller
                                 
                                     $process = $leave_update_request->save();
     
-                                    if( $process == 1){
-                                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
-                                            $to_mngr1 = $login_user[0]['employee_senior_manager'];
-                                        }
-                                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
-                                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
-                                        }
+                                    if($process == 1){
+
+                                        // if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                        //     $to_mngr1 = $login_user[0]['employee_senior_manager'];
+                                        // }
+                                        // if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                        //     $to_mngr2 = $login_user[0]['employee_junior_manager'];
+                                        // }
                         
-                                        $this->send_notification('Update Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request as ('.  $leave_name[0]['leave_name'] .') for the date of '. $request_data->input('leave_date').' Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$request_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+                                        // $this->send_notification('Update Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request as ('.  $leave_name[0]['leave_name'] .') for the date of '. $request_data->input('leave_date').' Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$request_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
                                       
-                                        $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Update Leave Request','Your leave request has been updated.');
+                                        // $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Update Leave Request','Your leave request has been updated.');
                                     
                                         return response()->json([
                                             'status' => 'TRUE',
                                             'msg' => 'Leave request has been updated. Please wait for response',
                                         ]);
+                                        
                                     }else{
                                         return response()->json([
                                             'status' => 'FALSE',
-                                            'msg' => 'Something went wrong. Please try again.',
+                                            'msg' => 'Leave request failed. Please try again.',
                                         ]);
                                     }
                                     

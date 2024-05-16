@@ -241,30 +241,30 @@ class LeaveRequestApiController extends Controller
 
                                 $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', $login_user[0]['employee_id'])->whereIn('leave_applied_for_date',[$request_leave_date])->get(['leave_applied_for_date'])->toArray();
                                 
-                                if($request->post('leave_type') == "3"){
-                                    $employement_status_check = $this->check_if_employee_permanent($request_leave_date,$login_user[0]['employee_id'],$custom_message = NULL);
+                                // if($request->post('leave_type') == "3"){
+                                //     $employement_status_check = $this->check_if_employee_permanent($request_leave_date,$login_user[0]['employee_id'],$custom_message = NULL);
     
-                                    if(!$employement_status_check['status']){
-                                        return response()->json([
-                                            'msg' => $employement_status_check['msg'],
-                                            'status' => 'FALSE'
-                                        ]);
-                                    }
-                                }
+                                //     if(!$employement_status_check['status']){
+                                //         return response()->json([
+                                //             'msg' => $employement_status_check['msg'],
+                                //             'status' => 'FALSE'
+                                //         ]);
+                                //     }
+                                // }
 
-                                $payroll_exists = $this->check_if_payroll_exist($request_leave_date,$login_user[0]['employee_id'],$custom_message = NULL);
+                                // $payroll_exists = $this->check_if_payroll_exist($request_leave_date,$login_user[0]['employee_id'],$custom_message = NULL);
 
-                                if($payroll_exists['status'] == TRUE){
+                                // if($payroll_exists['status'] == TRUE){
 
-                                    return $this->api_response_json(FALSE,$payroll_exists['msg'],"",200);
+                                //     return $this->api_response_json(FALSE,$payroll_exists['msg'],"",200);
 
-                                }
+                                // }
 
-                                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_leave_date);
+                                // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_leave_date);
 
-                                if($check_attendance_sheet_availability['status'] == FALSE){
-                                    return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
-                                }
+                                // if($check_attendance_sheet_availability['status'] == FALSE){
+                                //     return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                                // }
 
                                 foreach($checking_applied_leave_request as $request_date){
                                 
@@ -291,30 +291,30 @@ class LeaveRequestApiController extends Controller
                                 
                             }
 
-                            if($request->post('leave_type') == "3"){
-                                $employement_status_check = $this->check_if_employee_permanent($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
+                            // if($request->post('leave_type') == "3"){
+                            //     $employement_status_check = $this->check_if_employee_permanent($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
 
-                                if(!$employement_status_check['status']){
-                                    return response()->json([
-                                        'msg' => $employement_status_check['msg'],
-                                        'status' => 'FALSE'
-                                    ]);
-                                }
-                            }
+                            //     if(!$employement_status_check['status']){
+                            //         return response()->json([
+                            //             'msg' => $employement_status_check['msg'],
+                            //             'status' => 'FALSE'
+                            //         ]);
+                            //     }
+                            // }
 
-                            $payroll_exists = $this->check_if_payroll_exist($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
+                            // $payroll_exists = $this->check_if_payroll_exist($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
 
-                            if($payroll_exists['status'] == TRUE){
+                            // if($payroll_exists['status'] == TRUE){
 
-                                return $this->api_response_json(FALSE,$payroll_exists['msg'],"",200);
+                            //     return $this->api_response_json(FALSE,$payroll_exists['msg'],"",200);
 
-                            }
+                            // }
 
-                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
+                            // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
 
-                            if($check_attendance_sheet_availability['status'] == FALSE){
-                                return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
-                            }
+                            // if($check_attendance_sheet_availability['status'] == FALSE){
+                            //     return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                            // }
 
                             $leave_date = $request->post('leave_date');
                             $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', $login_user[0]['employee_id'])->where('leave_applied_for_date', $request->post('leave_date'))->where('leave_approved_by_hr', '!=', 3)->get()->toArray();
@@ -385,20 +385,20 @@ class LeaveRequestApiController extends Controller
                             if($process == 1){
                 
 
-                                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
-                                    $to_mngr1 = $login_user[0]['employee_senior_manager'];
-                                }
-                                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
-                                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
-                                }
+                                // if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                //     $to_mngr1 = $login_user[0]['employee_senior_manager'];
+                                // }
+                                // if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                //     $to_mngr2 = $login_user[0]['employee_junior_manager'];
+                                // }
                 
-                                if(!empty($request->post('from_date')) && !empty($request->post('to_date'))){
-                                    $this->send_notification_api('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request(s) as ('. $leave_name[0]['leave_name'] .') from '. $request->post('from_date').' to '.$request->post('to_date').'. Please click here to view.','employees-leaves?employee_id='.$login_user[0]['employee_id'].'&from_date='.$request->post('from_date').'&to_date='.$request->post('to_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);
+                                // if(!empty($request->post('from_date')) && !empty($request->post('to_date'))){
+                                //     $this->send_notification_api('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request(s) as ('. $leave_name[0]['leave_name'] .') from '. $request->post('from_date').' to '.$request->post('to_date').'. Please click here to view.','employees-leaves?employee_id='.$login_user[0]['employee_id'].'&from_date='.$request->post('from_date').'&to_date='.$request->post('to_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);
         
-                                }else{
-                                    $this->send_notification_api('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $request->post('leave_date').'. Please click here to view.','employees-leaves?employee_id='.$login_user[0]['employee_id'].'&date='.$request->post('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);
+                                // }else{
+                                //     $this->send_notification_api('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $request->post('leave_date').'. Please click here to view.','employees-leaves?employee_id='.$login_user[0]['employee_id'].'&date='.$request->post('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);
 
-                                }
+                                // }
                                 
                                 return $this->api_response_json(TRUE,"Leave request has been submitted. Please wait for response","",200);
 
@@ -520,29 +520,30 @@ class LeaveRequestApiController extends Controller
         
                         if(!empty($leave_update_request)){
                             
-                            if($request->post('edit_leave_type') == "3"){
-                                $employement_status_check = $this->check_if_employee_permanent($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
+                            // if($request->post('edit_leave_type') == "3"){
+                            //     $employement_status_check = $this->check_if_employee_permanent($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
 
-                                if(!$employement_status_check['status']){
-                                    return response()->json([
-                                        'message' => $employement_status_check['msg'],
-                                        'status' => 'FALSE'
-                                    ]);
-                                }
-                            }
-                            $payroll_exists = $this->check_if_payroll_exist($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
+                            //     if(!$employement_status_check['status']){
+                            //         return response()->json([
+                            //             'message' => $employement_status_check['msg'],
+                            //             'status' => 'FALSE'
+                            //         ]);
+                            //     }
+                            // }
+
+                            // $payroll_exists = $this->check_if_payroll_exist($request->post('leave_date'),$login_user[0]['employee_id'],$custom_message = NULL);
                             
-                            if($payroll_exists['status'] == TRUE){
+                            // if($payroll_exists['status'] == TRUE){
         
-                                return $this->api_response_json(FALSE,$payroll_exists['msg'],"",200);
+                            //     return $this->api_response_json(FALSE,$payroll_exists['msg'],"",200);
         
-                            }
+                            // }
 
-                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
+                            // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
 
-                            if($check_attendance_sheet_availability['status'] == FALSE){
-                                return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
-                            }
+                            // if($check_attendance_sheet_availability['status'] == FALSE){
+                            //     return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                            // }
         
                             $checking_request_responsed = RequestApproval::where('request_module_id',2)->where('request_id',$request->post('leave_id'))->get()->toArray();
                         
@@ -577,15 +578,16 @@ class LeaveRequestApiController extends Controller
                                 
                                     $process = $leave_update_request->save();
         
-                                    if( $process == 1){
-                                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
-                                            $to_mngr1 = $login_user[0]['employee_senior_manager'];
-                                        }
-                                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
-                                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
-                                        }
+                                    if($process == 1){
+
+                                        // if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                        //     $to_mngr1 = $login_user[0]['employee_senior_manager'];
+                                        // }
+                                        // if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                        //     $to_mngr2 = $login_user[0]['employee_junior_manager'];
+                                        // }
                         
-                                        $this->send_notification_api('Update Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $request->post('leave_date').' Please click here to view.','employees-leaves?employee_id='.$login_user[0]['employee_id'].'&date='.$request->post('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);
+                                        // $this->send_notification_api('Update Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $request->post('leave_date').' Please click here to view.','employees-leaves?employee_id='.$login_user[0]['employee_id'].'&date='.$request->post('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes',$login_user[0]['employee_id']);
                                     
                                         
                                         return $this->api_response_json(TRUE,'Leave request has been updated. Please wait for response',"",200);

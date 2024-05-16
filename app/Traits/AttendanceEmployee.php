@@ -400,9 +400,9 @@ trait AttendanceEmployee {
 	public function hr_employees_activity_blocker($login_user_id,$serving_employee_id){
 	
 		$login_user_data = Employees::where('employee_id', $login_user_id)->get()->toArray();
-		if(!empty($login_user_data) && $login_user_data[0]['employee_department'] == 2){
-			$get_hr_hod = Department::where('department_id', 2)->get()->toArray();
-			$hr_depart_employee = Employees::where('employee_department', 2)->pluck('employee_id')->toArray();
+		if (!empty($login_user_data) && ($login_user_data[0]['employee_department'] == 34 || $login_user_data[0]['employee_department'] == 9)) {
+			$get_hr_hod = Department::whereIn('department_id', [34,9])->get()->toArray();
+			$hr_depart_employee = Employees::whereIn('employee_department', [34,9])->pluck('employee_id')->toArray();
 			if($get_hr_hod[0]['department_hod'] != $login_user_id && in_array($serving_employee_id,$hr_depart_employee)){
 				return [
 					'status' => FALSE,
