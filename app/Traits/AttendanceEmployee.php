@@ -413,14 +413,19 @@ trait AttendanceEmployee {
 	}
 
 	protected function check_if_attendance_sheet_locked($attendance_date){
+
+		$attendance_date = date('Y-m-d', strtotime($attendance_date));
        
-		$check_attendance_sheet = AttendanceLocker::where('attendance_period', date('Y-m', strtotime($attendance_date)))->get()->toArray();
+		$check_attendance_sheet = AttendanceLocker::where('from_date', '<=', $attendance_date)
+        ->where('to_date', '>=', $attendance_date)
+        ->get()
+        ->toArray();
 
 		if(!empty($check_attendance_sheet)){
 			
 			return [
 				'status' => FALSE,
-				'msg' => 'Attendance sheet has been locked for the month of ' . date('M, Y', strtotime($attendance_date)) . '. You can\'t update attendance / apply for any kind of request for this period.'
+				'msg' => 'Attendance sheet has been locked for the date of ' . date('d M, Y', strtotime($attendance_date)) . '. You can\'t update attendance / apply for any kind of request for this period.'
 			];
 
         }else{

@@ -16,7 +16,8 @@ return new class extends Migration
         if(!Schema::hasTable('tbl_attendance_sheet_locking')){
             Schema::create('tbl_attendance_sheet_locking', function (Blueprint $table) {
                 $table->id('sheet_lock_id');
-                $table->string('attendance_period', 25);
+                $table->string('from_date', 25);
+                $table->string('to_date', 25);
                 $table->integer('locked_by');
                 $table->string('locked_date',25);
             });

@@ -260,11 +260,11 @@ class LeaveRequestApiController extends Controller
 
                                 // }
 
-                                // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_leave_date);
+                                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_leave_date);
 
-                                // if($check_attendance_sheet_availability['status'] == FALSE){
-                                //     return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
-                                // }
+                                if($check_attendance_sheet_availability['status'] == FALSE){
+                                    return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                                }
 
                                 foreach($checking_applied_leave_request as $request_date){
                                 
@@ -310,11 +310,11 @@ class LeaveRequestApiController extends Controller
 
                             // }
 
-                            // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
+                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
 
-                            // if($check_attendance_sheet_availability['status'] == FALSE){
-                            //     return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
-                            // }
+                            if($check_attendance_sheet_availability['status'] == FALSE){
+                                return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                            }
 
                             $leave_date = $request->post('leave_date');
                             $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', $login_user[0]['employee_id'])->where('leave_applied_for_date', $request->post('leave_date'))->where('leave_approved_by_hr', '!=', 3)->get()->toArray();
@@ -539,11 +539,11 @@ class LeaveRequestApiController extends Controller
         
                             // }
 
-                            // $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
+                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
 
-                            // if($check_attendance_sheet_availability['status'] == FALSE){
-                            //     return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
-                            // }
+                            if($check_attendance_sheet_availability['status'] == FALSE){
+                                return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                            }
         
                             $checking_request_responsed = RequestApproval::where('request_module_id',2)->where('request_id',$request->post('leave_id'))->get()->toArray();
                         

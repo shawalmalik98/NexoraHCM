@@ -3752,8 +3752,13 @@ class AttendanceController extends Controller
 
     protected function lock_attendance_sheet(Request $request){
         try{
+
             $validator = Validator::make($request->all(), [
-                'attendance_period' => ['required','date_format:Y-m','before:' . date('Y-m')],
+
+                'from_date' => 'required|date_format:Y-m-d|after:'. date('Y-m-d',strtotime('-2 month')). '',
+                // 'from_date' => ['required','date_format:Y-m-d','before:' . date('Y-m-d')],
+                'to_date' =>   'required|date_format:Y-m-d|after:from_date',
+
             ]);
     
             if($validator->fails()) {
@@ -3764,10 +3769,11 @@ class AttendanceController extends Controller
                     ]);
                 }
             }else{
-                $get_if_already_exists = AttendanceLocker::where('attendance_period', $request->input('attendance_period'))->get()->toArray();
+                $get_if_already_exists = AttendanceLocker::where('from_date', $request->input('from_date'))->where('to_date', $request->input('to_date'))->get()->toArray();
                 if(empty($get_if_already_exists)){
                     $create_new_attendance = new AttendanceLocker();
-                    $create_new_attendance->attendance_period = $request->input('attendance_period');
+                    $create_new_attendance->from_date = $request->input('from_date');
+                    $create_new_attendance->to_date = $request->input('to_date');
                     $create_new_attendance->locked_by = session('user_session');
                     $create_new_attendance->locked_date = date('Y-m-d H:i:s');
                     $process = $create_new_attendance->save();

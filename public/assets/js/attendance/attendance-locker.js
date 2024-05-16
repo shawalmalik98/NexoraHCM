@@ -71,3 +71,16 @@ $('#attendance_locker_form').submit(function (e) {
     });
 
 });
+
+$('#from_date').change(function () {
+    var from_selected_date = $(this).val();
+    if (from_selected_date != '') {
+        $('#to_date').prop('disabled', false);
+        $('#to_date').attr('min', from_selected_date);
+        $('#to_date').attr('max', get_one_month_future_date(from_selected_date));
+    } else {
+        $('#to_date').prop('disabled', true);
+        $('#to_date').removeAttr('min');
+        $('#to_date').val('');
+    }
+});

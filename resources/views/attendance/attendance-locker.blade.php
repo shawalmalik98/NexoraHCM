@@ -62,7 +62,8 @@
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
                                         <th class="text-center">Ref ID</th>
-                                        <th class="text-center">Attendance Period</th>
+                                        <th class="text-center">From date</th>
+                                        <th class="text-center">To date</th>
                                         <th class="text-center">Locked by</th>
                                         <th class="text-center">Locked at</th>
                                     </tr>
@@ -72,7 +73,8 @@
                                         @foreach ($get_locked_sheet_records as $employment_status)
                                             <tr>
                                                 <td class="text-center">{{ $employment_status['sheet_lock_id'] }}</td>
-                                                <td class="text-center">{{ date('M, Y', strtotime( $employment_status['attendance_period'] )) }}</td>
+                                                <td class="text-center">{{ date('d M, Y', strtotime( $employment_status['from_date'] )) }}</td>
+                                                <td class="text-center">{{ date('d M, Y', strtotime( $employment_status['to_date'] )) }}</td>
                                                 <td class="text-center">{!! CustomHelper::getEmpProfileDiv($employment_status['locked_by']) !!}</td>
                                                 <td class="text-center">{{ date('h:i A d M, Y', strtotime( $employment_status['locked_date'] )) }}</td>
                                             </tr>
@@ -113,9 +115,16 @@
                     <div class="modal-body scroll-y pt-3 pb-5">
                         
                         <div class="col-md-12 mb-8 mt-3 fv-row">
-                            <label class="required fs-6 fw-semibold mb-2">Select Attendance Period</label>
+                            <label class="required fs-6 fw-semibold mb-2">From Date</label>
                             <div class="position-relative d-flex align-items-center">
-                                <input type="month" class="form-control" name="attendance_period" max="{{ date('Y-m') }}" required>
+                                <input type="date" class="form-control" name="from_date" id="from_date" max="{{ date('Y-m-d') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mb-8 mt-3 fv-row">
+                            <label class="required fs-6 fw-semibold mb-2">To Date</label>
+                            <div class="position-relative d-flex align-items-center">
+                                <input type="date" class="form-control" name="to_date" id="to_date"  disabled required>
                             </div>
                         </div>
 
