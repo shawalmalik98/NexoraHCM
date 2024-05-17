@@ -263,7 +263,7 @@ class LeaveRequestApiController extends Controller
                                 $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_leave_date);
 
                                 if($check_attendance_sheet_availability['status'] == FALSE){
-                                    return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                                    return $this->api_response_json(FALSE,'Leave sheet has been locked for the date of ' . date('d M, Y', strtotime($request_leave_date)) . '. You can\'t add leave / apply for any kind of request for this period.','',200);
                                 }
 
                                 foreach($checking_applied_leave_request as $request_date){
@@ -313,7 +313,7 @@ class LeaveRequestApiController extends Controller
                             $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
 
                             if($check_attendance_sheet_availability['status'] == FALSE){
-                                return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                                return $this->api_response_json(FALSE,'Leave sheet has been locked for the date of ' . date('d M, Y', strtotime($request->post('leave_date'))) . '. You can\'t add leave / apply for any kind of request for this period.','',200);
                             }
 
                             $leave_date = $request->post('leave_date');
@@ -360,6 +360,7 @@ class LeaveRequestApiController extends Controller
                             }
                             
                             else{
+                                
                                 $apply_leave = new LeaveRequest();
                                 $apply_leave->leave_applied_by = $login_user[0]['employee_id'];
                                 $apply_leave->leave_applied_date = date('d-m-Y H:i:s');
@@ -542,7 +543,7 @@ class LeaveRequestApiController extends Controller
                             $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request->post('leave_date'));
 
                             if($check_attendance_sheet_availability['status'] == FALSE){
-                                return $this->api_response_json(FALSE,$check_attendance_sheet_availability['msg'],'',200);
+                                return $this->api_response_json(FALSE,'Leave sheet has been locked for the date of ' . date('d M, Y', strtotime($request->post('leave_date'))) . '. You can\'t update leave / apply for any kind of request for this period.','',200);
                             }
         
                             $checking_request_responsed = RequestApproval::where('request_module_id',2)->where('request_id',$request->post('leave_id'))->get()->toArray();

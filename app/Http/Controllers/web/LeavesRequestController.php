@@ -301,7 +301,7 @@ class LeavesRequestController extends Controller
                                
                                 if($check_attendance_sheet_availability['status'] == FALSE){
                                     return response()->json([
-                                        'msg' => $check_attendance_sheet_availability['msg'],
+                                        'msg' => 'Leave sheet has been locked for the date of ' . date('d M, Y', strtotime($request_leave_date)) . '. You can\'t add leave / apply for any kind of request for this period.',
                                         'status' => 'FALSE'
                                     ]);
                                 }
@@ -355,7 +355,7 @@ class LeavesRequestController extends Controller
 
                             if($check_attendance_sheet_availability['status'] == FALSE){
                                 return response()->json([
-                                    'msg' => $check_attendance_sheet_availability['msg'],
+                                    'msg' => 'Leave sheet has been locked for the date of ' . date('d M, Y', strtotime($leave_data->input('leave_date'))) . '. You can\'t add leave / apply for any kind of request for this period.',
                                     'status' => 'FALSE'
                                 ]);
                             }
@@ -662,7 +662,7 @@ class LeavesRequestController extends Controller
 
                         if($check_attendance_sheet_availability['status'] == FALSE){
                             return response()->json([
-                                'msg' => $check_attendance_sheet_availability['msg'],
+                                'msg' => 'Leave sheet has been locked for the date of ' . date('d M, Y', strtotime($update_leave->leave_applied_for_date)) . '. You can\'t approved leave request for this period.',
                                 'status' => 'FALSE'
                             ]);
                         }
@@ -1201,7 +1201,7 @@ class LeavesRequestController extends Controller
 
                             if($check_attendance_sheet_availability['status'] == FALSE){
                                 return response()->json([
-                                    'msg' => $check_attendance_sheet_availability['msg'],
+                                    'msg' => 'Leave sheet has been locked for the date of ' . date('d M, Y', strtotime($request_data->input('leave_date'))) . '. You can\'t update leave / apply for any kind of request for this period.',
                                     'status' => 'FALSE'
                                 ]);
                             }
