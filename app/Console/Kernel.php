@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\AttendanceGetToSAP;
 use App\Jobs\EmployeesGetToSAP;
+use App\Jobs\AttendanceGetPreviousDayFromSAP;
 
 class Kernel extends ConsoleKernel
 {
@@ -58,6 +59,10 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             AttendanceGetToSAP::dispatch();
         })->hourly()->between('10:00', '23:00');
+
+        $schedule->call(function () {
+            AttendanceGetPreviousDayFromSAP::dispatch();
+        })->hourly()->between('10:30', '23:30');
 
         $schedule->call(function () {
 
