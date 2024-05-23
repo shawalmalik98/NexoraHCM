@@ -73,7 +73,7 @@ class EmployeesJob extends Command
                     ->where('group_name',  'like', '%' . $employee_group . '%')
                     ->value('employee_group_id');
 
-                    $all_departments = Department::where('department_name',  $department_name)
+                    $all_departments = Department::where('department_name', 'like', '%' . $department_name . '%')
                     ->get(['department_id','department_name'])->toArray();
                     
                     $all_designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')

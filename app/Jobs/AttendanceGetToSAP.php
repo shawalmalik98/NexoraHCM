@@ -43,7 +43,7 @@ class AttendanceGetToSAP implements ShouldQueue
             $generate_error_log->error_log_action_url = URL::current();
             $generate_error_log->error_log_current_url = URL::previous();
             $generate_error_log->error_log_message = $e->getMessage();
-            $generate_error_log->error_log_generated_employee =  $this->user_logined;
+            $generate_error_log->error_log_generated_employee = 1;
             $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
             $generate_error_log->save();
         }
