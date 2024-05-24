@@ -675,7 +675,7 @@
                                         <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                         <span class="required">{{$manage_leave['leave_name']}}</span></label>
                                         <input type="hidden" class="form-control " value="{{$manage_leave['leave_manage_id']}}"  name="leave_manage_id[]"  required="required" />
-                                        <input type="number" class="form-control " min="0" max="50" name="leave_allotment[]" value="0" placeholder="Enter {{$manage_leave['leave_name']}}" required="required" />
+                                        <input type="number" class="form-control" step="0.1" min="0" max="50" name="leave_allotment[]" value="0" placeholder="Enter {{$manage_leave['leave_name']}}" required="required" />
                                     </div>
                                 
                                 @endforeach
