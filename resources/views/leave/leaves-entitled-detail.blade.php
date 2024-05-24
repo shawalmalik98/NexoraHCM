@@ -45,7 +45,7 @@
                                     </label>
                                     
                                     <input type="number" class="form-control " 
-                                    placeholder="Leave Alloted Employee" value="{{!empty($leaves_entitled_employee['leave_allotement'])?$leaves_entitled_employee['leave_allotement']:0}}" name="leave_alloted[]" required min="0" max="100" />
+                                    placeholder="Leave Alloted Employee" value="{{!empty($leaves_entitled_employee['leave_allotement'])?$leaves_entitled_employee['leave_allotement']:0}}" name="leave_alloted[]" required min="0" step="0.1" max="100" />
                                 </div>
 
                                 <div class="col-md-4 fv-row">
