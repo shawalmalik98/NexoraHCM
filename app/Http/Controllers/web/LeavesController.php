@@ -23,7 +23,7 @@ class LeavesController extends Controller
 
     protected function index(Request $request){
 
-        // try{
+        try{
 
             $title = Self::TITLE_GLOBAL;
 
@@ -117,15 +117,15 @@ class LeavesController extends Controller
             $send_data = compact('title','login_user','leaves_entitled','employee_locations');
             
             return view('leave.leaves-entitled',$send_data);
-        // }
-        // catch(\Exception $e){
-        //     $this->create_error_log('View All Manage Leave', $e);
-        //     $send_data = compact('title');
-        //     return view('errors.500');
-        // }finally{
+        }
+        catch(\Exception $e){
+            $this->create_error_log('View All Manage Leave', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
 
-        //     ActivityTracker::track_activity('Access All Employees Leaves Entitiled Module');
-        // }
+            ActivityTracker::track_activity('Access All Employees Leaves Entitiled Module');
+        }
 
     }
 
