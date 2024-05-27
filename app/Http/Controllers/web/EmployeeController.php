@@ -499,6 +499,42 @@ class EmployeeController extends Controller
                         }
                     }    
 
+                    $add_mobile_access =  new MobileAccess();
+                    $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                    $add_mobile_access->access_button_id  = 1;
+                    $add_mobile_access->access_buttons = 0;
+                    $add_mobile_access->save();
+
+                    $add_mobile_access =  new MobileAccess();
+                    $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                    $add_mobile_access->access_button_id  = 2;
+                    $add_mobile_access->access_buttons = 0;
+                    $add_mobile_access->save();
+                    
+                    $add_mobile_access =  new MobileAccess();
+                    $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                    $add_mobile_access->access_button_id  = 3;
+                    $add_mobile_access->access_buttons = 1;
+                    $add_mobile_access->save();
+
+                    $add_mobile_access =  new MobileAccess();
+                    $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                    $add_mobile_access->access_button_id  = 4;
+                    $add_mobile_access->access_buttons = 0;
+                    $add_mobile_access->save();
+
+                    $add_mobile_access =  new MobileAccess();
+                    $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                    $add_mobile_access->access_button_id  = 5;
+                    $add_mobile_access->access_buttons = 0;
+                    $add_mobile_access->save();
+
+                    $add_mobile_access =  new MobileAccess();
+                    $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                    $add_mobile_access->access_button_id  = 6;
+                    $add_mobile_access->access_buttons = 0;
+                    $add_mobile_access->save();
+
                     $add_shift = new ShiftManagement();
                     $add_shift->employee_id = $employee_registration_id;
                     $add_shift->shift_start_from_date = $employee_data->input('employee_doj');
@@ -5383,6 +5419,42 @@ class EmployeeController extends Controller
                                             $add_leaves->leave_allotement   = 0;
                                             $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
                                             $add_leaves->save();
+
+                                            $add_mobile_access =  new MobileAccess();
+                                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                                            $add_mobile_access->access_button_id  = 1;
+                                            $add_mobile_access->access_buttons = 1;
+                                            $add_mobile_access->save();
+
+                                            $add_mobile_access =  new MobileAccess();
+                                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                                            $add_mobile_access->access_button_id  = 2;
+                                            $add_mobile_access->access_buttons = 0;
+                                            $add_mobile_access->save();
+                                            
+                                            $add_mobile_access =  new MobileAccess();
+                                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                                            $add_mobile_access->access_button_id  = 3;
+                                            $add_mobile_access->access_buttons = 1;
+                                            $add_mobile_access->save();
+
+                                            $add_mobile_access =  new MobileAccess();
+                                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                                            $add_mobile_access->access_button_id  = 4;
+                                            $add_mobile_access->access_buttons = 0;
+                                            $add_mobile_access->save();
+
+                                            $add_mobile_access =  new MobileAccess();
+                                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                                            $add_mobile_access->access_button_id  = 5;
+                                            $add_mobile_access->access_buttons = 0;
+                                            $add_mobile_access->save();
+
+                                            $add_mobile_access =  new MobileAccess();
+                                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                                            $add_mobile_access->access_button_id  = 6;
+                                            $add_mobile_access->access_buttons = 0;
+                                            $add_mobile_access->save();
 
                                             $add_shift = new ShiftManagement();
                                             $add_shift->employee_id = $employee_registration_id;

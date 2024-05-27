@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Models\{ErrorLog, Employees, Department, Designation, EmployeeSalary, Leave, ShiftManagement, EmploymentPeriod, EmployeeInformation, Holiday, Attendance, Permission};
+use App\Models\{ErrorLog, Employees, Department, Designation, EmployeeSalary, Leave, ShiftManagement, EmploymentPeriod, EmployeeInformation, Holiday, Attendance, Permission, MobileAccess};
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Crypt;
@@ -157,6 +157,42 @@ class EmployeesJob extends Command
                             $add_leaves->leave_allotement   = 0;
                             $add_leaves->leave_ent_created_at =  date('Y-m-d H:i:s');
                             $add_leaves->save();
+
+                            $add_mobile_access =  new MobileAccess();
+                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                            $add_mobile_access->access_button_id  = 1;
+                            $add_mobile_access->access_buttons = 0;
+                            $add_mobile_access->save();
+
+                            $add_mobile_access =  new MobileAccess();
+                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                            $add_mobile_access->access_button_id  = 2;
+                            $add_mobile_access->access_buttons = 0;
+                            $add_mobile_access->save();
+                            
+                            $add_mobile_access =  new MobileAccess();
+                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                            $add_mobile_access->access_button_id  = 3;
+                            $add_mobile_access->access_buttons = 1;
+                            $add_mobile_access->save();
+
+                            $add_mobile_access =  new MobileAccess();
+                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                            $add_mobile_access->access_button_id  = 4;
+                            $add_mobile_access->access_buttons = 0;
+                            $add_mobile_access->save();
+
+                            $add_mobile_access =  new MobileAccess();
+                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                            $add_mobile_access->access_button_id  = 5;
+                            $add_mobile_access->access_buttons = 0;
+                            $add_mobile_access->save();
+
+                            $add_mobile_access =  new MobileAccess();
+                            $add_mobile_access->mobile_employee_id = $employee_registration_id;
+                            $add_mobile_access->access_button_id  = 6;
+                            $add_mobile_access->access_buttons = 0;
+                            $add_mobile_access->save();
 
                             $add_shift = new ShiftManagement();
                             $add_shift->employee_id = $employee_registration_id;
