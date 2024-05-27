@@ -417,7 +417,7 @@
                                             </a>
                                         </div>
                                     @endif
-                                    @if(!empty($permission) && $permission[65]['module_accessibility'] == 1 && $permission[65]['permission_status'] == 1)
+                                    {{-- @if(!empty($permission) && $permission[65]['module_accessibility'] == 1 && $permission[65]['permission_status'] == 1)
                             
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'shift-time-request') active @endif" href="{{ url('shift-time-request') }}" >
@@ -428,8 +428,8 @@
                                             </a>
                                         </div>
         
-                                    @endif
-                                    @if(!empty($permission) && $permission[54]['module_accessibility'] == 1 && $permission[54]['permission_status'] == 1)
+                                    @endif --}}
+                                    {{-- @if(!empty($permission) && $permission[54]['module_accessibility'] == 1 && $permission[54]['permission_status'] == 1)
                             
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'shift-management' || $title == 'add-shift') active @endif" href="{{ url('shift-management') }}" >
@@ -444,8 +444,8 @@
                                             </a>
                                         </div>
         
-                                    @endif
-                                    @if(!empty($permission) && $permission[59]['module_accessibility'] == 1 && $permission[59]['permission_status'] == 1)
+                                    @endif --}}
+                                    {{-- @if(!empty($permission) && $permission[59]['module_accessibility'] == 1 && $permission[59]['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-shift-time') active @endif" href="{{ url('my-shift-time') }}" >
@@ -456,7 +456,7 @@
                                             </a>
                                         </div>
 
-                                    @endif
+                                    @endif --}}
                                     
                                     @if(!empty($permission) && $permission[56]['module_accessibility'] == 1 && $permission[56]['permission_status'] == 1)
 
@@ -536,7 +536,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[3]['module_accessibility'] == 1 && $permission[3]['permission_status'] == 1)
+                                    {{-- @if(!empty($permission) && $permission[3]['module_accessibility'] == 1 && $permission[3]['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-leaves') active @endif" href="{{url('/my-leaves')}}">
@@ -547,7 +547,7 @@
                                             </a>
                                         </div>
 
-                                    @endif
+                                    @endif --}}
 
                                     @if(!empty($permission) && $permission[63]['module_accessibility'] == 1 && $permission[63]['permission_status'] == 1)
 
@@ -629,7 +629,7 @@
 
                         @endif
 
-                        @if(!empty($permission) && ($permission[4]['permission_status'] == 1 || $permission[25]['permission_status'] == 1 || $permission[26]['permission_status'] == 1 || $permission[51]['permission_status'] == 1 || $permission[40]['permission_status'] == 1 || $permission[41]['permission_status'] == 1) && ($permission[4]['module_accessibility'] == 1 || $permission[25]['module_accessibility'] == 1 || $permission[26]['module_accessibility'] == 1 || $permission[51]['module_accessibility'] == 1 || $permission[40]['module_accessibility'] == 1 || $permission[41]['module_accessibility'] == 1))
+                        {{-- @if(!empty($permission) && ($permission[4]['permission_status'] == 1 || $permission[25]['permission_status'] == 1 || $permission[26]['permission_status'] == 1 || $permission[51]['permission_status'] == 1 || $permission[40]['permission_status'] == 1 || $permission[41]['permission_status'] == 1) && ($permission[4]['module_accessibility'] == 1 || $permission[25]['module_accessibility'] == 1 || $permission[26]['module_accessibility'] == 1 || $permission[51]['module_accessibility'] == 1 || $permission[40]['module_accessibility'] == 1 || $permission[41]['module_accessibility'] == 1))
                             
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-interviews' || $title == 'interview-candidate-list' || $title == 'my-interviews' || $title == 'employee-on-boarding' || $title == 'all-requisition' || $title == 'my-requisition') show @endif">
 
@@ -717,9 +717,9 @@
                                 </div>
                             </div>
 
-                        @endif
+                        @endif --}}
 
-                        @if(!empty($permission) && ($permission[27]['permission_status'] == 1 || $permission[5]['permission_status'] == 1 || $permission[9]['permission_status'] == 1 || $permission[43]['permission_status'] == 1 || $permission[47]['permission_status'] == 1 || $permission[48]['permission_status'] == 1 || $permission[28]['permission_status'] == 1 || $permission[29]['permission_status'] == 1 || $permission[55]['permission_status'] == 1 || $permission[58]['permission_status'] == 1|| $permission[68]['permission_status'] == 1 || $permission[75]['permission_status'] == 1 || $permission[78]['permission_status'] == 1  ) && ($permission[27]['module_accessibility'] == 1 || $permission[5]['module_accessibility'] == 1 || $permission[9]['module_accessibility'] == 1 || $permission[43]['module_accessibility'] == 1 || $permission[47]['module_accessibility'] == 1 || $permission[48]['module_accessibility'] == 1 || $permission[28]['module_accessibility'] == 1 || $permission[29]['module_accessibility'] == 1 || $permission[55]['module_accessibility'] == 1 || $permission[58]['module_accessibility'] == 1 || $permission[68]['module_accessibility'] == 1 || $permission[75]['module_accessibility'] == 1 || $permission[78]['module_accessibility'] == 1))
+                        {{-- @if(!empty($permission) && ($permission[27]['permission_status'] == 1 || $permission[5]['permission_status'] == 1 || $permission[9]['permission_status'] == 1 || $permission[43]['permission_status'] == 1 || $permission[47]['permission_status'] == 1 || $permission[48]['permission_status'] == 1 || $permission[28]['permission_status'] == 1 || $permission[29]['permission_status'] == 1 || $permission[55]['permission_status'] == 1 || $permission[58]['permission_status'] == 1|| $permission[68]['permission_status'] == 1 || $permission[75]['permission_status'] == 1 || $permission[78]['permission_status'] == 1  ) && ($permission[27]['module_accessibility'] == 1 || $permission[5]['module_accessibility'] == 1 || $permission[9]['module_accessibility'] == 1 || $permission[43]['module_accessibility'] == 1 || $permission[47]['module_accessibility'] == 1 || $permission[48]['module_accessibility'] == 1 || $permission[28]['module_accessibility'] == 1 || $permission[29]['module_accessibility'] == 1 || $permission[55]['module_accessibility'] == 1 || $permission[58]['module_accessibility'] == 1 || $permission[68]['module_accessibility'] == 1 || $permission[75]['module_accessibility'] == 1 || $permission[78]['module_accessibility'] == 1))
                         
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'my-payroll' || $title == 'all-salary-request' || $title == 'my-salary-request' || $title == 'Tax Slab' || $title == 'Tax Collection' || $title == 'cash' || $title == 'expense' || $title == 'employee-expense' || $title == 'my-expense' || $title == 'My Payslip' || $title == 'daily-wages' || $title == 'deduction policy' || $title == 'employee_funds') show @endif">
 
@@ -910,7 +910,7 @@
                             
                                 </div>
                             </div>
-                        @endif
+                        @endif --}}
 
                         @if(!empty($permission) && ($permission[10]['permission_status'] == 1 || $permission[30]['permission_status'] == 1 || $permission[44]['permission_status'] == 1) && ($permission[10]['module_accessibility'] == 1 || $permission[30]['module_accessibility'] == 1 || $permission[44]['module_accessibility'] == 1))
                         
@@ -1103,7 +1103,7 @@
                                     @endif
 
                                     {{-- @if(!empty($permission)  && $permission[81]['module_accessibility'] == 1 && $permission[81]['permission_status'] == 1) --}}
-                                        <div class="menu-item search-item">
+                                        {{-- <div class="menu-item search-item">
 
                                             <a class="menu-link nav-link  @if($title == 'manage-salary') active @endif" href="{{ url('/employee-salary') }}">
                                                 <span class="menu-icon">
@@ -1111,7 +1111,7 @@
                                                 </span>
                                                 <span class="menu-title">Employee Salary Status</span>
                                             </a>
-                                        </div>
+                                        </div> --}}
 
                                     {{-- @endif --}}
 
