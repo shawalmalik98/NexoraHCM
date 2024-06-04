@@ -36,7 +36,12 @@ class AttendanceGetToSAP implements ShouldQueue
     public function handle()
     {
         try{
+            DB::table('tbl_attendance_job')->insert([
+                'function_name' => 'Attendance fetched from SAP',
+                'execute_time' => date('Y-m-d H:i:s')
+            ]);
             Http::timeout(6000)->get('http://172.19.0.101:8080/get-today-sap-attendance');
+            
         }catch(Exception $e){
             $generate_error_log = new ErrorLog();
             $generate_error_log->error_log_module = 'Get Sap today Attendance';

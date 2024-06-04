@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\URL;
 use Exception;
 use App\Models\ErrorLog;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceGetPreviousDayFromSAP implements ShouldQueue
 {
@@ -35,8 +36,13 @@ class AttendanceGetPreviousDayFromSAP implements ShouldQueue
     public function handle()
     {
         try{
+            DB::table('tbl_attendance_job')->insert([
+                'function_name' => 'Attendance fetched (yesterday date) from SAP',
+                'execute_time' => date('Y-m-d H:i:s')
+            ]);
             $previous_date = date('Ymd', strtotime('-1 day', strtotime(date('Y-m-d'))));
             Http::timeout(6000)->get('http://172.19.0.101:8080/get-sap-attendance/'.$previous_date.'/'.$previous_date);
+            
         }catch(Exception $e){
             $generate_error_log = new ErrorLog();
             $generate_error_log->error_log_module = 'Get Sap today Attendance';
