@@ -55,6 +55,7 @@ class EmployeesJob extends Command
 
                 foreach ($sap_employee_detail as $employee) {
 
+                    $employee_number = $employee->EmployeeNumber;
                     $employee_code = LTRIM($employee->EmployeeNumber, '0');
                     $employee_grade = LTRIM($employee->EmployeeSubGroup, 'Grade ');
                     $employee_group = $employee->BussinesUnit;
@@ -210,6 +211,10 @@ class EmployeesJob extends Command
                             $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
                             $process = $employment_period->save();
 
+                            DB::table('sap_employee_detail')
+                            ->where('EmployeeNumber ', $employee_number)
+                            ->update(['is_enrolled' => 1]);
+
                             if($process == 1){
                                 
                                 $submitInformation = new EmployeeInformation();
@@ -248,7 +253,7 @@ class EmployeesJob extends Command
 
                                     }
                                 }
-
+                                
                                 $mypermissions = [
 
                                     '/dashboard',
