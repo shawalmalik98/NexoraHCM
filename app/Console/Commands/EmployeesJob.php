@@ -396,7 +396,7 @@ class EmployeesJob extends Command
                 // ];
 
                 $groupEmailAddresses = [
-                    2 =>  'atauseef@ismailindustries.com',
+                    2 =>  'mwaqar@ismailindustries.com',
                     3 =>  'hmajeed@ismailindustries.com',
                     4 =>  ['musiddiqui@ismailindustries.com', 'mwaseem@ismailindustries.com'],
                 ];
