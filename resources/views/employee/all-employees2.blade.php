@@ -452,7 +452,7 @@
                             <span class="indicator-progress">Please wait... 
                             <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
                         </button>
-                        <a href="/portal_assets/employee_excel_document/EmployeeRecord.zip" id="download_btn" class="btn btn-success">Download Format</a>
+                        <a href="/portal_assets/employee_excel_document/Employees_induction_format.zip" id="download_btn" class="btn btn-success">Download Format</a>
                     </div>
                 </div>
             </div>

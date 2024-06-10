@@ -67,6 +67,7 @@ $('#employee_record_update, #employee_record_upload').submit(function (e) {
                         title: data.msg,
                         timer: 3000,
                     })
+                   
                     $('#update_btn').prop('disabled', false);
                     $("#update_btn").removeAttr('data-kt-indicator');
                     $('#update_btn').css('cursor', 'pointer');
@@ -75,13 +76,22 @@ $('#employee_record_update, #employee_record_upload').submit(function (e) {
                     $('#employee_records_upload').modal('show');
                     $('input[name=Force_Approved]').val('TRUE');
 
-                    var employee = '<div>' +
-                        '<p>' + data.msg + '</p>' +
-                        '<p>' + data.error_logs.join('<br>') + '</p>' +
-                        '</div>';
-                    $('#employee_record_msg').html(employee);
-                }
+                    // var employee = '<div>' +
+                    //     '<p>' + data.msg + '</p>' +
+                    //     '<p>' + data.error_logs.join('<br>') + '</p>' +
+                    //     '</div>';
+                    // $('#employee_record_msg').html(employee);
 
+                }
+            
+                Toast.fire({
+                    icon: 'warning',
+                    title: data.msg,
+                    timer: 5000,
+                })
+                setTimeout(() => {
+                    location.reload();
+                }, 4000);
             }
         },
         error: function (jqXHR, textStatus) {
