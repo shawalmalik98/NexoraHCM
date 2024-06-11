@@ -89,9 +89,9 @@ $('#employee_record_update, #employee_record_upload').submit(function (e) {
                     title: data.msg,
                     timer: 5000,
                 })
-                setTimeout(() => {
-                    location.reload();
-                }, 4000);
+                $('#update_btn').prop('disabled', false);
+                $("#update_btn").removeAttr('data-kt-indicator');
+                $('#update_btn').css('cursor', 'pointer');
             }
         },
         error: function (jqXHR, textStatus) {
