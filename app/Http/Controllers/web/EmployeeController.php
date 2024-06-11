@@ -413,7 +413,8 @@ class EmployeeController extends Controller
                 $add_employee->employee_deactivation_type = $employee_data->input('employee_deactive_type');
                 $add_employee->employee_web_access = $employee_data->input('employee_web_access');
                 $add_employee->employee_mobile_access = $employee_data->input('employee_mobile_access');
-                
+                $add_employee->employee_created_source = 'direct';
+                $add_employee->employee_created_at =  date('Y-m-d H:i:s');
                 $employee = $add_employee->save();
                 $employee_registration_id = $add_employee->employee_id;
 
@@ -5711,6 +5712,8 @@ class EmployeeController extends Controller
                     $arrays = [];
                     $count_row = 0;
 
+                    $problematicEmployees = []; 
+
                     DB::beginTransaction();
 
                     while (($getData = fgetcsv($file2)) !== FALSE)
@@ -5761,27 +5764,45 @@ class EmployeeController extends Controller
                                     $employee_record_insert = "FALSE";
                                 }
 
-                                $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
+                                $dateTime = DateTime::createFromFormat('m/d/Y', $joining_date);
 
                                 if ($dateTime == TRUE) {
+
                                     $joining_date = $dateTime->format('Y-m-d');
+
                                 }else {
-                                    $employee_record_insert = "FALSE";
+
+                                    $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
+                                    if ($dateTime == TRUE) {
+                                        $joining_date = $dateTime->format('Y-m-d');
+                                    } else {
+                                        $employee_record_insert = "FALSE";
+                                    }
                                 }
 
                                 if(empty($employee_dob)){
                                     $employee_record_insert = "FALSE";
                                 }
 
-                                $dateTime = DateTime::createFromFormat('Y-m-d', $employee_dob);
+                                $dateTime = DateTime::createFromFormat('m/d/Y', $employee_dob);
 
                                 if ($dateTime == TRUE) {
                                     $employee_dob = $dateTime->format('Y-m-d');
                                 }else {
-                                    $employee_record_insert = "FALSE";
+
+                                    $dateTime = DateTime::createFromFormat('Y-m-d', $employee_dob);
+                                    if ($dateTime == TRUE) {
+                                        $employee_dob = $dateTime->format('Y-m-d');
+                                    } else {
+                                        $employee_record_insert = "FALSE";
+                                    }
+                                }
+
+                                if($employee_record_insert === "FALSE"){
+                                    $problematicEmployees[] = $employeeCode;
+                                    continue;
                                 }
                                 
-
                             if(1 == 1){
 
                                 $check_employee_code = Employees::where('employee_code', '=', $employeeCode)->get('employee_code')->toArray();
@@ -5812,6 +5833,8 @@ class EmployeeController extends Controller
                                     $add_employee->employee_earning_type =  1;
                                     $add_employee->business_unit = $employee_business_unit;
                                     $add_employee->employee_mobile_access =  1;
+                                    $add_employee->employee_created_source = 'csv';
+                                    $add_employee->employee_created_at =  date('Y-m-d H:i:s');
                                     $employee = $add_employee->save();
                                     $employee_registration_id = $add_employee->employee_id;
 
@@ -5829,7 +5852,6 @@ class EmployeeController extends Controller
                                         $emp_salary->salary_employee_id = $employee_registration_id;
                                         $emp_salary->salary_amount =  15000;
                                         $emp_salary->salary_effected_date = date('Y-m-d',strtotime($joining_date));
-                                        // $emp_salary->salary_effected_date = '2023-12-01';
                                         $emp_salary->salary_created_date = date('d-m-Y');
                                         $emp_salary->salary_earning_type = 1;
                                         $emp_salary->save();
@@ -5893,7 +5915,6 @@ class EmployeeController extends Controller
 
                                         $add_shift = new ShiftManagement();
                                         $add_shift->employee_id = $employee_registration_id;
-                                        // $add_shift->shift_start_from_date = '2023-12-01';
                                         $add_shift->shift_start_from_date = date('Y-m-d',strtotime($joining_date));
                                         $add_shift->shift_start_time = '09:00:00';
                                         $add_shift->shift_end_time = '18:00:00';
@@ -5903,7 +5924,6 @@ class EmployeeController extends Controller
                                         $employment_period = new EmploymentPeriod();
                                         $employment_period->employement_status_id = 3;
                                         $employment_period->employee_id = $employee_registration_id;
-                                        // $employment_period->effective_date = '2023-12-01';
                                         $employment_period->effective_date = date('Y-m-d',strtotime($joining_date));
                                         $employment_period->employement_period_created_by = 1;
                                         $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
@@ -5911,20 +5931,12 @@ class EmployeeController extends Controller
 
                                         if($process == 1){
 
-                                            $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
+                                            // $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
 
                                             $submitInformation = new EmployeeInformation();
                                             $submitInformation->employeeid = $employee_registration_id;
                                             $submitInformation->dob = $employee_dob;
-                                            // $submitInformation->dob = '2020-01-01';
-                                            // $submitInformation->permanentaddress = $employee_address;
                                             $submitInformation->save();
-
-                                            // $get_holidays =  Holiday::where('holiday_date','>=', '2023-12-01')->where(function ($query) use ($departments) {
-                                            //     $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
-                                            //     ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
-                                            // })
-                                            // ->get()->toArray();
 
                                             $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
                                                 $query->where('department_name', 'LIKE', '%'.$departments[0]['department_id']. '%')
@@ -5950,6 +5962,7 @@ class EmployeeController extends Controller
                                                     $mark_attendance->att_for_date = $day;
                                                     $mark_attendance->att_for_month = $month;
                                                     $mark_attendance->att_for_year = $year;
+                                                    $mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
                                                     $mark_attendance->save();
 
 
@@ -5960,114 +5973,15 @@ class EmployeeController extends Controller
 
                                                 '/dashboard',
                                                 '/my-attendance',
-                                                '/my-attendance-request',
                                                 '/my-leaves',
-                                                '/my-interviews',
-                                                '/payslip',
-                                                '/my-meetings',
-                                                '/my-wfh-requests',
-                                                '/employee-resignation',
-                                                '/my-salary-request',
-                                                '/my-loan',
-                                                '/my-tickets',
-                                                '/my-expense',
-                                                '/my-shift-time',
                                                 '/permissions',
                                             ];
 
-                                            $permissionRecords = [
-                                                '/dashboard',
-                                                '/my-attendance',
-                                                '/my-attendance-request',
-                                                '/my-leaves',
-                                                '/my-interviews',
-                                                '/payslip',
-                                                '/my-meetings',
-                                                '/my-wfh-requests',
-                                                '/employee-resignation',
-                                                '/my-salary-request',
-                                                '/my-loan',
-                                                '/my-tickets',
-                                                '/employees',
-                                                '/employees-managers',
-                                                '/employee-birthdays',
-                                                '/employee-work-anniversay',
-                                                '/gadgets-inventory',
-                                                '/gadgets-allotment',
-                                                '/meetings',
-                                                '/attendance',
-                                                '/attendance-requests',
-                                                '/daily-attendance-report',
-                                                '/wfh-requests',
-                                                '/employees-leaves',
-                                                '/manage-leaves',
-                                                '/interviews',
-                                                '/employee-onboarding',
-                                                '/payroll',
-                                                '/petty-cash',
-                                                '/daily-expense',
-                                                '/loans',
-                                                '/holidays',
-                                                '/departments',
-                                                '/designations',
-                                                '/vehicles',
-                                                '/login-history',
-                                                '/system-settings',
-                                                '/system-error-logs',
-                                                '/resignations',
-                                                '/alerts',
-                                                '/requisition',
-                                                '/my-requisition',
-                                                '/letters',
-                                                '/all-salary-request',
-                                                '/all-loan-request',
-                                                '/all-tickets',
-                                                '/permissions',
-                                                '/tax-slab',
-                                                '/tax-collection',
-                                                '/rooms',
-                                                '/locations',
-                                                '/candiddate-interviews',
-                                                '/employee-devices',
-                                                '/linked-in-post',
-                                                '/shift-management',
-                                                '/employee-expense',
-                                                '/overtime-management',
-                                                '/organogram',
-                                                '/my-expense',
-                                                '/my-shift-time',
-                                                '/employee-letter',
-                                                '/letter-template',
-                                                '/machine-attendance-logs',
-                                                '/leave-management',
-                                                '/polling',
-                                                '/shift-time-request',
-                                                '/employee-bank',
-                                                '/monthly-attendance',
-                                                '/daily-wages-payroll',
-                                                '/employment-status',
-                                                '/attendance-devices',
-                                                '/reports',
-                                                '/attendance-locker',
-                                                '/employee-group',
-                                                '/leave-policy',
-                                                '/deduction-policy',
-                                                '/companies',
-                                                '/funds',
-                                                '/employee-fund',
-                                                '/employee-location',
-                                                '/sap-attendance'
-                                            ];
-
-                                            foreach($permissionRecords as $permissionRecord ){
+                                            foreach($mypermissions as $permissionRecord){
                                                 $permissions = new Permission();
                                                 $permissions->module_url = $permissionRecord;
                                                 $permissions->employee_id = $employee_registration_id;
-                                                // if($employee_permissions == "No"){
-                                                //     $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
-                                                // }else{
-                                                    $permissions->permission_status = 0 ;
-                                                // }
+                                                $permissions->permission_status = 1;
                                                 $permissions->save();
 
                                             }
@@ -6079,21 +5993,32 @@ class EmployeeController extends Controller
                             }
                         }
                         $count_row ++;
-
-                        
                     }
                     fclose($file2);
 
-                    DB::commit();
+                    if (!empty($problematicEmployees)) {
 
-                    return response()->json([
-                        'status' => 'TRUE',
-                        'msg' => 'Employees records have been uploaded successfully!',
-                        'error_logs' => $error_logs
-                    ]);
+                        $employees = implode(', ', $problematicEmployees);
+
+                        DB::rollBack();
+
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'msg' => 'This employee records have issues and their employee code(s) are:  ' . $employees,         
+                        ]);
+                        
+                    }else{
+
+                        DB::commit();
+
+                        return response()->json([
+                            'status' => 'TRUE',
+                            'msg' => 'Employees records have been uploaded successfully!',
+                            'error_logs' => $error_logs
+                        ]);
+                    }
 
                 }
-
 
             }
         }catch(\Exception $e){
@@ -6103,7 +6028,7 @@ class EmployeeController extends Controller
             $this->create_error_log('Upload employee information', $e);
             return response()->json([
                 'status' => 'FALSE',
-                'msg' => 'Employees records upload failed.',
+                'msg' => 'Employees records upload failed. Line ' . $e->getline() . ' - ' . $e->getMessage(),
                 'validation' => 'FALSE',
             ]);
 
