@@ -142,7 +142,7 @@ class LoginApiController extends Controller
 
                                             }else{
                                                 
-                                                $message = 'You can login from '.$employee_device[0]['device_name'].' device';
+                                                $message = 'You ('.$filter_user[0]['employee_code'].') can login from '.$employee_device[0]['device_name'].' device';
                                                 return $this->api_response_json(FALSE,$message,"",200);
 
                                             }
