@@ -50,6 +50,8 @@ return new class extends Migration
                 $table->longText('employee_fcm_token')->nullable();
                 $table->integer('employee_earning_type')->default(1)->comment('1= monthly and 2 = daily wages');
                 $table->integer('employee_deactivation_type')->nullable()->comment('1= resigned 2 = terminated');
+                $table->string('employee_created_source', 50)->nullable();
+                $table->string('employee_created_at', 50)->nullable();
             });
         }
     }

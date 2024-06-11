@@ -16,11 +16,17 @@ return new class extends Migration
     {   
 
         
-        // if(Schema::hasTable('tbl_alerts')){
+        // if(Schema::hasTable('tbl_employees')){
 
-        //     if (!Schema::hasColumn('tbl_alerts', 'location')) {
-        //         Schema::table('tbl_alerts', function (Blueprint $table) {
-        //             $table->string('location', 1000)->nullable();
+        //     if (!Schema::hasColumn('tbl_employees', 'employee_created_source')) {
+        //         Schema::table('tbl_employees', function (Blueprint $table) {
+        //             $table->string('employee_created_source', 50)->nullable();
+        //         });
+        //     }
+
+        //     if (!Schema::hasColumn('tbl_employees', 'employee_created_at')) {
+        //         Schema::table('tbl_employees', function (Blueprint $table) {
+        //             $table->string('employee_created_at', 50)->nullable();
         //         });
         //     }
         // }    

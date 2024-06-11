@@ -39,6 +39,7 @@ $('#employee_record_update, #employee_record_upload').submit(function (e) {
     $("#update_btn").attr('data-kt-indicator', 'on');
     $('#update_btn').css('cursor', 'not-allowed');
     e.preventDefault();
+       
     $.ajax({
         url: base_url + '/employees/upload-employee-information',
         type: 'POST',
@@ -67,7 +68,7 @@ $('#employee_record_update, #employee_record_upload').submit(function (e) {
                         title: data.msg,
                         timer: 3000,
                     })
-                   
+                
                     $('#update_btn').prop('disabled', false);
                     $("#update_btn").removeAttr('data-kt-indicator');
                     $('#update_btn').css('cursor', 'pointer');
@@ -84,10 +85,9 @@ $('#employee_record_update, #employee_record_upload').submit(function (e) {
 
                 }
             
-                Toast.fire({
+                swal.fire({ 
                     icon: 'warning',
                     title: data.msg,
-                    timer: 5000,
                 })
                 $('#update_btn').prop('disabled', false);
                 $("#update_btn").removeAttr('data-kt-indicator');
@@ -121,4 +121,6 @@ $('#employee_record_update, #employee_record_upload').submit(function (e) {
             }
         }
     });
+       
+      
 });

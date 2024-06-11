@@ -439,7 +439,7 @@
                             <input type="hidden" name="Force_Approved">
                             <div class="col-md-12 fv-row">
                                 <label class="fs-6 fw-semibold mb-2 required">File Attachment</label>
-                                <input type="file" class="form-control" accept=".csv" name="file">
+                                <input type="file" class="form-control" accept=".csv" name="file" required>
                                 <p class="text-danger mt-1">Please <b>Download Format File</b> and add employee(s) record. All the fields exist in file are required.</p>
                                 <p class="text-danger mt-0">Only CSV file is supported for employee(s) upload process.</p>
                             </div>

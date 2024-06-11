@@ -125,6 +125,8 @@ class EmployeesJob extends Command
                         $add_employee->employee_isactive =  1;
                         $add_employee->employee_earning_type =  1;
                         $add_employee->employee_mobile_access =  1;
+                        $add_employee->employee_created_source = 'sap';
+                        $add_employee->employee_created_at =  date('Y-m-d H:i:s');
                         $employee = $add_employee->save();
                         $employee_registration_id = $add_employee->employee_id;
 
@@ -240,14 +242,13 @@ class EmployeesJob extends Command
                                         $mark_attendance->att_check_out_time = '00:00:00';
                                         $mark_attendance->att_check_in_status = '0';
                                         $mark_attendance->att_check_out_status = 0;
-                                        // $mark_attendance->att_shift_start_time = $shift_start_time->input('shift_start_timings').':00';
-                                        // $mark_attendance->att_shift_end_time = $shift_end_time->input('shift_end_timings').':00';
                                         $mark_attendance->att_shift_start_time = '09:00:00';
                                         $mark_attendance->att_shift_end_time = '18:00:00';
                                         $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
                                         $mark_attendance->att_for_date = $day;
                                         $mark_attendance->att_for_month = $month;
                                         $mark_attendance->att_for_year = $year;
+                                        $mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
                                         $mark_attendance->save();
 
 
@@ -258,126 +259,19 @@ class EmployeesJob extends Command
 
                                     '/dashboard',
                                     '/my-attendance',
-                                    '/my-attendance-request',
-                                    '/my-leaves',
-                                    '/my-interviews',
-                                    '/payslip',
-                                    '/my-meetings',
-                                    '/my-wfh-requests',
-                                    '/employee-resignation',
-                                    '/my-salary-request',
-                                    '/my-loan',
-                                    '/my-tickets',
-                                    '/my-expense',
-                                    '/my-shift-time',
                                     '/permissions',
                                 ];
 
-                                $permissionRecords = [
-                                    '/dashboard',
-                                    '/my-attendance',
-                                    '/my-attendance-request',
-                                    '/my-leaves',
-                                    '/my-interviews',
-                                    '/payslip',
-                                    '/my-meetings',
-                                    '/my-wfh-requests',
-                                    '/employee-resignation',
-                                    '/my-salary-request',
-                                    '/my-loan',
-                                    '/my-tickets',
-                                    '/employees',
-                                    '/employees-managers',
-                                    '/employee-birthdays',
-                                    '/employee-work-anniversay',
-                                    '/gadgets-inventory',
-                                    '/gadgets-allotment',
-                                    '/meetings',
-                                    '/attendance',
-                                    '/attendance-requests',
-                                    '/daily-attendance-report',
-                                    '/wfh-requests',
-                                    '/employees-leaves',
-                                    '/manage-leaves',
-                                    '/interviews',
-                                    '/employee-onboarding',
-                                    '/payroll',
-                                    '/petty-cash',
-                                    '/daily-expense',
-                                    '/loans',
-                                    '/holidays',
-                                    '/departments',
-                                    '/designations',
-                                    '/vehicles',
-                                    '/login-history',
-                                    '/system-settings',
-                                    '/system-error-logs',
-                                    '/resignations',
-                                    '/alerts',
-                                    '/requisition',
-                                    '/my-requisition',
-                                    '/letters',
-                                    '/all-salary-request',
-                                    '/all-loan-request',
-                                    '/all-tickets',
-                                    '/permissions',
-                                    '/tax-slab',
-                                    '/tax-collection',
-                                    '/rooms',
-                                    '/locations',
-                                    '/candiddate-interviews',
-                                    '/employee-devices',
-                                    '/linked-in-post',
-                                    '/shift-management',
-                                    '/employee-expense',
-                                    '/overtime-management',
-                                    '/organogram',
-                                    '/my-expense',
-                                    '/my-shift-time',
-                                    '/employee-letter',
-                                    '/letter-template',
-                                    '/machine-attendance-logs',
-                                    '/leave-management',
-                                    '/polling',
-                                    '/shift-time-request',
-                                    '/employee-bank',
-                                    '/monthly-attendance',
-                                    '/daily-wages-payroll',
-                                    '/employment-status',
-                                    '/attendance-devices',
-                                    '/reports',
-                                    '/attendance-locker',
-                                    '/employee-group',
-                                    '/leave-policy',
-                                    '/deduction-policy',
-                                    '/companies',
-                                    '/funds',
-                                    '/employee-fund',
-                                    '/employee-location',
-                                    '/sap-attendance'
-                                ];
-
-                                foreach($permissionRecords as $permissionRecord ){
+                                foreach($mypermissions as $permissionRecord){
                                     $permissions = new Permission();
                                     $permissions->module_url = $permissionRecord;
                                     $permissions->employee_id = $employee_registration_id;
-                                    // if($employee_permissions == "No"){
-                                    //     $permissions->permission_status = in_array($permissionRecord, $mypermissions) ? 1 : 0;
-                                    // }else{
-                                        $permissions->permission_status = 0 ;
-                                    // }
+                                    $permissions->permission_status = 1;
                                     $permissions->save();
 
                                 }
                                 
-                                $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
-
-                                // $emailData[] = [
-                                //     'employee_registration_id' => $employee_registration_id,
-                                //     'employee_code' => $employee_code,
-                                //     'employee_name' => $employee_name,
-                                //     'employee_password' => '123',
-                                // ];
+                                // $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
 
                                 $emailData[$group_id][] = [
                                     'employee_registration_id' => $employee_registration_id,
