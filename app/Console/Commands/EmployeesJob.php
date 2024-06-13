@@ -44,12 +44,10 @@ class EmployeesJob extends Command
             $response = Http::timeout(120)->get('http://sapapi.ismailindustries.com.pk:8080/get-employees');
             
             if ($response->successful()) {
-            
-                // $data = $response->body();
 
                 $sap_employee_detail = DB::table('sap_employee_detail')
                 ->get()->toArray();
-                
+
                 $emailData = []; 
                 $emailError = [];
 
@@ -294,31 +292,18 @@ class EmployeesJob extends Command
                 //     4 =>  'smalik@ismailindustries.com',
                 // ];
 
-                $groupEmailAddresses = [
-                    2 =>  'mwaqar@ismailindustries.com',
-                    3 =>  'hmajeed@ismailindustries.com',
-                    4 =>  ['musiddiqui@ismailindustries.com', 'mwaseem@ismailindustries.com'],
-                ];
-
-                if(!empty($emailData)){
-                    foreach ($emailData as $groupId => $all_email_data) {
-                        $toEmail = $groupEmailAddresses[$groupId];
-                        $ccEmail = ['oalam@ismailindustries.com','saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
-                        Mail::to($toEmail)
-                        ->cc($ccEmail)
-                        ->send(new EmployeesOnboardMail($all_email_data, null));
-                    }
-                }    
+                // if(!empty($emailData)){
+                //     foreach ($emailData as $groupId => $all_email_data) {
+                //         if (isset($groupEmailAddresses[$groupId])) {
+                //             $toEmail = $groupEmailAddresses[$groupId];
+                //             // $ccEmail = ['smalik@ismailindustries.com'];
+                //             Mail::to($toEmail)
+                //             // ->cc($ccEmail)
+                //             ->send(new EmployeesOnboardMail($all_email_data, null));
+                //         }   
+                //     }
+                // }    
             } 
-            
-            // if(!empty($emailData)){
-            //     $toEmail = 'smalik@ismailindustries.com';
-            //     // $ccEmail = ['mfaraz@ismailindustries.com', 'saaahmed@ismailindustries.com'];
-            //     Mail::to($toEmail)
-            //     // ->cc($ccEmail)
-            //     ->send(new EmployeesOnboardMail($emailData));
-            // }
-
 
         }catch(Exception $e){
 
@@ -347,6 +332,21 @@ class EmployeesJob extends Command
 
         }
 
+        $groupEmailAddresses = [
+            2 =>  'mwaqar@ismailindustries.com',
+            3 =>  'hmajeed@ismailindustries.com',
+            4 =>  ['musiddiqui@ismailindustries.com', 'mwaseem@ismailindustries.com'],
+        ];
+
+        if(!empty($emailData)){
+            foreach ($emailData as $groupId => $all_email_data) {
+                $toEmail = $groupEmailAddresses[$groupId];
+                $ccEmail = ['oalam@ismailindustries.com','saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
+                Mail::to($toEmail)
+                ->cc($ccEmail)
+                ->send(new EmployeesOnboardMail($all_email_data, null));
+            }
+        }    
     }
 
 }
