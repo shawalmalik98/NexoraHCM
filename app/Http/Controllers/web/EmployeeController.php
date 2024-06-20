@@ -5739,9 +5739,9 @@ class EmployeeController extends Controller
                             $employee_record_insert = "TRUE";
 
                                 $check_senior_manager_code = Employees::where('employee_code', '=', $employee_senior)->get('employee_id')->toArray();
-                                if(empty($check_senior_manager_code)){
-                                    $employee_record_insert = "FALSE";
-                                }
+                                // if(empty($check_senior_manager_code)){
+                                //     $employee_record_insert = "FALSE";
+                                // }
 
                                 $departments = Department::where('department_name', $employee_department)->get(['department_id','department_name'])->toArray();
                                 
