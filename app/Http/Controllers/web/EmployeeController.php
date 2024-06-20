@@ -5819,7 +5819,7 @@ class EmployeeController extends Controller
                                     $add_employee->employee_contactno = $employee_contact_no ?? '012313123'.$employeeCode; 
                                     $add_employee->employee_gender = 'Male';
                                     $add_employee->employee_status =  3;
-                                    $add_employee->employee_designation = ($designations[0]['designation_id']) ?? 1;
+                                    $add_employee->employee_designation = $designations[0]['designation_id'];
                                     $add_employee->employee_department = $departments[0]['department_id'];
                                     $add_employee->employee_jobtitle = $employee_jobtitle;
                                     $add_employee->employee_password = Crypt::encryptString(123);
