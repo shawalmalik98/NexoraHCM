@@ -341,7 +341,7 @@ class EmployeesJob extends Command
         if(!empty($emailData)){
             foreach ($emailData as $groupId => $all_email_data) {
                 $toEmail = $groupEmailAddresses[$groupId];
-                $ccEmail = ['oalam@ismailindustries.com','saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
+                $ccEmail = ['oalam@ismailindustries.com','knaqvi@ismailindustries.com','saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
                 Mail::to($toEmail)
                 ->cc($ccEmail)
                 ->send(new EmployeesOnboardMail($all_email_data, null));
