@@ -52,6 +52,7 @@ class OfficeLocationsController extends Controller
             if($request->download == 'TRUE'){
 
                 $locations = OfficeLocation::selectRaw("
+                    location_id as 'Location ID',
                     location_title as 'Location Title',
                     location_address as 'Location Address',
                     location_latitude as 'Latitude',
@@ -63,6 +64,7 @@ class OfficeLocationsController extends Controller
                 ->leftJoin('tbl_employees_location as el', 'tbl_office_locations.location_id', '=', 'el.emp_loc_loc_id')
                 ->leftJoin('tbl_employees as e', 'el.emp_loc_employee_id', '=', 'e.employee_id')
                 ->groupBy(
+                    'location_id',
                     'location_title',
                     'location_address',
                     'location_latitude',
