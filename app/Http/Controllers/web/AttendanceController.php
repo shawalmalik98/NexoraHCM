@@ -4212,121 +4212,31 @@ class AttendanceController extends Controller
     //     }
     // }
 
-    // protected function download_day_wise_attendance_report(Request $request)
-    // {
-    //     set_time_limit(1800);
-    
-    //     $designations = [400, 453, 478];
-    //     $files = [];
-    
-    //     foreach ($designations as $designation) {
-    //         $employees = Employees::where('employee_designation', $designation)
-    //         ->where('employee_isactive', 1)
-    //         ->get(['employee_id'])
-    //         ->toArray();
-    
-    //         if (!empty($employees)) {
-    //             $attendance_array = [];
-    
-    //             foreach ($employees as $employee) {
-    //                 $employee_id = $employee['employee_id'];
-    
-    //                 $attendance = DB::select("
-    //                     SELECT 
-    //                         emp.employee_code as 'Employee ID', 
-    //                         emp.employee_name as  'Name', 
-    //                         CONCAT(LM.employee_code , ' - ' , LM.employee_name) as 'Line Manager',
-    //                         emp.business_unit as 'Business Unit',
-    //                         CONVERT(date, dates.date_between) as 'Date', 
-    //                         DATENAME(dw, dates.date_between) as 'Day', 
-    //                         CASE 
-    //                             WHEN emp.employee_doj <= dates.date_between THEN
-    //                                 CASE 
-    //                                     WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
-    //                                     WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
-    //                                 END
-    //                             ELSE '-' 
-    //                         END AS 'Attendance Status',
-    //                         CASE 
-    //                             WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-    //                             ELSE '' 
-    //                         END AS 'Check In', 
-    //                         CASE 
-    //                             WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-    //                             ELSE '' 
-    //                         END AS 'Check Out'
-    //                     FROM (
-    //                         SELECT DATEADD(DAY, n, '$request->from_date') AS date_between
-    //                         FROM (
-    //                             SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-    //                             FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-    //                                 (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-    //                                 (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
-    //                         ) AS numbers
-    //                         WHERE DATEADD(DAY, n, '$request->from_date') BETWEEN '$request->from_date' AND '$request->to_date'
-    //                     ) AS dates
-    //                     LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id
-    //                     LEFT JOIN tbl_employees AS emp ON $employee_id = emp.employee_id 
-    //                     LEFT JOIN tbl_employees as LM ON emp.employee_senior_manager = LM.employee_id
-    //                     ORDER BY dates.date_between ASC
-    //                 ");
-    
-    //                 $attendance = json_decode(json_encode($attendance), TRUE);
-    //                 $attendance_array = array_merge($attendance_array, $attendance);
-    //             }
-    
-    //             if (!empty($attendance_array)) {
-    //                 $fileName = "attendance_report_designation_{$designation}.xlsx";
-    //                 $filePath = tempnam(sys_get_temp_dir(), $fileName);
-    
-    //                 $header_style = (new Style())->setFontBold();
-    //                 (new FastExcel($attendance_array))->headerStyle($header_style)->export($filePath);
-    
-    //                 $files[$fileName] = file_get_contents($filePath);
-    //                 unlink($filePath);  
-    //             }
-    //         }
-    //     }
-    
-    //     if (!empty($files)) {
-    //         $zip = new ZipArchive;
-    //         $zipFileName = 'attendance_reports.zip';
-    //         $zipPath = tempnam(sys_get_temp_dir(), $zipFileName);
-    
-    //         $zip->open($zipPath, ZipArchive::CREATE);
-    
-    //         foreach ($files as $fileName => $fileContent) {
-    //             $zip->addFromString($fileName, $fileContent);
-    //         }
-    
-    //         $zip->close();
-    
-    //         return response()->streamDownload(function () use ($zipPath) {
-    //             readfile($zipPath);
-    //         }, $zipFileName);
-    //     }
-    
-    //     return response()->json(['message' => 'No attendance data found for the given date range.']);
-    // }
-
     protected function download_day_wise_attendance_report(Request $request)
     {
         set_time_limit(1800);
 
+        $designationNames = [
+            400 => 'Dsr-1',
+            453 => 'Dsr-2',
+            478 => 'Dsr-3',
+        ];
+    
         $designations = [400, 453, 478];
-        
-        $all_attendance_data = [];
-
+        $files = [];
+    
         foreach ($designations as $designation) {
             $employees = Employees::where('employee_designation', $designation)
-                ->where('employee_isactive', 1)
-                ->get(['employee_id'])
-                ->toArray();
-
+            ->where('employee_isactive', 1)
+            ->get(['employee_id'])
+            ->toArray();
+    
             if (!empty($employees)) {
+                $attendance_array = [];
+    
                 foreach ($employees as $employee) {
                     $employee_id = $employee['employee_id'];
-
+    
                     $attendance = DB::select("
                         SELECT 
                             emp.employee_code as 'Employee ID', 
@@ -4366,33 +4276,43 @@ class AttendanceController extends Controller
                         LEFT JOIN tbl_employees as LM ON emp.employee_senior_manager = LM.employee_id
                         ORDER BY dates.date_between ASC
                     ");
-
+    
                     $attendance = json_decode(json_encode($attendance), TRUE);
-                    $all_attendance_data = array_merge($all_attendance_data, $attendance);
+                    $attendance_array = array_merge($attendance_array, $attendance);
+                }
+    
+                if (!empty($attendance_array)) {
+                    $designationName = $designationNames[$designation];
+                    $fileName = "attendance_report_designation_{$designationName}.xlsx";
+                    $filePath = tempnam(sys_get_temp_dir(), $fileName);
+    
+                    $header_style = (new Style())->setFontBold();
+                    (new FastExcel($attendance_array))->headerStyle($header_style)->export($filePath);
+    
+                    $files[$fileName] = file_get_contents($filePath);
+                    unlink($filePath);  
                 }
             }
         }
-
-        if (!empty($all_attendance_data)) {
-            $fileName = "combined_attendance_report.xlsx";
-            $filePath = tempnam(sys_get_temp_dir(), $fileName);
-
-            $header_style = (new Style())->setFontBold();
-            (new FastExcel($all_attendance_data))->headerStyle($header_style)->export($filePath);
-
+    
+        if (!empty($files)) {
             $zip = new ZipArchive;
             $zipFileName = 'attendance_reports.zip';
             $zipPath = tempnam(sys_get_temp_dir(), $zipFileName);
-
+    
             $zip->open($zipPath, ZipArchive::CREATE);
-            $zip->addFile($filePath, $fileName);
+    
+            foreach ($files as $fileName => $fileContent) {
+                $zip->addFromString($fileName, $fileContent);
+            }
+    
             $zip->close();
-
+    
             return response()->streamDownload(function () use ($zipPath) {
                 readfile($zipPath);
             }, $zipFileName);
         }
-
+    
         return response()->json(['message' => 'No attendance data found for the given date range.']);
     }
 
