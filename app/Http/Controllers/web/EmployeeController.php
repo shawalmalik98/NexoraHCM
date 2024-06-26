@@ -5721,7 +5721,7 @@ class EmployeeController extends Controller
 
                         if($count_row !=0){
 
-                            $employeeCode = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[0]));//$getData[0];
+                            $employeeCode = preg_replace('/^[\x00-\x1F\x80-\xFF]+/u', '', iconv('ISO-8859-1', 'UTF-8', $getData[0]));
                             $employee_name = iconv('ISO-8859-1', 'UTF-8', $getData[1]);
                             $employee_department =  iconv('ISO-8859-1', 'UTF-8', $getData[2]);
                             $employee_designation =  iconv('ISO-8859-1', 'UTF-8', $getData[3]);
@@ -5763,8 +5763,7 @@ class EmployeeController extends Controller
                                 if(empty($joining_date)){
                                     $employee_record_insert = "FALSE";
                                 }
-
-                                $dateTime = DateTime::createFromFormat('m/d/Y', $joining_date);
+                                $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
 
                                 if ($dateTime == TRUE) {
 
@@ -5772,30 +5771,32 @@ class EmployeeController extends Controller
 
                                 }else {
 
-                                    $dateTime = DateTime::createFromFormat('Y-m-d', $joining_date);
-                                    if ($dateTime == TRUE) {
-                                        $joining_date = $dateTime->format('Y-m-d');
-                                    } else {
-                                        $employee_record_insert = "FALSE";
-                                    }
+                                    $employee_record_insert = "FALSE"; 
+
+                                    return response()->json([
+                                        'status' => 'FALSE',
+                                        'msg' => 'Employee doj date format will be Y-m-d',         
+                                    ]);
                                 }
 
                                 if(empty($employee_dob)){
                                     $employee_record_insert = "FALSE";
                                 }
 
-                                $dateTime = DateTime::createFromFormat('m/d/Y', $employee_dob);
+                                $dateTime = DateTime::createFromFormat('Y-m-d', $employee_dob);
 
                                 if ($dateTime == TRUE) {
+
                                     $employee_dob = $dateTime->format('Y-m-d');
+
                                 }else {
 
-                                    $dateTime = DateTime::createFromFormat('Y-m-d', $employee_dob);
-                                    if ($dateTime == TRUE) {
-                                        $employee_dob = $dateTime->format('Y-m-d');
-                                    } else {
-                                        $employee_record_insert = "FALSE";
-                                    }
+                                    $employee_record_insert = "FALSE";    
+                                    
+                                    return response()->json([
+                                        'status' => 'FALSE',
+                                        'msg' => 'Employee dob date format will be Y-m-d',         
+                                    ]);
                                 }
 
                                 if($employee_record_insert === "FALSE"){
@@ -5935,7 +5936,7 @@ class EmployeeController extends Controller
 
                                             $submitInformation = new EmployeeInformation();
                                             $submitInformation->employeeid = $employee_registration_id;
-                                            $submitInformation->dob = $employee_dob;
+                                            $submitInformation->dob = date('Y-m-d',strtotime($employee_dob));
                                             $submitInformation->save();
 
                                             $get_holidays =  Holiday::where('holiday_date','>=', date('Y-m-d',strtotime($joining_date)))->where(function ($query) use ($departments) {
