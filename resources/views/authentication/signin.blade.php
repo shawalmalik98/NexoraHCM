@@ -93,7 +93,7 @@
 								
 								<div class="fv-row mb-8 ">
 								
-									<input type="number" name="employee_id" class="form-control bg-transparent" placeholder="Employee Code" min="0"  required/>
+									<input type="number" name="employee_id" class="form-control bg-transparent" placeholder="Employee ID" min="0"  required/>
 									
 								</div>
 								
