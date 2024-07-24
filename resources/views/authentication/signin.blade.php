@@ -87,7 +87,7 @@
 								<div class="text-center mb-11">
 									
 									<h1 class="text-dark fw-bolder mb-3">Ismail Industries Limited - HCM</h1>
-									<div class="text-gray-500 fw-semibold fs-6">Log in to start your session</div>
+									<div class="text-gray-500 fw-semibold fs-6">To log in to IIL-HCM, enter your employee ID and password below.</div>
 									
 								</div>
 								
