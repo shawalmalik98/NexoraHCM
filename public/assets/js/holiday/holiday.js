@@ -150,6 +150,175 @@ $('#departments_all').change(function () {
 
 });
 
+var $designationsAll = $('#designations_all');
+var allLengthDes = $designationsAll.find('option').length;
+
+// Handle dropdown change event
+$designationsAll.on('change', function () {
+    var selectedCount = $designationsAll.val() ? $designationsAll.val().length : 0;
+    $('#selected_designations_count').val(selectedCount);
+
+    // Update the checkbox state based on the number of selected options
+    if (selectedCount == allLengthDes) {
+        $('#designation_all').prop('checked', true);
+    } else {
+        $('#designation_all').prop('checked', false);
+    }
+});
+
+// Handle checkbox click event
+$('#designation_all').click(function () {
+    var isChecked = $(this).is(':checked');
+
+        // Select or deselect all options based on checkbox state
+        $designationsAll.find('option').each(function () {
+            $(this).prop('selected', isChecked);
+        });
+
+        // Trigger change event to update select2
+        $designationsAll.trigger('change');
+
+        // Update the display of the select box
+        if (isChecked) {
+            
+            $('#selectedesignation').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display">All Designations</span>');
+            $('#selectedesignation').find('.select2-search__field').attr('placeholder', '');
+        } else {
+            $('#selectedesignation').find('.select2-selection__rendered').html('');
+            $('#selectedesignation').find('.select2-search__field').attr('placeholder', 'Select Designation');
+            $('#selectedesignation').find('.select2-search__field').css('width', '100%');
+        }
+});
+
+
+
+// $('#designation_all').click(function () {
+
+//     var checkbox = $('#designation_all').prop('checked');
+
+//     if (checkbox) {
+//         $('#designations_all option').prop('selected', true);
+//         $('#selectedesignation').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-designations_all-container-choice-5nle-Human Resource">All Designations</span>');
+//         $('#selectedesignation').find('.select2-search__field').attr('placeholder', '');
+//     } else {
+//         $('#designations_all option').prop('selected', false);
+//         $('#selectedesignation').find('.select2-selection__rendered').html('');
+//         $('#selectedesignation').find('.select2-search__field').attr('placeholder', 'Select Designation');
+//         $('#selectedesignation').find('.select2-search__field').css('width', '100%');
+
+//     }
+    
+// });
+
+// var allLengthDes = $('#designations_all option').length;
+
+// $('#designations_all').change(function () {
+//     var designations = $('#designations_all').val();
+//     var selectedCount = designations ? designations.length : 0;
+
+//     if (selectedCount == allLengthDes) {
+//         $('#designation_all').prop('checked', true);
+//         $('#designations_all').val(selectedCount);
+//     } else {
+//         $('#designation_all').prop('checked', false);
+//         $('#designations_all').val();
+//     }
+// });
+
+// $('#designation_all').change(function () {
+//     if ($(this).is(':checked')) {
+//         $('#designations_all').find('option').prop('selected', true).trigger('change');
+//     } else {
+//         $('#designations_all').find('option').prop('selected', false).trigger('change');
+//     }
+// });
+
+
+
+    // $('#departments_all').change(function (e) {
+    //     e.preventDefault();
+    //     var department = $(this).find(':selected').attr('data-depart_id');
+        
+    //     $('#designations_all').html('');
+    //     $.ajax({
+    //         url: base_url + '/employees/get_desinations/' + department,
+    //         type: 'GET',
+    //         headers: {
+    //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    //         },
+    //         data: {
+    //             department: department
+    //         },
+    //         contentType: false,
+    //         cache: false,
+    //         processData: false,
+    //         success: function (data) {
+
+    //             $('#designations_all').append(data);
+    //         },
+    //         error: function (jqXHR, textStatus) {
+    //             var errorStatus = jqXHR.status;
+    //             if (errorStatus == 0) {
+    //                 Toast.fire({
+    //                     icon: 'warning',
+    //                     title: 'Internet Connection Problem',
+    //                     timer: 3000,
+    //                 })
+    //             } else {
+    //                 if (errorStatus == 419) {
+    //                     location.reload();
+    //                 } else {
+    //                     Toast.fire({
+    //                         icon: 'warning',
+    //                         title: 'Try Again. Error Code ' + errorStatus,
+    //                         timer: 3000,
+    //                     })
+    //                 }
+    //             }
+    //         }
+    //     });
+    // });
+
+$('#departments_all').change(function (e) {
+    e.preventDefault();
+    var selectedDepartments = $(this).val(); // Get all selected department IDs
+    
+    $('#designations_all').html('');
+    $.ajax({
+        url: base_url + '/employees/get_all_designations',
+        type: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        data: {
+            departments: selectedDepartments
+        },
+        success: function (data) {
+            $('#designations_all').append(data);
+        },
+        error: function (jqXHR, textStatus) {
+            var errorStatus = jqXHR.status;
+            if (errorStatus == 0) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'Internet Connection Problem',
+                    timer: 3000,
+                });
+            } else {
+                if (errorStatus == 419) {
+                    location.reload();
+                } else {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Try Again. Error Code ' + errorStatus,
+                        timer: 3000,
+                    });
+                }
+            }
+        }
+    });
+});
+    
 $('#addHolidayForm').submit(function (e) {
     e.preventDefault();
 

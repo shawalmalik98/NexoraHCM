@@ -33,6 +33,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
         Route::get('/employee-allotment/{employee_id}', [EmployeeController::class , 'employee_allotment']);
         Route::get('/get_desinations/{departmentid}', [DesignationController::class, 'get_designations']);
+        Route::get('/get_all_designations', [DesignationController::class, 'get_all_designations']);
         Route::get('/download-employee-document', [EmployeeController::class, 'download_employee_document']);
         
         Route::post('/upload_document', [EmployeeController::class , 'store_employee_documents']);

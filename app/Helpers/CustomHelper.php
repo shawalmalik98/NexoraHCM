@@ -13,6 +13,7 @@ use App\Models\Resignation;
 use App\Models\HrmSetting;
 use App\Models\LoginHistory;
 use App\Models\Department;
+use App\Models\Designation;
 use App\Models\ShiftManagement;
 use App\Models\EmployeeSalary;
 use App\Models\LeaveManagement;
@@ -743,6 +744,31 @@ class CustomHelper
             }
         }catch(\Exception $e){
             LogGenerateTrait::create_error_log('Get Department Name', $e);
+
+        }
+        finally{
+        
+        }
+
+    }
+
+    public static function get_designation_name($designation_id){
+        try{
+            if(!empty($designation_id)){
+
+                if($designation_id == "*"){
+
+                    return "All Designations";
+                }else{
+
+                    $designation =  Designation::where('designation_id', $designation_id)->get(['designation_name'])->toArray();
+
+                    return (!empty($designation)) ? $designation[0]['designation_name'] : 'N/A';
+
+                }
+            }
+        }catch(\Exception $e){
+            LogGenerateTrait::create_error_log('Get Designation Name', $e);
 
         }
         finally{

@@ -336,4 +336,25 @@ class DesignationController extends Controller
         }
     }
 
+    protected function get_all_designations(Request $request) {
+        $department_ids = $request->input('departments');
+    
+        // Check if department_ids is an array
+        if (is_array($department_ids)) {
+            $designations = Designation::whereIn('department_id', $department_ids)->get(['designation_id', 'designation_name']);
+        } else {
+            $designations = Designation::where('department_id', $department_ids)->get(['designation_id', 'designation_name']);
+        }
+    
+        // $result[] = '<option value="">Select Designation</option>';
+        $result[] = '';
+
+        foreach ($designations as $designation) {
+            $result[] = '<option value="'.$designation['designation_id'].'">'.$designation['designation_name'].'</option>';
+        }
+    
+        return response()->json($result);
+    }
+    
+
 }

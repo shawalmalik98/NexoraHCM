@@ -213,6 +213,8 @@
                                                 </th>
                                                 <th class="min-w-100px sorting">Department(s) Name
                                                 </th>
+                                                <th class="min-w-100px sorting">Designation(s) Name
+                                                </th>
                                                 <th class="min-w-100px sorting">Created By
                                                 </th>
                                                 <th class="min-w-100px sorting">Holiday Create Date
@@ -237,6 +239,19 @@
                                                                 @php $count ++ ; @endphp
                                                                 {!! CustomHelper::get_department_name($department) !!}
                                                                 @if ($count != count($department_name))
+                                                                    ||
+                                                                @endif
+                                                            @endforeach
+                                                        </td>
+                                                        <td>
+                                                            @php
+                                                                $designation_name = explode(',', $holiday['designation_name']);
+                                                                $count = 0;
+                                                            @endphp
+                                                            @foreach ($designation_name as $designation)
+                                                                @php $count ++ ; @endphp
+                                                                {!! CustomHelper::get_designation_name($designation) !!}
+                                                                @if ($count != count($designation_name))
                                                                     ||
                                                                 @endif
                                                             @endforeach
@@ -295,13 +310,13 @@
                                                 <select class="form-select" id="departments_all" data-control="select2"
                                                     multiple="multiple" data-hide-search="true"
                                                     data-placeholder="Select Department" name="department_name[]"
-                                                    data-close-on-select="false" required>
+                                                    data-close-on-select="true" required>
 
                                                     @php $count = 0 @endphp
                                                     @if (!empty($departments))
                                                         @foreach ($departments as $department)
                                                             @php $count ++; @endphp
-                                                            <option value="{{ $department['department_id'] }}">
+                                                            <option value="{{ $department['department_id'] }}" data-depart_id="{{ $department['department_id'] }}">
                                                                 {{ $department['department_name'] }}
                                                             </option>
                                                         @endforeach
@@ -316,6 +331,41 @@
                                                     <input type="hidden" name="count" value="{{ $count }}">
                                                     <input class="form-check-input h-20px w-20px" type="checkbox"
                                                         id="department_all" name="select_all" value="Select All" />
+
+                                                </label>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-10 mb-8 mt-3 fv-row" id="selectedesignation">
+                                                <label class="fs-6 fw-semibold mb-2 required">Designation</label>
+
+                                                <select class="form-select" id="designations_all" data-control="select2"
+                                                    multiple="multiple" data-hide-search="true"
+                                                    data-placeholder="Select Designation" name="designation_name[]"
+                                                    data-close-on-select="true" required>
+
+                                                    @php $count_des = 0 @endphp
+                                                    @if (!empty($designations))
+                                                        @foreach ($designations as $designation)
+                                                            @php $count_des ++; @endphp
+                                                            <option value="{{ $designation['designation_id'] }}">
+                                                                {{ $designation['designation_name'] }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </select>
+
+                                            </div>
+                                            <div class="col-md-2 mb-8 mt-3 fv-row">
+
+                                                <label class="fs-6 fw-semibold mb-2">All Designations</label>
+                                                <label
+                                                    class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
+                                                    <input type="hidden" name="count_designation" id="selected_designations_count" value="0">
+                                                    <input class="form-check-input h-20px w-20px" type="checkbox"
+                                                        id="designation_all" name="select_all_des" value="Select All" />
 
                                                 </label>
                                             </div>
@@ -531,5 +581,6 @@
 
         <script>
             var count = {{ $count }};
+            var count_des = {{ $count_des }}
         </script>
     @endpush
