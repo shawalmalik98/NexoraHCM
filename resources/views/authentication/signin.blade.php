@@ -87,13 +87,13 @@
 								<div class="text-center mb-11">
 									
 									<h1 class="text-dark fw-bolder mb-3">Ismail Industries Limited - HCM</h1>
-									<div class="text-gray-500 fw-semibold fs-6">Log in to start your session</div>
+									<div class="text-gray-500 fw-semibold fs-6">To log in to IIL-HCM, enter your employee ID and password below.</div>
 									
 								</div>
 								
 								<div class="fv-row mb-8 ">
 								
-									<input type="number" name="employee_id" class="form-control bg-transparent" placeholder="Employee Code" min="0"  required/>
+									<input type="number" name="employee_id" class="form-control bg-transparent" placeholder="Employee ID" min="0"  required/>
 									
 								</div>
 								
