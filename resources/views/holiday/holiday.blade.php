@@ -304,7 +304,7 @@
                                     <div class="modal-body scroll-y pt-0 pb-15">
 
                                         <div class="row">
-                                            <div class="col-md-10 mb-8 mt-3 fv-row" id="selectedepartment">
+                                            <div class="col-md-12 mb-8 mt-3 fv-row" id="selectedepartment">
                                                 <label class="fs-6 fw-semibold mb-2 required">Department</label>
 
                                                 <select class="form-select" id="departments_all" data-control="select2"
@@ -323,7 +323,7 @@
                                                     @endif
                                                 </select>
                                             </div>
-                                            <div class="col-md-2 mb-8 mt-3 fv-row">
+                                            {{-- <div class="col-md-2 mb-8 mt-3 fv-row">
 
                                                 <label class="fs-6 fw-semibold mb-2">All Departments</label>
                                                 <label
@@ -333,7 +333,7 @@
                                                         id="department_all" name="select_all" value="Select All" />
 
                                                 </label>
-                                            </div>
+                                            </div> --}}
 
                                         </div>
 
@@ -346,15 +346,14 @@
                                                     data-placeholder="Select Designation" name="designation_name[]"
                                                     data-close-on-select="true" required>
 
-                                                    @php $count_des = 0 @endphp
-                                                    @if (!empty($designations))
+                                                    {{-- @if (!empty($designations))
                                                         @foreach ($designations as $designation)
-                                                            @php $count_des ++; @endphp
                                                             <option value="{{ $designation['designation_id'] }}">
                                                                 {{ $designation['designation_name'] }}
                                                             </option>
                                                         @endforeach
-                                                    @endif
+                                                    @endif --}}
+
                                                 </select>
 
                                             </div>
@@ -581,6 +580,5 @@
 
         <script>
             var count = {{ $count }};
-            var count_des = {{ $count_des }}
         </script>
     @endpush

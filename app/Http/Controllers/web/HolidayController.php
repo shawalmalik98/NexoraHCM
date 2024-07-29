@@ -132,7 +132,7 @@ class HolidayController extends Controller
        
         try{
 
-            set_time_limit(300);
+            set_time_limit(1800);
 
             $validator = Validator::make($request->all(), [
 
@@ -202,6 +202,14 @@ class HolidayController extends Controller
                 }
                 $request_department_name;
 
+                if(count($request_department_name)==$request->input('count')){
+                    $department_name = "*";
+                    
+                }else{
+                    $department_name = implode(',', $request_department_name);
+                    
+                }
+
                 foreach($request_designation_name as $key => $designations){
 
                     $check_if_employees_exist_on_desig = Employees::where('employee_designation', $designations)->where('employee_isactive', 1)->get(['employee_id'])->toArray();
@@ -224,22 +232,14 @@ class HolidayController extends Controller
                 }
                 $request_designation_name;
 
-                if(count($request_department_name)==$request->input('count')){
-                    $department_name = "*";
-                    
-                }else{
-                    $department_name = implode(',', $request_department_name);
-                    
-                }
-
                 if(count($request_designation_name)==$request->input('count_designation')){
                     $designation_name = "*";
-                    
+                  
                 }else{
                     $designation_name = implode(',', $request_designation_name);
-                    
+                  
                 }
-            
+
                 $day = date("d", strtotime($request->input('holiday_date')));
 
                 $month = date("m", strtotime($request->input('holiday_date')));
@@ -268,48 +268,66 @@ class HolidayController extends Controller
                         ->toArray();
                 
                     foreach ($valid_department_designations as $dept_desg) {
+
                         $department_id = $dept_desg['department_id'];
                         $designation_id = $dept_desg['designation_id'];
-                
-                        $checking_request_dates = Holiday::where('holiday_date', $dates)
-                            ->where(function ($query) use ($department_id, $designation_id) {
-                                $query->where(function ($q) use ($department_id) {
-                                    $q->where('department_name', 'like', "%" . $department_id . "%")
-                                      ->orWhere('department_name', 'like', '%*%');
+                    
+                        // Adjust IDs based on the conditions provided
+                        if (count($request_designation_name) == $request->input('count_designation') || $designation_name == '*') {
+                            $designation_id = "*";
+                        }elseif (count($request_department_name) == $request->input('count') || $department_name == '*') {
+                            $department_id = "*";
+                        }
+                        elseif ($department_id != '*' || $designation_id != '*') {
+                    
+                            $checking_request_dates = Holiday::where('holiday_date', $dates)
+                                ->where(function ($query) use ($department_id, $designation_id) {
+                                    $query->where(function ($q) use ($department_id) {
+                                        $q->where('department_name', 'like', "%" . $department_id . "%")
+                                            ->orWhere('department_name', 'like', '%*%');
+                                    })
+                                    ->where(function ($q) use ($designation_id) {
+                                        $q->where('designation_name', 'like', "%" . $designation_id . "%")
+                                            ->orWhere('designation_name', 'like', '%*%');
+                                    });
                                 })
-                                ->where(function ($q) use ($designation_id) {
-                                    $q->where('designation_name', 'like', "%" . $designation_id . "%")
-                                      ->orWhere('designation_name', 'like', '%*%');
-                                });
-                            })->get(['holiday_date', 'department_name', 'designation_name'])->toArray();
-                
-                        if (empty($checking_request_dates)) {
-                            array_push($checking_request_department_designation, [
-                                'department_id' => $department_id,
-                                'designation_id' => $designation_id
-                            ]);
-                        } else {
-                            $check_department_name = Department::where('department_id', $department_id)
-                                ->get(['department_id', 'department_name'])->toArray();
-                            $check_designation_name = Designation::where('designation_id', $designation_id)
-                                ->get(['designation_id', 'designation_name'])->toArray();
-                
-                            if ((count($request_department_name) + $unset_department_count) != $request->input('count') ||
-                                (count($request_designation_name) + $unset_designation_count) != $request->input('count_designation')) {
-                                if ($department_id != '*' && $designation_id != '*') {
-                                    if (!empty($checking_request_dates) && $no_of_days == 1) {
-                                        return response()->json([
-                                            'status' => 'FALSE',
-                                            'msg' => 'Holiday already exists for ' . $check_department_name[0]['department_name'] . ' department and ' . $check_designation_name[0]['designation_name'] . ' designation on this date.',
-                                        ]);
+                                ->get(['holiday_date', 'department_name', 'designation_name'])
+                                ->toArray();
+                    
+                            if (empty($checking_request_dates)) {
+                                $checking_request_department_designation[] = [
+                                    'department_id' => $department_id,
+                                    'designation_id' => $designation_id
+                                ];
+                            } else {
+                                // Fetch department and designation names for existing holidays
+                                $check_department_name = $department_id != '*' 
+                                    ? Department::where('department_id', $department_id)->get(['department_id', 'department_name'])->toArray()
+                                    : [];
+                                $check_designation_name = $designation_id != '*'
+                                    ? Designation::where('designation_id', $designation_id)->get(['designation_id', 'designation_name'])->toArray()
+                                    : [];
+                    
+                                if ((count($request_department_name) + $unset_department_count) != $request->input('count') ||
+                                    (count($request_designation_name) + $unset_designation_count) != $request->input('count_designation')) {
+                                    if ($department_id != '*' && $designation_id != '*') {
+                                        if (!empty($checking_request_dates) && $no_of_days == 1) {
+                                            return response()->json([
+                                                'status' => 'FALSE',
+                                                'msg' => 'Holiday already exists for ' . 
+                                                    ($check_department_name[0]['department_name'] ?? 'Unknown Department') . ' department and ' . 
+                                                    ($check_designation_name[0]['designation_name'] ?? 'Unknown Designation') . ' designation on this date.',
+                                            ]);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                
+                        
                     // Combine checked departments and designations for the given date
                     $checking_request_dates_department_designation[$dates] = $checking_request_department_designation;
+                        
                 }
                 
                 foreach ($checking_request_dates_department_designation as $date_key => $request_department_designation) {
@@ -438,7 +456,7 @@ class HolidayController extends Controller
                         }
 
                     }else{
-                        
+
                         if($department_name == '*' && $designation_name == '*'){
 
                             Holiday::where('holiday_date', $date_key)->delete();
@@ -550,123 +568,17 @@ class HolidayController extends Controller
                                 }     
                             }
 
-                        }elseif($department_name == '*' && $designation_name != '*'){
-
-                            Holiday::where('holiday_date', $date_key)->delete();
-
-                            $all_employees = array();
-
-                            $all_departments_employees = Employees::where('employee_designation', $designation_name)->where('employee_isactive', 1)->where('employee_doj','<=',$date_key)->pluck('employee_id')->toArray();
-
-                            if(!empty($all_departments_employees)){
-
-                                $check_department_employee_payroll = array();
-
-                                foreach($all_departments_employees as $check_all_employees){
-                                    
-                                    $payroll_exists = $this->check_if_payroll_exist($date_key,$check_all_employees,$custom_message = 'True');
-                                    
-                                    if($payroll_exists['status'] == FALSE ){
-                                        array_push($check_department_employee_payroll,$check_all_employees);
-                                    }else{
-                                        $check_any_employee_payroll = true;
-                                    }
-                                }
-
-                                if(!empty($check_department_employee_payroll)){
-
-                                    array_push($all_employees,$check_department_employee_payroll);
-                                }
-                            }
-
-                            if(empty($all_employees)){
-                                return response()->json([
-                                    'status' => 'FALSE',
-                                    'msg' => "Holiday can't be marked. Payroll of some employees has already been generated from selected departments.",
-                                ]);
-                            }
-
-                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($date_key);
-
-                            if($check_attendance_sheet_availability['status'] == FALSE){
-                                return response()->json([
-                                    'msg' => $check_attendance_sheet_availability['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
-                            
-                            $new_holiday = new Holiday();
-                            $new_holiday->holiday_date = $date_key;
-                            $new_holiday->holiday_name = $request->input('holiday_reason');
-                            $new_holiday->department_name = '*';
-                            $new_holiday->designation_name = $designation_name;
-                            $new_holiday->holiday_created_at = date('Y-m-d H:i:s');
-
-                            if ($request->input('overtime_applicable') == 1) {
-
-                                $new_holiday->is_overtime_applicable = 1;
-                            
-                                if ($request->input('overtime_payment_type') == 1) {
-                                    $new_holiday->overtime_payment_type = 1;
-                                } else {
-                                    $new_holiday->overtime_payment_type = 0;
-                                }
-                            
-                                $new_holiday->holiday_overtime_amount = $request->input('holiday_overtime_amount');
-                                
-                            }else {
-                                $new_holiday->is_overtime_applicable = 0;
-                                $new_holiday->overtime_payment_type = null;
-                                $new_holiday->holiday_overtime_amount = null;
-                            }
-
-                            $process = $new_holiday->save();
-
-                            $day = date("d", strtotime($date_key));
-
-                            $month = date("m", strtotime($date_key));
-                            
-                            $year = date("Y", strtotime($date_key));
-                            
-                            if(!empty($all_employees)){
-                                foreach($all_employees as $employee){
-                                    foreach($employee as $emp){
-                                        
-                                        if($request->input('all_holiday') == "on"){
-                                            Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->delete();
-                                        }else{
-                                            Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->where('att_check_overall_status','Absent')->delete();
-                                        }
-                                        $get_attendance = Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->get(['attendance_id'])->toArray();
-                                        $employee_shift_start = $this->get_employee_today_shift($emp,"in",$date_key);
-                                        $employee_shift_end = $this->get_employee_today_shift($emp,"out",$date_key);
-                                        if(empty($get_attendance)){
-                                            $update_attendance = new Attendance();
-                                            $update_attendance->att_employee_id = $emp;
-                                            $update_attendance->att_check_in_time = '00:00:00';
-                                            $update_attendance->att_check_out_time = '00:00:00';
-                                            $update_attendance->att_check_in_status = 0;
-                                            $update_attendance->att_check_out_status = 0;
-                                            $update_attendance->att_check_out_source = 1;
-                                            $update_attendance->att_shift_start_time = $employee_shift_start;
-                                            $update_attendance->att_shift_end_time = $employee_shift_end;
-                                            $update_attendance->att_check_overall_status = 'Holiday : '.$request->input('holiday_reason').'';
-                                            $update_attendance->att_for_date = $day;
-                                            $update_attendance->att_for_month = $month;
-                                            $update_attendance->att_for_year = $year;
-                                            $update_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
-                                            $update_attendance->save();
-                                        }
-                                    }
-                                }     
-                            }
                         }elseif($department_name != '*' && $designation_name == '*'){
-
+                            
                             Holiday::where('holiday_date', $date_key)->delete();
 
                             $all_employees = array();
 
-                            $all_departments_employees = Employees::where('employee_designation', $designation_name)->where('employee_isactive', 1)->where('employee_doj','<=',$date_key)->pluck('employee_id')->toArray();
+                            if (!is_array($department_name)) {
+                                $department_name = explode(',', $department_name);
+                            }
+
+                            $all_departments_employees = Employees::whereIn('employee_department', $department_name)->where('employee_isactive', 1)->where('employee_doj','<=',$date_key)->pluck('employee_id')->toArray();
 
                             if(!empty($all_departments_employees)){
 
@@ -708,7 +620,7 @@ class HolidayController extends Controller
                             $new_holiday = new Holiday();
                             $new_holiday->holiday_date = $date_key;
                             $new_holiday->holiday_name = $request->input('holiday_reason');
-                            $new_holiday->department_name = $department_name;
+                            $new_holiday->department_name = implode(',', $department_name);;
                             $new_holiday->designation_name = '*';
                             $new_holiday->holiday_created_at = date('Y-m-d H:i:s');
 

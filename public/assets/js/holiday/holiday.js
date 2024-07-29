@@ -119,165 +119,78 @@ $('#from_date').change(function () {
     }
 });
 
-$('#department_all').click(function () {
+// $('#department_all').click(function () {
 
-    var checkbox = $('#department_all').prop('checked');
-
-    if (checkbox) {
-        $('#departments_all option').prop('selected', true);
-        $('#selectedepartment').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-departments_all-container-choice-5nle-Human Resource">All Departments</span>');
-        $('#selectedepartment').find('.select2-search__field').attr('placeholder', '');
-    } else {
-        $('#departments_all option').prop('selected', false);
-        $('#selectedepartment').find('.select2-selection__rendered').html('');
-        $('#selectedepartment').find('.select2-search__field').attr('placeholder', 'Select Department');
-        $('#selectedepartment').find('.select2-search__field').css('width', '100%');
-
-    }
-
-});
-
-$('#departments_all').change(function () {
-
-    var departments = $('#departments_all').val();
-    var all_length = count;
-    if (departments.length == all_length) {
-        $('#department_all').prop('checked', true);
-    } else {
-        $('#department_all').prop('checked', false);
-
-    }
-
-});
-
-var $designationsAll = $('#designations_all');
-var allLengthDes = $designationsAll.find('option').length;
-
-// Handle dropdown change event
-$designationsAll.on('change', function () {
-    var selectedCount = $designationsAll.val() ? $designationsAll.val().length : 0;
-    $('#selected_designations_count').val(selectedCount);
-
-    // Update the checkbox state based on the number of selected options
-    if (selectedCount == allLengthDes) {
-        $('#designation_all').prop('checked', true);
-    } else {
-        $('#designation_all').prop('checked', false);
-    }
-});
-
-// Handle checkbox click event
-$('#designation_all').click(function () {
-    var isChecked = $(this).is(':checked');
-
-        // Select or deselect all options based on checkbox state
-        $designationsAll.find('option').each(function () {
-            $(this).prop('selected', isChecked);
-        });
-
-        // Trigger change event to update select2
-        $designationsAll.trigger('change');
-
-        // Update the display of the select box
-        if (isChecked) {
-            
-            $('#selectedesignation').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display">All Designations</span>');
-            $('#selectedesignation').find('.select2-search__field').attr('placeholder', '');
-        } else {
-            $('#selectedesignation').find('.select2-selection__rendered').html('');
-            $('#selectedesignation').find('.select2-search__field').attr('placeholder', 'Select Designation');
-            $('#selectedesignation').find('.select2-search__field').css('width', '100%');
-        }
-});
-
-
-
-// $('#designation_all').click(function () {
-
-//     var checkbox = $('#designation_all').prop('checked');
+//     var checkbox = $('#department_all').prop('checked');
 
 //     if (checkbox) {
-//         $('#designations_all option').prop('selected', true);
-//         $('#selectedesignation').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-designations_all-container-choice-5nle-Human Resource">All Designations</span>');
-//         $('#selectedesignation').find('.select2-search__field').attr('placeholder', '');
+//         $('#departments_all option').prop('selected', true);
+//         $('#selectedepartment').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-departments_all-container-choice-5nle-Human Resource">All Departments</span>');
+//         $('#selectedepartment').find('.select2-search__field').attr('placeholder', '');
 //     } else {
-//         $('#designations_all option').prop('selected', false);
-//         $('#selectedesignation').find('.select2-selection__rendered').html('');
-//         $('#selectedesignation').find('.select2-search__field').attr('placeholder', 'Select Designation');
-//         $('#selectedesignation').find('.select2-search__field').css('width', '100%');
+//         $('#departments_all option').prop('selected', false);
+//         $('#selectedepartment').find('.select2-selection__rendered').html('');
+//         $('#selectedepartment').find('.select2-search__field').attr('placeholder', 'Select Department');
+//         $('#selectedepartment').find('.select2-search__field').css('width', '100%');
 
 //     }
-    
+
 // });
 
-// var allLengthDes = $('#designations_all option').length;
+// $('#departments_all').change(function () {
 
-// $('#designations_all').change(function () {
-//     var designations = $('#designations_all').val();
-//     var selectedCount = designations ? designations.length : 0;
-
-//     if (selectedCount == allLengthDes) {
-//         $('#designation_all').prop('checked', true);
-//         $('#designations_all').val(selectedCount);
+//     var departments = $('#departments_all').val();
+//     var all_length = count;
+//     if (departments.length == all_length) {
+//         $('#department_all').prop('checked', true);
 //     } else {
-//         $('#designation_all').prop('checked', false);
-//         $('#designations_all').val();
+//         $('#department_all').prop('checked', false);
+
 //     }
+
 // });
 
-// $('#designation_all').change(function () {
-//     if ($(this).is(':checked')) {
-//         $('#designations_all').find('option').prop('selected', true).trigger('change');
-//     } else {
-//         $('#designations_all').find('option').prop('selected', false).trigger('change');
-//     }
-// });
+$('#designation_all').click(function () {
+    var isChecked = $(this).is(':checked');
+    var designationsSelect = $('#designations_all');
+    var allDesignations = designationsSelect.find('option');
 
+    if (isChecked) {
+        // Check all options
+        allDesignations.prop('selected', true);
+        designationsSelect.trigger('change'); // Trigger change event to update Select2
 
+        // Update the Select2 display
+        var select2Container = $('#selectedesignation').find('.select2-selection__rendered');
+        select2Container.html('<span class="select2-selection__choice__display">All Designations</span>');
+        $('#selectedesignation').find('.select2-search__field').attr('placeholder', '');
+    } else {
+        // Uncheck all options
+        allDesignations.prop('selected', false);
+        designationsSelect.trigger('change'); // Trigger change event to update Select2
 
-    // $('#departments_all').change(function (e) {
-    //     e.preventDefault();
-    //     var department = $(this).find(':selected').attr('data-depart_id');
-        
-    //     $('#designations_all').html('');
-    //     $.ajax({
-    //         url: base_url + '/employees/get_desinations/' + department,
-    //         type: 'GET',
-    //         headers: {
-    //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    //         },
-    //         data: {
-    //             department: department
-    //         },
-    //         contentType: false,
-    //         cache: false,
-    //         processData: false,
-    //         success: function (data) {
+        // Update the Select2 display
+        var select2Container = $('#selectedesignation').find('.select2-selection__rendered');
+        select2Container.html('');
+        $('#selectedesignation').find('.select2-search__field').attr('placeholder', 'Select Designation');
+        $('#selectedesignation').find('.select2-search__field').css('width', '100%');
+    }
+});
 
-    //             $('#designations_all').append(data);
-    //         },
-    //         error: function (jqXHR, textStatus) {
-    //             var errorStatus = jqXHR.status;
-    //             if (errorStatus == 0) {
-    //                 Toast.fire({
-    //                     icon: 'warning',
-    //                     title: 'Internet Connection Problem',
-    //                     timer: 3000,
-    //                 })
-    //             } else {
-    //                 if (errorStatus == 419) {
-    //                     location.reload();
-    //                 } else {
-    //                     Toast.fire({
-    //                         icon: 'warning',
-    //                         title: 'Try Again. Error Code ' + errorStatus,
-    //                         timer: 3000,
-    //                     })
-    //                 }
-    //             }
-    //         }
-    //     });
-    // });
+// When the designations select is changed
+$('#designations_all').change(function () {
+    var selectedDesignations = $(this).val();
+    var totalDesignationsCount = $(this).find('option').length;
+    var selectedCount = selectedDesignations ? selectedDesignations.length : 0;
+
+    if (selectedCount == totalDesignationsCount) {
+        $('#designation_all').prop('checked', true);
+        $('#selected_designations_count').val(totalDesignationsCount);
+    } else {
+        $('#designation_all').prop('checked', false);
+        $('#selected_designations_count').val('');
+    }
+});
 
 $('#departments_all').change(function (e) {
     e.preventDefault();
@@ -295,6 +208,7 @@ $('#departments_all').change(function (e) {
         },
         success: function (data) {
             $('#designations_all').append(data);
+
         },
         error: function (jqXHR, textStatus) {
             var errorStatus = jqXHR.status;
