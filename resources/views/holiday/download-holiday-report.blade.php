@@ -110,6 +110,8 @@
                             </th>
                             <th class="text-center td-border">Department(s) Name
                             </th>
+                            <th class="text-center td-border">Designation(s) Name
+                            </th>
                             <th class="text-center td-border">Created By
                             </th>
                             <th class="text-center td-border">Holiday Create Date
@@ -134,6 +136,19 @@
                                             @php $count ++ ; @endphp
                                                 {!! CustomHelper::get_department_name($department) !!}
                                             @if( $count  != count($department_name))
+                                                ||
+                                            @endif
+                                        @endforeach
+                                    </td>
+                                    <td class="text-center td-border">
+                                        @php
+                                            $designation_name = explode(',', $holiday['designation_name']);
+                                            $count = 0;
+                                        @endphp
+                                        @foreach ($designation_name as $designation)
+                                            @php $count ++ ; @endphp
+                                            {!! CustomHelper::get_designation_name($designation) !!}
+                                            @if ($count != count($designation_name))
                                                 ||
                                             @endif
                                         @endforeach

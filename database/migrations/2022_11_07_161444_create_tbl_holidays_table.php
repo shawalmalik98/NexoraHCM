@@ -19,6 +19,7 @@ return new class extends Migration
                 $table->string('holiday_date', 10);
                 $table->string('holiday_name', 50);
                 $table->string('department_name', 255);
+                $table->string('designation_name', 1000)->nullable();
                 $table->integer('is_overtime_applicable')->default(0)->comment('0 = not applicable, 1 = applicable');
                 $table->integer('overtime_payment_type')->nullable()->comment('0 = employee salary, 1 = custom amount');
                 $table->double('holiday_overtime_amount', 8, 2)->nullable();

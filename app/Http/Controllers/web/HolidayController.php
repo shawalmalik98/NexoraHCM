@@ -10,6 +10,7 @@ use App\Models\{Holiday, Employees, Attendance, Department, Designation};
 use App\Traits\{LoginEmployee, LogGenerateTrait, AttendanceEmployee};
 use App\Helpers\ActivityTracker;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class HolidayController extends Controller
 {
@@ -64,7 +65,9 @@ class HolidayController extends Controller
 
     protected function holidays_download(Request $request){
         try{
-            
+
+            set_time_limit(3000);
+
             $security_variable = FALSE;
 
             $validator = Validator::make($request->all(), [
@@ -92,12 +95,13 @@ class HolidayController extends Controller
                 $year = date('Y');
             }
 
-            $where_clause = '1=1 ';
+            $where_clause = "1=1 ";
             if(empty($request->input('m'))){
-                $where_clause .= ' AND holiday_date  LIKE "%'.$year.'%"'; 
+                $where_clause .= " AND holiday_date LIKE '%" . $year . "%' ";
 
             }else{
-                $where_clause .= ' AND date_format(holiday_date,"%Y-%m")  = "'.$year.'-'.$request->input('m').'"';
+                // $where_clause .= ' AND date_format(holiday_date,"%Y-%m")  = "'.$year.'-'.$request->input('m').'"';
+                $where_clause .= " AND FORMAT(holiday_date, 'yyyy-MM') = '" . $year . '-' . $request->input('m') . "'";
                 $month = $request->input('m');
             }
             
@@ -122,8 +126,6 @@ class HolidayController extends Controller
         }
         finally{
 		    ActivityTracker::track_activity('Download All Holidays Pdf');
-           
-           
           
         }
     }
@@ -132,7 +134,7 @@ class HolidayController extends Controller
        
         try{
 
-            set_time_limit(1800);
+            set_time_limit(3000);
 
             $validator = Validator::make($request->all(), [
 
@@ -143,24 +145,6 @@ class HolidayController extends Controller
                 'holiday_reason' => 'required|string|max:30',
                 'department_name' => 'required',
                 'designation_name' => 'required',
-                'overtime_applicable' => 'nullable|in:1',
-                'overtime_payment_type' => ($request->input('overtime_applicable') == 1 ) ? 'required|in:0,1' : '' ,
-                'holiday_overtime_amount' => [
-                    function ($attribute, $value, $fail) use ($request) {
-                        if($request->input('overtime_applicable') == 1) {
-                            if ($request->has('overtime_payment_type') && empty($value)) {
-                                $message = ($request->input('overtime_payment_type') == 0) ? 'Number of days field is required.' : 'Holiday overtime amount field is required.';
-                                $fail($message);
-                            } elseif ($request->input('overtime_payment_type') == 0 && ($value < 1 || $value > 100)) {
-                                $fail('The number of days must be between 1 and 100.');
-                            } elseif ($request->input('overtime_payment_type') == 1 && ($value < 1 || $value > 999999)) {
-                                $fail('The holiday overtime amount must be between 1 and 999999.');
-                            }
-                        }
-                    },
-                ],
-                
-
             ]);
                 
             if($validator->fails()) {
@@ -171,6 +155,8 @@ class HolidayController extends Controller
                     ]);
                 }
             }else {
+
+                DB::beginTransaction();
 
                 $check_any_employee_payroll = false;
 
@@ -260,7 +246,6 @@ class HolidayController extends Controller
                     $dates = date('Y-m-d', strtotime('+' . $i . ' day', strtotime($start_date)));
                     $checking_request_department_designation = array();
                 
-                    // Fetch valid department-designation pairs
                     $valid_department_designations = Designation::join('tbl_departments', 'tbl_designations.department_id', '=', 'tbl_departments.department_id')
                         ->whereIn('tbl_designations.designation_id', $request_designation_name)
                         ->whereIn('tbl_departments.department_id', $request_department_name)
@@ -272,13 +257,12 @@ class HolidayController extends Controller
                         $department_id = $dept_desg['department_id'];
                         $designation_id = $dept_desg['designation_id'];
                     
-                        // Adjust IDs based on the conditions provided
                         if (count($request_designation_name) == $request->input('count_designation') || $designation_name == '*') {
                             $designation_id = "*";
                         }elseif (count($request_department_name) == $request->input('count') || $department_name == '*') {
                             $department_id = "*";
                         }
-                        elseif ($department_id != '*' || $designation_id != '*') {
+                        else{
                     
                             $checking_request_dates = Holiday::where('holiday_date', $dates)
                                 ->where(function ($query) use ($department_id, $designation_id) {
@@ -301,6 +285,7 @@ class HolidayController extends Controller
                                 ];
                             } else {
                                 // Fetch department and designation names for existing holidays
+                                
                                 $check_department_name = $department_id != '*' 
                                     ? Department::where('department_id', $department_id)->get(['department_id', 'department_name'])->toArray()
                                     : [];
@@ -430,7 +415,6 @@ class HolidayController extends Controller
                                         Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->where('att_check_overall_status','Absent')->delete();
                                     }
                                     
-
                                     $get_attendance = Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->get(['attendance_id'])->toArray();
                                     $employee_shift_start = $this->get_employee_today_shift($emp,"in",$date_key);
                                     $employee_shift_end = $this->get_employee_today_shift($emp,"out",$date_key);
@@ -457,118 +441,7 @@ class HolidayController extends Controller
 
                     }else{
 
-                        if($department_name == '*' && $designation_name == '*'){
-
-                            Holiday::where('holiday_date', $date_key)->delete();
-
-                            $all_employees = array();
-
-                            $all_departments_employees = Employees::where('employee_isactive', 1)->where('employee_doj','<=',$date_key)->pluck('employee_id')->toArray();
-
-                            if(!empty($all_departments_employees)){
-
-                                $check_department_employee_payroll = array();
-
-                                foreach($all_departments_employees as $check_all_employees){
-                                    
-                                    $payroll_exists = $this->check_if_payroll_exist($date_key,$check_all_employees,$custom_message = 'True');
-                                    
-                                    if($payroll_exists['status'] == FALSE ){
-                                        array_push($check_department_employee_payroll,$check_all_employees);
-                                    }else{
-                                        $check_any_employee_payroll = true;
-                                    }
-                                }
-
-                                if(!empty($check_department_employee_payroll)){
-
-                                    array_push($all_employees,$check_department_employee_payroll);
-                                }
-                            }
-
-                            if(empty($all_employees)){
-                                return response()->json([
-                                    'status' => 'FALSE',
-                                    'msg' => "Holiday can't be marked. Payroll of some employees has already been generated from selected departments.",
-                                ]);
-                            }
-
-                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($date_key);
-
-                            if($check_attendance_sheet_availability['status'] == FALSE){
-                                return response()->json([
-                                    'msg' => $check_attendance_sheet_availability['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
-                            
-                            $new_holiday = new Holiday();
-                            $new_holiday->holiday_date = $date_key;
-                            $new_holiday->holiday_name = $request->input('holiday_reason');
-                            $new_holiday->department_name = '*';
-                            $new_holiday->designation_name = '*';
-                            $new_holiday->holiday_created_at = date('Y-m-d H:i:s');
-
-                            if ($request->input('overtime_applicable') == 1) {
-
-                                $new_holiday->is_overtime_applicable = 1;
-                            
-                                if ($request->input('overtime_payment_type') == 1) {
-                                    $new_holiday->overtime_payment_type = 1;
-                                } else {
-                                    $new_holiday->overtime_payment_type = 0;
-                                }
-                            
-                                $new_holiday->holiday_overtime_amount = $request->input('holiday_overtime_amount');
-                                
-                            }else {
-                                $new_holiday->is_overtime_applicable = 0;
-                                $new_holiday->overtime_payment_type = null;
-                                $new_holiday->holiday_overtime_amount = null;
-                            }
-
-                            $process = $new_holiday->save();
-
-                            $day = date("d", strtotime($date_key));
-
-                            $month = date("m", strtotime($date_key));
-                            
-                            $year = date("Y", strtotime($date_key));
-                            
-                            if(!empty($all_employees)){
-                                foreach($all_employees as $employee){
-                                    foreach($employee as $emp){
-                                        
-                                        if($request->input('all_holiday') == "on"){
-                                            Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->delete();
-                                        }else{
-                                            Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->where('att_check_overall_status','Absent')->delete();
-                                        }
-                                        $get_attendance = Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->get(['attendance_id'])->toArray();
-                                        $employee_shift_start = $this->get_employee_today_shift($emp,"in",$date_key);
-                                        $employee_shift_end = $this->get_employee_today_shift($emp,"out",$date_key);
-                                        if(empty($get_attendance)){
-                                            $update_attendance = new Attendance();
-                                            $update_attendance->att_employee_id = $emp;
-                                            $update_attendance->att_check_in_time = '00:00:00';
-                                            $update_attendance->att_check_out_time = '00:00:00';
-                                            $update_attendance->att_check_in_status = 0;
-                                            $update_attendance->att_check_out_status = 0;
-                                            $update_attendance->att_check_out_source = 1;
-                                            $update_attendance->att_shift_start_time = $employee_shift_start;
-                                            $update_attendance->att_shift_end_time = $employee_shift_end;
-                                            $update_attendance->att_check_overall_status = 'Holiday : '.$request->input('holiday_reason').'';
-                                            $update_attendance->att_for_date = $day;
-                                            $update_attendance->att_for_month = $month;
-                                            $update_attendance->att_for_year = $year;
-                                            $update_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
-                                            $update_attendance->save();
-                                        }
-                                    }
-                                }     
-                            }
-
-                        }elseif($department_name != '*' && $designation_name == '*'){
+                        if($department_name != '*' && $designation_name == '*'){
                             
                             Holiday::where('holiday_date', $date_key)->delete();
 
@@ -689,6 +562,8 @@ class HolidayController extends Controller
           
                 if(!empty($process) && $process == 1){
 
+                    DB::commit();
+
                     if($check_any_employee_payroll == false){
                         $msg = 'Holiday(s) marked successfully.';
                     }else{
@@ -701,6 +576,9 @@ class HolidayController extends Controller
                     ]);
                     
                 }else{
+
+                    DB::rollBack(); 
+
                     return response()->json([
                         'status' => 'FALSE',
                         'msg' => 'Holiday addition failed. Holiday already exist on this date(s).',
@@ -709,6 +587,9 @@ class HolidayController extends Controller
                
             }   
         }catch(\Exception $e){
+
+            DB::rollBack(); 
+
             $this->create_error_log("Add Holiday", $e);
             if(!env('APP_DEBUG')){
                 return response()->json([

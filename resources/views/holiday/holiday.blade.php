@@ -445,7 +445,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-6 fv-row">
+                                            {{-- <div class="col-md-6 fv-row">
                                                 <label class="form-check-label fs-6 fw-semibold mb-2"
                                                     for="overtime_applicable">
                                                     Overtime applicable
@@ -456,8 +456,8 @@
                                                         name="overtime_applicable" id="overtime_applicable"
                                                         value="1">
                                                 </div>
-                                            </div>
-                                            <div class="row mt-5">
+                                            </div> --}}
+                                            {{-- <div class="row mt-5">
                                                 <div class="col-md-6 fv-row d-none" id="payment_type">
                                                     <label class="required fs-6 fw-semibold mb-2">Overtime Payment
                                                         Type</label>
@@ -476,7 +476,7 @@
                                                         name="holiday_overtime_amount" id="holiday_overtime"
                                                         step="0.01" placeholder="Enter Holiday Overtime Amount">
                                                 </div>
-                                            </div>
+                                            </div> --}}
                                         </div>
 
                                     </div>
