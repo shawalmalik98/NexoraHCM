@@ -340,9 +340,9 @@ class DesignationController extends Controller
         $department_ids = $request->input('departments');
     
         if (is_array($department_ids)) {
-            $designations = Designation::join('tbl_departments', 'tbl_designations.department_id', '=', 'tbl_departments.department_id')->whereIn('tbl_departments.department_id', $department_ids)->get(['designation_id', 'designation_name','department_name']);
+            $designations = Designation::join('tbl_departments', 'tbl_designations.department_id', '=', 'tbl_departments.department_id')->whereIn('tbl_designations.department_id', $department_ids)->get(['designation_id', 'designation_name','department_name']);
         } else {
-            $designations = Designation::join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_departments.department_id')->where('tbl_departments.department_id', $department_ids)->get(['designation_id', 'designation_name','department_name']);
+            $designations = Designation::join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_departments.department_id')->where('tbl_designations.department_id', $department_ids)->get(['designation_id', 'designation_name','department_name']);
         }
     
         // $result[] = '<option value="">Select Designation</option>';

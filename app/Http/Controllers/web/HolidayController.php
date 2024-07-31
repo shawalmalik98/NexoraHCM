@@ -442,119 +442,145 @@ class HolidayController extends Controller
                     }else{
 
                         if($department_name != '*' && $designation_name == '*'){
-                            
-                            Holiday::where('holiday_date', $date_key)->delete();
-
-                            $all_employees = array();
 
                             if (!is_array($department_name)) {
                                 $department_name = explode(',', $department_name);
                             }
 
-                            $all_departments_employees = Employees::whereIn('employee_department', $department_name)->where('employee_isactive', 1)->where('employee_doj','<=',$date_key)->pluck('employee_id')->toArray();
+                            $department_conditions = [];
+                            foreach ($department_name as $department) {
+                                $department_conditions[] = "(',' + department_name + ',' LIKE '%,$department,%')";
+                            }
 
-                            if(!empty($all_departments_employees)){
+                            $department_condition_sql = implode(' OR ', $department_conditions);
 
-                                $check_department_employee_payroll = array();
+                            $Check_if_hoildays_exists = Holiday::where('holiday_date', $date_key)
+                            ->whereRaw("($department_condition_sql)")
+                            ->where('designation_name', '=', '*')
+                            ->get()
+                            ->toArray();
 
-                                foreach($all_departments_employees as $check_all_employees){
-                                    
-                                    $payroll_exists = $this->check_if_payroll_exist($date_key,$check_all_employees,$custom_message = 'True');
-                                    
-                                    if($payroll_exists['status'] == FALSE ){
-                                        array_push($check_department_employee_payroll,$check_all_employees);
-                                    }else{
-                                        $check_any_employee_payroll = true;
+                            if(empty($Check_if_hoildays_exists)){
+                            
+                                $other_holidays = Holiday::where('holiday_date', $date_key)->where('designation_name', '!=', '*')->exists();
+                               
+                                if (!empty($other_holidays)) {
+                                    Holiday::where('holiday_date', $date_key)->delete();
+                                }
+
+                                $all_employees = array();
+
+                                $all_departments_employees = Employees::whereIn('employee_department', $department_name)->where('employee_isactive', 1)->where('employee_doj','<=',$date_key)->pluck('employee_id')->toArray();
+
+                                if(!empty($all_departments_employees)){
+
+                                    $check_department_employee_payroll = array();
+
+                                    foreach($all_departments_employees as $check_all_employees){
+                                        
+                                        $payroll_exists = $this->check_if_payroll_exist($date_key,$check_all_employees,$custom_message = 'True');
+                                        
+                                        if($payroll_exists['status'] == FALSE ){
+                                            array_push($check_department_employee_payroll,$check_all_employees);
+                                        }else{
+                                            $check_any_employee_payroll = true;
+                                        }
+                                    }
+
+                                    if(!empty($check_department_employee_payroll)){
+
+                                        array_push($all_employees,$check_department_employee_payroll);
                                     }
                                 }
 
-                                if(!empty($check_department_employee_payroll)){
-
-                                    array_push($all_employees,$check_department_employee_payroll);
+                                if(empty($all_employees)){
+                                    return response()->json([
+                                        'status' => 'FALSE',
+                                        'msg' => "Holiday can't be marked. Payroll of some employees has already been generated from selected departments.",
+                                    ]);
                                 }
-                            }
 
-                            if(empty($all_employees)){
+                                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($date_key);
+
+                                if($check_attendance_sheet_availability['status'] == FALSE){
+                                    return response()->json([
+                                        'msg' => $check_attendance_sheet_availability['msg'],
+                                        'status' => 'FALSE'
+                                    ]);
+                                }
+                                
+                                $new_holiday = new Holiday();
+                                $new_holiday->holiday_date = $date_key;
+                                $new_holiday->holiday_name = $request->input('holiday_reason');
+                                $new_holiday->department_name = implode(',', $department_name);;
+                                $new_holiday->designation_name = '*';
+                                $new_holiday->holiday_created_at = date('Y-m-d H:i:s');
+
+                                if ($request->input('overtime_applicable') == 1) {
+
+                                    $new_holiday->is_overtime_applicable = 1;
+                                
+                                    if ($request->input('overtime_payment_type') == 1) {
+                                        $new_holiday->overtime_payment_type = 1;
+                                    } else {
+                                        $new_holiday->overtime_payment_type = 0;
+                                    }
+                                
+                                    $new_holiday->holiday_overtime_amount = $request->input('holiday_overtime_amount');
+                                    
+                                }else {
+                                    $new_holiday->is_overtime_applicable = 0;
+                                    $new_holiday->overtime_payment_type = null;
+                                    $new_holiday->holiday_overtime_amount = null;
+                                }
+
+                                $process = $new_holiday->save();
+
+                                $day = date("d", strtotime($date_key));
+
+                                $month = date("m", strtotime($date_key));
+                                
+                                $year = date("Y", strtotime($date_key));
+                                
+                                if(!empty($all_employees)){
+                                    foreach($all_employees as $employee){
+                                        foreach($employee as $emp){
+                                            
+                                            if($request->input('all_holiday') == "on"){
+                                                Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->delete();
+                                            }else{
+                                                Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->where('att_check_overall_status','Absent')->delete();
+                                            }
+                                            $get_attendance = Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->get(['attendance_id'])->toArray();
+                                            $employee_shift_start = $this->get_employee_today_shift($emp,"in",$date_key);
+                                            $employee_shift_end = $this->get_employee_today_shift($emp,"out",$date_key);
+                                            if(empty($get_attendance)){
+                                                $update_attendance = new Attendance();
+                                                $update_attendance->att_employee_id = $emp;
+                                                $update_attendance->att_check_in_time = '00:00:00';
+                                                $update_attendance->att_check_out_time = '00:00:00';
+                                                $update_attendance->att_check_in_status = 0;
+                                                $update_attendance->att_check_out_status = 0;
+                                                $update_attendance->att_check_out_source = 1;
+                                                $update_attendance->att_shift_start_time = $employee_shift_start;
+                                                $update_attendance->att_shift_end_time = $employee_shift_end;
+                                                $update_attendance->att_check_overall_status = 'Holiday : '.$request->input('holiday_reason').'';
+                                                $update_attendance->att_for_date = $day;
+                                                $update_attendance->att_for_month = $month;
+                                                $update_attendance->att_for_year = $year;
+                                                $update_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+                                                $update_attendance->save();
+                                            }
+                                        }
+                                    }     
+                                }
+                            }else{
+
                                 return response()->json([
                                     'status' => 'FALSE',
-                                    'msg' => "Holiday can't be marked. Payroll of some employees has already been generated from selected departments.",
+                                    'msg' => 'Holiday addition failed. Holiday already exist on this date(s).',
                                 ]);
-                            }
-
-                            $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($date_key);
-
-                            if($check_attendance_sheet_availability['status'] == FALSE){
-                                return response()->json([
-                                    'msg' => $check_attendance_sheet_availability['msg'],
-                                    'status' => 'FALSE'
-                                ]);
-                            }
-                            
-                            $new_holiday = new Holiday();
-                            $new_holiday->holiday_date = $date_key;
-                            $new_holiday->holiday_name = $request->input('holiday_reason');
-                            $new_holiday->department_name = implode(',', $department_name);;
-                            $new_holiday->designation_name = '*';
-                            $new_holiday->holiday_created_at = date('Y-m-d H:i:s');
-
-                            if ($request->input('overtime_applicable') == 1) {
-
-                                $new_holiday->is_overtime_applicable = 1;
-                            
-                                if ($request->input('overtime_payment_type') == 1) {
-                                    $new_holiday->overtime_payment_type = 1;
-                                } else {
-                                    $new_holiday->overtime_payment_type = 0;
-                                }
-                            
-                                $new_holiday->holiday_overtime_amount = $request->input('holiday_overtime_amount');
-                                
-                            }else {
-                                $new_holiday->is_overtime_applicable = 0;
-                                $new_holiday->overtime_payment_type = null;
-                                $new_holiday->holiday_overtime_amount = null;
-                            }
-
-                            $process = $new_holiday->save();
-
-                            $day = date("d", strtotime($date_key));
-
-                            $month = date("m", strtotime($date_key));
-                            
-                            $year = date("Y", strtotime($date_key));
-                            
-                            if(!empty($all_employees)){
-                                foreach($all_employees as $employee){
-                                    foreach($employee as $emp){
-                                        
-                                        if($request->input('all_holiday') == "on"){
-                                            Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->delete();
-                                        }else{
-                                            Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->where('att_check_overall_status','Absent')->delete();
-                                        }
-                                        $get_attendance = Attendance::where('att_employee_id', $emp)->where('att_for_date', $day)->where('att_for_month', $month)->where('att_for_year', $year)->get(['attendance_id'])->toArray();
-                                        $employee_shift_start = $this->get_employee_today_shift($emp,"in",$date_key);
-                                        $employee_shift_end = $this->get_employee_today_shift($emp,"out",$date_key);
-                                        if(empty($get_attendance)){
-                                            $update_attendance = new Attendance();
-                                            $update_attendance->att_employee_id = $emp;
-                                            $update_attendance->att_check_in_time = '00:00:00';
-                                            $update_attendance->att_check_out_time = '00:00:00';
-                                            $update_attendance->att_check_in_status = 0;
-                                            $update_attendance->att_check_out_status = 0;
-                                            $update_attendance->att_check_out_source = 1;
-                                            $update_attendance->att_shift_start_time = $employee_shift_start;
-                                            $update_attendance->att_shift_end_time = $employee_shift_end;
-                                            $update_attendance->att_check_overall_status = 'Holiday : '.$request->input('holiday_reason').'';
-                                            $update_attendance->att_for_date = $day;
-                                            $update_attendance->att_for_month = $month;
-                                            $update_attendance->att_for_year = $year;
-                                            $update_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
-                                            $update_attendance->save();
-                                        }
-                                    }
-                                }     
-                            }
+                            }   
                         }
                         
                     }
