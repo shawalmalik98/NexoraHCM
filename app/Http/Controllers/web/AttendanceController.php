@@ -3863,7 +3863,7 @@ class AttendanceController extends Controller
                                     AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
                             ) AS DateRange
                         ) + ISNULL(Ex.Extraday, 0) AS 'extra_working',
-                        Ex.HolidayCount
+                        ISNULL(Ex.HolidayCount, 0) AS 'HolidayCount'
                         
                     FROM tbl_employees e
                     LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
