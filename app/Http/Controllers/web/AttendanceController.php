@@ -3862,7 +3862,7 @@ class AttendanceController extends Controller
                                     )
                                     AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
                             ) AS DateRange
-                        ) + Ex.Extraday AS 'extra_working',
+                        ) + ISNULL(Ex.Extraday, 0) AS 'extra_working',
                         Ex.HolidayCount
                         
                     FROM tbl_employees e
