@@ -231,7 +231,7 @@
                                         <th class="text-center">Month Days</th>
                                         <th class="text-center">Salary Days</th>
                                         <th class="text-center">Extra Working</th>
-                                        <th class="text-center">Holidays</th>
+                                        {{-- <th class="text-center">Holidays</th> --}}
                                         <th class="text-center">View Attendance</th>
                                         {{-- <th class="ps-4">Action</th> --}}
                                     </tr>
@@ -256,7 +256,7 @@
                                                 <td class="text-center">{{$all_attendance['month_days']}}</td>
                                                 <td class="text-center">{{$all_attendance['salary_days']}}</td>
                                                 <td class="text-center">{{$all_attendance['extra_working'] ?? '0' }}</td>
-                                                <td class="text-center">{{ $all_attendance['HolidayCount'] ?? '0' }}</td>
+                                                {{-- <td class="text-center">{{ $all_attendance['HolidayCount'] ?? '0' }}</td> --}}
                                                 <td class="text-center">
 
                                                     @if(!empty(Request::get('from_date')) || !empty(Request::get('to_date')))

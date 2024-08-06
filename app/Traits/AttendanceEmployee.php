@@ -577,7 +577,7 @@ trait AttendanceEmployee {
 								AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
 						) AS DateRange
 					)
-				) AS 'DA',
+				) - ISNULL(Ex.Extraday, 0) AS 'DA',
 				(
 					DATEDIFF(DAY, 
 						CASE 
@@ -661,7 +661,7 @@ trait AttendanceEmployee {
 						)
 					) AS DateRange
 					WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
-				) as 'off_days_count',
+				) + ISNULL(Ex.HolidayCount, 0) as 'off_days_count',
 				(
 					SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - (
 						SELECT COUNT(DateInMonth)
@@ -687,7 +687,7 @@ trait AttendanceEmployee {
 								AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
 						) AS DateRange
 					)
-				) AS 'Patrol',
+				) - ISNULL(Ex.Extraday, 0)  AS 'Patrol',
 				(
 					DATEDIFF(DAY, 
 						CASE 
@@ -723,8 +723,7 @@ trait AttendanceEmployee {
 							)
 							AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
 					) AS DateRange
-				) + ISNULL(Ex.Extraday, 0) AS 'extra_working',
-				ISNULL(Ex.HolidayCount, 0) AS 'HolidayCount'
+				) + ISNULL(Ex.Extraday, 0) AS 'extra_working'
 				 
 			FROM tbl_employees e
 			LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 

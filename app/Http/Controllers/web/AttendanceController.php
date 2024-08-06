@@ -3717,69 +3717,7 @@ class AttendanceController extends Controller
                                         AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
                                 ) AS DateRange
                             )
-                        ) AS 'DA',
-                        
-                        SUM(CASE WHEN att_check_overall_status = 'leaves' 
-                        OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
-
-                        (
-                            SELECT COUNT(*) 
-                            FROM (
-                                SELECT DATEADD(DAY, number, 
-                                    CASE 
-                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                        ELSE '$from_date' 
-                                    END
-                                ) AS DateInMonth
-                                FROM master.dbo.spt_values
-                                WHERE TYPE = 'P'
-                                AND number BETWEEN 0 AND DATEDIFF(DAY, 
-                                    CASE 
-                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                        ELSE '$from_date' 
-                                    END, '$to_date'
-                                )
-                            ) AS DateRange
-                            WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
-                        ) as 'off_days_count',
-                        (
-                            SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - (
-                                SELECT COUNT(DateInMonth)
-                                FROM (
-                                    SELECT 
-                                        DATEADD(DAY, number, '$from_date') AS DateInMonth
-                                    FROM master.dbo.spt_values
-                                    WHERE TYPE = 'P'
-                                        AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-                                        AND EXISTS (
-                                            SELECT 1 
-                                            FROM tbl_attendance 
-                                            WHERE 
-                                                att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-                                                att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-                                                att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-                                                (
-                                                    att_check_in_status = 1 OR
-                                                    att_check_out_status = 1
-                                                )
-                                                AND att_employee_id = e.employee_id
-                                        )
-                                        AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
-                                ) AS DateRange
-                            )
-                        ) AS 'Patrol',
-                        (
-                            DATEDIFF(DAY, 
-                                CASE 
-                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                                    ELSE '$from_date' 
-                                END, 
-                                CASE 
-                                    WHEN GETDATE() < '$to_date' THEN GETDATE()
-                                    ELSE '$to_date'
-                                END
-                            ) + 1
-                        ) AS 'month_days',
+                        ) - ISNULL(Ex.Extraday, 0) AS 'DA',
                         (
                             DATEDIFF(DAY, 
                                 CASE 
@@ -3841,6 +3779,67 @@ class AttendanceController extends Controller
                                 )
                             )
                         ) AS salary_days,
+                        SUM(CASE WHEN att_check_overall_status = 'leaves' 
+                        OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
+
+                        (
+                            SELECT COUNT(*) 
+                            FROM (
+                                SELECT DATEADD(DAY, number, 
+                                    CASE 
+                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+                                        ELSE '$from_date' 
+                                    END
+                                ) AS DateInMonth
+                                FROM master.dbo.spt_values
+                                WHERE TYPE = 'P'
+                                AND number BETWEEN 0 AND DATEDIFF(DAY, 
+                                    CASE 
+                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+                                        ELSE '$from_date' 
+                                    END, '$to_date'
+                                )
+                            ) AS DateRange
+                            WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+                        ) + ISNULL(Ex.HolidayCount, 0) as 'off_days_count',
+                        (
+                            SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - (
+                                SELECT COUNT(DateInMonth)
+                                FROM (
+                                    SELECT 
+                                        DATEADD(DAY, number, '$from_date') AS DateInMonth
+                                    FROM master.dbo.spt_values
+                                    WHERE TYPE = 'P'
+                                        AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                                        AND EXISTS (
+                                            SELECT 1 
+                                            FROM tbl_attendance 
+                                            WHERE 
+                                                att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+                                                att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+                                                att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                                                (
+                                                    att_check_in_status = 1 OR
+                                                    att_check_out_status = 1
+                                                )
+                                                AND att_employee_id = e.employee_id
+                                        )
+                                        AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+                                ) AS DateRange
+                            )
+                        ) - ISNULL(Ex.Extraday, 0)  AS 'Patrol',
+                        (
+                            DATEDIFF(DAY, 
+                                CASE 
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+                                    ELSE '$from_date' 
+                                END, 
+                                CASE 
+                                    WHEN GETDATE() < '$to_date' THEN GETDATE()
+                                    ELSE '$to_date'
+                                END
+                            ) + 1
+                        ) AS 'month_days',
                         (
                             SELECT COUNT(DateInMonth)
                             FROM (
@@ -3864,8 +3863,7 @@ class AttendanceController extends Controller
                                     )
                                     AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
                             ) AS DateRange
-                        ) + ISNULL(Ex.Extraday, 0) AS 'extra_working',
-                        ISNULL(Ex.HolidayCount, 0) AS 'HolidayCount'
+                        ) + ISNULL(Ex.Extraday, 0) AS 'extra_working'
                         
                     FROM tbl_employees e
                     LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
