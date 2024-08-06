@@ -600,7 +600,9 @@ trait AttendanceEmployee {
 					- 
 					(
 						SUM(CASE 
-							WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day' , 'Casual Leave', 'Sick Leave', 'Annual Leave') THEN 1 
+							WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day' , 'Casual Leave', 'Sick Leave', 'Annual Leave')
+							OR att_check_overall_status LIKE '%Holiday%' 
+							THEN 1 
 							ELSE 0 
 						END) + 
 						(
