@@ -1392,7 +1392,9 @@ class EmployeeController extends Controller
                     $update_employee->business_unit = $employee_data->input('business_unit');
                     $update_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
                     $update_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
-                    $update_employee->employee_geofencing_enability = ($employee_data->input('employee_geofencing_enability') == '1') ? true : false;
+                    if(!in_array($employee_data->input('employee_id'), [682,1073,1074,501,1202,184,4016])){
+                        $update_employee->employee_geofencing_enability = ($employee_data->input('employee_geofencing_enability') == '1') ? true : false;
+                    }
                     $update_employee->employee_senior_manager = $employee_data->input('employee_reporting_person');
                     $update_employee->employee_junior_manager = $employee_data->input('employee_reporting_person2');
                     $update_employee->employee_is_manager = $employee_data->input('make_ra');
