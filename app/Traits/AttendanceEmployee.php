@@ -489,88 +489,357 @@ trait AttendanceEmployee {
 
 	protected function get_monthly_attendance_all_employees($from_date , $to_date , $where_clause){
 
+		$all_attendances = DB::select("
+			SELECT 
+				e.employee_id,
+				e.employee_code, 
+				e.employee_name,
+				FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'employee_doj',
+				dep.department_name, 
+				des.designation_name,
+				e.business_unit,
+				CONCAT(rep.employee_code, ' ', rep.employee_name, ' (', e.employee_offdays, ')') as 'Shift',
+				
+				(
+					DATEDIFF(DAY, 
+						CASE 
+							WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+							ELSE '$from_date' 
+						END, '$to_date'
+					) + 1
+					- 
+					(
+						SUM(CASE 
+							WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day', 'Casual Leave', 'Sick Leave', 'Annual Leave') 
+							OR att_check_overall_status LIKE '%Holiday%' 
+							THEN 1 
+							ELSE 0 
+						END) + 
+						(
+							SELECT COUNT(*) 
+							FROM (
+								SELECT DATEADD(DAY, number, 
+									CASE 
+										WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+										ELSE '$from_date' 
+									END
+								) AS DateInMonth
+								FROM master.dbo.spt_values
+								WHERE TYPE = 'P'
+									AND number BETWEEN 0 AND DATEDIFF(DAY, 
+										CASE 
+											WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+											ELSE '$from_date' 
+										END, 
+										'$to_date'
+									)
+									AND NOT EXISTS (
+										SELECT 1 FROM tbl_attendance 
+										WHERE 
+											att_comp_date = DATEADD(DAY, number, 
+												CASE 
+													WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+													ELSE '$from_date' 
+												END
+											) AND
+											att_employee_id = e.employee_id
+									)
+							) AS DateRange
+							WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+						)
+					)
+				) AS 'absent',
+				(
+					SUM(CASE 
+						WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
+						ELSE 0 
+					END) - (
+						SELECT COUNT(DateInMonth)
+						FROM (
+							SELECT 
+								DATEADD(DAY, number, '$from_date') AS DateInMonth
+							FROM master.dbo.spt_values
+							WHERE TYPE = 'P'
+								AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+								AND EXISTS (
+									SELECT 1 
+									FROM tbl_attendance 
+									WHERE 
+										att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+										att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+										att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+										(
+											att_check_in_status = 1 OR
+											att_check_out_status = 1
+										)
+										AND att_employee_id = e.employee_id
+								)
+								AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+						) AS DateRange
+					)
+				) AS 'DA',
+				(
+					DATEDIFF(DAY, 
+						CASE 
+							WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+							ELSE '$from_date' 
+						END, 
+						CASE 
+							WHEN GETDATE() < '$to_date' THEN GETDATE()
+							ELSE '$to_date'
+						END
+					) + 1
+				) - 
+				(
+					DATEDIFF(DAY, 
+						CASE 
+							WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+							ELSE '$from_date' 
+						END, '$to_date'
+					) + 1
+					- 
+					(
+						SUM(CASE 
+							WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day' , 'Casual Leave', 'Sick Leave', 'Annual Leave') THEN 1 
+							ELSE 0 
+						END) + 
+						(
+							SELECT COUNT(*) 
+							FROM (
+								SELECT DATEADD(DAY, number, 
+									CASE 
+										WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+										ELSE '$from_date' 
+									END
+								) AS DateInMonth
+								FROM master.dbo.spt_values
+								WHERE TYPE = 'P'
+									AND number BETWEEN 0 AND DATEDIFF(DAY, 
+										CASE 
+											WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+											ELSE '$from_date' 
+										END, 
+										'$to_date'
+									)
+									AND NOT EXISTS (
+										SELECT 1 FROM tbl_attendance 
+										WHERE 
+											att_comp_date = DATEADD(DAY, number, 
+												CASE 
+													WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+													ELSE '$from_date' 
+												END
+											) AND
+											att_employee_id = e.employee_id
+									)
+							) AS DateRange
+							WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+						)
+					)
+				) AS salary_days,
+				SUM(CASE WHEN att_check_overall_status = 'leaves' 
+				OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
+
+				(
+					SELECT COUNT(*) 
+					FROM (
+						SELECT DATEADD(DAY, number, 
+							CASE 
+								WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+								ELSE '$from_date' 
+							END
+						) AS DateInMonth
+						FROM master.dbo.spt_values
+						WHERE TYPE = 'P'
+						AND number BETWEEN 0 AND DATEDIFF(DAY, 
+							CASE 
+								WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+								ELSE '$from_date' 
+							END, '$to_date'
+						)
+					) AS DateRange
+					WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+				) as 'off_days_count',
+				(
+					SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - (
+						SELECT COUNT(DateInMonth)
+						FROM (
+							SELECT 
+								DATEADD(DAY, number, '$from_date') AS DateInMonth
+							FROM master.dbo.spt_values
+							WHERE TYPE = 'P'
+								AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+								AND EXISTS (
+									SELECT 1 
+									FROM tbl_attendance 
+									WHERE 
+										att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+										att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+										att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+										(
+											att_check_in_status = 1 OR
+											att_check_out_status = 1
+										)
+										AND att_employee_id = e.employee_id
+								)
+								AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+						) AS DateRange
+					)
+				) AS 'Patrol',
+				(
+					DATEDIFF(DAY, 
+						CASE 
+							WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+							ELSE '$from_date' 
+						END, 
+						CASE 
+							WHEN GETDATE() < '$to_date' THEN GETDATE()
+							ELSE '$to_date'
+						END
+					) + 1
+				) AS 'month_days',
+				(
+					SELECT COUNT(DateInMonth)
+					FROM (
+						SELECT 
+							DATEADD(DAY, number, '$from_date') AS DateInMonth
+						FROM master.dbo.spt_values
+						WHERE TYPE = 'P'
+							AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+							AND EXISTS (
+								SELECT 1 
+								FROM tbl_attendance 
+								WHERE 
+									att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+									att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+									att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+									(
+										att_check_in_status = 1 OR
+										att_check_out_status = 1
+									)
+									AND att_employee_id = e.employee_id
+							)
+							AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+					) AS DateRange
+				) + Ex.Extraday AS 'extra_working',
+				Ex.HolidayCount
+				 
+			FROM tbl_employees e
+			LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+				AND CONCAT(a.att_for_year, '-', a.att_for_month, '-', a.att_for_date) BETWEEN '$from_date' AND '$to_date'
+			LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
+			LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
+			LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+			LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+			LEFT JOIN (					
+				SELECT employee_code,
+				COUNT(CASE WHEN a.att_check_overall_status NOT LIKE '%Holiday%' THEN holiday_date END) AS Extraday,
+				COUNT(holiday_date) AS HolidayCount
+				FROM (
+					SELECT 
+						h.holiday_date,
+						a.employee_designation,
+						h.holiday_name,
+						a.employee_code,
+						a.att_check_overall_status,
+						a.att_comp_date
+					FROM tbl_holidays AS h 
+					CROSS APPLY STRING_SPLIT(h.designation_name, ',') AS split
+					JOIN (
+						SELECT e.employee_designation, employee_code, att_check_overall_status, att_comp_date 
+						FROM tbl_attendance t 
+						INNER JOIN tbl_employees e ON t.att_employee_id = e.employee_id
+						INNER JOIN tbl_departments d ON e.employee_department = d.department_id
+						INNER JOIN tbl_designations de ON e.employee_designation = de.designation_id  
+					) AS a  ON h.holiday_date = a.att_comp_date 
+						AND (split.value = CAST(a.employee_designation AS NVARCHAR) OR h.designation_name = '*')
+				) AS a
+				
+				where a.holiday_date between '$from_date' and '$to_date' 
+
+				GROUP BY employee_code
+			) AS Ex ON e.employee_code = Ex.employee_code
+			WHERE $where_clause AND e.employee_isactive = 1 
+			GROUP BY 
+				e.employee_code, 
+				e.employee_name, 
+				e.business_unit, 
+				dep.department_name, 
+				des.designation_name, 
+				e.employee_offdays,
+				e.employee_id,
+				rep.employee_code,
+				rep.employee_name,
+				e.employee_doj,
+				Ex.Extraday,
+				Ex.HolidayCount
+			
+			ORDER BY e.employee_code ASC
+		");
+
+
 		// $all_attendances = DB::select("
 		// SELECT 
 		// e.employee_id,
 		// e.employee_code, 
 		// e.employee_name,
-		// FORMAT(CAST(e.employee_doj AS DATE), 'dd MMM, yyyy') as 'employee_doj',
+		// FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'employee_doj',
 		// dep.department_name, 
 		// des.designation_name,
 		// e.business_unit,
 		// CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
 		
 		// (
-		// 	(DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
-		// 	(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
-		// 	SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
-		// 	SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
-		// 	SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
-		// 	(SELECT COUNT(*) 
-		// FROM (
-		// 	SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
-		// 	FROM master.dbo.spt_values
-		// 	WHERE TYPE = 'P'
-		// 	AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-		// 	AND NOT EXISTS (
-		// 		SELECT 1 FROM tbl_attendance WHERE 
-		// 		att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-		// 		att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-		// 		att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-		// 		att_employee_id = e.employee_id
+		// 	DATEDIFF(DAY, 
+		// 		CASE 
+		// 			WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+		// 			ELSE '$from_date' 
+		// 		END, '$to_date'
+		   
+		// 	) + 1
+		// 	- 
+		// 	(
+		// 		SUM(CASE 
+		// 			WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
+		// 			ELSE 0 
+		// 		END) + 
+		// 		(
+		// 			SELECT COUNT(*) 
+		// 			FROM (
+		// 				SELECT DATEADD(DAY, number, 
+		// 					CASE 
+		// 						WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+		// 						ELSE '$from_date' 
+		// 					END
+		// 				) AS DateInMonth
+		// 				FROM master.dbo.spt_values
+		// 				WHERE TYPE = 'P'
+		// 					AND number BETWEEN 0 AND DATEDIFF(DAY, 
+		// 						CASE 
+		// 							WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+		// 							ELSE '$from_date' 
+		// 						END, 
+		// 						'$to_date'
+		// 					)
+		// 					AND NOT EXISTS (
+		// 						SELECT 1 FROM tbl_attendance 
+		// 						WHERE 
+		// 							att_comp_date = DATEADD(DAY, number, 
+		// 								CASE 
+		// 									WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+		// 									ELSE '$from_date' 
+		// 								END
+		// 							) AND
+		// 							att_employee_id = e.employee_id
+		// 					)
+		// 			) AS DateRange
+		// 			WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+		// 		)
 		// 	)
-		// ) AS DateRange
-		// WHERE 
-		// 	e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
-				
-		// 	) AS absent,
+		// ) AS 'absent',
 		
-		// 	SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
-		// OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'DA',
-		
-		// 	SUM(CASE WHEN att_check_overall_status = 'leaves' 
-		// OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
-		
-		// (SELECT COUNT(*) 
-		// FROM (
-		// 	SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
-		// 	FROM master.dbo.spt_values
-		// 	WHERE TYPE = 'P'
-		// 	AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-		// ) AS DateRange
-		// WHERE 
-		// 	e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
-		// 	) as off_days_count,
-		
-		// SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
-		// OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS 'Patrol',
-		
-		// (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - (
-		// 	(DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
-		// 	(SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
-		// 	SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
-		// 	SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
-		// 	SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
-		// 	(SELECT COUNT(*) 
-		// FROM (
-		// 	SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
-		// 	FROM master.dbo.spt_values
-		// 	WHERE TYPE = 'P'
-		// 	AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-		// 	AND NOT EXISTS (
-		// 		SELECT 1 FROM tbl_attendance WHERE 
-		// 		att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-		// 		att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-		// 		att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-		// 		att_employee_id = e.employee_id
-		// 	)
-		// ) AS DateRange
-		// WHERE 
-		// 	e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
-				
-		// 	) AS salary_days,
-
-		// (
+		// 	(SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+		// OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END)) - (
 		// 	SELECT COUNT(DateInMonth)
 		// 	FROM (
 		// 		SELECT 
@@ -585,300 +854,193 @@ trait AttendanceEmployee {
 		// 					att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
 		// 					att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
 		// 					att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-		// 					att_check_in_status = 1 
+		// 					(
+		// 						att_check_in_status = 1 OR
+		// 						att_check_out_status = 1
+		// 					)
 		// 					AND att_employee_id = e.employee_id
 							
 		// 			)
 		// 			AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
 		// 	) AS DateRange
-		// ) AS 'extra_working'
+		// ) AS 'DA',
+
+		// (
+		// 	DATEDIFF(DAY, 
+		// 		CASE 
+		// 			WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+		// 			ELSE '$from_date' 
+		// 		END, 
+		// 		CASE 
+		// 			WHEN GETDATE() < '$to_date' THEN GETDATE()
+		// 			ELSE '$to_date'
+		// 		END
+		// 	) + 1
+		// ) - 
+		// (
+		// 	DATEDIFF(DAY, 
+		// 		CASE 
+		// 			WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+		// 			ELSE '$from_date' 
+		// 		END, '$to_date'
+		// 	) + 1
+		// 	- 
+		// 	(
+		// 		SUM(CASE 
+		// 			WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
+		// 			ELSE 0 
+		// 		END) + 
+		// 		(
+		// 			SELECT COUNT(*) 
+		// 			FROM (
+		// 				SELECT DATEADD(DAY, number, 
+		// 					CASE 
+		// 						WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+		// 						ELSE '$from_date' 
+		// 					END
+		// 				) AS DateInMonth
+		// 				FROM master.dbo.spt_values
+		// 				WHERE TYPE = 'P'
+		// 					AND number BETWEEN 0 AND DATEDIFF(DAY, 
+		// 						CASE 
+		// 							WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+		// 							ELSE '$from_date' 
+		// 						END, 
+		// 						'$to_date'
+		// 					)
+		// 					AND NOT EXISTS (
+		// 						SELECT 1 FROM tbl_attendance 
+		// 						WHERE 
+		// 							att_comp_date = DATEADD(DAY, number, 
+		// 								CASE 
+		// 									WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+		// 									ELSE '$from_date' 
+		// 								END
+		// 							) AND
+		// 							att_employee_id = e.employee_id
+		// 					)
+		// 			) AS DateRange
+		// 			WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+		// 		)
+		// 	)
+		// ) AS salary_days,
 		
-		// FROM tbl_employees e
-		// LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
-		// AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
-		// AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
-		// LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
-		// LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
-		// LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
-		// LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-		// WHERE $where_clause
-		// GROUP BY 
-		// e.employee_code, 
-		// e.employee_name, 
-		// e.business_unit, 
-		// dep.department_name, 
-		// des.designation_name, 
-		// e.employee_offdays,
-		// e.employee_id,
-		// rep.employee_code,
-		// rep.employee_name,
-		// e.employee_doj
+		// SUM(CASE WHEN att_check_overall_status = 'leaves' 
+		// OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
+		
+		// (SELECT COUNT(*) 
+		// FROM (
+		//    SELECT DATEADD(DAY, number, 
+		// 	   CASE 
+		// 		   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+		// 		   ELSE '$from_date' 
+		// 	   END
+		//    ) AS DateInMonth
+		//    FROM master.dbo.spt_values
+		//    WHERE TYPE = 'P'
+		//    AND number BETWEEN 0 AND DATEDIFF(DAY, 
+		// 	   CASE 
+		// 		   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
+		// 		   ELSE '$from_date' 
+		// 	   END, '$to_date'
+
+		//    )
+		// 		) AS DateRange
+		// 		WHERE 
+		// 		e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
+		// 	) as 'off_days_count',
+					
+		// 	(SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
+		// 	OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END)) - (
+		// 		SELECT COUNT(DateInMonth)
+		// 		FROM (
+		// 			SELECT 
+		// 				DATEADD(DAY, number, '$from_date') AS DateInMonth
+		// 			FROM master.dbo.spt_values
+		// 			WHERE TYPE = 'P'
+		// 				AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+		// 				AND EXISTS (
+		// 					SELECT 1 
+		// 					FROM tbl_attendance 
+		// 					WHERE 
+		// 						att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+		// 						att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+		// 						att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+		// 						(
+		// 							att_check_in_status = 1 OR
+		// 							att_check_out_status = 1
+		// 						)
+		// 						AND att_employee_id = e.employee_id
+								
+		// 				)
+		// 				AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+		// 		) AS DateRange
+		// 	) AS 'Patrol',
+
+		// 	(
+		// 		DATEDIFF(DAY, 
+		// 			CASE 
+		// 				WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
+		// 				ELSE '$from_date' 
+		// 			END, 
+		// 			CASE 
+		// 				WHEN GETDATE() < '$to_date' THEN GETDATE()
+		// 				ELSE '$to_date'
+		// 			END
+		// 		) + 1
+		// 	) AS 'month_days',
+
+		// 	(
+		// 		SELECT COUNT(DateInMonth)
+		// 		FROM (
+		// 			SELECT 
+		// 				DATEADD(DAY, number, '$from_date') AS DateInMonth
+		// 			FROM master.dbo.spt_values
+		// 			WHERE TYPE = 'P'
+		// 				AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+		// 				AND EXISTS (
+		// 					SELECT 1 
+		// 					FROM tbl_attendance 
+		// 					WHERE 
+		// 						att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
+		// 						att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
+		// 						att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+		// 						(
+		// 							att_check_in_status = 1 OR
+		// 							att_check_out_status = 1
+		// 						)
+		// 						AND att_employee_id = e.employee_id
+								
+		// 				)
+		// 				AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+		// 		) AS DateRange
+		// 	) AS 'extra_working'
+
+		// 	FROM tbl_employees e
+		// 	LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+		// 	AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
+		// 	AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
+		// 	LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
+		// 	LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
+		// 	LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+		// 	LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
+		// 	WHERE $where_clause AND e.employee_isactive = 1
+		// 	GROUP BY 
+		// 	e.employee_code, 
+		// 	e.employee_name, 
+		// 	e.business_unit, 
+		// 	dep.department_name, 
+		// 	des.designation_name, 
+		// 	e.employee_offdays,
+		// 	e.employee_id,
+		// 	rep.employee_code,
+		// 	rep.employee_name,
+		// 	e.employee_doj
+
+		// 	ORDER BY 
+    	// 		e.employee_code ASC
 	
 		// ");
-
-		$all_attendances = DB::select("
-		SELECT 
-		e.employee_id,
-		e.employee_code, 
-		e.employee_name,
-		FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'employee_doj',
-		dep.department_name, 
-		des.designation_name,
-		e.business_unit,
-		CONCAT(rep.employee_code , ' ' , rep.employee_name ,' (', e.employee_offdays,')') as 'Shift',
-		
-		(
-			DATEDIFF(DAY, 
-				CASE 
-					WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-					ELSE '$from_date' 
-				END, '$to_date'
-		   
-			) + 1
-			- 
-			(
-				SUM(CASE 
-					WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
-					ELSE 0 
-				END) + 
-				(
-					SELECT COUNT(*) 
-					FROM (
-						SELECT DATEADD(DAY, number, 
-							CASE 
-								WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-								ELSE '$from_date' 
-							END
-						) AS DateInMonth
-						FROM master.dbo.spt_values
-						WHERE TYPE = 'P'
-							AND number BETWEEN 0 AND DATEDIFF(DAY, 
-								CASE 
-									WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-									ELSE '$from_date' 
-								END, 
-								'$to_date'
-							)
-							AND NOT EXISTS (
-								SELECT 1 FROM tbl_attendance 
-								WHERE 
-									att_comp_date = DATEADD(DAY, number, 
-										CASE 
-											WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-											ELSE '$from_date' 
-										END
-									) AND
-									att_employee_id = e.employee_id
-							)
-					) AS DateRange
-					WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
-				)
-			)
-		) AS 'absent',
-		
-			(SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
-		OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END)) - (
-			SELECT COUNT(DateInMonth)
-			FROM (
-				SELECT 
-					DATEADD(DAY, number, '$from_date') AS DateInMonth
-				FROM master.dbo.spt_values
-				WHERE TYPE = 'P'
-					AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-					AND EXISTS (
-						SELECT 1 
-						FROM tbl_attendance 
-						WHERE 
-							att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-							att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-							att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-							(
-								att_check_in_status = 1 OR
-								att_check_out_status = 1
-							)
-							AND att_employee_id = e.employee_id
-							
-					)
-					AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
-			) AS DateRange
-		) AS 'DA',
-
-		(
-			DATEDIFF(DAY, 
-				CASE 
-					WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-					ELSE '$from_date' 
-				END, 
-				CASE 
-					WHEN GETDATE() < '$to_date' THEN GETDATE()
-					ELSE '$to_date'
-				END
-			) + 1
-		) - 
-		(
-			DATEDIFF(DAY, 
-				CASE 
-					WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-					ELSE '$from_date' 
-				END, '$to_date'
-			) + 1
-			- 
-			(
-				SUM(CASE 
-					WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
-					ELSE 0 
-				END) + 
-				(
-					SELECT COUNT(*) 
-					FROM (
-						SELECT DATEADD(DAY, number, 
-							CASE 
-								WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-								ELSE '$from_date' 
-							END
-						) AS DateInMonth
-						FROM master.dbo.spt_values
-						WHERE TYPE = 'P'
-							AND number BETWEEN 0 AND DATEDIFF(DAY, 
-								CASE 
-									WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-									ELSE '$from_date' 
-								END, 
-								'$to_date'
-							)
-							AND NOT EXISTS (
-								SELECT 1 FROM tbl_attendance 
-								WHERE 
-									att_comp_date = DATEADD(DAY, number, 
-										CASE 
-											WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-											ELSE '$from_date' 
-										END
-									) AND
-									att_employee_id = e.employee_id
-							)
-					) AS DateRange
-					WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
-				)
-			)
-		) AS salary_days,
-		
-		SUM(CASE WHEN att_check_overall_status = 'leaves' 
-		OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
-		
-		(SELECT COUNT(*) 
-		FROM (
-		   SELECT DATEADD(DAY, number, 
-			   CASE 
-				   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-				   ELSE '$from_date' 
-			   END
-		   ) AS DateInMonth
-		   FROM master.dbo.spt_values
-		   WHERE TYPE = 'P'
-		   AND number BETWEEN 0 AND DATEDIFF(DAY, 
-			   CASE 
-				   WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-				   ELSE '$from_date' 
-			   END, '$to_date'
-
-		   )
-				) AS DateRange
-				WHERE 
-				e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
-			) as 'off_days_count',
-					
-			(SUM(CASE WHEN att_check_overall_status = 'Present' OR att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out'
-			OR att_check_overall_status = 'Half day' THEN 1 ELSE 0 END)) - (
-				SELECT COUNT(DateInMonth)
-				FROM (
-					SELECT 
-						DATEADD(DAY, number, '$from_date') AS DateInMonth
-					FROM master.dbo.spt_values
-					WHERE TYPE = 'P'
-						AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-						AND EXISTS (
-							SELECT 1 
-							FROM tbl_attendance 
-							WHERE 
-								att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-								att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-								att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-								(
-									att_check_in_status = 1 OR
-									att_check_out_status = 1
-								)
-								AND att_employee_id = e.employee_id
-								
-						)
-						AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
-				) AS DateRange
-			) AS 'Patrol',
-
-			(
-				DATEDIFF(DAY, 
-					CASE 
-						WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-						ELSE '$from_date' 
-					END, 
-					CASE 
-						WHEN GETDATE() < '$to_date' THEN GETDATE()
-						ELSE '$to_date'
-					END
-				) + 1
-			) AS 'month_days',
-
-			(
-				SELECT COUNT(DateInMonth)
-				FROM (
-					SELECT 
-						DATEADD(DAY, number, '$from_date') AS DateInMonth
-					FROM master.dbo.spt_values
-					WHERE TYPE = 'P'
-						AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-						AND EXISTS (
-							SELECT 1 
-							FROM tbl_attendance 
-							WHERE 
-								att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-								att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-								att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-								(
-									att_check_in_status = 1 OR
-									att_check_out_status = 1
-								)
-								AND att_employee_id = e.employee_id
-								
-						)
-						AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
-				) AS DateRange
-			) AS 'extra_working'
-
-			FROM tbl_employees e
-			LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
-			AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date' 
-			AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' 
-			LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
-			LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
-			LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
-			LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-			WHERE $where_clause AND e.employee_isactive = 1
-			GROUP BY 
-			e.employee_code, 
-			e.employee_name, 
-			e.business_unit, 
-			dep.department_name, 
-			des.designation_name, 
-			e.employee_offdays,
-			e.employee_id,
-			rep.employee_code,
-			rep.employee_name,
-			e.employee_doj
-
-			ORDER BY 
-    			e.employee_code ASC
-	
-		");
 
 		return $all_attendances;
 	}
