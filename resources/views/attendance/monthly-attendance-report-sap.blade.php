@@ -438,7 +438,7 @@
                                                             <span style="color:#a9a9a9">00:00:00</span>
 
                                                             @elseif ($date_filter < $today)
-                                                                -
+                                                                <span style="color:#a9a9a9">00:00:00</span>
                                                             @else
                                                                 -    
                                                         @endif
@@ -481,7 +481,7 @@
                                                             <span style="color:#a9a9a9">00:00:00</span>
 
                                                             @elseif ($date_filter < $today)
-                                                                -
+                                                                <span style="color:#a9a9a9">00:00:00</span>
                                                             @else
                                                                 -    
                                                         @endif
