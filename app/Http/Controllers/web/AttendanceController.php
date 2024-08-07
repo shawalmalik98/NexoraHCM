@@ -1031,7 +1031,7 @@ class AttendanceController extends Controller
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
 
-                        $employee_data = Employees::where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_name','employee_code'])->toArray();
+                        $employee_data = Employees::where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_name','employee_code','employee_offdays'])->toArray();
 
                         CustomHelper::refreshSapAttendance($from_date, $to_date, $employee_data[0]['employee_code']);
 
@@ -1125,7 +1125,7 @@ class AttendanceController extends Controller
                     $month_days = date('t', strtotime($request->input('from_date')));
                 }
                 
-                $employee_data = Employees::where('employee_id',  $login_user[0]['employee_id'])->get(['employee_name'])->toArray();
+                $employee_data = Employees::where('employee_id',  $login_user[0]['employee_id'])->get(['employee_name','employee_offdays'])->toArray();
 
                 $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')

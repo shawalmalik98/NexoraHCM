@@ -210,10 +210,11 @@
                                         @endphp
                                         @for ($month_count = $month_count; $month_count <= $month_days; $month_count++)
                                             @php
+                                                $absent = true;
                                                 $loop_count = 0;
                                             @endphp
                                            
-                                            <tr>
+                                            {{-- <tr>
 
                                                 @php
                                                     $current_date = $dates[$month_count];
@@ -338,6 +339,200 @@
                                                     @if (!$attendance_found && $date_filter <= $today)
                                                     -
                                                    @endif
+                                                    
+                                                </td> 
+                                                        
+                                                   
+                                            </tr> --}}
+
+                                            <tr>
+
+                                                @php
+                                                    $current_date = $dates[$month_count];
+                                                    $name_of_day = date("l", strtotime($current_date));	
+                                                    $name_of_day_short = date("D", strtotime($current_date));	
+                                                @endphp
+
+                                                <td >
+                                                     {{ $current_date }} - {{  $name_of_day_short }}
+                                                  
+                                                </td>
+                                    
+                                               
+                                                <td class="ps-8">
+
+                                                    {{-- @php
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                        $attendance_found = false;
+                                                    @endphp --}}
+                                                    @if (!empty($attendance))
+                                                        @foreach ($attendance as $attendances)
+
+                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
+                                                                
+                                                                @php $absent = false; @endphp
+
+                                                                {{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }} 
+                                                                {{-- @php $attendance_found = true; @endphp --}}
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+
+                                                    {{-- @if (!$attendance_found && $date_filter <= $today)
+                                                     -
+                                                    @endif --}}
+
+                                                    @php
+                                                
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                    @endphp
+                                                
+                                                    @if($absent )
+                                                    
+                                                        @if (in_array($name_of_day, $login_user[0]['employee_offdays']))
+                                                                -
+                                                            @elseif ($date_filter < $today)
+                                                                -
+                                                            @else
+                                                                -    
+                                                        @endif
+                                                    @endif
+                                              
+                                                </td>
+                                                <td > 
+
+                                                    {{-- @php
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                        $attendance_found = false;
+                                                    @endphp --}}
+                                                    @if (!empty($attendance))
+                                                        @foreach ($attendance as $attendances)
+
+                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
+                                                          
+                                                                @php $absent = false; @endphp
+
+                                                             {{ $attendances['time_in'] }}  
+                                                                {{-- @php $attendance_found = true; @endphp --}}
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+
+                                                    {{-- @if (!$attendance_found && $date_filter <= $today)
+                                                    -
+                                                    @endif --}}
+
+                                                    @php
+                                                
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                    @endphp
+                                                
+                                                    @if($absent )
+                                                    
+                                                        @if (in_array($name_of_day, $login_user[0]['employee_offdays']))
+                                                            
+                                                            <span style="color:#a9a9a9">00:00:00</span>
+
+                                                            @elseif ($date_filter < $today)
+                                                                -
+                                                            @else
+                                                                -    
+                                                        @endif
+                                                    @endif
+                                                    
+                                                </td>
+                                                <td > 
+                                                    {{-- @php
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                        $attendance_found = false;
+                                                    @endphp --}}
+                                                    @if (!empty($attendance))
+                                                        @foreach ($attendance as $attendances)
+                                                            
+                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
+                                                               
+                                                                @php $absent = false; @endphp
+
+                                                                {{ $attendances['time_out'] }}  
+                                                                {{-- @php $attendance_found = true; @endphp --}}
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+
+                                                    {{-- @if (!$attendance_found && $date_filter <= $today)
+                                                     -
+                                                    @endif --}}
+
+                                                    @php
+                                                
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                    @endphp
+                                                
+                                                    @if($absent )
+                                                    
+                                                        @if (in_array($name_of_day, $login_user[0]['employee_offdays']))
+                                                            
+                                                            <span style="color:#a9a9a9">00:00:00</span>
+
+                                                            @elseif ($date_filter < $today)
+                                                                -
+                                                            @else
+                                                                -    
+                                                        @endif
+                                                    @endif
+                                                    
+                                                </td>
+                                                
+                                                <td > 
+                                                    {{-- @php
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count])));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                        $attendance_found = false;
+                                                    @endphp --}}
+                                                    @if (!empty($attendance))
+                                                        @foreach ($attendance as $attendances)
+                                                            
+                                                            @if (date("d-m-Y", strtotime($attendances['attendance_date']))  == $dates[$month_count])
+                                                                
+                                                                @php $absent = false; @endphp
+
+                                                                {{ $attendances['attendance_status'] }} 
+                                                                {{-- @php $attendance_found = true; @endphp   --}}
+                                                            @endif
+                                                        @endforeach
+                                                    @endif 
+
+                                                    {{-- @if (!$attendance_found && $date_filter <= $today)
+                                                    -
+                                                   @endif --}}
+
+                                                    @php
+                                                       
+                                                        $date_filter = strtotime(date("d-m-Y", strtotime($dates[$month_count] )));
+                                                        $today = strtotime(date("d-m-Y"));
+                                                    @endphp
+                                                    
+                                                    @if($absent )
+                                                        
+                                                    @if (in_array($name_of_day, $login_user[0]['employee_offdays']))
+                                                        @php $offdays++; @endphp
+                                                            <p>
+                                                                <span style="color:#a9a9a9">DAY OFF</span>
+                                                            </p>
+
+                                                        @elseif($date_filter < $today)
+                                                            @php $absent_count++; @endphp
+                                                            <p>
+                                                                <span style="color:red">Absent</span>
+                                                            </p>
+                                                        @endif
+                                                    @endif
                                                     
                                                 </td> 
                                                         
