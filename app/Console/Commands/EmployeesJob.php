@@ -41,7 +41,7 @@ class EmployeesJob extends Command
     {
         try{
             
-            $response = Http::timeout(120)->get('http://sapapi.ismailindustries.com.pk:8080/get-employees');
+            $response = Http::timeout(300)->get('http://sapapi.ismailindustries.com.pk:8080/get-employees');
             
             if ($response->successful()) {
 
