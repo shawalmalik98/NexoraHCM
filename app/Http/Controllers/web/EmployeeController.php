@@ -5959,8 +5959,8 @@ class EmployeeController extends Controller
                                                     $mark_attendance->att_check_out_time = '00:00:00';
                                                     $mark_attendance->att_check_in_status = '0';
                                                     $mark_attendance->att_check_out_status = 0;
-                                                    $mark_attendance->att_shift_start_time = $shift_start_time->input('shift_start_timings').':00';
-                                                    $mark_attendance->att_shift_end_time = $shift_end_time->input('shift_end_timings').':00';
+                                                    $mark_attendance->att_shift_start_time = '09:00:00';
+                                                    $mark_attendance->att_shift_end_time = '06:00:00';
                                                     $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
                                                     $mark_attendance->att_for_date = $day;
                                                     $mark_attendance->att_for_month = $month;
