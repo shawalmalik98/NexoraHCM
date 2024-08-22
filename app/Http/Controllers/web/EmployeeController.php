@@ -5965,7 +5965,7 @@ class EmployeeController extends Controller
                                                     $mark_attendance->att_for_date = $day;
                                                     $mark_attendance->att_for_month = $month;
                                                     $mark_attendance->att_for_year = $year;
-                                                    $mark_Attendance->att_comp_date = $year . '-' . $month . '-' . $day;
+                                                    $mark_attendance->att_comp_date = $year . '-' . $month . '-' . $day;
                                                     $mark_attendance->save();
 
 
