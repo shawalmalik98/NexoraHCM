@@ -992,7 +992,7 @@ class AttendanceController extends Controller
                       
                     $daysDifference = $interval->days;
                    
-                    if($daysDifference < 40){
+                    // if($daysDifference < 40){
                         $from_date =  $request->input('from_date');
                         $to_date =  $request->input('to_date');
 
@@ -1079,11 +1079,11 @@ class AttendanceController extends Controller
                             $query->whereIn('att_check_overall_status' ,$manage_leaves)
                             ->orWhere('att_check_overall_status','RPL');
                         })->count();
-                   }else{
+                //    }else{
 
-                        return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
+                //         return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
                     
-                   }  
+                //    }  
 
                 }
             }else{

@@ -41,8 +41,8 @@ class EmployeesJob extends Command
     {
         try{
             
-            $response = Http::timeout(180)->get('http://sapapi.ismailindustries.com.pk:8080/get-employees');
-            
+            $response = Http::timeout(300)->get('http://sapapi.ismailindustries.com.pk:8080/get-employees');
+
             if ($response->successful()) {
 
                 $sap_employee_detail = DB::table('sap_employee_detail')
@@ -333,7 +333,7 @@ class EmployeesJob extends Command
         }
 
         $groupEmailAddresses = [
-            2 =>  'mwaqar@ismailindustries.com',
+            2 =>  ['mwaqar@ismailindustries.com','manahmad@ismailindustries.com'],
             3 =>  'hmajeed@ismailindustries.com',
             4 =>  ['musiddiqui@ismailindustries.com', 'mwaseem@ismailindustries.com'],
         ];
