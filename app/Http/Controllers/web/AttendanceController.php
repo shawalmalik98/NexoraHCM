@@ -4542,6 +4542,7 @@ class AttendanceController extends Controller
                         SELECT 
                             emp.employee_code as 'Employee ID', 
                             emp.employee_name as  'Name', 
+                            emp.employee_new_code as  'Employee New Code', 
                             CONCAT(LM.employee_code , ' - ' , LM.employee_name) as 'Line Manager',
                             emp.business_unit as 'Business Unit',
                             CONVERT(date, dates.date_between) as 'Date', 
