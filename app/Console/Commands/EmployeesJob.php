@@ -124,6 +124,7 @@ class EmployeesJob extends Command
                         $add_employee->employee_earning_type =  1;
                         $add_employee->employee_mobile_access =  1;
                         $add_employee->employee_created_source = 'sap';
+                        $add_employee->employee_new_code = $employee_code;
                         $add_employee->employee_created_at =  date('Y-m-d H:i:s');
                         $employee = $add_employee->save();
                         $employee_registration_id = $add_employee->employee_id;

@@ -249,6 +249,7 @@
                                         <tr class="fw-bold text-muted bg-light">
                                             <th class="ps-4">Employee ID</th>
                                             <th>Name</th>
+                                            <th>Employee New Code</th>
                                             <th>Email</th>
                                             <th>Depart &amp; Desig</th>
                                             <th>Group</th>
@@ -265,6 +266,7 @@
                                                     {{-- <td class="ps-4">{{ $employee['employee_id'] }}</td> --}}
                                                     <td class="ps-4">{{ $employee['employee_code'] }}</td>
                                                     <td>{{ $employee['employee_name'] }}</td>
+                                                    <td>{{ $employee['employee_new_code'] }}</td>
                                                 
                                                     <td>{{ $employee['employee_personal_email'] }}</td>
                                                     <td>
@@ -316,6 +318,7 @@
                                         <tr class="fw-bold text-muted bg-light">
                                             <th class="ps-4">Employee ID</th>
                                             <th>Name</th>
+                                            <th>Employee New Code</th>
                                             <th>Email</th>
                                             <th>Depart &amp; Desig</th>
                                             <th>Group</th>
@@ -515,6 +518,7 @@
        $('#all_employee_records').html(`
                <td class="text-center"></td>
                <td class="text-center"></td> 
+               <td class="text-center"></td>
                <td class="text-center"></td> 
                <td class="text-center"></td> 
                <td class="preloader text-center">
@@ -539,6 +543,7 @@
                             <tr>
                                 <td class="ps-4">${employee.employee_code}</td>
                                 <td>${employee.employee_name}</td>
+                                <td>${employee.employee_new_code ?? '-'}</td>
                                 <td>${employee.employee_personal_email}</td>
                                 <td>
                                     <p class="text-dark fw-bold mb-1 fs-6">${employee.department_name}</p>

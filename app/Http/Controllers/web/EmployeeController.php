@@ -88,7 +88,7 @@ class EmployeeController extends Controller
                 ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
                 ->whereRaw($where_clause)
                 ->orderBy('employee_code','ASC')
-                ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit','group_name'])
+                ->get(['employee_id','employee_code','employee_new_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit','group_name'])
                 ->toArray();
 
                 $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
@@ -141,7 +141,7 @@ class EmployeeController extends Controller
                 // ->where('tbl_employees.employee_isactive','=', 1)
                 ->whereRaw($where_clause)
                 ->orderBy('tbl_employees.employee_id', 'asc')
-                ->get(['tbl_employees.employee_code as Employee ID','tbl_employees.employee_name as Employee Name','tbl_employees.employee_gender as Gender','tbl_employees.employee_jobtitle as Position','designation_name as Grade','department_name as Department', 'location_title as Location','group_name as Category' ,'tbl_employees.employee_doj as Join Date', 'tbl_employees.employee_cnic as CNIC','employement_status_name as Status' ,'dob as Date of Birth','tbl_employees.employee_contactno as Mobile','tbl_employees.employee_work_email as Email','emp_ra.employee_name as Supervisor', 'emp_ra.employee_code as Supervisor Id','tbl_employees.employee_deactivate_date as Last Working Day'])
+                ->get(['tbl_employees.employee_code as Employee ID','tbl_employees.employee_name as Employee Name', 'tbl_employees.employee_new_code as Employee New Code' ,'tbl_employees.employee_gender as Gender','tbl_employees.employee_jobtitle as Position','designation_name as Grade','department_name as Department', 'location_title as Location','group_name as Category' ,'tbl_employees.employee_doj as Join Date', 'tbl_employees.employee_cnic as CNIC','employement_status_name as Status' ,'dob as Date of Birth','tbl_employees.employee_contactno as Mobile','tbl_employees.employee_work_email as Email','emp_ra.employee_name as Supervisor', 'emp_ra.employee_code as Supervisor Id','tbl_employees.employee_deactivate_date as Last Working Day'])
                 ->toArray();
 
                 $header_style = (new Style())->setFontBold();
@@ -414,6 +414,7 @@ class EmployeeController extends Controller
                 $add_employee->employee_web_access = $employee_data->input('employee_web_access');
                 $add_employee->employee_mobile_access = $employee_data->input('employee_mobile_access');
                 $add_employee->employee_created_source = 'direct';
+                $add_employee->employee_new_code = $employee_data->input('employee_code');
                 $add_employee->employee_created_at =  date('Y-m-d H:i:s');
                 $employee = $add_employee->save();
                 $employee_registration_id = $add_employee->employee_id;
@@ -5837,6 +5838,7 @@ class EmployeeController extends Controller
                                     $add_employee->business_unit = $employee_business_unit;
                                     $add_employee->employee_mobile_access =  1;
                                     $add_employee->employee_created_source = 'csv';
+                                    $add_employee->employee_new_code = $employeeCode;
                                     $add_employee->employee_created_at =  date('Y-m-d H:i:s');
                                     $employee = $add_employee->save();
                                     $employee_registration_id = $add_employee->employee_id;
