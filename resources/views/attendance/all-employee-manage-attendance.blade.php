@@ -216,8 +216,8 @@
                             <table class="table gs-0 gy-4 dataTable table-row-bordered" id="tableAllEmployeeAttendance">
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
-                                        <th class="ps-3">Employee Code</th>
-                                        <th class="text-center">Employee Name</th>
+                                        <th class="ps-3">Employee Code & Name</th>
+                                        <th class="text-center">Employee New Code</th>
                                         <th class="text-center">Date of Joining</th>
                                         <th class="text-center">Department</th>
                                         <th class="text-center">Designation</th>
@@ -241,8 +241,8 @@
                                     @if(!empty($all_attendances))
                                         @foreach($all_attendances as $all_attendance)
                                             <tr>
-                                                <td class="ps-3">{{ $all_attendance['employee_code'] }}</td>
-                                                <td class="text-center">{{$all_attendance['employee_name']}}</td>
+                                                <td class="ps-3">{{ $all_attendance['employee_code'] }} - {{$all_attendance['employee_name']}}</td>
+                                                <td class="text-center">{{$all_attendance['employee_new_code'] ?? '-'}}</td>
                                                 <td class="text-center">{{$all_attendance['employee_doj']}}</td>
                                                 <td class="text-center">{{$all_attendance['department_name']}}</td>
                                                 <td class="text-center">{{$all_attendance['designation_name']}}</td>

@@ -1042,6 +1042,7 @@ class AttendanceController extends Controller
                         'tbl_attendance.att_employee_id',
                         'tbl_employees.employee_code as emp_code',
                         'tbl_employees.employee_name as emp_name', 
+                        'tbl_employees.employee_new_code as emp_new_code',
                         'tbl_attendance.att_comp_date as attendance_date',
                         'tbl_attendance.att_check_in_time as time_in', 
                         'tbl_attendance.att_check_out_time as time_out',
@@ -1058,6 +1059,7 @@ class AttendanceController extends Controller
                         ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                         ->select(
                             'tbl_employees.employee_id',
+                            'tbl_employees.employee_new_code as emp_new_code',
                             'sap_attendance_report.emp_code', 
                             'sap_attendance_report.emp_name', 
                             'sap_attendance_report.attendance_date',
@@ -1137,6 +1139,7 @@ class AttendanceController extends Controller
                 ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
                 ->select('employee_code as emp_code',
                     'employee_name as emp_name', 
+                    'employee_new_code as emp_new_code',
                     'att_comp_date as attendance_date',
                     'att_check_in_time as time_in', 
                     'att_check_out_time as time_out',
@@ -1149,6 +1152,7 @@ class AttendanceController extends Controller
                 ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                 ->select(
                     'employee_code as emp_code', 
+                    'employee_new_code as emp_new_code',
                     'sap_attendance_report.emp_name', 
                     'sap_attendance_report.attendance_date',
                     'sap_attendance_report.time_in',
@@ -2295,6 +2299,7 @@ class AttendanceController extends Controller
                
                 $attendance = DB::select("SELECT e.employee_code, 
                 e.employee_name, 
+                e.employee_new_code,
                 e.business_unit, 
                 e.employee_offdays, 
                 dp.department_name, 
@@ -2341,6 +2346,7 @@ class AttendanceController extends Controller
 
                 $attendance = DB::select("SELECT e.employee_code, 
                 e.employee_name, 
+                e.employee_new_code,
                 e.business_unit, 
                 e.employee_offdays, 
                 dp.department_name, 
@@ -2508,6 +2514,7 @@ class AttendanceController extends Controller
             ->select([
                 'employee_code as Employee Code',
                 'employee_name as Employee Name',
+                'employee_new_code as Employee New Code',
                 'employee_offdays as Employee Offdays',
                 'department_name as Department Name',
                 'designation_name as Designation Name',
@@ -2516,6 +2523,8 @@ class AttendanceController extends Controller
                 DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_in_time END as 'Checkin Time' "),
                 DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE att_check_out_time END as 'Checkout Time' "),
                 DB::raw("CASE WHEN tbl_attendance.att_employee_id IS NULL THEN '-' ELSE CONCAT(tbl_attendance.att_for_year, '-', tbl_attendance.att_for_month, '-', tbl_attendance.att_for_date) END as 'Attendance Date' "),
+                DB::raw("CASE WHEN tbl_employees.employee_new_code IS NULL THEN '-' ELSE employee_new_code END as 'Employee New Code' "),
+
             ])
             ->orderBy('Employee Code')
             ->get()
@@ -3634,6 +3643,7 @@ class AttendanceController extends Controller
                         e.employee_id,
                         e.employee_code, 
                         e.employee_name,
+                        e.employee_new_code,
                         FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'employee_doj',
                         dep.department_name, 
                         des.designation_name,
@@ -3905,6 +3915,7 @@ class AttendanceController extends Controller
                     GROUP BY 
                         e.employee_code, 
                         e.employee_name, 
+                        e.employee_new_code,
                         e.business_unit, 
                         dep.department_name, 
                         des.designation_name, 

@@ -494,6 +494,7 @@ trait AttendanceEmployee {
 				e.employee_id,
 				e.employee_code, 
 				e.employee_name,
+				e.employee_new_code,
 				FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'employee_doj',
 				dep.department_name, 
 				des.designation_name,
@@ -764,6 +765,7 @@ trait AttendanceEmployee {
 			GROUP BY 
 				e.employee_code, 
 				e.employee_name, 
+				e.employee_new_code,
 				e.business_unit, 
 				dep.department_name, 
 				des.designation_name, 
