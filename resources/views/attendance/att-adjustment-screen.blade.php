@@ -164,7 +164,8 @@
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
                                             <th class="ps-8">Date</th>
-                                            <th class="ps-8">Employee Name</th>
+                                            <th class="text-center">Employee Name</th>
+                                            <th class="text-center">Employee New Code</th>
                                             <th class="text-center">Status</th>
                                             <th class="text-center ps-15">Remarks </th>
 
@@ -181,8 +182,11 @@
                                                         <td class="ps-8">
                                                             {{ $attendances['Date'] }} -  {{ $attendances['Day'] }}
                                                         </td>
-                                                        <td class="ps-8">
+                                                        <td class="text-center">
                                                             {{ $attendances['employee_code'] }} - {{ $attendances['employee_name'] }}
+                                                        </td>
+                                                        <td class="text-center">
+                                                            {{ $attendances['employee_new_code'] }}
                                                         </td>
                                                         <td class="text-center">
                                                             {{ $attendances['Attendance Status']}} 

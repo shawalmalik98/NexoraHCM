@@ -346,7 +346,7 @@ class AttendanceController extends Controller
                             $request_employee = Employees::whereIn('employee_designation', [400,453,478])
                             ->where('employee_id',$request->input('employee_id'))
                             ->where('employee_isactive', '=', $status)
-                            ->get(['employee_id','employee_name','employee_code'])->toArray();
+                            ->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                             if(!empty($request_employee)){
                                 $where_clause .= " AND att_employee_id = '" . $request_employee[0]['employee_id'] . "' ";
@@ -359,7 +359,7 @@ class AttendanceController extends Controller
                             $request_employee = Employees::whereIn('employee_designation', [400,453,478])
                             ->where('employee_id', $login_user[0]['employee_id'])
                             ->where('employee_isactive', '=', $status)
-                            ->get(['employee_id','employee_name','employee_code'])->toArray();
+                            ->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                             if(!empty($request_employee)){
                                 $where_clause .= " AND att_employee_id = '" .  $login_user[0]['employee_id']. "' ";
@@ -387,7 +387,7 @@ class AttendanceController extends Controller
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
 
-                        $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'] )->get(['employee_id','employee_name','employee_code'])->toArray();
+                        $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'] )->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                         if(!empty($employee_data)){
                             $att_login_employee =  $employee_data[0]['employee_id'];
@@ -396,6 +396,7 @@ class AttendanceController extends Controller
                                 employee_id,
                                 employee_name,
                                 employee_code,
+                                employee_new_code,
                                 CONVERT(date, dates.date_between) as 'Date', 
                                 DATENAME(dw, dates.date_between) as 'Day', 
                                 CASE 
@@ -436,7 +437,7 @@ class AttendanceController extends Controller
 
                         if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_id'] == 1){
                             // dd('123');
-                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                         }
                         elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
@@ -446,7 +447,7 @@ class AttendanceController extends Controller
 
                             $total_team_member = $this->get_employee_hierarchy_unique($login_employee_id, $status);
 
-                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                         }    
 
@@ -496,7 +497,7 @@ class AttendanceController extends Controller
                 }
                 if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_id'] == 1){
                 
-                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
                 }
                 elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
                                 
@@ -504,10 +505,10 @@ class AttendanceController extends Controller
 
                     $total_team_member = $this->get_employee_hierarchy_unique($login_employee_id, $status);
 
-                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
+                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
                 }
                 
-                $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', $login_user[0]['employee_id'])->get(['employee_id','employee_name','employee_code'])->toArray();
+                $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', $login_user[0]['employee_id'])->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                 if (!empty($employee_data)) {
 
@@ -517,6 +518,7 @@ class AttendanceController extends Controller
                     employee_id,
                     employee_name,
                     employee_code,
+                    employee_new_code,
                     CONVERT(date, dates.date_between) as 'Date', 
                     DATENAME(dw, dates.date_between) as 'Day', 
                     CASE 
@@ -556,8 +558,6 @@ class AttendanceController extends Controller
                 } 
            
             }
-
-           
 
             $send_data = compact('title','login_user','attendance','month_days','dates','month_count','from_date','to_date','all_employees','employee_data');
 
