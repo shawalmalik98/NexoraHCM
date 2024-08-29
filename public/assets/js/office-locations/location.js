@@ -60,13 +60,14 @@ $('#addlocationForm').submit(function (e) {
     });
 });
 
-function editlocationRequest(location_id, location_title, location_address, location_latitude, location_longitude, location_allowed_range) {
+function editlocationRequest(location_id, location_title, location_address, location_latitude, location_longitude, location_allowed_range, distributor_code) {
     $('input[name=location_id]').val(location_id);
     $('#title').val(location_title);
     $('#address').val(location_address);
     $('input[name=latitude]').val(location_latitude);
     $('input[name=longitude]').val(location_longitude);
     $('input[name=location_allowed_range]').val(location_allowed_range);
+    $('#dist_code').val(distributor_code);
     $('#updatelocation').modal('show');
     updatelocation();
 }
