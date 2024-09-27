@@ -379,7 +379,9 @@ class EmployeeController extends Controller
                 // }else{
                 //     $employeeCode = '00'. ++ $all_employees[0]['employee_code'];
                 // }
-               
+                    
+                DB::beginTransaction();
+
                 $add_employee = new Employees();
                 $add_employee->employee_name = $employee_data->input('employee_name');
                 $add_employee->employee_code = $employee_data->input('employee_code');
@@ -644,28 +646,37 @@ class EmployeeController extends Controller
                         ->where('department_id','like','%' .$employee_data->input('employee_department'). '%')
                         ->Where('candidate_name','like','%' .$employee_data->input('employee_name'). '%')->where('onboard_status',0)->count();
 
-                    if($all_candidates > 0){
-                        return response()->json([
-                            'status' => 'TRUE',
-                            'total_candidate' => $all_candidates,
-                        ]);
-                    }else{
-                        $employee_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_registration_id)->get(['employee_id','employee_name','employee_gender','employee_password','employee_code','employee_personal_email','department_name','designation_name'])->toArray();
+                        if($all_candidates > 0){
+                            return response()->json([
+                                'status' => 'TRUE',
+                                'total_candidate' => $all_candidates,
+                            ]);
+                        }else{
 
-                        return response()->json([
-                            'status' => 'TRUE',
-                            'employee_data' => $employee_details,
-                            'emp_password' => $employee_data->input('employee_password'),
-                        ]);
-                    }
+                            DB::commit();
+                            
+                            $employee_details = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_registration_id)->get(['employee_id','employee_name','employee_gender','employee_password','employee_code','employee_personal_email','department_name','designation_name'])->toArray();
+
+                            return response()->json([
+                                'status' => 'TRUE',
+                                'employee_data' => $employee_details,
+                                'emp_password' => $employee_data->input('employee_password'),
+                            ]);
+                        }
 
                     }else{
+
+                        DB::rollBack();
+
                         return response()->json([
                             'status' => 'FALSE',
-                            'msg' => "Leaves addition failed. Please try again after some time.",
+                            'msg' => "Employee addition failed. Please try again after some time.",
                         ]);
                     }
                 }else{
+
+                    DB::rollBack();
+
                     return response()->json([
                         'status' => 'FALSE',
                         'msg' => "Employee addition failed. Please try again after some time.",
@@ -674,6 +685,8 @@ class EmployeeController extends Controller
             }
 
         }catch(\Exception $e){
+
+            DB::rollBack();
 
             $this->create_error_log('Add new employee', $e);
             if(!env('APP_DEBUG')){
@@ -1361,6 +1374,9 @@ class EmployeeController extends Controller
                         'msg' => "Employee code already assign ".$update_employee_code[0]['employee_name'],
                     ]);
                 }else{
+
+                    DB::beginTransaction();
+
                     $attendance_count = Attendance::where('att_employee_id',$employee_data->input('employee_id'))->whereNot('att_check_overall_status','LIKE', '%Holiday%')->count();
                     // dd($employee_data->input('employee_id'));
                     $update_employee = Employees::find($employee_data->input('employee_id'));
@@ -1840,11 +1856,17 @@ class EmployeeController extends Controller
                     }
 
                     if($process == 1){
+
+                        DB::commit();
+
                         return response()->json([
                             'status' => 'TRUE',
                             'msg' => "Employee details updated successfully.",
                         ]);
                     }else{
+
+                        DB::rollBack();
+
                         return response()->json([
                             'status' => 'FALSE',
                             'msg' => "Employee addition failed. Please try again after some time.",
@@ -1856,6 +1878,9 @@ class EmployeeController extends Controller
 
         }
         catch(\Exception $e){
+
+            DB::rollBack();
+            
             $this->create_error_log("Update Employee's Details", $e);
             if(!env('APP_DEBUG')){
                 return response()->json([

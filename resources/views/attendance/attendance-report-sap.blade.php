@@ -278,7 +278,7 @@
                                                                 
                                                                 @php $absent = false; @endphp
 
-                                                                {{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_name'] }} 
+                                                                {{ ltrim($attendances['emp_code'], '0') }} - {{ $attendances['emp_new_code'] }} 
                                                                 {{-- @php $attendance_found = true; @endphp --}}
                                                             @endif
                                                         @endforeach
@@ -321,7 +321,7 @@
                                                                 
                                                                 @php $absent = false; @endphp
 
-                                                                {{ $attendances['emp_new_code'] }}
+                                                                {{ $attendances['emp_name'] }}
                                                                 {{-- @php $attendance_found = true; @endphp --}}
                                                             @endif
                                                         @endforeach

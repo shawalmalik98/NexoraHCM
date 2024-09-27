@@ -850,7 +850,7 @@ class AttendanceController extends Controller
 
                 if(empty($request->from_date) || empty($request->to_date)){
                     if(date('d') >= '21'){
-                        $from_date = date('Y-m-') . '21';
+                        $from_date = date('Y-m-') . '20';
                         $to_date = date('Y-m-d');
                     }
                     else{
@@ -861,6 +861,8 @@ class AttendanceController extends Controller
                         $to_date = date('Y-m-d');
                     }
                 }
+
+                // dd($to_date);
 
                 CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
 
