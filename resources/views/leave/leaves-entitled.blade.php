@@ -168,6 +168,9 @@
                                                     <a href="{{ url('manage-leaves/leave-detail').'/'.$leaves_entitlement['employee_id']}}"  class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View Leave detail">
                                                         <i class="fa fa-eye" aria-hidden="true"></i>
                                                     </a>
+                                                    <a href="{{ url('manage-leaves/leave-detail-pdf').'/'.$leaves_entitlement['employee_id']}}"  class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View Leave Report">
+                                                        <i class="fa fa-book" aria-hidden="true"></i>
+                                                    </a>
                                                 
                                                 </td>
                                             </tr>

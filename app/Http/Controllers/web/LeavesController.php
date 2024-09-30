@@ -244,6 +244,46 @@ class LeavesController extends Controller
         }
     }
 
+    protected function leave_entitlement_detail_pdf($employee_id){
+       
+        try{
+
+            $title = Self::TITLE_GLOBAL;
+
+            $login_user = $this->get_login_user_detail();
+
+            $employee_detail = Employees::join('tbl_designations','tbl_employees.employee_designation','=','tbl_designations.designation_id')->where('employee_id', $employee_id)->get()->toArray();
+
+            $leaves_entitled = LeaveManagement::leftJoin('tbl_leave_entitlement', function($join) use($employee_id){
+                $join->on('tbl_leave_management.leave_manage_id','=', 'tbl_leave_entitlement.leave_type_id');
+                $join->where('leaves_employee_id',$employee_id);
+            })->get()->toArray();
+            
+            $i =0;
+            
+            foreach($leaves_entitled as $leaves_entitled_employee){
+                $get_availed_leaves =  Attendance::where('att_employee_id', $employee_id)->where('att_check_overall_status', $leaves_entitled_employee['leave_name'])->count();
+                $leaves_entitled[$i]['employee_availed_leaves'] = $get_availed_leaves;
+                $i++;
+            }
+        
+            $send_data = compact('title','login_user','leaves_entitled','employee_id','employee_detail');
+
+            // return view('leave.leaves-entitled-detail-pdf',$send_data);
+            $pdf = Pdf::loadView('leave.leaves-entitled-detail-pdf',$send_data);
+            return $pdf->setPaper('a4', 'landscape')->stream('All Employee(s) Leave Entitlement'.'.pdf');
+
+        }catch(\Exception $e){
+            $this->create_error_log('View Leave Entitlement Detail', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+        }finally{
+
+            ActivityTracker::track_activity('View Leave Entitlement Detail');
+
+        }
+    }
+
 
     protected function update_employee_leave_entitlement(Request $request){
       
