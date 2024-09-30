@@ -185,6 +185,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
         Route::get('/', [LeavesController::class, 'index']);
         Route::get('/leave-detail/{leave_id}', [LeavesController::class,'leave_entitlement_detail']);
+        Route::get('/leave-detail-pdf/{leave_id}', [LeavesController::class,'leave_entitlement_detail_pdf']);
 
         Route::post('/update-employee-leave-entitlement',[LeavesController::class, 'update_employee_leave_entitlement']);
 
