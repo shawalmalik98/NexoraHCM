@@ -1063,4 +1063,5 @@ Route::middleware(['sapuserAuthentication'])->group(function (){
 });    
 
 Route::get('/update_eid', [CustomController::class, 'update_attendance_adjustment_eid']);
+Route::get('/get-business-employee-data/{employee_id}', [EmployeeController::class, 'get_business_card_data']);
 

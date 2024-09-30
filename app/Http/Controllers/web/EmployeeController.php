@@ -6753,4 +6753,33 @@ class EmployeeController extends Controller
         );
     }
 
+    protected function get_business_card_data($employee_id){
+
+        try{
+
+            if(empty($employee_id)){
+                return 'No data found.';
+            }
+
+
+            $businessCards = DB::table('business_cards')
+            ->where('emp_code', $employee_id)
+            ->get()->toArray();
+
+            return $businessCards;
+
+        }
+        catch(\Exception $e){
+
+            $this->create_error_log('Employee Group Module Access', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+
+        }finally{
+
+            ActivityTracker::track_activity('Employee Group Module Access');
+
+        }
+	}
+
 }

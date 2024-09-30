@@ -502,6 +502,83 @@
         </div>
     </form>
 
+    <form id="update_business_card" class="form" >
+        @csrf	
+        <div class="modal fade" id="business-card" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                <div class="modal-content rounded">
+                    
+                    <div class="modal-header">
+                        <h4 class="modal-title pl-4">Business Card Details</h4>
+                        <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
+                            <span class="svg-icon svg-icon-1">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
+                                    <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                    
+                    <div class="modal-body scroll-y pt-3 pb-5">
+                    
+                        <div class="row">
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Employee Name</label>
+                                    <input type="text" class="form-control " placeholder="Enter a Department" name="employee_name" required="" id="employee_name"/>
+                            </div>
+    
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Employee Email</label>
+                                    <input type="text" class="form-control " placeholder="Enter an Email" name="email" required="" id="email"/>
+                            </div>
+    
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Department</label>
+                                    <input type="text" class="form-control " placeholder="Enter a Department" name="department_name" required="" id="deparment_name"/>
+                            </div>
+    
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Designation</label>
+                                    <input type="text" class="form-control " placeholder="Enter a Designation" name="designation_name" required="" id="designation_name"/>
+                            </div>
+    
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Company</label>
+                                    <input type="text" class="form-control " placeholder="Enter a Company" name="company" required="" id="company"/>
+                            </div>
+    
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Address</label>
+                                    <input type="text" class="form-control " placeholder="Enter an Address" name="address" required="" id="address"/>
+                            </div>
+    
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Mobile Number</label>
+                                    <input type="text" class="form-control " placeholder="Enter a Mobile Number" name="mobile" required="" id="mobile"/>
+                            </div>
+    
+                            <div class="col-md-6 mb-8 mt-3">
+                                <label class="required fs-6 fw-semibold mb-2">Phone / Ext</label>
+                                <input type="text" class="form-control " placeholder="Enter a Phone / Ext" name="phone" required="" id="phone"/>
+                            </div>
+                        </div>
+                        
+                            
+                    </div>    
+                    <div class="modal-footer justify-content-center">
+                        <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" id="submit-btn" class="btn btn-primary">
+                            <span class="indicator-label">Submit</span>
+                            <span class="indicator-progress">Please wait 
+                            <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
 </div>
 
 @endsection
@@ -566,6 +643,9 @@
                                             </svg>
                                         </span>
                                     </a>
+                                    <a href="javascript:void();" data-employee_code="${employee.employee_code}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 business_card_details" data-bs-toggle="tooltip" title="Edit Business Card Details">
+                                        <i class="fas fa-id-card"></i>
+                                    </a>
                                 </td>
                             </tr>`;
                     });
@@ -611,7 +691,37 @@
                 }
             }
         });
-    }   
+    }
+
+    // $(document).on('click', '.business_card_details', function() {
+    //     var emp_code = $(this).attr('data-employee_code');
+    //     $('#business-card').modal('show');
+    // });
+
+    $(document).on('click', '.business_card_details', function() {
+        var emp_code = $(this).attr('data-employee_code');
+        
+        $('#business-card').modal('show');
+        
+        $.ajax({
+            url: '/get-business-employee-data/' + emp_code,
+            type: 'GET',
+            success: function(response) {
+                $('#employee_name').val(response[0]['emp_name']);
+                $('#email').val(response[0]['emp_email']);
+                $('#deparment_name').val(response[0]['emp_department']);
+                $('#designation_name').val(response[0]['emp_designation']);
+                $('#company').val(response[0]['emp_company']);
+                $('#address').val(response[0]['emp_off_address']);
+                $('#mobile').val(response[0]['emp_mobile']);
+                $('#phone').val(response[0]['emp_phone']);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error fetching data: ', error);
+            }
+        });
+    });
+
 
 
 </script>
