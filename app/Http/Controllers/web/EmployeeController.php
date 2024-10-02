@@ -17,6 +17,13 @@ use Illuminate\Support\Facades\DB;
 use OpenSpout\Common\Entity\Style\Style;
 use DateTime;
 
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+
+
+
+
+
+
 class EmployeeController extends Controller
 {
 
@@ -35,6 +42,153 @@ class EmployeeController extends Controller
     const PERSONAL_ASSETS = 'employee-company-assets';
     const EMP_LOCATION = 'employee-location';
 
+    public function businessCard($employee_id){
+        $title = 'Business Card';
+        
+        try{
+            
+            $title = Self::MAIN_TITLE;
+
+            $login_user = $this->get_login_user_detail();
+
+            $employee_detail = Employees::leftJoin('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->where('employee_id', $employee_id)->get()->toArray();
+
+            //$employee_bank =  Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')->where('employee_id', $employee_id)->get(['employee_id','employee_name','employee_code','information_id','bankname','bankcode','accountno','accounttitle','ibannumber','permanentaddress','currentaddress','emergency_contact_no','emergency_name','employee_relation','citizenship','maritalstatus','dob','pob','religion'])->toArray();
+
+            //$employee_salary = Employees::join('tbl_employee_salary', 'tbl_employees.employee_id', '=', 'tbl_employee_salary.salary_employee_id')->where('employee_id', $employee_id)->orderBy('salary_id','DESC')->get('salary_amount')->toArray();
+
+            //$employee_salary_detail = Employees::join('tbl_employee_salary', 'tbl_employees.employee_id', '=', 'tbl_employee_salary.salary_employee_id')->where('employee_id', $employee_id)->get(['employee_name','salary_amount','salary_effected_date','salary_created_date','salary_earning_type'])->toArray();
+
+            $employee_department = Employees::join('tbl_departments', 'tbl_employees.employee_department', '=', 'tbl_departments.department_id')->where('employee_id', $employee_id)->get('department_id')->toArray();
+
+            $department_id =  $employee_department[0]['department_id'];
+
+            $employee_designation_detail = Designation::where('department_id', $department_id)->get()->toArray();
+
+            $all_companies = Company::get()->toArray();
+
+            $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
+
+            //$employment_period = EmploymentPeriod::where('employee_id',$employee_id)->orderBy('employement_period_id','DESC')->get(['effective_date'])->toArray();
+
+            //$secondLastEffectiveDate = EmploymentPeriod::where('employee_id',$employee_id)->skip(1)->take(1)->get(['effective_date'])->toArray();
+
+            $employment_period_count  = EmploymentPeriod::where('employee_id',$employee_id)->count();
+
+            //$employee_locations = EmployeeLocation::where('emp_loc_employee_id', $employee_id)->get()->toArray();
+
+            $all_departments = Department::get()->toArray();
+
+            $all_locations = OfficeLocation::get()->toArray();
+
+            //$all_banks = Bank::get()->toArray();
+
+            //$get_modules = SystemModule::get()->toArray();
+
+            //$no_of_employees = HrmSetting::get(['no_of_employees','gross_salary_ratio'])->toArray();
+
+            //$get_permissions = Permission::where('employee_id',$employee_id)->where('permission_status',1)->pluck('module_url')->toArray();
+
+            //$relations = ['Father','Mother','Brother','Sister','Guardian'];
+           
+            //$reporting_managers = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_is_manager',1)->where('employee_isactive',1)->get(['employee_id','employee_code','employee_name','department_name','designation_name'])->toArray();
+
+            //$total_team_member = $this->get_employee_hierarchy_unique($employee_id, 1);
+
+            //$attendance_count = Attendance::where('att_employee_id',$employee_id)->whereNot('att_check_overall_status','LIKE', '%Holiday%')->count();
+
+            //$shift_start_timings = $this->get_employee_today_shift($employee_id,"in",date('Y-m-d'));
+
+            //$shift_end_timings = $this->get_employee_today_shift($employee_id,"out",date('Y-m-d'));
+
+            //$fetch_shift_timing = ShiftManagement::where('employee_id',$employee_id)
+                //->get([ 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by','shift_id'])->toArray();
+
+            //$leaves_entitled = LeaveManagement::
+            // leftjoin('tbl_leave_entitlement', function($join) use($employee_id){
+            //     $join->on('tbl_leave_management.leave_manage_id','=', 'tbl_leave_entitlement.leave_type_id');
+            //     $join->where('leaves_employee_id',$employee_id);
+            // })->get(['leave_manage_id','leave_allotement','leave_ent_created_at','leave_name'])->toArray();
+
+            
+            // $employee_funds = Fund::
+            // leftjoin('tbl_employees_funds', function($join) use($employee_id){
+            //     $join->on('tbl_funds.fund_id','=', 'tbl_employees_funds.ef_fund_id');
+            //     $join->where('ef_employee_id',$employee_id);
+            // })->get(['fund_id','ef_amount','ef_created_at','fund_name'])->toArray();
+           
+            //$employement_status_history = EmploymentPeriod::join('tbl_employees','tbl_employees.employee_id','=','tbl_employement_period.employee_id')->join('tbl_employement_status','tbl_employement_status.employement_status_id','=','tbl_employement_period.employement_status_id')->where('tbl_employement_period.employee_id',$employee_id)->orderBy('employement_period_id','ASC')->get(['employee_name','employement_status_name','effective_date'])->toArray();
+
+            //$get_attendance_access = AttendanceAccess::where('access_employee_id', $employee_id)->get()->toArray();
+           
+            //$employee_groups = EmployeeGroup::get()->toArray();
+
+            //$send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_banks','reporting_managers','employee_salary','employee_salary_detail','all_locations','total_team_member','employee_bank','get_permissions','get_modules','attendance_count','shift_start_timings','shift_end_timings','fetch_shift_timing','leaves_entitled','employment_status','employment_period','secondLastEffectiveDate','employment_period_count','employement_status_history','relations','employee_id','get_attendance_access','employee_groups','all_companies','employee_locations','no_of_employees','employee_funds');
+                        
+            $encrypted_employee = $this->customEncrypt($employee_detail[0]['employee_code']);
+            $qrCode = $this->generateQRCode($encrypted_employee);
+            
+            $send_data = compact('title','login_user','employee_detail','employee_department','department_id','employee_designation_detail','all_departments','all_locations','employment_status','employee_id','all_companies','employment_period_count','qrCode');
+
+            return view('employee.business-cards', $send_data);
+        }catch(\Exception $e){
+
+            $this->create_error_log('View Edit Employee Page', $e);
+            $send_data = compact('title');
+            return view('errors.500');
+
+        }finally{
+
+            ActivityTracker::track_activity('View Edit Employee Page');
+
+        }
+    }
+
+
+    
+    public function generateQRCode($employee_id) { 
+        // Define the URL you want to store in the QR code         
+        $url = "https://ecard.ismailindustries.com.pk/view/$employee_id";
+        
+        // Replace with the actual URL you want // Generate a QR code containing the URL 
+        $qrCode = QrCode::size(250)->generate($url); 
+    
+        // Pass the QR code to the view 
+        return $qrCode;
+    }
+
+    function customEncrypt($number) {
+        // Define a secret key (should be stored securely and not hardcoded in production)
+        $key = 1234567890;
+    
+        // Convert number to an integer
+        $num = intval($number);
+    
+        // Simple reversible transformation (e.g., XOR)
+        $transformed = $num ^ $key;
+    
+        // Convert the transformed number to a different base to shorten the output
+        $encrypted = base_convert($transformed, 10, 36);
+    
+        return $encrypted;
+    }
+
+    function customDecrypt($encrypted) {
+        // Define the same secret key used in encryption
+        $key = 1234567890;
+    
+        // Convert from the base 36 back to base 10
+        $transformed = base_convert($encrypted, 36, 10);
+    
+        // Reverse the transformation
+        $decrypted = $transformed ^ $key;
+    
+        return str_pad($decrypted, 10, "0", STR_PAD_LEFT); // Pad with zeros to maintain length
+    }
+    
+
+
+    ///////////////////////////////////////////
 
     protected function index(Request $request){
 
@@ -1117,6 +1271,7 @@ class EmployeeController extends Controller
 
             $all_companies = Company::get()->toArray();
 
+
             $employment_status = EmploymentStatus::get(['employement_status_id','employement_status_name'])->toArray();
 
             $employment_period = EmploymentPeriod::where('employee_id',$employee_id)->orderBy('employement_period_id','DESC')->get(['effective_date'])->toArray();
@@ -1306,6 +1461,720 @@ class EmployeeController extends Controller
                         ]);
                     }
                 }
+
+                $depratment_name = Department::where('department_id',$employee_data->input('employee_department'))->get('department_name')->toArray();
+
+                $employee_mangers = [$employee_data->input('employee_reporting_person')];
+
+                (!empty($employee_data->input('employee_reporting_person2'))) ? array_push($employee_mangers,$employee_data->input('employee_reporting_person2')) : '';
+
+                if($employee_data->input('employee_reporting_person') == $employee_data->input('employee_reporting_person2')){
+
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "You have assigned same reporting manager for both senior and junior. Please select different.",
+                    ]);
+                }
+
+                $employement_status_id = EmploymentStatus::where('employement_status_id',$employee_data->input('employee_status'))->get('employement_status_id')->toArray();
+
+                if(empty($employement_status_id)){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Selected employement status does not exist.",
+                    ]);
+                }
+
+                $emp_manager = Employees::where('employee_isactive',1)->whereIn('employee_id',$employee_mangers)->get(['employee_id'])->toArray();
+
+                if(count($emp_manager) != count($employee_mangers)){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Selected senior / junior manager doesn't exist in active employees.",
+                    ]);
+                }
+
+                if(empty($depratment_name)){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Selected department does not exist.",
+                    ]);
+                }
+
+                $designation_id = Designation::where('designation_id',$employee_data->input('employee_designation'))->get('designation_id')->toArray();
+
+                if(empty($designation_id)){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Selected designation does not exist.",
+                    ]);
+                }
+
+
+                $total_team_member = $this->get_employee_hierarchy_unique($employee_data->input('employee_id'),1);
+
+                if(in_array($employee_data->input('employee_reporting_person'),$total_team_member) || in_array($employee_data->input('employee_reporting_person2'),$total_team_member)){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => 'Cannot be assign as manager of this employee. Already exists in its team.',
+                    ]);
+                }
+
+
+                $update_employee_code = Employees::where('employee_code',$employee_data->input('employee_code'))->where('employee_id','!=',$employee_data->input('employee_id'))->get()->toArray();
+
+                if(!empty($update_employee_code)){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => "Employee code already assign ".$update_employee_code[0]['employee_name'],
+                    ]);
+                }else{
+
+                    DB::beginTransaction();
+
+                    $attendance_count = Attendance::where('att_employee_id',$employee_data->input('employee_id'))->whereNot('att_check_overall_status','LIKE', '%Holiday%')->count();
+                    // dd($employee_data->input('employee_id'));
+                    $update_employee = Employees::find($employee_data->input('employee_id'));
+                    // dd($update_employee);
+                    $employee_old_doj = $update_employee->employee_doj;
+                    $employee_old_make_ra = $update_employee->employee_is_manager;
+                    $employee_old_department = $update_employee->employee_department;
+
+                    if($attendance_count > 0){
+                        $update_employee->employee_doj =  $employee_old_doj;
+                    }else{
+                        $update_employee->employee_doj = $employee_data->input('employee_doj');
+                    }
+
+                    $employment_period = EmploymentPeriod::where('employee_id',$employee_data->input('employee_id'))->orderBy('employement_period_id','DESC')->get(['effective_date','employement_status_id'])->toArray();
+
+                    // $update_employee->employee_code = $employee_data->input('employee_code');
+                    $update_employee->employee_name = $employee_data->input('employee_name');
+                    $update_employee->employee_cnic = $employee_data->input('employee_cnic');
+                    $update_employee->cnic_issue_date = $employee_data->input('employee_cnic_issue_date');
+                    $update_employee->cnic_expiry_date = $employee_data->input('employee_cnic_expiry_date');
+                    $update_employee->employee_personal_email = $employee_data->input('employee_personal_email');
+                    $update_employee->employee_work_email = $employee_data->input('employee_official_email');
+                    $update_employee->employee_contactno = $employee_data->input('employee_contact_no');
+                    $update_employee->employee_gender = $employee_data->input('employee_gender');
+                    $update_employee->employee_status = $employee_data->input('employee_status');
+                    $update_employee->employee_designation = $employee_data->input('employee_designation');
+                    $update_employee->employee_department = $employee_data->input('employee_department');
+                    $update_employee->employee_company = $employee_data->input('employee_company');
+                    $update_employee->business_unit = $employee_data->input('business_unit');
+                    $update_employee->employee_password = Crypt::encryptString($employee_data->input('employee_password'));
+                    $update_employee->employee_shift_flexibilty = $employee_data->input('employee_shift_flexibilty');
+                    if(!in_array($employee_data->input('employee_id'), [682,1073,1074,501,1202,184,4016])){
+                        $update_employee->employee_geofencing_enability = ($employee_data->input('employee_geofencing_enability') == '1') ? true : false;
+                    }
+                    $update_employee->employee_senior_manager = $employee_data->input('employee_reporting_person');
+                    $update_employee->employee_junior_manager = $employee_data->input('employee_reporting_person2');
+                    $update_employee->employee_is_manager = $employee_data->input('make_ra');
+                    $update_employee->employee_isactive = $employee_data->input('employee_isactive');
+                    $update_employee->employee_earning_type = 1;
+                    $update_employee->employee_deactivate_date = $employee_data->input('employee_deactivate_date');
+                    $update_employee->employee_offdays = (!empty($employee_data->input('employee_offday'))) ? implode(',',$employee_data->input('employee_offday')) : '';
+                    $update_employee->employee_jobtype = $employee_data->input('employee_jobtype');
+                    // $update_employee->employee_location = $employee_data->input('employee_location');
+                    $update_employee->employee_grade = $employee_data->input('employee_grade');
+                    $update_employee->employee_group = $employee_data->input('employee_group');
+                    $update_employee->employee_jobtitle = $employee_data->input('employee_jobtitle');
+                    $update_employee->employee_deactivation_type = $employee_data->input('employee_deactive_type');
+                    $update_employee->employee_web_access = $employee_data->input('employee_web_access');
+                    $update_employee->employee_mobile_access = $employee_data->input('employee_mobile_access');
+                    
+                    if($employee_data->input('employee_isactive') == 0){
+
+                        $check_vehicle_allots = VehicleAllotment::where('allotment_employee_id',$employee_data->input('employee_id'))->whereNull('allotment_cancellation_date')->get(['allotment_employee_id','allotment_cancellation_date','allotment_id'])->toArray();
+
+                        foreach($check_vehicle_allots as $check_vehicle_allot){
+                            $employee_vehicle_update = VehicleAllotment::find($check_vehicle_allot['allotment_id']);
+                            $employee_vehicle_update->allotment_cancellation_date =  $employee_data->input('employee_deactivate_date');
+                            $employee_vehicle_update->save();
+                        }
+
+                        EmployeeDevice::where('device_employee_id',$employee_data->input('employee_id'))->update(['device_status' => 2]);
+                        
+                        if($employee_data->input('make_ra') == '1'){
+
+                            $all_employee = Employees::where('employee_senior_manager','=',$employee_data->input('employee_id'))->orWhere('employee_junior_manager','=',$employee_data->input('employee_id'))->count();
+
+                            if($all_employee > 0){
+
+                                return response()->json([
+                                    'status' => 'TRUE',
+                                    'total_employee' => $all_employee,
+                                    'deactivate_date' => $employee_data->input('employee_deactivate_date'),
+                                    'deactivation_type' => $employee_data->input('employee_deactive_type'),
+                                ]);
+                            }
+
+                        }
+                    }
+
+
+                    if($employee_old_make_ra == '1' && $employee_data->input('make_ra') == '0'){
+
+                        $all_employee = Employees::where('employee_senior_manager','=',$employee_data->input('employee_id'))->orWhere('employee_junior_manager','=',$employee_data->input('employee_id'))->count();
+
+                        if($all_employee > 0){
+
+                            return response()->json([
+                                'status' => 'TRUE',
+                                'total_employee' => $all_employee,
+                                'employee_is_manager' => $employee_data->input('make_ra'),
+
+                            ]);
+                        }
+
+                    }
+                    
+                    $update_employee->save();
+                    if(!empty($employee_data->input('employee_location'))){
+                        
+                        EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->whereNotIn('emp_loc_loc_id',$employee_data->input('employee_location'))->delete();
+                      
+                        foreach($employee_data->input('employee_location') as $location){
+                            $check_if_emp_location_exists = EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->where('emp_loc_loc_id',$location)->get()->toArray();
+                            
+                            if(empty($check_if_emp_location_exists)){
+                                $new_employee_location = new EmployeeLocation();
+                                $new_employee_location->emp_loc_employee_id = $employee_data->input('employee_id');
+                                $new_employee_location->emp_loc_loc_id = $location;
+                                $new_employee_location->created_at = date('Y-m-d H:i:s');
+                                $new_employee_location->created_by = session('user_session');
+                                $new_employee_location->save();
+                            }
+                        }
+                    }else{
+                        EmployeeLocation::where('emp_loc_employee_id',$employee_data->input('employee_id'))->delete();
+                    }
+
+                    
+                    $itEmployees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->where('department_name','=','IT')->where('employee_isactive','=',1)->get('employee_id')->toArray();
+
+                    if($employee_data->input('employee_isactive') == 0){
+
+                        $where_clause = 'gadget_status = 1 and tbl_gadget_allotment.allotment_id in (select max(allotment_id) from tbl_gadget_allotment group by gadget_id  )';
+                        
+                        $gadget_allotments_active = GadgetAllotment::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_gadget_allotment.allotment_employee_id')
+                        ->join('tbl_employees_gadgets', 'tbl_employees_gadgets.gadget_id', '=', 'tbl_gadget_allotment.gadget_id')
+                        ->whereRaw($where_clause)
+                        ->where('employee_id', $employee_data->input('employee_id'))
+                        ->orderBy('allotment_id','DESC')
+                        ->pluck('tbl_employees_gadgets.gadget_id')
+                        ->toArray();
+
+                        $gadget_allotments = GadgetAllotment::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_gadget_allotment.allotment_employee_id')
+                        ->join('tbl_employees_gadgets', 'tbl_employees_gadgets.gadget_id', '=', 'tbl_gadget_allotment.gadget_id')
+                        ->where('employee_id', $employee_data->input('employee_id'))
+                        ->orderBy('allotment_id','DESC')
+                        ->get(['tbl_employees_gadgets.gadget_id'])
+                        ->toArray();
+
+                        foreach($gadget_allotments as $gadget){
+                            if(in_array($gadget['gadget_id'],$gadget_allotments_active)){
+                                $update_gadget = EmployeeGadget::find($gadget['gadget_id']);
+                                $update_gadget->gadget_status = 2;
+                                $update_gadget->save();
+                            }
+                        }
+
+                        $update_employees = Employees::find($employee_data->input('employee_id'));
+
+                        $update_employees->employee_deactivate_date = $employee_data->input('employee_deactivate_date');
+                        $update_employees->save();
+                        if(!empty($itEmployees)){
+                            foreach($itEmployees as $employee_it){
+
+                                $this->send_notification('Employee Deactivate','Dear user, HR deactivate an employee named '.$employee_data->input('employee_name').' in '.$depratment_name['0']['department_name'].' Department. His deactivate date is '.$employee_data->input('employee_deactivate_date').'','gadgets-inventory', $employee_it['employee_id'],NULL,NULL,'no');
+
+                            }
+                        }
+                    }
+                    $update_employees = Employees::find($employee_data->input('employee_id'));
+                    if(!empty($update_employees->employee_deactivation_type) && !empty($update_employees->employee_deactivate_date) && !empty($employee_data->input('employee_isactive') == 1)){
+
+
+                        foreach($itEmployees as $employee_it){
+
+                            $this->send_notification('Employee Activated', 'Dear user, HR again activate an employee named '.$employee_data->input('employee_name').' in '.$depratment_name['0']['department_name'].' Department.','gadgets-inventory', $employee_it['employee_id'],NULL,NULL,'no');
+                        }
+
+                        $update_employees->employee_deactivation_type = '';
+                        $update_employees->employee_deactivate_date = '';
+                        $update_employees->save();
+
+                    }
+                    foreach($employee_data->leave_manage_id as $key=>$leave_entitlement_detail){
+
+                        $leave_names = LeaveManagement::where('leave_manage_id',$leave_entitlement_detail)->get('leave_name')->toArray();
+
+                        if(!empty($leave_names)){
+                            if(!empty($employee_data->leave_ent_created_at[$key])){
+
+                                $date = $employee_data->leave_ent_created_at[$key];
+                                $updated_date = date('Y-m-d H:i:s');
+                            }else{
+                                $date =  date('Y-m-d H:i:s');
+                                $updated_date = '';
+                            }
+                            $leave = Leave::updateOrCreate([
+                                'leaves_employee_id' => $employee_data->input('employee_id'),
+                                'leave_type_id' =>  $leave_entitlement_detail
+                            ], [
+                                'leave_allotement' => $employee_data->leave_allotment[$key],
+                                'leave_ent_created_at' => $date,
+                                'leave_ent_updated_at' => $updated_date
+                            ]);
+                        }
+
+                    }
+                    if(!empty($employee_data->fund_id)){
+
+                        foreach($employee_data->fund_id as $key => $fund_detail_id){
+
+                            $funds_name = Fund::where('fund_id', $fund_detail_id)->get('fund_name')->toArray();
+
+                            if(!empty($funds_name)){
+
+                                if(!empty($employee_data->ef_created_at[$key])){
+                                    $date = $employee_data->ef_created_at[$key];
+                                }else{
+                                    $date =  date('Y-m-d H:i:s');
+                                }
+
+                                $employee_fund = EmployeeFund::updateOrCreate([
+                                    'ef_employee_id' => $employee_data->input('employee_id'),
+                                    'ef_fund_id' => $fund_detail_id
+                                ], [
+                                    'ef_amount' => $employee_data->fund_amount[$key],
+                                    'ef_created_at' => $date
+                                ]);
+                            }
+
+                        }
+                    }    
+
+                    $updateInformation = EmployeeInformation::find($employee_data->input('information_id'));
+                    $updateInformation->bankname = $employee_data->input('bank_name');
+                    $updateInformation->bankcode = $employee_data->input('bank_code');
+                    $updateInformation->accounttitle = $employee_data->input('account_title');
+                    $updateInformation->accountno = $employee_data->input('account_number');
+                    $updateInformation->ibannumber = $employee_data->input('account_iban');
+                    $updateInformation->permanentaddress = $employee_data->input('permanentaddress');
+                    $updateInformation->currentaddress = $employee_data->input('permanentaddress');
+                    $updateInformation->emergency_contact_no = $employee_data->input('emergency_contact_no');
+                    $updateInformation->emergency_name = $employee_data->input('emergency_name');
+                    $updateInformation->employee_relation = $employee_data->input('employee_relation');
+                    $updateInformation->citizenship = $employee_data->input('employee_nationality');
+                    $updateInformation->maritalstatus = $employee_data->input('employee_marital_status');
+                    $updateInformation->religion = $employee_data->input('employee_religion');
+                    $updateInformation->dob = $employee_data->input('employee_dob');
+                    $updateInformation->pob = $employee_data->input('employee_place_of_birth');
+                    $process = $updateInformation->save();
+
+                    Permission::where('employee_id',$employee_data->input('employee_id'))->delete();
+
+                    for($i=0;$i<$employee_data->total_count;$i++){
+
+                        $checked_value = 1;
+                        $checked_value = $employee_data->input('permission_status_'.$i);
+
+                        if($employee_data->input('employee_jobtype') == 'Home'){
+                            if($employee_data->input('module_url_'.$i) == '/wfh-requests' || $employee_data->input('module_url_'.$i) == '/my-wfh-requests'){
+                                $checked_value = 0;
+                            }
+                            if($employee_data->input('employee_department') == 1 || $employee_data->input('employee_department') == 2){
+                                if($employee_data->input('module_url_'.$i) == '/wfh-requests'){
+                                    $checked_value = 1;
+                                }
+
+                            }
+                        }
+                        if($checked_value == null){
+                            $checked_value = 0;
+                        }
+                        $permissions = new Permission();
+                        $permissions->module_url = $employee_data->input('module_url_'.$i);
+                        $permissions->employee_id = $employee_data->input('employee_id');
+                        $permissions->permission_status = $checked_value;
+                        $process = $permissions->save();
+
+                    }
+                    $employee_status_date = $employee_data->input('employment_status_date');
+                    if($attendance_count == 0){
+
+                        $get_employee_shift = ShiftManagement::where('employee_id',$update_employee->employee_id)->get()->toArray();
+                       
+                        $get_holidays =  Holiday::where('holiday_date','>=', $employee_data->input('employee_doj'))->where(function ($query) use ($employee_data) {
+                            $query->where('department_name', 'LIKE', '%'.$employee_data->input('employee_department'). '%')
+                            ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
+                        })
+                        ->get()->toArray();
+                        if($employee_old_doj != $employee_data->input('employee_doj')){
+                            $employee_status_date =  $employee_data->input('employee_doj');
+
+                            EmploymentPeriod::where('employee_id',$employee_data->input('employee_id'))->delete();
+                            $update_employees_salaries = EmployeeSalary::where('salary_employee_id',$employee_data->input('employee_id'))->get(['salary_effected_date','salary_created_date','salary_id'])->toArray();
+                            if(!empty($update_employees_salaries)){
+                                $update_employee_salary = EmployeeSalary::find($update_employees_salaries[0]['salary_id']);
+                                $update_employee_salary->salary_effected_date = $employee_data->input('employee_doj');
+                                $update_employee_salary->salary_created_date = date('d-m-Y');
+                                $update_employee_salary->save();
+
+                            }
+                          
+                            if(!empty($get_employee_shift)){
+                                
+                                $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d',strtotime($employee_old_doj)))->delete();
+
+                                $insert_shift_start_timings = $employee_data->input('shift_start_timings').':00';
+                                $insert_shift_end_timings = $employee_data->input('shift_end_timings').':00';
+                                
+                                $add_shift = new ShiftManagement();
+                                $add_shift->employee_id =  $update_employee->employee_id;
+                                $add_shift->shift_start_from_date = $employee_data->input('employee_doj');
+                                $add_shift->shift_start_time = $insert_shift_start_timings;
+                                $add_shift->shift_end_time = $insert_shift_end_timings;
+                                $add_shift->shift_created_by =  session('user_session');
+                                $process =  $add_shift->save();
+                                
+
+                                ShiftManagement::where('employee_id',$update_employee->employee_id)->where('shift_start_from_date','<',$employee_data->input('employee_doj'))->delete();
+                                Attendance::where('att_employee_id',$update_employee->employee_id)->delete();
+                                if(!empty($get_holidays)){
+
+                                    foreach($get_holidays as $get_holiday){
+                                        $day = date("d", strtotime($get_holiday['holiday_date']));
+                                        $month = date("m", strtotime($get_holiday['holiday_date']));
+                                        $year = date("Y", strtotime($get_holiday['holiday_date']));
+
+                                        $mark_attendance = new Attendance();
+                                        $mark_attendance->att_employee_id = $update_employee->employee_id;
+                                        $mark_attendance->att_check_in_time = '00:00:00';
+                                        $mark_attendance->att_check_out_time = '00:00:00';
+                                        $mark_attendance->att_check_in_status = '0';
+                                        $mark_attendance->att_check_out_status = 0;
+                                        $mark_attendance->att_shift_start_time =  $get_employee_shift[0]['shift_start_time'];
+                                        $mark_attendance->att_shift_end_time = $get_employee_shift[0]['shift_end_time'];
+                                        $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
+                                        $mark_attendance->att_for_date = $day;
+                                        $mark_attendance->att_for_month = $month;
+                                        $mark_attendance->att_for_year = $year;
+                                        $mark_attendance->save();
+                                    }
+                                }
+                            }
+
+                            $old_effected_date = EmployeeSalary::where('salary_employee_id',$update_employee->employee_id)->orderBy('salary_id','ASC')->get(['salary_id'])->toArray();
+
+                            $update_salary = EmployeeSalary::find($old_effected_date[0]['salary_id']);
+                            $update_salary->salary_effected_date = $employee_data->input('employee_doj');
+                            $update_salary->save();
+
+                        }else{
+                            if($employee_old_department != $employee_data->input('employee_department')){
+
+                                $get_attendance = Attendance::where('att_employee_id',$employee_data->input('employee_id'))->delete();
+
+                                if(!empty($get_holidays)){
+
+                                    foreach($get_holidays as $get_holiday){
+                                        $day = date("d", strtotime($get_holiday['holiday_date']));
+                                        $month = date("m", strtotime($get_holiday['holiday_date']));
+                                        $year = date("Y", strtotime($get_holiday['holiday_date']));
+
+                                        $mark_attendance = new Attendance();
+                                        $mark_attendance->att_employee_id = $update_employee->employee_id;
+                                        $mark_attendance->att_check_in_time = '00:00:00';
+                                        $mark_attendance->att_check_out_time = '00:00:00';
+                                        $mark_attendance->att_check_in_status = '0';
+                                        $mark_attendance->att_check_out_status = 0;
+                                        $mark_attendance->att_shift_start_time =  $get_employee_shift[0]['shift_start_time'];
+                                        $mark_attendance->att_shift_end_time = $get_employee_shift[0]['shift_end_time'];
+                                        $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
+                                        $mark_attendance->att_for_date = $day;
+                                        $mark_attendance->att_for_month = $month;
+                                        $mark_attendance->att_for_year = $year;
+                                        $mark_attendance->save();
+
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        if($employee_old_department != $employee_data->input('employee_department')){
+
+                            $get_attendance = Attendance::whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) >= "'.date("Y-m-d").'"')->where('att_employee_id',$employee_data->input('employee_id'))->delete();
+
+                            $get_holidays =  Holiday::where('holiday_date','>=',date('Y-m-d'))->where(function ($query) use ($employee_data) {
+                                $query->where('department_name', 'LIKE', '%'.$employee_data->input('employee_department'). '%')
+                                ->orWhere('department_name', 'LIKE', '%' .'*'. '%');
+                            })
+                            ->get()->toArray();
+
+                            if(!empty($get_holidays)){
+
+                                foreach($get_holidays as $get_holiday){
+                                    $day = date("d", strtotime($get_holiday['holiday_date']));
+                                    $month = date("m", strtotime($get_holiday['holiday_date']));
+                                    $year = date("Y", strtotime($get_holiday['holiday_date']));
+
+                                    $employee_shift_start = $this->get_employee_today_shift($employee_data->input('employee_id'),"in",date('Y-m-d'));
+                                    $employee_shift_end = $this->get_employee_today_shift($employee_data->input('employee_id'),"out",date('Y-m-d'));
+
+                                    $mark_attendance = new Attendance();
+                                    $mark_attendance->att_employee_id = $employee_data->input('employee_id');
+                                    $mark_attendance->att_check_in_time = '00:00:00';
+                                    $mark_attendance->att_check_out_time = '00:00:00';
+                                    $mark_attendance->att_check_in_status = '0';
+                                    $mark_attendance->att_check_out_status = 0;
+                                    $mark_attendance->att_shift_start_time =  $employee_shift_start;
+                                    $mark_attendance->att_shift_end_time =  $employee_shift_end;
+                                    $mark_attendance->att_check_overall_status = 'Holiday : '.$get_holiday['holiday_name'].'';
+                                    $mark_attendance->att_for_date = $day;
+                                    $mark_attendance->att_for_month = $month;
+                                    $mark_attendance->att_for_year = $year;
+                                    $mark_attendance->save();
+
+                                }
+                            }
+                        }
+                    }
+
+                    $shift_start_timings = $this->get_employee_today_shift($employee_data->input('employee_id'),"in",date('Y-m-d'));
+                    $shift_end_timings = $this->get_employee_today_shift($employee_data->input('employee_id'),"out",date('Y-m-d'));
+
+                    if(($employee_data->input('shift_end_timings').':00' != $shift_end_timings || $employee_data->input('shift_start_timings').':00' != $shift_start_timings) && $employee_old_doj == $employee_data->input('employee_doj')){
+
+                        if(strtotime($employee_data->input('employee_doj')) <= strtotime(date('Y-m-d',strtotime('+1 days')))){
+                            
+                            $insert_shift_start_timings = $employee_data->input('shift_start_timings').':00';
+                            $insert_shift_end_timings = $employee_data->input('shift_end_timings').':00';
+
+                            $delete_record_of_next_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d',strtotime('+1 days')))->delete();
+                          
+                            $get_todays_attendance = Attendance::where('att_for_date', date('d'))->where('att_for_month', date('m'))->where('att_for_year', date('Y'))->where('att_employee_id', $employee_data->input('employee_id'))->get(['attendance_id'])->toArray();
+
+                            if(empty($get_todays_attendance)){
+
+                                $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d'))->delete();
+                               
+                            }
+
+                            $add_shift = new ShiftManagement();
+                            $add_shift->employee_id = $employee_data->input('employee_id');
+                            $add_shift->shift_start_from_date = (empty($get_todays_attendance)) ? date('Y-m-d') : date('Y-m-d',strtotime('+1 days'));
+                            $add_shift->shift_start_time = $insert_shift_start_timings;
+                            $add_shift->shift_end_time = $insert_shift_end_timings;
+                            $add_shift->shift_created_by = session('user_session');
+                            $add_shift->save();
+
+                        }else{
+                            
+                            $insert_shift_start_timings = $employee_data->input('shift_start_timings').':00';
+                            $insert_shift_end_timings = $employee_data->input('shift_end_timings').':00';
+
+                            $delete_record_of_same_day = ShiftManagement::where('employee_id',$employee_data->input('employee_id'))->where('shift_start_from_date',date('Y-m-d',strtotime($employee_old_doj)))->delete();
+
+                            $add_shift = new ShiftManagement();
+                            $add_shift->employee_id = $employee_data->input('employee_id');
+                            $add_shift->shift_start_from_date = date('Y-m-d',strtotime($employee_data->input('employee_doj')));
+                            $add_shift->shift_start_time = $insert_shift_start_timings;
+                            $add_shift->shift_end_time = $insert_shift_end_timings;
+                            $add_shift->shift_created_by = session('user_session');
+                            $add_shift->save();
+
+                        }
+
+                    }
+
+                    if($employment_period[0]['effective_date'] != $employee_data->input('employment_status_date')  || $employment_period[0]['employement_status_id'] != $employee_data->input('employee_status') || $employee_old_doj != $employee_data->input('employee_doj')  ){
+
+                        $employment_period = new EmploymentPeriod();
+                        $employment_period->employement_status_id = $employee_data->input('employee_status');
+                        $employment_period->employee_id = $update_employee->employee_id;
+                        $employment_period->effective_date =  $employee_status_date;
+                        $employment_period->employement_period_created_by = session('user_session');
+                        $employment_period->employement_period_created_at = date('Y-m-d H:i:s');
+                        $process = $employment_period->save();
+                    }
+
+                    if($employee_data->input('make_ra') == '1'){
+                       $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => $employee_data->input('attendance_access') ]);
+                    }elseif($employee_data->input('make_ra') == '0'){
+                        $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => 0 ]);
+                    }else{
+                        $attendance_access = AttendanceAccess::where('access_employee_id', $update_employee->employee_id)->update(['attendance_access' => 0 ]);
+
+                    }
+
+                    if($process == 1){
+
+                        DB::commit();
+
+                        return response()->json([
+                            'status' => 'TRUE',
+                            'msg' => "Employee details updated successfully.",
+                        ]);
+                    }else{
+
+                        DB::rollBack();
+
+                        return response()->json([
+                            'status' => 'FALSE',
+                            'msg' => "Employee addition failed. Please try again after some time.",
+                        ]);
+                    }
+                }
+            }
+
+
+        }
+        catch(\Exception $e){
+
+            DB::rollBack();
+            
+            $this->create_error_log("Update Employee's Details", $e);
+            if(!env('APP_DEBUG')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+
+                ]);
+            }else{
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "Something went wrong. Please try again.",
+                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
+                ]);
+
+            }
+        }
+        finally{
+            ActivityTracker::track_activity("Update Employee's Details");
+        }
+
+    }
+
+    protected function update_employee_business_card(Request $employee_data){
+        try{
+          
+            // $locations = OfficeLocation::pluck('location_id')->toArray();
+
+            // $secondLastEffectiveDate = EmploymentPeriod::where('employee_id',$employee_data->input('employee_id'))->skip(1)->take(1)->get(['effective_date','employement_status_id'])->toArray();
+
+            // if(empty($secondLastEffectiveDate)){
+            //     $employment_period = EmploymentPeriod::where('employee_id',$employee_data->input('employee_id'))->orderBy('employement_period_id','DESC')->get(['effective_date','employement_status_id'])->toArray();
+
+            //     $minDate =  $employment_period[0]['effective_date'];
+            //     $lastStatus =  $employment_period[0]['employement_status_id'];
+            // }else{
+            //     $minDate = $secondLastEffectiveDate[0]['effective_date'];
+            //     $lastStatus =  $secondLastEffectiveDate[0]['employement_status_id'];
+            // }
+
+            // if($employee_data->input('employee_isactive') == '0'){
+            //     $employee_deactivate_date =  'required';
+            //     $employee_deactivate_type =  'required|numeric|in:1,2';
+              
+            // }else{
+            //     $employee_deactivate_date =  'nullable';
+            //     $employee_deactivate_type =  'nullable';
+            // }
+
+            // $messages = [
+            //     'employee_name.required' => 'The employee name field is required.',
+            //     'employee_name.regex' => 'employee name must be character.',
+            // ];
+           
+            $validator = Validator::make($employee_data->all(), [
+                'employee_name' =>  'required',
+                'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno,'.$employee_data->input('employee_id').',employee_id'],
+                // 'employee_personal_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id'],
+                'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id'],
+                'employee_cnic' => ['required', 'unique:tbl_employees,employee_cnic,'.$employee_data->input('employee_id').',employee_id'],
+                // 'employee_gender' => 'required|in:Male,Female',
+                // 'employee_status' => 'required|numeric',
+                // 'employee_grade' => 'required',
+                'employee_designation' => 'required',
+                'employee_department' => 'required',
+                'employee_company' => 'required',
+                'employee_jobtitle' => 'required',
+                // 'employee_password' => 'required',
+                // 'employee_isactive' => 'required|in:1,0',
+                // 'make_ra' => 'required|in:1,0',
+                // 'attendance_access' => ($employee_data->input('make_ra') == '1') ? 'required|in:0,1' : '',
+                // 'employee_jobtype' => 'required|in:Office,Home',
+                // 'employee_offday' => ['array','min:0','max:6'],
+                // 'employee_offday.*' => 'in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday,',
+                // 'employee_reporting_person' => 'required|numeric',
+                // 'employee_salary' => 'required|min:0|max:99999999|numeric',
+                // 'earning_type' => 'required|numeric|in:1,2',
+                // 'shift_start_timings' => 'required|date_format:H:i',
+                // 'shift_end_timings' => 'required|date_format:H:i',
+                // 'emergency_name' => 'string|max:100|nullable',
+                // 'emergency_contact_no' => 'string|min:0|max:50|nullable',
+                // 'employee_location' => 'required|in:'.implode(",",$locations),
+                // 'employee_location' => 'required',
+                // 'employment_status_date' => ($lastStatus == $employee_data->input('employee_status')) ? 'required|date_format:Y-m-d' : 'required|date_format:Y-m-d|after_or_equal:'.$minDate,
+                // 'employee_deactivate_date'=> $employee_deactivate_date,
+                // 'employee_deactive_type'=> $employee_deactivate_type,
+                // 'leave_allotment.*' => 'required|numeric|min:0|max:100',
+                'employee_group' => 'required|numeric',
+                // 'employee_doj' => 'required|date_format:Y-m-d',
+                // 'employee_dob' => 'required|date_format:Y-m-d|before_or_equal:now',
+                // 'employee_cnic_issue_date' => 'string|min:0|max:50|nullable',
+                // 'employee_cnic_expiry_date' => 'after:employee_cnic_issue_date|nullable',
+                // 'fund_amount.*' => 'required|numeric|min:0|max:99999',
+                // 'fund_id.*' => 'required|numeric'
+                
+            ]);
+            
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return response()->json([
+                        'msg' => $error,
+                        'status' => 'FALSE'
+                    ]);
+                }
+            }
+
+            else{
+
+                // if(!empty($employee_data->input('employee_location'))){
+                //     foreach($employee_data->input('employee_location') as $location){
+                //         $get_office_location = OfficeLocation::where('location_id', $location)->get('location_id')->toArray();
+                //         if(empty($get_office_location)){
+                //             return response()->json([
+                //                 'status' => 'FALSE',
+                //                 'msg' => "Location ".$location." doesn't exists in record.",
+                //             ]);
+                //         }
+                //     }
+                // }
+
+                // $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
+
+                // $employee_active = Employees::where('employee_isactive', '=', 1)->count();
+
+                // $check_employee_active =  Employees::where('employee_id', $employee_data->input('employee_id'))->get('employee_isactive')->toArray();
+
+                // if($check_employee_active[0]['employee_isactive'] == 1){
+                //     $employee_active -= 1;
+                // }
+
+                // if(!empty($no_of_employees && (!empty($employee_active)))){
+
+                //     if($no_of_employees[0]['no_of_employees'] != "unlimited" && $no_of_employees[0]['no_of_employees'] <= $employee_active && $employee_data->input('employee_isactive') == 1 ){
+
+                //         return response()->json([
+                //             'status' => 'FALSE',
+                //             'msg' => "You can't update employee because employee limit exceeds.",
+                //         ]);
+                //     }
+                // }
 
                 $depratment_name = Department::where('department_id',$employee_data->input('employee_department'))->get('department_name')->toArray();
 

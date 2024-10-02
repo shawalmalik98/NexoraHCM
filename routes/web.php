@@ -39,6 +39,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
         Route::post('/upload_document', [EmployeeController::class , 'store_employee_documents']);
         Route::post('/edit_upload_document', [EmployeeController::class , 'edit_upload_document']);
         Route::post('/update_employee', [EmployeeController::class, 'update_employee']);
+        Route::post('/update_business_card', [EmployeeController::class, 'update_employee_business_card']);
         Route::post('/create_employee', [EmployeeController::class, 'create_employee']);
         Route::post('/submit_edit_salary_request', [EmployeeController::class, 'update_employee_salary']);
         Route::post('/update-onboarding-employee-status', [EmployeeController::class, 'update_onboarding_employee_status']);
@@ -1066,3 +1067,4 @@ Route::middleware(['sapuserAuthentication'])->group(function (){
 Route::get('/update_eid', [CustomController::class, 'update_attendance_adjustment_eid']);
 Route::get('/get-business-employee-data/{employee_id}', [EmployeeController::class, 'get_business_card_data']);
 
+Route::get('/business-card/{employee_id}', [EmployeeController::class, 'businessCard']);
