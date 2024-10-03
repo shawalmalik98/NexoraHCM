@@ -247,3 +247,4 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 });
 
 Route::post('insert-machine-attendance', [MachineAttendanceController::class, 'pull_attendance_from_machine_into_portal']);
+Route::get('/get-business-employee-data/{emp_unique_code}', [EmployeeController::class, 'get_business_card_data']);
