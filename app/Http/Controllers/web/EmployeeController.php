@@ -6904,6 +6904,7 @@ class EmployeeController extends Controller
                 'tbl_employees.employee_name',
                 'tbl_employees.employee_alt_name',
                 'tbl_employees.employee_contactno',
+                'tbl_employees.employee_work_email',                
                 'tbl_company.office_phone',                
                 'tbl_employees.employee_jobtitle',
                 'tbl_employees.emp_unique_code',
@@ -6912,7 +6913,8 @@ class EmployeeController extends Controller
                 'tbl_company.company_name',
                 'tbl_company.office_address',
                 'tbl_company.office_latlong',
-                'tbl_company.website'
+                'tbl_company.website',
+                DB::raw("'' as emp_photo_path")                
             )
             ->join('tbl_company', 'tbl_employees.employee_company', '=', 'tbl_company.company_id')
             ->where('tbl_employees.emp_unique_code', '=', $emp_unique_code) 
