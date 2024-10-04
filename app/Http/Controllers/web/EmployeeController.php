@@ -6934,7 +6934,7 @@ class EmployeeController extends Controller
             $employee_details = Employees::select(
                 'tbl_employees.employee_id',
                 'tbl_employees.employee_code',
-                DB::raw("IFNULL(tbl_employees.employee_alt_name, tbl_employees.employee_name) as employee_name"),
+                DB::raw("ISNULL(tbl_employees.employee_alt_name, tbl_employees.employee_name) as employee_name"),            
                 'tbl_employees.employee_alt_name',
                 'tbl_employees.employee_contactno',
                 'tbl_employees.employee_work_email',                
