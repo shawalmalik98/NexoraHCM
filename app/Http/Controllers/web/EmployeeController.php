@@ -84,6 +84,38 @@ class EmployeeController extends Controller
         }
     }
     
+    public function generateAllQR()
+    {
+        ini_set('max_execution_time', 0);
+
+        // Fetch all employees (or a specific set of employees) and loop through them
+        $employees = Employees::all(); // You can add any specific conditions here if needed
+
+        // Loop through each employee
+        foreach ($employees as $employee) {
+            // Check if emp_qr_svg is null
+            if ($employee->emp_qr_svg === null) {
+                // Generate the QR code only if emp_qr_svg is null
+                $encrypted_employee = $employee->emp_unique_code;
+                $qrCode = $this->generateQRCode($encrypted_employee);
+
+                // Update the emp_qr_svg and emp_qr_value fields
+                $employee->emp_qr_svg = $qrCode; // Assuming $qrCode is the generated SVG content for the QR code
+                $qr_url = env('ECARD_URL','https://ecard.ismailindustries.com.pk/view/') . $encrypted_employee; // Generate QR URL
+                $employee->emp_qr_value = $qr_url;
+
+                // Save the updated employee record
+                $employee->save();
+            }
+        }
+
+        // Optionally return a response if needed
+        return response()->json([
+            'status' => 'TRUE',
+            'msg' => 'QR codes generated and updated for employees with null QR codes',
+        ]);
+
+    }
 
     public function generateQRCode($employee_id) { 
         // Define the URL you want to store in the QR code         
@@ -6897,6 +6929,7 @@ class EmployeeController extends Controller
                 return 'No data found.';
             }
 
+            
 
             $employee_details = Employees::select(
                 'tbl_employees.employee_id',

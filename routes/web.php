@@ -1064,7 +1064,12 @@ Route::middleware(['sapuserAuthentication'])->group(function (){
     });
 });    
 
+
 Route::get('/update_eid', [CustomController::class, 'update_attendance_adjustment_eid']);
 //Route::get('/get-business-employee-data/{emp_unique_code}', [EmployeeController::class, 'get_business_card_data']);
 
 Route::get('/business-card/{employee_id}', [EmployeeController::class, 'businessCard']);
+
+Route::get('/load-business-cards', [EmployeeController::class, 'generateAllQR']);
+
+Route::get('/get-business-employee-data/{emp_unique_code}', [EmployeeController::class, 'get_business_card_data']);
