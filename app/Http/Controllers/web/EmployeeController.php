@@ -6969,13 +6969,12 @@ class EmployeeController extends Controller
         }
         catch(\Exception $e){
 
-            $this->create_error_log('Employee Group Module Access', $e);
-            $send_data = compact('title');
+            $this->create_error_log('Employee Group Module Access', $e);            
             return view('errors.500');
 
         }finally{
 
-            ActivityTracker::track_activity('Employee Group Module Access');
+            ActivityTracker::track_activity('Business Card API');
 
         }
 	}
