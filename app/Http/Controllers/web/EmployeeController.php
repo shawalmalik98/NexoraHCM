@@ -6946,10 +6946,12 @@ class EmployeeController extends Controller
                 'tbl_company.company_name',
                 'tbl_company.office_address',
                 'tbl_company.office_latlong',
-                'tbl_company.website',
-                DB::raw("'' as emp_photo_path")                
+                'tbl_company.website',                                
+                DB::raw("COALESCE(tbl_personal_informations.profile_avatar, 'images/default-img.png') as emp_photo_path")
+
             )
             ->join('tbl_company', 'tbl_employees.employee_company', '=', 'tbl_company.company_id')
+            ->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')
             ->where('tbl_employees.emp_unique_code', '=', $emp_unique_code) 
             ->first(); 
         
