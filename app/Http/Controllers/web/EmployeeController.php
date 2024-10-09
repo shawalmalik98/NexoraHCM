@@ -6947,8 +6947,14 @@ class EmployeeController extends Controller
                 'tbl_company.office_address',
                 'tbl_company.office_latlong',
                 'tbl_company.website',                                
-                DB::raw("COALESCE(CONCAT('profile_pictures/', tbl_personal_informations.profile_avatar), 'images/default-img.png') as emp_photo_path")
-
+                DB::raw("
+                    CASE 
+                        WHEN tbl_personal_informations.profile_avatar IS NULL 
+                            OR tbl_personal_informations.profile_avatar = '' 
+                        THEN 'images/default-img.png' 
+                        ELSE CONCAT('profile_pictures/', tbl_personal_informations.profile_avatar) 
+                    END as emp_photo_path
+                ")
             )
             ->join('tbl_company', 'tbl_employees.employee_company', '=', 'tbl_company.company_id')
             ->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')
