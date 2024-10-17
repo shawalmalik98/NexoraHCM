@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController,AppFlowController, SalaryController};
+use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController,AppFlowController, SalaryController, GeneralController};
 use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
 
@@ -12,7 +12,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
  
 
   Route::middleware(['userAuthentication','userPermission','userStatusChecker'])->group(function (){
-
+      Route::get('/incentive', [GeneralController::class, 'index'])->withoutMiddleware(['userPermission','userStatusChecker']);
       Route::prefix('/login-history')->group(function () {
 
         Route::get('/', [LoginController::class, 'login_history']);
