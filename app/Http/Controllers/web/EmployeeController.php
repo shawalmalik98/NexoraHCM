@@ -122,7 +122,7 @@ class EmployeeController extends Controller
         $url = "https://ecard.ismailindustries.com.pk/view/$employee_id";
         
         // Replace with the actual URL you want // Generate a QR code containing the URL 
-        $qrCode = QrCode::size(80)->generate($url); 
+        $qrCode = QrCode::size(300)->generate($url); 
     
         // Pass the QR code to the view 
         return $qrCode;
