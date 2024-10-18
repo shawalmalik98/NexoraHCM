@@ -52,12 +52,9 @@
                             <tr class="fw-bold text-muted bg-light">
                                 <th class="ps-4">Ref ID</th>
                                 <th>Incentive Period</th>
-                                <th>Designation</th>
-                                <th>Brand</th>
-                                <th>Target Type</th>
-                                <th>Target Value</th>
-                                <th>Incentive</th>
-                                {{-- <th>Action</th> --}}
+                                <th>Designation(s)</th>
+                                <th>Created At</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,31 +64,27 @@
                                     5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August', 
                                     9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
                                 ];
+                                $currentMonth = date('n');
                             @endphp
-                                @foreach($incentive as $inc)
+                                @foreach($incentive as $key => $inc)
                                     <tr>
                                         <td class="ps-5">
-                                            {{ $inc['incentive_id'] }}
+                                            {{ ++$key }}
                                         </td>
                                         <td>
                                             {{ $inc['incentive_period'] }}
                                         </td>
                                         <td>
-                                            {{ $inc['employee_type'] }}
+                                            {{ $inc['employee_types'] }}
                                         </td>
                                         <td>
-                                            {{ $inc['brand'] }}
+                                            {{ $inc['max_created_at'] }}
                                         </td>
                                         <td>
-                                            {{ $inc['productive_criteria'] }}
+                                            <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_details_btn" data-bs-toggle="tooltip" aria-label="View Incentive Details" data-kt-initialized="1" data-period="{{ $inc['incentive_period'] }}">
+                                                <i class="fa fa-eye" aria-hidden="true"></i>
+                                            </a>
                                         </td>
-                                        <td>
-                                            {{ $inc['target_value'] }}
-                                        </td>
-                                        <td>
-                                            {{ $inc['incentive'] }}
-                                        </td>
-                                        
                                     </tr>
                             @endforeach
                         </tbody>
@@ -126,9 +119,14 @@
                     <div class="row">
                         <div class="col-md-12">
                             <label class="fs-6 fw-semibold mb-2 required">Incentive Period</label>
-                            <select class="form-select" name="incentive_period">
+                            {{-- <select class="form-select" name="incentive_period">
                                 @for ($monthz = 1; $monthz <= 12; $monthz++)
                                     <option value="{{ $months[$monthz] }} - {{ date('Y') }}">{{ $months[$monthz] }}  - {{ date('Y') }}</option>
+                                @endfor
+                            </select> --}}
+                            <select class="form-select" name="incentive_period"> 
+                                @for ($monthz = $currentMonth; $monthz <= 12; $monthz++)
+                                    <option value="{{ $months[$monthz] }} - {{ date('Y') }}">{{ $months[$monthz] }} - {{ date('Y') }}</option>
                                 @endfor
                             </select>
                         </div>
@@ -136,7 +134,7 @@
                     <!-- First Row with Month Dropdown and Fields to be cloned -->
                     <div class="row designation-row">
                         
-                        <div class="col-md-3 mt-3">
+                        <div class="col-md-2 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Designation</label>
                             <select class="form-select" name="designation_name[]" required>
                                 <option value="DSR">DSR</option>
@@ -147,23 +145,23 @@
                                 <option value="NSM">NSM</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mt-3">
+                        <div class="col-md-2 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Brand</label>
                             <input type="text" class="form-control" name="brand_name[]" placeholder="Enter Brand" required />
                         </div>
                         <div class="col-md-2 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Target Type</label>
                             <select class="form-select" name="target_type[]" required>
-                                <option value="Productive Criteria">Productive Criteria</option>
                                 <option value="Primary Target">Primary Target</option>
                                 <option value="Secondary Target">Secondary Target</option>
+                                <option value="Productive Criteria">Productive Criteria</option>
                             </select>
                         </div>
-                        <div class="col-md-2 mt-3">
+                        <div class="col-md-3 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Target Value</label>
                             <input type="text" class="form-control" name="target_value[]" placeholder="Enter Target Value" required />
                         </div>
-                        <div class="col-md-2 mt-3">
+                        <div class="col-md-3 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Incentive</label>
                             <input type="text" class="form-control" name="incentive[]" placeholder="Enter Incentive" required />
                         </div>
@@ -194,6 +192,23 @@
         </div>
     </div>
 </form>
+
+<div class="modal fade" id="incentiveDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Incentive Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 
@@ -227,9 +242,6 @@
             success: function(response) {
                 if (response.success) {
                     location.reload();
-                    // alert('Designations added successfully!');
-                    // $('#adddesignation_form')[0].reset();
-                    // $('#designation-rows-container').empty();
                 } else {
                     alert('Something went wrong. Please try again.');
                 }
@@ -243,5 +255,43 @@
             }
         });
     });
+
+    $('.view_details_btn').on('click', function() {
+    var incentivePeriod = $(this).data('period');
+
+    $.ajax({
+        url: '/get-incentive-details',
+        method: 'GET',
+        data: {
+            incentive_period: incentivePeriod
+        },
+        success: function(response) {
+            var modalBody = $('#incentiveDetailsModal .modal-body');
+            modalBody.empty();
+            var htmlContent = '<table class="custom-table">';
+            htmlContent += '<thead><tr><th class="fw-bold">Incentive Period</th><th class="fw-bold">Designation</th><th class="fw-bold">Brand</th><th class="fw-bold">Target Type</th><th class="fw-bold">Incentive</th><th class="fw-bold">Target Value</th></tr></thead>';
+            htmlContent += '<tbody>';
+            $.each(response.data, function(index, incentive) {
+                htmlContent += '<tr>';
+                htmlContent += '<td>' + incentive.incentive_period + '</td>';
+                htmlContent += '<td>' + incentive.employee_type + '</td>';
+                htmlContent += '<td>' + incentive.brand + '</td>';
+                htmlContent += '<td>' + incentive.productive_criteria + '</td>';
+                htmlContent += '<td>' + incentive.target_value + '</td>';
+                htmlContent += '<td>' + incentive.incentive + '</td>';
+                htmlContent += '</tr>';
+            });
+
+            htmlContent += '</tbody></table>';
+            modalBody.append(htmlContent);
+            $('#incentiveDetailsModal').modal('show');
+        },
+        error: function(error) {
+            console.log('Error fetching incentive details:', error);
+        }
+    });
+});
+
+
 </script>
 @endpush

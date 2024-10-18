@@ -36,6 +36,23 @@
 
 		<style>
 
+			.custom-table {
+				width: 100%;
+				border-collapse: collapse; /* Ensure borders are collapsed */
+			}
+
+			.custom-table th,
+			.custom-table td {
+				border: 1px solid #dee2e6; /* Add border to table cells */
+				padding: 8px; /* Add padding for better spacing */
+				text-align: left; /* Align text to the left */
+			}
+
+			.custom-table th {
+				font-weight: bold; /* Make header text bold */
+				color: #000; /* Change header text color to dark */
+			}
+
 			input[type=date]::-ms-clear {
 				display: none;
 			}

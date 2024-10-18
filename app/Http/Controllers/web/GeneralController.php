@@ -15,7 +15,7 @@ class GeneralController extends Controller
     public function index(){
         $title = Self::MAIN_TITLE;
         $login_user = $this->get_login_user_detail();
-        $get_incentive = DB::select('SELECT * FROM tbl_incentive');
+        $get_incentive = DB::select("SELECT incentive_period, STRING_AGG(employee_type, ', ') AS employee_types , MAX(created_at) AS max_created_at FROM  tbl_incentive GROUP BY incentive_period");
         $incentive = json_decode(json_encode($get_incentive), TRUE);
         $send_data = compact('title','login_user','incentive');
         return view('incentive.incentive')->with($send_data);
@@ -38,12 +38,25 @@ class GeneralController extends Controller
                     'productive_criteria' => $targetTypes[$i],
                     'incentive' => $incentives[$i],
                     'target_value' => $target_value[$i],
+                    'created_at' => date('Y-m-d H:i:s')
                 ]);
             }
             return response()->json(['success' => true]);
         } else {
             return response()->json(['success' => false, 'message' => 'Data mismatch']);
         }
+    }
+
+    public function getIncentiveDetails(Request $request){
+        $incentivePeriod = $request->input('incentive_period');
+
+        $incentives = DB::table('tbl_incentive')
+                        ->where('incentive_period', $incentivePeriod)
+                        ->get();
+
+        return response()->json([
+            'data' => $incentives
+        ]);
     }
 
 }
