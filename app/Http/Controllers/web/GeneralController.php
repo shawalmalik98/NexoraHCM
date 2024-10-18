@@ -15,9 +15,9 @@ class GeneralController extends Controller
     public function index(){
         $title = Self::MAIN_TITLE;
         $login_user = $this->get_login_user_detail();
-        $departments = Department::all()->toArray();
-        $departments_hod =  Department::where('department_hod',$login_user[0]['employee_id'])->get('department_hod')->toArray();
-        $send_data = compact('title','login_user', 'departments','departments_hod');
+        $get_incentive = DB::select('SELECT * FROM tbl_incentive');
+        $incentive = json_decode(json_encode($get_incentive), TRUE);
+        $send_data = compact('title','login_user','incentive');
         return view('incentive.incentive')->with($send_data);
     }
 
@@ -26,19 +26,20 @@ class GeneralController extends Controller
         $brands = $request->brand_name;
         $targetTypes = $request->target_type;
         $incentives = $request->incentive;
+        $incentive_period = $request->incentive_period;
+        $target_value = $request->target_value;
 
         if (count($designations) == count($brands) && count($brands) == count($targetTypes) && count($targetTypes) == count($incentives)) {
             for ($i = 0; $i < count($designations); $i++) {
                 DB::table('tbl_incentive')->insert([
-                    'designation' => $designations[$i],
+                    'incentive_period' => $incentive_period,
+                    'employee_type' => $designations[$i],
                     'brand' => $brands[$i],
-                    'target_type' => $targetTypes[$i],
+                    'productive_criteria' => $targetTypes[$i],
                     'incentive' => $incentives[$i],
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'target_value' => $target_value[$i],
                 ]);
             }
-
             return response()->json(['success' => true]);
         } else {
             return response()->json(['success' => false, 'message' => 'Data mismatch']);

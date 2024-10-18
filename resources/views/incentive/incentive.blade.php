@@ -8,7 +8,7 @@
         <div class="app-container col-12 d-flex flex-stack">
             
             <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
-                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Incentive Attachments</h1>
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Incentive Records</h1>
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
                 <div class="m-0">
@@ -32,14 +32,32 @@
         <div class="app-container">
            
             <div class="card mb-5 mb-xl-8">
+                <div class="card-header border-0 pt-5">
+                    
+                    <div class="card-title">
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <span class="svg-icon svg-icon-1 position-absolute ms-6">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.5" x="17.0365" y="15.1223" width="8.15546" height="2" rx="1" transform="rotate(45 17.0365 15.1223)" fill="currentColor"></rect>
+                                    <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z" fill="currentColor"></path>
+                                </svg>
+                            </span>
+                            <input type="text" class="form-control  w-250px ps-15" placeholder="Search Record ..." id="searchFilter">
+                        </div>
+                    </div>
+                </div>
                 <div class="card-body py-3">
-                    <table class="table table-bordered  table-row-bordered" id="system_datatable22222">
+                    <table class="table table-bordered  table-row-bordered" id="system_datatable">
                         <thead>
                             <tr class="fw-bold text-muted bg-light">
                                 <th class="ps-4">Ref ID</th>
                                 <th>Incentive Period</th>
-                                <th>Incentive Attachment</th>
-                                <th>Action</th>
+                                <th>Designation</th>
+                                <th>Brand</th>
+                                <th>Target Type</th>
+                                <th>Target Value</th>
+                                <th>Incentive</th>
+                                {{-- <th>Action</th> --}}
                             </tr>
                         </thead>
                         <tbody>
@@ -50,22 +68,32 @@
                                     9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
                                 ];
                             @endphp
-                                @for ($month = 1; $month <= 12; $month++)
+                                @foreach($incentive as $inc)
                                     <tr>
                                         <td class="ps-5">
-                                            {{ $month }}
+                                            {{ $inc['incentive_id'] }}
                                         </td>
                                         <td>
-                                            {{ $months[$month] }} - {{ date('Y') }}
+                                            {{ $inc['incentive_period'] }}
                                         </td>
                                         <td>
-                                            <input type="file" class="form-control" name="attachments">
+                                            {{ $inc['employee_type'] }}
                                         </td>
                                         <td>
-                                            <button class="btn btn-primary" style="width:100%;">Save</button>
+                                            {{ $inc['brand'] }}
                                         </td>
+                                        <td>
+                                            {{ $inc['productive_criteria'] }}
+                                        </td>
+                                        <td>
+                                            {{ $inc['target_value'] }}
+                                        </td>
+                                        <td>
+                                            {{ $inc['incentive'] }}
+                                        </td>
+                                        
                                     </tr>
-                            @endfor
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -97,10 +125,10 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <label class="fs-6 fw-semibold mb-2 required">Department (Month)</label>
-                            <select class="form-select" name="department_ids[]">
+                            <label class="fs-6 fw-semibold mb-2 required">Incentive Period</label>
+                            <select class="form-select" name="incentive_period">
                                 @for ($monthz = 1; $monthz <= 12; $monthz++)
-                                    <option value="{{ $months[$monthz] }}">{{ $months[$monthz] }}</option>
+                                    <option value="{{ $months[$monthz] }} - {{ date('Y') }}">{{ $months[$monthz] }}  - {{ date('Y') }}</option>
                                 @endfor
                             </select>
                         </div>
@@ -110,7 +138,7 @@
                         
                         <div class="col-md-3 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Designation</label>
-                            <select class="form-select" name="target_type[]" required>
+                            <select class="form-select" name="designation_name[]" required>
                                 <option value="DSR">DSR</option>
                                 <option value="TSM">TSM</option>
                                 <option value="ASM">ASM</option>
@@ -123,7 +151,7 @@
                             <label class="fs-6 fw-semibold mb-2 required">Brand</label>
                             <input type="text" class="form-control" name="brand_name[]" placeholder="Enter Brand" required />
                         </div>
-                        <div class="col-md-3 mt-3">
+                        <div class="col-md-2 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Target Type</label>
                             <select class="form-select" name="target_type[]" required>
                                 <option value="Productive Criteria">Productive Criteria</option>
@@ -131,7 +159,11 @@
                                 <option value="Secondary Target">Secondary Target</option>
                             </select>
                         </div>
-                        <div class="col-md-3 mt-3">
+                        <div class="col-md-2 mt-3">
+                            <label class="fs-6 fw-semibold mb-2 required">Target Value</label>
+                            <input type="text" class="form-control" name="target_value[]" placeholder="Enter Target Value" required />
+                        </div>
+                        <div class="col-md-2 mt-3">
                             <label class="fs-6 fw-semibold mb-2 required">Incentive</label>
                             <input type="text" class="form-control" name="incentive[]" placeholder="Enter Incentive" required />
                         </div>
@@ -170,6 +202,7 @@
 
 @endsection
 @push('js-link')
+<script src="{{url('assets/js/department/department.js')}}"></script>
 <script>
     $(document).ready(function() {
         $('#add-row-btn').on('click', function() {
