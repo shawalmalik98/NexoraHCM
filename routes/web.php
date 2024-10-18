@@ -15,6 +15,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
       Route::get('/incentive', [GeneralController::class, 'index'])->withoutMiddleware(['userPermission','userStatusChecker']);
       Route::post('/save-incentive', [GeneralController::class, 'saveIncentive'])->withoutMiddleware(['userPermission','userStatusChecker']);
       Route::get('/get-incentive-details', [GeneralController::class, 'getIncentiveDetails'])->withoutMiddleware(['userPermission','userStatusChecker']);
+      Route::get('/download-incentive-details', [GeneralController::class, 'downloadIncentiveDetails'])->withoutMiddleware(['userPermission','userStatusChecker']);
       Route::prefix('/login-history')->group(function () {
 
         Route::get('/', [LoginController::class, 'login_history']);

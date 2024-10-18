@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Models\{Department, Designation, Employees};
 use Illuminate\Support\Facades\DB;
+use App\Exports\IncentiveExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class GeneralController extends Controller
 {
@@ -57,6 +59,11 @@ class GeneralController extends Controller
         return response()->json([
             'data' => $incentives
         ]);
+    }
+
+    public function downloadIncentiveDetails(Request $request){
+        $incentivePeriod = $request->get('incentive_period');
+        return Excel::download(new IncentiveExport($incentivePeriod), 'Incentive Details '.$incentivePeriod.'.xlsx');
     }
 
 }

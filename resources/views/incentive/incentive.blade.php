@@ -84,6 +84,9 @@
                                             <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_details_btn" data-bs-toggle="tooltip" aria-label="View Incentive Details" data-kt-initialized="1" data-period="{{ $inc['incentive_period'] }}">
                                                 <i class="fa fa-eye" aria-hidden="true"></i>
                                             </a>
+                                            <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 download_details_btn" data-bs-toggle="tooltip" aria-label="Download Incentive Details" data-period="{{ $inc['incentive_period'] }}">
+                                                <i class="fa fa-download" aria-hidden="true"></i>
+                                            </a>
                                         </td>
                                     </tr>
                             @endforeach
@@ -257,40 +260,47 @@
     });
 
     $('.view_details_btn').on('click', function() {
-    var incentivePeriod = $(this).data('period');
+        var incentivePeriod = $(this).data('period');
 
-    $.ajax({
-        url: '/get-incentive-details',
-        method: 'GET',
-        data: {
-            incentive_period: incentivePeriod
-        },
-        success: function(response) {
-            var modalBody = $('#incentiveDetailsModal .modal-body');
-            modalBody.empty();
-            var htmlContent = '<table class="custom-table">';
-            htmlContent += '<thead><tr><th class="fw-bold">Incentive Period</th><th class="fw-bold">Designation</th><th class="fw-bold">Brand</th><th class="fw-bold">Target Type</th><th class="fw-bold">Incentive</th><th class="fw-bold">Target Value</th></tr></thead>';
-            htmlContent += '<tbody>';
-            $.each(response.data, function(index, incentive) {
-                htmlContent += '<tr>';
-                htmlContent += '<td>' + incentive.incentive_period + '</td>';
-                htmlContent += '<td>' + incentive.employee_type + '</td>';
-                htmlContent += '<td>' + incentive.brand + '</td>';
-                htmlContent += '<td>' + incentive.productive_criteria + '</td>';
-                htmlContent += '<td>' + incentive.target_value + '</td>';
-                htmlContent += '<td>' + incentive.incentive + '</td>';
-                htmlContent += '</tr>';
-            });
+        $.ajax({
+            url: '/get-incentive-details',
+            method: 'GET',
+            data: {
+                incentive_period: incentivePeriod
+            },
+            success: function(response) {
+                var modalBody = $('#incentiveDetailsModal .modal-body');
+                modalBody.empty();
+                var htmlContent = '<table class="custom-table">';
+                htmlContent += '<thead><tr><th class="fw-bold">Incentive Period</th><th class="fw-bold">Designation</th><th class="fw-bold">Brand</th><th class="fw-bold">Target Type</th><th class="fw-bold">Target Value</th><th class="fw-bold">Incentive</th></tr></thead>';
+                htmlContent += '<tbody>';
+                $.each(response.data, function(index, incentive) {
+                    htmlContent += '<tr>';
+                    htmlContent += '<td>' + incentive.incentive_period + '</td>';
+                    htmlContent += '<td>' + incentive.employee_type + '</td>';
+                    htmlContent += '<td>' + incentive.brand + '</td>';
+                    htmlContent += '<td>' + incentive.productive_criteria + '</td>';
+                    htmlContent += '<td>' + incentive.target_value + '</td>';
+                    htmlContent += '<td>' + incentive.incentive + '</td>';
+                    htmlContent += '</tr>';
+                });
 
-            htmlContent += '</tbody></table>';
-            modalBody.append(htmlContent);
-            $('#incentiveDetailsModal').modal('show');
-        },
-        error: function(error) {
-            console.log('Error fetching incentive details:', error);
-        }
+                htmlContent += '</tbody></table>';
+                modalBody.append(htmlContent);
+                $('#incentiveDetailsModal').modal('show');
+            },
+            error: function(error) {
+                console.log('Error fetching incentive details:', error);
+            }
+        });
     });
-});
+
+    $('.download_details_btn').on('click', function() {
+        var incentivePeriod = $(this).data('period');
+        
+        window.location.href = '/download-incentive-details?incentive_period=' + incentivePeriod;
+    });
+
 
 
 </script>
