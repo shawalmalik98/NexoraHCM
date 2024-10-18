@@ -13,6 +13,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
   Route::middleware(['userAuthentication','userPermission','userStatusChecker'])->group(function (){
       Route::get('/incentive', [GeneralController::class, 'index'])->withoutMiddleware(['userPermission','userStatusChecker']);
+      Route::post('/save-incentive', [GeneralController::class, 'saveIncentive'])->withoutMiddleware(['userPermission','userStatusChecker']);
       Route::prefix('/login-history')->group(function () {
 
         Route::get('/', [LoginController::class, 'login_history']);
