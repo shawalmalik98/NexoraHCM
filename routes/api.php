@@ -28,6 +28,7 @@ use App\Http\Controllers\api\HelpdeskApiController as HelpdeskController;
 use App\Http\Controllers\api\MeetingsApiController as MeetingsController;
 use App\Http\Controllers\api\OfficeLocationControllerApi as OfficeLocationController;
 use App\Http\Controllers\api\GeneralControllerApi as GerenalController;
+use App\Http\Controllers\web\GeneralController as GenController;
 use App\Http\Controllers\api\RplControllerApi as RplController;
 
 
@@ -52,6 +53,8 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
 
         //Mobile App Brust
         Route::post('generate-mobile-app-log', [GerenalController::class, 'get_error_log_mobile_application']);
+
+        Route::get('get-incentive', [GenController::class, 'get_incentive_api']);
         
         // login and basic
         // Route::middleware('throttle:200,1')->group(function () {

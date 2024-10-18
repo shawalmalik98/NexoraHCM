@@ -68,4 +68,14 @@ class GeneralController extends Controller
         return Excel::download(new IncentiveExport($incentivePeriod), 'Incentive Details '.$incentivePeriod.'.xlsx');
     }
 
+    protected function get_incentive_api(){
+        $incentives = DB::table('tbl_incentive')
+        // ->where('incentive_period', $incentivePeriod)
+        ->get();
+
+        return response()->json([
+            'data' => $incentives
+        ]);
+    }
+
 }
