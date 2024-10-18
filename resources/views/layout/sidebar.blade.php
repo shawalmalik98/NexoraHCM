@@ -1418,6 +1418,19 @@
                         @endif
                        
                     @endif
+
+                    @if($login_user[0]['employee_code'] == '1000000' || $login_user[0]['employee_code'] == '1011281' || $login_user[0]['employee_code'] == '1000114')
+                    <div class="menu-item search-item">
+                        <a class="menu-link nav-link @if($title == 'incentive') active @endif" href="{{url('incentive')}}">
+                            <span class="menu-icon">
+                                <span class="menu-icon">
+                                    <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/My Attendance.png') }}" />
+                                </span>
+                            </span>
+                            <span class="menu-title">Incentive</span>
+                        </a>
+                    </div>
+                    @endif
                     {{-- <div class="menu-item search-item">
                         <a class="menu-link nav-link  @if($title == 'index') active @endif" href="{{ url('/') }}">
                             <span class="menu-icon">
