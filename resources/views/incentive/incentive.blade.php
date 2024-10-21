@@ -146,6 +146,7 @@
                                 <option value="RSM">RSM</option>
                                 <option value="ZSM">ZSM</option>
                                 <option value="NSM">NSM</option>
+                                <option value="DSR + TSM">DSR + TSM</option>
                             </select>
                         </div>
                         <div class="col-md-2 mt-3">
@@ -158,6 +159,7 @@
                                 <option value="Primary Target">Primary Target</option>
                                 <option value="Secondary Target">Secondary Target</option>
                                 <option value="Productive Criteria">Productive Criteria</option>
+                                <option value="Drop Size">Drop Size</option>
                             </select>
                         </div>
                         <div class="col-md-3 mt-3">
