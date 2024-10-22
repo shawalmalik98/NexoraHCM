@@ -81,11 +81,20 @@
                                             {{ $inc['max_created_at'] }}
                                         </td>
                                         <td>
-                                            <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_details_btn" data-bs-toggle="tooltip" aria-label="View Incentive Details" data-kt-initialized="1" data-period="{{ $inc['incentive_period'] }}">
+                                            <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm m-1 view_details_btn" data-bs-toggle="tooltip" aria-label="View Incentive Details" data-kt-initialized="1" data-period="{{ $inc['incentive_period'] }}">
                                                 <i class="fa fa-eye" aria-hidden="true"></i>
                                             </a>
                                             <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 download_details_btn" data-bs-toggle="tooltip" aria-label="Download Incentive Details" data-period="{{ $inc['incentive_period'] }}">
                                                 <i class="fa fa-download" aria-hidden="true"></i>
+                                            </a>
+
+                                            <a href="javascript:void(0);" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm m-1 edit_details_btn" data-bs-toggle="tooltip" title="Edit Incentive" data-period="{{ $inc['incentive_period'] }}">
+                                                <span class="svg-icon svg-icon-3">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
+                                                        <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
                                             </a>
                                         </td>
                                     </tr>
@@ -198,6 +207,57 @@
     </div>
 </form>
 
+<form id="updatedesignation_form" class="form">
+    @csrf
+    <div class="modal fade" id="update-new-designation" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+            <div class="modal-content rounded">
+                <div class="modal-header">
+                    <h4 class="modal-title pl-4">Update Incentive</h4>
+                    <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
+                        <span class="svg-icon svg-icon-1">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
+                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+                <div class="modal-body scroll-y pt-3 pb-5">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="fs-6 fw-semibold mb-2 required">Incentive Period</label>
+                            <select class="form-select" name="incentive_period"> 
+                                @for ($monthz = $currentMonth; $monthz <= 12; $monthz++)
+                                    <option value="{{ $months[$monthz] }} - {{ date('Y') }}">{{ $months[$monthz] }} - {{ date('Y') }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                    </div>
+                    <div id="designation-rows-container"></div> 
+                    
+                    {{-- <div class="row mt-3">
+                        <div class="col-md-3">
+                            <button class="btn btn-primary" type="button" id="add-row-btn">+</button>
+                        </div>
+                    </div> --}}
+                </div>
+                
+                <div class="modal-footer justify-content-center">
+                    <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" id="update-btn" class="btn btn-primary">
+                        <span class="indicator-label">Update</span>
+                        <span class="indicator-progress">Please wait
+                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</form>
+
+
 <div class="modal fade" id="incentiveDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -261,6 +321,34 @@
         });
     });
 
+    $('#updatedesignation_form').on('submit', function(e) {
+        e.preventDefault();
+        var formData = $(this).serialize();
+        $.ajax({
+            url: '/update-incentive',
+            type: 'POST',
+            data: formData,
+            beforeSend: function() {
+                $('#update-btn .indicator-label').hide();
+                $('#update-btn .indicator-progress').show();
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Something went wrong. Please try again.');
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Error: ' + xhr.responseText);
+            },
+            complete: function() {
+                $('#update-btn .indicator-label').show();
+                $('#update-btn .indicator-progress').hide();
+            }
+        });
+    });
+
     $('.view_details_btn').on('click', function() {
         var incentivePeriod = $(this).data('period');
 
@@ -302,6 +390,72 @@
         
         window.location.href = '/download-incentive-details?incentive_period=' + incentivePeriod;
     });
+
+    $('.edit_details_btn').on('click', function() {
+        var incentivePeriod = $(this).data('period'); 
+
+        $.ajax({
+            url: '/get-incentive-details', 
+            method: 'GET',
+            data: {
+                incentive_period: incentivePeriod 
+            },
+            success: function(response) {
+                var modalBody = $('#update-new-designation .modal-body');
+                modalBody.find('#designation-rows-container').empty(); 
+
+                $.each(response.data, function(index, incentive) {
+                    var htmlContent = `
+                        <div class="row designation-row">
+                            <input type="hidden" name="incentive_id[]" value="${incentive.incentive_id}">
+                            <div class="col-md-2 mt-3">
+                                <label class="fs-6 fw-semibold mb-2 required">Designation</label>
+                                <select class="form-select" name="designation_name[]" required>
+                                    <option value="DSR" ${incentive.employee_type === 'DSR' ? 'selected' : ''}>DSR</option>
+                                    <option value="TSM" ${incentive.employee_type === 'TSM' ? 'selected' : ''}>TSM</option>
+                                    <option value="ASM" ${incentive.employee_type === 'ASM' ? 'selected' : ''}>ASM</option>
+                                    <option value="RSM" ${incentive.employee_type === 'RSM' ? 'selected' : ''}>RSM</option>
+                                    <option value="ZSM" ${incentive.employee_type === 'ZSM' ? 'selected' : ''}>ZSM</option>
+                                    <option value="NSM" ${incentive.employee_type === 'NSM' ? 'selected' : ''}>NSM</option>
+                                    <option value="DSR + TSM" ${incentive.employee_type === 'DSR + TSM' ? 'selected' : ''}>DSR + TSM</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 mt-3">
+                                <label class="fs-6 fw-semibold mb-2 required">Brand</label>
+                                <input type="text" class="form-control" name="brand_name[]" value="${incentive.brand}" required />
+                            </div>
+                            <div class="col-md-2 mt-3">
+                                <label class="fs-6 fw-semibold mb-2 required">Target Type</label>
+                                <select class="form-select" name="target_type[]" required>
+                                    <option value="Primary Target" ${incentive.productive_criteria === 'Primary Target' ? 'selected' : ''}>Primary Target</option>
+                                    <option value="Secondary Target" ${incentive.productive_criteria === 'Secondary Target' ? 'selected' : ''}>Secondary Target</option>
+                                    <option value="Productive Criteria" ${incentive.productive_criteria === 'Productive Criteria' ? 'selected' : ''}>Productive Criteria</option>
+                                    <option value="Drop Size" ${incentive.productive_criteria === 'Drop Size' ? 'selected' : ''}>Drop Size</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mt-3">
+                                <label class="fs-6 fw-semibold mb-2 required">Target Value</label>
+                                <input type="text" class="form-control" name="target_value[]" value="${incentive.target_value}" required />
+                            </div>
+                            <div class="col-md-3 mt-3">
+                                <label class="fs-6 fw-semibold mb-2 required">Incentive</label>
+                                <input type="text" class="form-control" name="incentive[]" value="${incentive.incentive}" required />
+                            </div>
+                        </div>
+                    `;
+
+                    modalBody.find('#designation-rows-container').append(htmlContent);
+                });
+
+                $('#update-new-designation').modal('show'); 
+            },
+            error: function(error) {
+                console.log('Error fetching incentive details:', error);
+            }
+        });
+    });
+
+
 
 
 

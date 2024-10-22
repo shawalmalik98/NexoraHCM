@@ -21,6 +21,7 @@ class GeneralController extends Controller
         // dd($login_user);
         $get_incentive = DB::select("SELECT incentive_period, STRING_AGG(employee_type, ', ') AS employee_types , MAX(created_at) AS max_created_at FROM  tbl_incentive GROUP BY incentive_period");
         $incentive = json_decode(json_encode($get_incentive), TRUE);
+       
         $send_data = compact('title','login_user','incentive');
         return view('incentive.incentive')->with($send_data);
     }
@@ -51,13 +52,51 @@ class GeneralController extends Controller
         }
     }
 
+    public function updateIncentive(Request $request)
+    {
+        try {
+            $incentive_ids = $request->input('incentive_id'); 
+            $designations = $request->input('designation_name'); 
+            $brands = $request->input('brand_name'); 
+            $targetTypes = $request->input('target_type'); 
+            $incentives = $request->input('incentive'); 
+            $target_values = $request->input('target_value'); 
+            $incentive_period = $request->input('incentive_period'); 
+        
+            DB::beginTransaction();
+        
+            for ($i = 0; $i < count($incentive_ids); $i++) {
+                DB::table('tbl_incentive')
+                    ->where('incentive_id', $incentive_ids[$i])
+                    ->update([
+                        'incentive_period' => $incentive_period, 
+                        'employee_type' => $designations[$i],
+                        'brand' => $brands[$i],
+                        'productive_criteria' => $targetTypes[$i],
+                        'incentive' => $incentives[$i],
+                        'target_value' => $target_values[$i],
+                    ]);
+            }
+
+            DB::commit();
+            
+            return response()->json(['success' => true, 'message' => 'Incentives updated successfully']);
+        
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Error updating incentives: ' . $e->getMessage()]);
+        }    
+    }
+    
+
+
     public function getIncentiveDetails(Request $request){
         $incentivePeriod = $request->input('incentive_period');
 
         $incentives = DB::table('tbl_incentive')
-                        ->where('incentive_period', $incentivePeriod)
-                        ->get();
-
+        ->where('incentive_period', $incentivePeriod)
+        ->get();
+                       
         return response()->json([
             'data' => $incentives
         ]);
