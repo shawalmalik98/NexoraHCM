@@ -156,6 +156,9 @@
                                 <option value="ZSM">ZSM</option>
                                 <option value="NSM">NSM</option>
                                 <option value="DSR + TSM">DSR + TSM</option>
+                                <option value="TSM + ASM 2-3">TSM + ASM 2-3</option>
+                                <option value="TSM - IMT">TSM - IMT</option>
+                                {{-- <option value="ASM + TSM">ASM + TSM</option> --}}
                             </select>
                         </div>
                         <div class="col-md-2 mt-3">
