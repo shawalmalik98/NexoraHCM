@@ -16,13 +16,10 @@ use App\Helpers\ActivityTracker;
 use Illuminate\Support\Facades\DB;
 use OpenSpout\Common\Entity\Style\Style;
 use DateTime;
-
+use Endroid\QrCode\Writer\PngWriter;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-
-
-
-
-
+use Illuminate\Support\Facades\Response;
+use Endroid\QrCode\Builder\Builder;
 
 class EmployeeController extends Controller
 {
@@ -2004,9 +2001,9 @@ class EmployeeController extends Controller
                                  
             $validator = Validator::make($employee_data->all(), [
                 'employee_name' =>  'required',
-                'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno,'.$employee_data->input('employee_id').',employee_id'],
-                'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id'],
-                'employee_jobtitle' => 'required',                                
+                // 'employee_contact_no' => ['required','unique:tbl_employees,employee_contactno,'.$employee_data->input('employee_id').',employee_id'],
+                // 'employee_official_email' => ['required','regex:/^[^@]+@\w+(\.\w+)+$/','unique:tbl_employees,employee_work_email,'.$employee_data->input('employee_id').',employee_id','unique:tbl_employees,employee_personal_email,'.$employee_data->input('employee_id').',employee_id'],
+                'employee_jobtitle' => 'required',
             ]);
             
             if($validator->fails()) {
@@ -6986,5 +6983,45 @@ class EmployeeController extends Controller
 
         }
 	}
+
+    public function generate_qrcode(Request $request)
+    {
+        $url = $request->input('url', 'https://example.com');
+        $name = $request->input('name', 'qrcode');
+
+        // $result = Builder::create()
+        //     ->writer(new PngWriter())
+        //     ->data($url)
+        //     ->size(500)
+        //     ->margin(10)
+        //     ->build();
+
+        // $pngData = $result->getString();
+
+        // return Response::make($pngData, 200, [
+        //     'Content-Type' => 'image/png',
+        //     'Content-Disposition' => 'attachment; filename="qrcode.png"',
+        // ]);
+
+        // Build the QR code
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->data($url)
+            ->size(500)
+            ->margin(10)
+            ->build();
+
+        // Convert the generated QR code to a string for response
+        $pngData = $result->getString();
+
+        // Set the dynamic filename using the 'name' input, sanitized for safety
+        $fileName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $name) . '.png';
+
+        return Response::make($pngData, 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
+
+    }
 
 }

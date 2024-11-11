@@ -108,9 +108,11 @@ class GeneralController extends Controller
     }
 
     protected function get_incentive_api(){
+        $currentMonthYear = date('F - Y'); // Format as 'Month - Year', e.g., 'October - 2024'
+        
         $incentives = DB::table('tbl_incentive')
-        // ->where('incentive_period', $incentivePeriod)
-        ->get();
+            ->where('incentive_period', $currentMonthYear) // Match with current 'Month - Year' format
+            ->get();
 
         return response()->json([
             'data' => $incentives

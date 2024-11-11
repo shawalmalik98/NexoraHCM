@@ -1419,7 +1419,7 @@
                        
                     @endif
 
-                    @if($login_user[0]['employee_code'] == '1000000' || $login_user[0]['employee_code'] == '1011281' || $login_user[0]['employee_code'] == '1000114')
+                    @if($login_user[0]['employee_code'] == '1000000' || $login_user[0]['employee_code'] == '1011281' || $login_user[0]['employee_code'] == '1000114' || $login_user[0]['employee_code'] == '1006346')
                     <div class="menu-item search-item">
                         <a class="menu-link nav-link @if($title == 'incentive') active @endif" href="{{url('incentive')}}">
                             <span class="menu-icon">

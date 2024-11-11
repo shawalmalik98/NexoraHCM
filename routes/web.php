@@ -34,6 +34,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
         Route::get('/employee-documents/{employee_id}', [EmployeeController::class, 'employee_documents']);
         Route::get('/check-candidate-name-list', [EmployeeController::class, 'get_on_board_employees']);
         Route::post('/check-employee-name-list', [EmployeeController::class, 'get_reporting_employees']);
+        Route::get('/generate-qr', [EmployeeController::class, 'generate_qrcode'])->name('generate.qr');
 
         Route::get('/employee-allotment/{employee_id}', [EmployeeController::class , 'employee_allotment']);
         Route::get('/get_desinations/{departmentid}', [DesignationController::class, 'get_designations']);
