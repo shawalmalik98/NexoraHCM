@@ -30,7 +30,7 @@ class PermissionChecker
 
             $get_permission_detail = SystemModule::join('tbl_employee_permission','tbl_system_modules.module_url','=','tbl_employee_permission.module_url')->where('employee_id', session('user_session'))->where('tbl_employee_permission.module_url', $route)->get(['permission_status','module_accessibility'])->toArray();
             if(empty($get_permission_detail) || $get_permission_detail[0]['permission_status'] === '0' || $get_permission_detail[0]['permission_status'] === 0 || $get_permission_detail[0]['module_accessibility'] === '0' || $get_permission_detail[0]['module_accessibility'] === 0){
-                return response()->view('errors.403');
+                return response()->view('errors.403', [], 403);
             }
         }
         return $next($request);

@@ -562,12 +562,12 @@
 @push('js-link')
 <script src="{{url('assets/js/attendance/my-attendance.js')}}"></script>
 <script>
-var present_attendance = {{ $present }};
-var absent_count_attendance = {{ $absent_count }};
-var late_coming_attendance = {{ $late_coming }};
-var early_out_attendance = {{ $early_out }};
-var halfday_attendance = {{ $halfday }};
-var total_offDays_holiday_attendance = {{ $offdays }} +  {{ $holiday_count }};
+var present_attendance = {{ (int) ($present ?? 0) }};
+var absent_count_attendance = {{ (int) ($absent_count ?? 0) }};
+var late_coming_attendance = {{ (int) ($late_coming ?? 0) }};
+var early_out_attendance = {{ (int) ($early_out ?? 0) }};
+var halfday_attendance = {{ (int) ($halfday ?? 0) }};
+var total_offDays_holiday_attendance = {{ (int) ($offdays ?? 0) }} +  {{ (int) ($holiday_count ?? 0) }};
 
     $(document).ready(function() {
         $('#system_datatable').DataTable();

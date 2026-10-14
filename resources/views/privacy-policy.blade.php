@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Privacy Policy for IIL - HCM</title>
+    <title>Privacy Policy for Nexora HCM</title>
 </head>
 <body>
 
-<h1>Privacy Policy for IIL - HCM</h1>
+<h1>Privacy Policy for Nexora HCM</h1>
 <p><strong>Last Updated:</strong> 10th September, 2023</p>
 
 <h2>1. Introduction</h2>
-<p>Welcome to IIL - HCM. This Privacy Policy outlines the types of personal information we collect, how we use it, and with whom we share it.</p>
+<p>Welcome to Nexora HCM. This Privacy Policy outlines the types of personal information we collect, how we use it, and with whom we share it.</p>
 
 <h2>2. Information We Collect</h2>
 <ul>

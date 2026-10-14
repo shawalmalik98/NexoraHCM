@@ -57,11 +57,11 @@
 											@if(file_exists(asset('portal_assets/profile_pictures').'/'.$image[0]['profile_avatar']))
 												<img src="{{asset('portal_assets/profile_pictures').'/'.$image[0]['profile_avatar'] }}" class="" alt="">
 											@else
-												<img alt="Logo" src="{{ asset('/portal_assets/images/default-img.png') }}" class=""/>
+												<img alt="Logo" src="{{ asset('/portal_assets/images/hcm-img.png') }}" class=""/>
 											@endif
 										@else
 				
-											<img alt="Logo" src="{{ asset('/portal_assets/images/default-img.png') }}" class=""/>
+											<img alt="Logo" src="{{ asset('/portal_assets/images/hcm-img.png') }}" class=""/>
 										@endif
 				
 									</div>

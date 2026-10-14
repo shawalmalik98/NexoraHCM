@@ -76,7 +76,7 @@ $('#add_funds_form').submit(function (e) {
         $('#delete-btn').css('cursor', 'pointer');
         e.preventDefault();
         $.ajax({
-            url: base_url + '/funds/discard-fund/',
+            url: base_url + '/funds/discard-fund',
             type: 'POST',
             data: new FormData(this),
             contentType: false,

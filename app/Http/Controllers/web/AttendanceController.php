@@ -201,13 +201,13 @@ class AttendanceController extends Controller
                         }
                  
                         $attendance = Attendance::where('att_employee_id',session('user_session'))
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                         ->get()->toArray();
 
                         $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                         ->where(function($query) use($manage_leaves){
                             $query->whereIn('att_check_overall_status' ,$manage_leaves)
                             ->orWhere('att_check_overall_status','RPL');
@@ -256,19 +256,19 @@ class AttendanceController extends Controller
                 }
             
                 $attendance = Attendance::where('att_employee_id',session('user_session'))
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                 ->get()->toArray();
 
                 $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                 ->where(function($query) use($manage_leaves){
                     $query->whereIn('att_check_overall_status' ,$manage_leaves)
                     ->orWhere('att_check_overall_status','RPL');
                 })->count();
 
-            
+
             }
           
             $leave_name = implode(',',$manage_leaves);
@@ -392,42 +392,42 @@ class AttendanceController extends Controller
                         if(!empty($employee_data)){
                             $att_login_employee =  $employee_data[0]['employee_id'];
 
-                            $attendance = DB::select("SELECT  
+                            $attendance = DB::select("SELECT
                                 employee_id,
                                 employee_name,
                                 employee_code,
                                 employee_new_code,
-                                CONVERT(date, dates.date_between) as 'Date', 
-                                DATENAME(dw, dates.date_between) as 'Day', 
-                                CASE 
+                                DATE(dates.date_between) as 'Date',
+                                DAYNAME(dates.date_between) as 'Day',
+                                CASE
                                     WHEN emp.employee_doj <= dates.date_between THEN
-                                        CASE 
-                                            WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                                        CASE
+                                            WHEN att.att_check_overall_status IS NULL AND LOCATE(DAYNAME(dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
                                             WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
                                         END
-                                    ELSE '-' 
+                                    ELSE '-'
                                 END AS 'Attendance Status',
-                                CASE 
-                                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                                    ELSE '-' 
-                                END AS 'Check In', 
-                                CASE 
-                                    WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                                    ELSE '-' 
+                                CASE
+                                    WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_in_time, '')
+                                    ELSE '-'
+                                END AS 'Check In',
+                                CASE
+                                    WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_out_time, '')
+                                    ELSE '-'
                                 END AS 'Check Out'
                                 FROM (
-                                    SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                                    SELECT DATE_ADD('$from_date', INTERVAL n DAY) AS date_between
                                     FROM (
                                         SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
                                         FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
                                             (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
                                             (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
                                     ) AS numbers
-                                    WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
+                                    WHERE DATE_ADD('$from_date', INTERVAL n DAY) BETWEEN '$from_date' AND '$to_date'
                                 ) AS dates
-                                LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
-                                LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id 
-                                WHERE att.att_check_overall_status IS NULL 
+                                LEFT JOIN tbl_attendance AS att ON DATE(dates.date_between) = att.att_comp_date AND att.att_employee_id = $att_login_employee
+                                LEFT JOIN tbl_employees AS emp ON $att_login_employee = emp.employee_id
+                                WHERE att.att_check_overall_status IS NULL
                                 ORDER BY dates.date_between ASC");
                             $attendance = json_decode(json_encode($attendance), TRUE);
 
@@ -514,42 +514,42 @@ class AttendanceController extends Controller
 
                  $employee_dsr = $employee_data[0]['employee_id'];
 
-                    $attendance = DB::select("SELECT 
+                    $attendance = DB::select("SELECT
                     employee_id,
                     employee_name,
                     employee_code,
                     employee_new_code,
-                    CONVERT(date, dates.date_between) as 'Date', 
-                    DATENAME(dw, dates.date_between) as 'Day', 
-                    CASE 
+                    DATE(dates.date_between) as 'Date',
+                    DAYNAME(dates.date_between) as 'Day',
+                    CASE
                         WHEN emp.employee_doj <= dates.date_between THEN
-                            CASE 
-                                WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                            CASE
+                                WHEN att.att_check_overall_status IS NULL AND LOCATE(DAYNAME(dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
                                 WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
                             END
-                        ELSE '-' 
+                        ELSE '-'
                     END AS 'Attendance Status',
-                    CASE 
-                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                        ELSE '-' 
-                    END AS 'Check In', 
-                    CASE 
-                        WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                        ELSE '-' 
+                    CASE
+                        WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_in_time, '')
+                        ELSE '-'
+                    END AS 'Check In',
+                    CASE
+                        WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_out_time, '')
+                        ELSE '-'
                     END AS 'Check Out'
                     FROM (
-                    SELECT DATEADD(DAY, n, '$from_date') AS date_between
+                    SELECT DATE_ADD('$from_date', INTERVAL n DAY) AS date_between
                     FROM (
                         SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
                         FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
                             (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
                                 (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
                         ) AS numbers
-                        WHERE DATEADD(DAY, n, '$from_date') BETWEEN '$from_date' AND '$to_date'
+                        WHERE DATE_ADD('$from_date', INTERVAL n DAY) BETWEEN '$from_date' AND '$to_date'
                     ) AS dates
-                    LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_dsr 
-                    LEFT JOIN tbl_employees AS emp ON $employee_dsr  = emp.employee_id 
-                    WHERE att.att_check_overall_status IS NULL 
+                    LEFT JOIN tbl_attendance AS att ON DATE(dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_dsr
+                    LEFT JOIN tbl_employees AS emp ON $employee_dsr  = emp.employee_id
+                    WHERE att.att_check_overall_status IS NULL
                     ORDER BY dates.date_between ASC");
                     $attendance = json_decode(json_encode($attendance), TRUE);
 
@@ -803,37 +803,37 @@ class AttendanceController extends Controller
                     ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                     ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                     ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                     ->where('department_name', '=', 'Field Force')
                     ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
                     ->select('employee_code as emp_code',
-                        'employee_name as emp_name', 
+                        'employee_name as emp_name',
                         'att_comp_date as attendance_date',
-                        'att_check_in_time as time_in', 
+                        'att_check_in_time as time_in',
                         'att_check_out_time as time_out',
                         'att_check_overall_status as attendance_status');
-                      
-    
+
+
                     $query2 = DB::table('sap_attendance_report')
                     ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
                     ->select(
-                        'employee_code as emp_code', 
-                        'sap_attendance_report.emp_name', 
+                        'employee_code as emp_code',
+                        'sap_attendance_report.emp_name',
                         'sap_attendance_report.attendance_date',
                         'sap_attendance_report.time_in',
                         'sap_attendance_report.time_out',
                         'sap_attendance_report.attendance_status'
-                       
+
                     )
                     ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
                     ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
-    
+
                     $attendance = $query1->union($query2)->get()->toArray();
 
                     $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$login_user[0]['employee_id'])
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                     ->where(function($query) use($manage_leaves){
                         $query->whereIn('att_check_overall_status' ,$manage_leaves)
                         ->orWhere('att_check_overall_status','RPL');
@@ -892,37 +892,37 @@ class AttendanceController extends Controller
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                 ->where('department_name', '=', 'Field Force')
                 ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
                 ->select('employee_code as emp_code',
-                    'employee_name as emp_name', 
+                    'employee_name as emp_name',
                     'att_comp_date as attendance_date',
-                    'att_check_in_time as time_in', 
+                    'att_check_in_time as time_in',
                     'att_check_out_time as time_out',
                     'att_check_overall_status as attendance_status');
-                  
+
 
                 $query2 = DB::table('sap_attendance_report')
                 ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
                 ->select(
-                    'employee_code as emp_code', 
-                    'sap_attendance_report.emp_name', 
+                    'employee_code as emp_code',
+                    'sap_attendance_report.emp_name',
                     'sap_attendance_report.attendance_date',
                     'sap_attendance_report.time_in',
                     'sap_attendance_report.time_out',
                     'sap_attendance_report.attendance_status'
-                   
+
                 )
                 ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
                 ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
 
                 $attendance = $query1->union($query2)->get()->toArray();
-               
+
                 $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$login_user[0]['employee_id'])
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                 ->where(function($query) use($manage_leaves){
                     $query->whereIn('att_check_overall_status' ,$manage_leaves)
                     ->orWhere('att_check_overall_status','RPL');
@@ -1050,35 +1050,35 @@ class AttendanceController extends Controller
                         'tbl_attendance.att_check_out_time as time_out',
                         'tbl_attendance.att_check_overall_status as attendance_status',
                         'tbl_attendance.att_request_approval as request_approval')
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                         ->where('department_name', '=', 'Field Force')
                         ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
                         ->whereRaw($where_clause);
-                        
+
                         $query2 = DB::table('sap_attendance_report')
                         ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
                         ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                         ->select(
                             'tbl_employees.employee_id',
                             'tbl_employees.employee_new_code as emp_new_code',
-                            'sap_attendance_report.emp_code', 
-                            'sap_attendance_report.emp_name', 
+                            'sap_attendance_report.emp_code',
+                            'sap_attendance_report.emp_name',
                             'sap_attendance_report.attendance_date',
                             'sap_attendance_report.time_in',
                             'sap_attendance_report.time_out',
                             'sap_attendance_report.attendance_status',
                             'tbl_attendance.att_request_approval as request_approval'
-                        
+
                         )
                         ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
                         ->whereRaw($where_clause);
 
                         $attendance = $query1->union($query2)->get()->toArray();
-        
+
                         $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                         ->where(function($query) use($manage_leaves){
                             $query->whereIn('att_check_overall_status' ,$manage_leaves)
                             ->orWhere('att_check_overall_status','RPL');
@@ -1135,42 +1135,42 @@ class AttendanceController extends Controller
                 ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                 ->where('department_name', '=', 'Field Force')
                 ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
                 ->select('employee_code as emp_code',
-                    'employee_name as emp_name', 
+                    'employee_name as emp_name',
                     'employee_new_code as emp_new_code',
                     'att_comp_date as attendance_date',
-                    'att_check_in_time as time_in', 
+                    'att_check_in_time as time_in',
                     'att_check_out_time as time_out',
                     'att_check_overall_status as attendance_status',
                     'tbl_attendance.att_request_approval as request_approval');
-                  
+
 
                 $query2 = DB::table('sap_attendance_report')
                 ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
                 ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
                 ->select(
-                    'employee_code as emp_code', 
+                    'employee_code as emp_code',
                     'employee_new_code as emp_new_code',
-                    'sap_attendance_report.emp_name', 
+                    'sap_attendance_report.emp_name',
                     'sap_attendance_report.attendance_date',
                     'sap_attendance_report.time_in',
                     'sap_attendance_report.time_out',
                     'sap_attendance_report.attendance_status',
                     'tbl_attendance.att_request_approval as request_approval'
-                   
+
                 )
                 ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
                 ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
 
                 $attendance = $query1->union($query2)->get()->toArray();
-                
+
                 $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                 ->where(function($query) use($manage_leaves){
                     $query->whereIn('att_check_overall_status' ,$manage_leaves)
                     ->orWhere('att_check_overall_status','RPL');
@@ -1274,13 +1274,13 @@ class AttendanceController extends Controller
 
                  
                     $attendance = Attendance::where('att_employee_id',$request->emp_id)
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                     ->get()->toArray();
 
                     $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$request->emp_id)
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                    ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                     ->where(function($query) use($manage_leaves){
                         $query->whereIn('att_check_overall_status' ,$manage_leaves)
                         ->orWhere('att_check_overall_status','RPL');
@@ -2299,42 +2299,42 @@ class AttendanceController extends Controller
                     ->orWhere('att_check_overall_status','RPL');
                 })->count();
                
-                $attendance = DB::select("SELECT e.employee_code, 
-                e.employee_name, 
+                $attendance = DB::select("SELECT e.employee_code,
+                e.employee_name,
                 e.employee_new_code,
-                e.business_unit, 
-                e.employee_offdays, 
-                dp.department_name, 
-                ds.designation_name, 
+                e.business_unit,
+                e.employee_offdays,
+                dp.department_name,
+                ds.designation_name,
                 a.att_check_in_status,
                 a.attendance_id,
                 CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END as attendance_date,
-                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
+                DAYNAME(CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
                 CASE WHEN a.att_check_in_time IS NULL THEN '-' ELSE a.att_check_in_time END as att_check_in_time,
                 CASE WHEN a.att_check_out_time IS NULL OR a.att_check_out_status = 0
-                THEN '-' ELSE a.att_check_out_time 
+                THEN '-' ELSE a.att_check_out_time
                 END as att_check_out_time,
                 a.att_check_out_status,
                 a.att_created_at,
                 a.att_updated_at,
-                CASE 
-                WHEN a.att_check_overall_status IS NULL AND e.employee_offdays LIKE 
-                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) THEN 'Offdays'
-                WHEN a.att_check_overall_status IS NULL THEN 'Absent' 
-                ELSE a.att_check_overall_status 
-                                
+                CASE
+                WHEN a.att_check_overall_status IS NULL AND e.employee_offdays LIKE
+                DAYNAME(CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) THEN 'Offdays'
+                WHEN a.att_check_overall_status IS NULL THEN 'Absent'
+                ELSE a.att_check_overall_status
+
                 END as att_check_overall_status
-                                
+
                 FROM tbl_employees e
                 INNER JOIN tbl_departments dp ON e.employee_department = dp.department_id
                 INNER JOIN tbl_designations ds ON e.employee_designation = ds.designation_id
-                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id
                 AND att_for_date = $date AND att_for_month = $month AND att_for_year = $year
                 WHERE $where_clause ORDER BY e.employee_code");
                 $attendance = json_decode(json_encode($attendance), TRUE);
-                
+
             }else{
-                
+
                 $date = date('d');
                 $month = date('m');
                 $year = date('Y');
@@ -2346,36 +2346,36 @@ class AttendanceController extends Controller
                     ->orWhere('att_check_overall_status','RPL');
                 })->count();
 
-                $attendance = DB::select("SELECT e.employee_code, 
-                e.employee_name, 
+                $attendance = DB::select("SELECT e.employee_code,
+                e.employee_name,
                 e.employee_new_code,
-                e.business_unit, 
-                e.employee_offdays, 
-                dp.department_name, 
-                ds.designation_name, 
+                e.business_unit,
+                e.employee_offdays,
+                dp.department_name,
+                ds.designation_name,
                 a.att_check_in_status,
                 a.attendance_id,
                 CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END as attendance_date,
-                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
+                DAYNAME(CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) AS day_name,
                 CASE WHEN a.att_check_in_time IS NULL THEN '-' ELSE a.att_check_in_time END as att_check_in_time,
                 CASE WHEN a.att_check_out_time IS NULL OR a.att_check_out_status = 0
-                THEN '-' ELSE a.att_check_out_time 
+                THEN '-' ELSE a.att_check_out_time
                 END as att_check_out_time,
                 a.att_check_out_status,
                 a.att_created_at,
                 a.att_updated_at,
-                CASE 
-                WHEN a.att_check_overall_status IS NULL AND e.employee_offdays LIKE 
-                DATENAME(dw, CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) THEN 'Offdays'
-                WHEN a.att_check_overall_status IS NULL THEN 'Absent' 
-                ELSE a.att_check_overall_status 
-                                
+                CASE
+                WHEN a.att_check_overall_status IS NULL AND e.employee_offdays LIKE
+                DAYNAME(CASE WHEN a.att_comp_date IS NULL THEN '$full_date' ELSE a.att_comp_date END) THEN 'Offdays'
+                WHEN a.att_check_overall_status IS NULL THEN 'Absent'
+                ELSE a.att_check_overall_status
+
                 END as att_check_overall_status
-                                
+
                 FROM tbl_employees e
                 INNER JOIN tbl_departments dp ON e.employee_department = dp.department_id
                 INNER JOIN tbl_designations ds ON e.employee_designation = ds.designation_id
-                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id
                 AND att_for_date = $date AND att_for_month = $month AND att_for_year = $year
                 WHERE $where_clause ORDER BY e.employee_code");
                 $attendance = json_decode(json_encode($attendance), TRUE);
@@ -2625,7 +2625,10 @@ class AttendanceController extends Controller
 
             $employee_senior_manager = Employees::where('employee_id',$employee[0]['employee_senior_manager'])->get('employee_name')->toArray();
            
-            $send_data = compact('employee','month','month_days','year','attendances','employee_senior_manager','manage_leaves','dates','month_count');
+            $from_date = !empty($request_data->from_date) ? $request_data->from_date : $year.'-'.$month.'-01';
+            $to_date = !empty($request_data->to_date) ? $request_data->to_date : date('Y-m-t', strtotime($year.'-'.$month.'-01'));
+
+            $send_data = compact('employee','month','month_days','year','attendances','employee_senior_manager','manage_leaves','dates','month_count','from_date','to_date');
 
             return view('attendance.attendance-report',$send_data);
 		
@@ -2711,16 +2714,16 @@ class AttendanceController extends Controller
                         }
 
                         $attendances = Attendance::where('att_employee_id',session('user_session'))
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                        ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                         ->get()->toArray();
 
                    }else{
 
                     return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
-                    
+
                    }
-                    
+
                 }
 
             }else{
@@ -2748,7 +2751,7 @@ class AttendanceController extends Controller
                 foreach ($period as $key => $value) {
                     $dates[] = $value->format('d-m-Y');
                     $month_days++;
-                    
+
                 }
                 if (!in_array($to_date, $dates)) {
                     $dates[] = date('d-m-Y', strtotime($to_date));
@@ -2758,8 +2761,8 @@ class AttendanceController extends Controller
                 }
 
                 $attendances = Attendance::where('att_employee_id',session('user_session'))
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) >= '".$from_date."'")
-                ->whereRaw("CONVERT(DATE, CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), 120) <= '".$to_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
+                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
                 ->get()->toArray();
 
 
@@ -2926,46 +2929,54 @@ class AttendanceController extends Controller
         $title = 'bisconni-report';
         $login_user = $this->get_login_user_detail();
         $attendance = DB::select("
-        SELECT 
+        SELECT
         e.employee_id,e.employee_code , e.employee_name, e.business_unit, dep.department_name, des.designation_name,e.employee_offdays,
         SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) AS total_present,
         SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) AS total_late,
         SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS total_halfday,
-        SUM(CASE WHEN att_check_overall_status = 'leaves' 
+        SUM(CASE WHEN att_check_overall_status = 'leaves'
         OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
-        (SELECT COUNT(*) 
+        (SELECT COUNT(*)
         FROM (
-            SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
-            FROM master.dbo.spt_values
-            WHERE TYPE = 'P'
-            AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+            SELECT DATE_ADD('$from_date', INTERVAL number DAY) AS DateInMonth
+            FROM (
+                SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+            ) AS nums
+            WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
         ) AS DateRange
-        WHERE 
-          e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'
+        WHERE
+          e.employee_offdays like CONCAT('%', DAYNAME(DateInMonth), '%')
          ) as off_days_count,
          (
-            (DATEDIFF(DAY, '$from_date', '$to_date') + 1) - 
-            (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) + 
-            SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) + 
-            SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) + 
-            SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) + 
-            (SELECT COUNT(*) 
+            (DATEDIFF('$to_date', '$from_date') + 1) -
+            (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) +
+            SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) +
+            SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) +
+            SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) +
+            (SELECT COUNT(*)
         FROM (
-            SELECT DATEADD(DAY, number, '$from_date') AS DateInMonth
-            FROM master.dbo.spt_values
-            WHERE TYPE = 'P'
-            AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+            SELECT DATE_ADD('$from_date', INTERVAL number DAY) AS DateInMonth
+            FROM (
+                SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+            ) AS nums
+            WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
         ) AS DateRange
-        WHERE 
-          e.employee_offdays like '%'+DATENAME(WEEKDAY, DateInMonth)+'%'))
-        
+        WHERE
+          e.employee_offdays like CONCAT('%', DAYNAME(DateInMonth), '%')))
+
          ) AS absent,
-         DATEDIFF(DAY, '$from_date', '$to_date') + 1 AS total_days
+         DATEDIFF('$to_date', '$from_date') + 1 AS total_days
         FROM tbl_attendance a
         LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
-        INNER JOIN tbl_employees e ON a.att_employee_id = e.employee_id 
-        INNER JOIN tbl_departments dep ON e.employee_department = dep.department_id 
-        INNER JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+        INNER JOIN tbl_employees e ON a.att_employee_id = e.employee_id
+        INNER JOIN tbl_departments dep ON e.employee_department = dep.department_id
+        INNER JOIN tbl_designations des ON e.employee_designation = des.designation_id
         WHERE CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date'
         AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' AND e.business_unit = 'Bisconni'
         GROUP BY e.employee_code, e.employee_name , e.business_unit, dep.department_name , des.designation_name , e.employee_offdays,e.employee_id
@@ -3641,286 +3652,317 @@ class AttendanceController extends Controller
                 // ");
 
                 $all_attendances = DB::select("
-                    SELECT 
+                    SELECT
                         e.employee_id,
-                        e.employee_code, 
+                        e.employee_code,
                         e.employee_name,
                         e.employee_new_code,
-                        FORMAT(CAST(e.employee_doj AS DATE), 'dd-MM-yyyy') as 'employee_doj',
-                        dep.department_name, 
+                        DATE_FORMAT(DATE(e.employee_doj), '%d-%m-%Y') as 'employee_doj',
+                        dep.department_name,
                         des.designation_name,
                         e.business_unit,
                         CONCAT(rep.employee_code, ' ', rep.employee_name, ' (', e.employee_offdays, ')') as 'Shift',
-                        
+
                         (
-                            DATEDIFF(DAY, 
-                                CASE 
-                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                                    ELSE '$from_date' 
-                                END, '$to_date'
+                            DATEDIFF(
+                                '$to_date',
+                                CASE
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj
+                                    ELSE '$from_date'
+                                END
                             ) + 1
-                            - 
+                            -
                             (
-                                SUM(CASE 
-                                    WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day', 'Casual Leave', 'Sick Leave', 'Annual Leave') 
-                                    OR att_check_overall_status LIKE '%Holiday%' 
-                                    THEN 1 
-                                    ELSE 0 
-                                END) + 
+                                SUM(CASE
+                                    WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day', 'Casual Leave', 'Sick Leave', 'Annual Leave')
+                                    OR att_check_overall_status LIKE '%Holiday%'
+                                    THEN 1
+                                    ELSE 0
+                                END) +
                                 (
-                                    SELECT COUNT(*) 
+                                    SELECT COUNT(*)
                                     FROM (
-                                        SELECT DATEADD(DAY, number, 
-                                            CASE 
-                                                WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                                                ELSE '$from_date' 
-                                            END
+                                        SELECT DATE_ADD(
+                                            CASE
+                                                WHEN e.employee_doj >= '$from_date' THEN e.employee_doj
+                                                ELSE '$from_date'
+                                            END,
+                                            INTERVAL number DAY
                                         ) AS DateInMonth
-                                        FROM master.dbo.spt_values
-                                        WHERE TYPE = 'P'
-                                            AND number BETWEEN 0 AND DATEDIFF(DAY, 
-                                                CASE 
-                                                    WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                                    ELSE '$from_date' 
-                                                END, 
-                                                '$to_date'
-                                            )
-                                            AND NOT EXISTS (
-                                                SELECT 1 FROM tbl_attendance 
-                                                WHERE 
-                                                    att_comp_date = DATEADD(DAY, number, 
-                                                        CASE 
-                                                            WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                                            ELSE '$from_date' 
-                                                        END
-                                                    ) AND
-                                                    att_employee_id = e.employee_id
-                                            )
+                                        FROM (
+                                            SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                                            FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                                                 (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                                                 (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+                                        ) AS nums
+                                        WHERE number BETWEEN 0 AND DATEDIFF(
+                                            '$to_date',
+                                            CASE
+                                                WHEN e.employee_doj > '$from_date' THEN e.employee_doj
+                                                ELSE '$from_date'
+                                            END
+                                        )
+                                        AND NOT EXISTS (
+                                            SELECT 1 FROM tbl_attendance
+                                            WHERE
+                                                att_comp_date = DATE_ADD(
+                                                    CASE
+                                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj
+                                                        ELSE '$from_date'
+                                                    END,
+                                                    INTERVAL number DAY
+                                                ) AND
+                                                att_employee_id = e.employee_id
+                                        )
                                     ) AS DateRange
-                                    WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
+                                    WHERE e.employee_offdays LIKE CONCAT('%', DAYNAME(DateInMonth), '%')
                                 )
                             )
                         ) AS 'absent',
                         (
-                            SUM(CASE 
-                                WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 
-                                ELSE 0 
+                            SUM(CASE
+                                WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1
+                                ELSE 0
                             END) - (
                                 SELECT COUNT(DateInMonth)
                                 FROM (
-                                    SELECT 
-                                        DATEADD(DAY, number, '$from_date') AS DateInMonth
-                                    FROM master.dbo.spt_values
-                                    WHERE TYPE = 'P'
-                                        AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-                                        AND EXISTS (
-                                            SELECT 1 
-                                            FROM tbl_attendance 
-                                            WHERE 
-                                                att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-                                                att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-                                                att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-                                                (
-                                                    att_check_in_status = 1 OR
-                                                    att_check_out_status = 1
-                                                )
-                                                AND att_employee_id = e.employee_id
-                                        )
-                                        AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
-                                ) AS DateRange
-                            )
-                        ) - ISNULL(Ex.Extraday, 0) AS 'DA',
-                      
-                        SUM(CASE WHEN att_check_overall_status = 'leaves' 
-                        OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
-
-                        (
-                            SELECT COUNT(*) 
-                            FROM (
-                                SELECT DATEADD(DAY, number, 
-                                    CASE 
-                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                        ELSE '$from_date' 
-                                    END
-                                ) AS DateInMonth
-                                FROM master.dbo.spt_values
-                                WHERE TYPE = 'P'
-                                AND number BETWEEN 0 AND DATEDIFF(DAY, 
-                                    CASE 
-                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                        ELSE '$from_date' 
-                                    END, '$to_date'
-                                )
-                            ) AS DateRange
-                            WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
-                        ) + ISNULL(Ex.HolidayCount, 0) as 'off_days_count',
-                        (
-                            SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - (
-                                SELECT COUNT(DateInMonth)
-                                FROM (
-                                    SELECT 
-                                        DATEADD(DAY, number, '$from_date') AS DateInMonth
-                                    FROM master.dbo.spt_values
-                                    WHERE TYPE = 'P'
-                                        AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
-                                        AND EXISTS (
-                                            SELECT 1 
-                                            FROM tbl_attendance 
-                                            WHERE 
-                                                att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-                                                att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-                                                att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
-                                                (
-                                                    att_check_in_status = 1 OR
-                                                    att_check_out_status = 1
-                                                )
-                                                AND att_employee_id = e.employee_id
-                                        )
-                                        AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
-                                ) AS DateRange
-                            )
-                        ) - ISNULL(Ex.Extraday, 0)  AS 'Patrol',
-                        (
-                            DATEDIFF(DAY, 
-                                CASE 
-                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                                    ELSE '$from_date' 
-                                END, 
-                                CASE 
-                                    WHEN GETDATE() < '$to_date' THEN GETDATE()
-                                    ELSE '$to_date'
-                                END
-                            ) + 1
-                        ) AS 'month_days',
-                        (
-                            DATEDIFF(DAY, 
-                                CASE 
-                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                                    ELSE '$from_date' 
-                                END, 
-                                CASE 
-                                    WHEN GETDATE() < '$to_date' THEN GETDATE()
-                                    ELSE '$to_date'
-                                END
-                            ) + 1
-                        ) - 
-                        (
-                            DATEDIFF(DAY, 
-                                CASE 
-                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                                    ELSE '$from_date' 
-                                END, '$to_date'
-                            ) + 1
-                            - 
-                            (
-                                SUM(CASE 
-                                    WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day' , 'Casual Leave', 'Sick Leave', 'Annual Leave')
-                                    OR att_check_overall_status LIKE '%Holiday%' 
-                                    THEN 1 
-                                    ELSE 0 
-                                END) + 
-                                (
-                                    SELECT COUNT(*) 
+                                    SELECT
+                                        DATE_ADD('$from_date', INTERVAL number DAY) AS DateInMonth
                                     FROM (
-                                        SELECT DATEADD(DAY, number, 
-                                            CASE 
-                                                WHEN e.employee_doj >= '$from_date' THEN e.employee_doj 
-                                                ELSE '$from_date' 
-                                            END
-                                        ) AS DateInMonth
-                                        FROM master.dbo.spt_values
-                                        WHERE TYPE = 'P'
-                                            AND number BETWEEN 0 AND DATEDIFF(DAY, 
-                                                CASE 
-                                                    WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                                    ELSE '$from_date' 
-                                                END, 
-                                                '$to_date'
-                                            )
-                                            AND NOT EXISTS (
-                                                SELECT 1 FROM tbl_attendance 
-                                                WHERE 
-                                                    att_comp_date = DATEADD(DAY, number, 
-                                                        CASE 
-                                                            WHEN e.employee_doj > '$from_date' THEN e.employee_doj 
-                                                            ELSE '$from_date' 
-                                                        END
-                                                    ) AND
-                                                    att_employee_id = e.employee_id
-                                            )
-                                    ) AS DateRange
-                                    WHERE e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DateInMonth) + '%'
-                                )
-                            )
-                        ) AS salary_days,
-                        (
-                            SELECT COUNT(DateInMonth)
-                            FROM (
-                                SELECT 
-                                    DATEADD(DAY, number, '$from_date') AS DateInMonth
-                                FROM master.dbo.spt_values
-                                WHERE TYPE = 'P'
-                                    AND number BETWEEN 0 AND DATEDIFF(DAY, '$from_date', '$to_date')
+                                        SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                                        FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                                             (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                                             (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+                                    ) AS nums
+                                    WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
                                     AND EXISTS (
-                                        SELECT 1 
-                                        FROM tbl_attendance 
-                                        WHERE 
-                                            att_for_year = YEAR(DATEADD(DAY, number, '$from_date')) AND
-                                            att_for_month = MONTH(DATEADD(DAY, number, '$from_date')) AND
-                                            att_for_date = DAY(DATEADD(DAY, number, '$from_date')) AND
+                                        SELECT 1
+                                        FROM tbl_attendance
+                                        WHERE
+                                            att_for_year = YEAR(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                            att_for_month = MONTH(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                            att_for_date = DAY(DATE_ADD('$from_date', INTERVAL number DAY)) AND
                                             (
                                                 att_check_in_status = 1 OR
                                                 att_check_out_status = 1
                                             )
                                             AND att_employee_id = e.employee_id
                                     )
-                                    AND e.employee_offdays LIKE '%' + DATENAME(WEEKDAY, DATEADD(DAY, number, '$from_date')) + '%'
+                                    AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD('$from_date', INTERVAL number DAY)), '%')
+                                ) AS DateRange
+                            )
+                        ) - IFNULL(Ex.Extraday, 0) AS 'DA',
+
+                        SUM(CASE WHEN att_check_overall_status = 'leaves'
+                        OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
+
+                        (
+                            SELECT COUNT(*)
+                            FROM (
+                                SELECT DATE_ADD(
+                                    CASE
+                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj
+                                        ELSE '$from_date'
+                                    END,
+                                    INTERVAL number DAY
+                                ) AS DateInMonth
+                                FROM (
+                                    SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                                    FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                                         (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                                         (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+                                ) AS nums
+                                WHERE number BETWEEN 0 AND DATEDIFF(
+                                    '$to_date',
+                                    CASE
+                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj
+                                        ELSE '$from_date'
+                                    END
+                                )
                             ) AS DateRange
-                        ) + ISNULL(Ex.Extraday, 0) AS 'extra_working'
-                        
+                            WHERE e.employee_offdays LIKE CONCAT('%', DAYNAME(DateInMonth), '%')
+                        ) + IFNULL(Ex.HolidayCount, 0) as 'off_days_count',
+                        (
+                            SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - (
+                                SELECT COUNT(DateInMonth)
+                                FROM (
+                                    SELECT
+                                        DATE_ADD('$from_date', INTERVAL number DAY) AS DateInMonth
+                                    FROM (
+                                        SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                                        FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                                             (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                                             (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+                                    ) AS nums
+                                    WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
+                                    AND EXISTS (
+                                        SELECT 1
+                                        FROM tbl_attendance
+                                        WHERE
+                                            att_for_year = YEAR(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                            att_for_month = MONTH(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                            att_for_date = DAY(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                            (
+                                                att_check_in_status = 1 OR
+                                                att_check_out_status = 1
+                                            )
+                                            AND att_employee_id = e.employee_id
+                                    )
+                                    AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD('$from_date', INTERVAL number DAY)), '%')
+                                ) AS DateRange
+                            )
+                        ) - IFNULL(Ex.Extraday, 0) AS 'Patrol',
+                        (
+                            DATEDIFF(
+                                CASE
+                                    WHEN NOW() < '$to_date' THEN DATE(NOW())
+                                    ELSE '$to_date'
+                                END,
+                                CASE
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj
+                                    ELSE '$from_date'
+                                END
+                            ) + 1
+                        ) AS 'month_days',
+                        (
+                            DATEDIFF(
+                                CASE
+                                    WHEN NOW() < '$to_date' THEN DATE(NOW())
+                                    ELSE '$to_date'
+                                END,
+                                CASE
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj
+                                    ELSE '$from_date'
+                                END
+                            ) + 1
+                        ) -
+                        (
+                            DATEDIFF(
+                                '$to_date',
+                                CASE
+                                    WHEN e.employee_doj >= '$from_date' THEN e.employee_doj
+                                    ELSE '$from_date'
+                                END
+                            ) + 1
+                            -
+                            (
+                                SUM(CASE
+                                    WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day' , 'Casual Leave', 'Sick Leave', 'Annual Leave')
+                                    OR att_check_overall_status LIKE '%Holiday%'
+                                    THEN 1
+                                    ELSE 0
+                                END) +
+                                (
+                                    SELECT COUNT(*)
+                                    FROM (
+                                        SELECT DATE_ADD(
+                                            CASE
+                                                WHEN e.employee_doj >= '$from_date' THEN e.employee_doj
+                                                ELSE '$from_date'
+                                            END,
+                                            INTERVAL number DAY
+                                        ) AS DateInMonth
+                                        FROM (
+                                            SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                                            FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                                                 (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                                                 (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+                                        ) AS nums
+                                        WHERE number BETWEEN 0 AND DATEDIFF(
+                                            '$to_date',
+                                            CASE
+                                                WHEN e.employee_doj > '$from_date' THEN e.employee_doj
+                                                ELSE '$from_date'
+                                            END
+                                        )
+                                        AND NOT EXISTS (
+                                            SELECT 1 FROM tbl_attendance
+                                            WHERE
+                                                att_comp_date = DATE_ADD(
+                                                    CASE
+                                                        WHEN e.employee_doj > '$from_date' THEN e.employee_doj
+                                                        ELSE '$from_date'
+                                                    END,
+                                                    INTERVAL number DAY
+                                                ) AND
+                                                att_employee_id = e.employee_id
+                                        )
+                                    ) AS DateRange
+                                    WHERE e.employee_offdays LIKE CONCAT('%', DAYNAME(DateInMonth), '%')
+                                )
+                            )
+                        ) AS salary_days,
+                        (
+                            SELECT COUNT(DateInMonth)
+                            FROM (
+                                SELECT
+                                    DATE_ADD('$from_date', INTERVAL number DAY) AS DateInMonth
+                                FROM (
+                                    SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
+                                    FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
+                                         (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
+                                         (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
+                                ) AS nums
+                                WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
+                                AND EXISTS (
+                                    SELECT 1
+                                    FROM tbl_attendance
+                                    WHERE
+                                        att_for_year = YEAR(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                        att_for_month = MONTH(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                        att_for_date = DAY(DATE_ADD('$from_date', INTERVAL number DAY)) AND
+                                        (
+                                            att_check_in_status = 1 OR
+                                            att_check_out_status = 1
+                                        )
+                                        AND att_employee_id = e.employee_id
+                                )
+                                AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD('$from_date', INTERVAL number DAY)), '%')
+                            ) AS DateRange
+                        ) + IFNULL(Ex.Extraday, 0) AS 'extra_working'
+
                     FROM tbl_employees e
-                    LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
+                    LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id
                         AND CONCAT(a.att_for_year, '-', a.att_for_month, '-', a.att_for_date) BETWEEN '$from_date' AND '$to_date'
                     LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
-                    LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
-                    LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
+                    LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id
+                    LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id
                     LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-                    LEFT JOIN (					
+                    LEFT JOIN (
                         SELECT employee_code,
                         COUNT(CASE WHEN a.att_check_overall_status NOT LIKE '%Holiday%' THEN holiday_date END) AS Extraday,
                         COUNT(holiday_date) AS HolidayCount
                         FROM (
-                            SELECT 
+                            SELECT
                                 h.holiday_date,
                                 a.employee_designation,
                                 h.holiday_name,
                                 a.employee_code,
                                 a.att_check_overall_status,
                                 a.att_comp_date
-                            FROM tbl_holidays AS h 
-                            CROSS APPLY STRING_SPLIT(h.designation_name, ',') AS split
+                            FROM tbl_holidays AS h
                             JOIN (
-                                SELECT e.employee_designation, employee_code, att_check_overall_status, att_comp_date 
-                                FROM tbl_attendance t 
+                                SELECT e.employee_designation, employee_code, att_check_overall_status, att_comp_date
+                                FROM tbl_attendance t
                                 INNER JOIN tbl_employees e ON t.att_employee_id = e.employee_id
                                 INNER JOIN tbl_departments d ON e.employee_department = d.department_id
-                                INNER JOIN tbl_designations de ON e.employee_designation = de.designation_id  
-                            ) AS a  ON h.holiday_date = a.att_comp_date 
-                                AND (split.value = CAST(a.employee_designation AS NVARCHAR) OR h.designation_name = '*')
+                                INNER JOIN tbl_designations de ON e.employee_designation = de.designation_id
+                            ) AS a ON h.holiday_date = a.att_comp_date
+                                AND (FIND_IN_SET(CAST(a.employee_designation AS CHAR), h.designation_name) OR h.designation_name = '*')
                         ) AS a
-                        
-                        where a.holiday_date between '$from_date' and '$to_date' 
+
+                        where a.holiday_date between '$from_date' and '$to_date'
 
                         GROUP BY employee_code
                     ) AS Ex ON e.employee_code = Ex.employee_code
-                    WHERE $where_clause AND e.employee_isactive = 1 
-                    GROUP BY 
-                        e.employee_code, 
-                        e.employee_name, 
+                    WHERE $where_clause AND e.employee_isactive = 1
+                    GROUP BY
+                        e.employee_code,
+                        e.employee_name,
                         e.employee_new_code,
-                        e.business_unit, 
-                        dep.department_name, 
-                        des.designation_name, 
+                        e.business_unit,
+                        dep.department_name,
+                        des.designation_name,
                         e.employee_offdays,
                         e.employee_id,
                         rep.employee_code,
@@ -3928,7 +3970,7 @@ class AttendanceController extends Controller
                         e.employee_doj,
                         Ex.Extraday,
                         Ex.HolidayCount
-                    
+
                     ORDER BY e.employee_code ASC
                 ");
 
@@ -4541,42 +4583,42 @@ class AttendanceController extends Controller
                     $employee_id = $employee['employee_id'];
     
                     $attendance = DB::select("
-                        SELECT 
-                            emp.employee_code as 'Employee ID', 
-                            emp.employee_name as  'Name', 
-                            emp.employee_new_code as  'Employee New Code', 
+                        SELECT
+                            emp.employee_code as 'Employee ID',
+                            emp.employee_name as  'Name',
+                            emp.employee_new_code as  'Employee New Code',
                             CONCAT(LM.employee_code , ' - ' , LM.employee_name) as 'Line Manager',
                             emp.business_unit as 'Business Unit',
-                            CONVERT(date, dates.date_between) as 'Date', 
-                            DATENAME(dw, dates.date_between) as 'Day', 
-                            CASE 
+                            DATE(dates.date_between) as 'Date',
+                            DAYNAME(dates.date_between) as 'Day',
+                            CASE
                                 WHEN emp.employee_doj <= dates.date_between THEN
-                                    CASE 
-                                        WHEN att.att_check_overall_status IS NULL AND CHARINDEX(DATENAME(dw, dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
+                                    CASE
+                                        WHEN att.att_check_overall_status IS NULL AND LOCATE(DAYNAME(dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
                                         WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
                                     END
-                                ELSE '-' 
+                                ELSE '-'
                             END AS 'Attendance Status',
-                            CASE 
-                                WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_in_time, '') 
-                                ELSE '' 
-                            END AS 'Check In', 
-                            CASE 
-                                WHEN emp.employee_doj <= dates.date_between THEN ISNULL(att.att_check_out_time, '') 
-                                ELSE '' 
+                            CASE
+                                WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_in_time, '')
+                                ELSE ''
+                            END AS 'Check In',
+                            CASE
+                                WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_out_time, '')
+                                ELSE ''
                             END AS 'Check Out'
                         FROM (
-                            SELECT DATEADD(DAY, n, '$request->from_date') AS date_between
+                            SELECT DATE_ADD('$request->from_date', INTERVAL n DAY) AS date_between
                             FROM (
                                 SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
                                 FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
                                     (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
                                     (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
                             ) AS numbers
-                            WHERE DATEADD(DAY, n, '$request->from_date') BETWEEN '$request->from_date' AND '$request->to_date'
+                            WHERE DATE_ADD('$request->from_date', INTERVAL n DAY) BETWEEN '$request->from_date' AND '$request->to_date'
                         ) AS dates
-                        LEFT JOIN tbl_attendance AS att ON CONVERT(date, dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id
-                        LEFT JOIN tbl_employees AS emp ON $employee_id = emp.employee_id 
+                        LEFT JOIN tbl_attendance AS att ON DATE(dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id
+                        LEFT JOIN tbl_employees AS emp ON $employee_id = emp.employee_id
                         LEFT JOIN tbl_employees as LM ON emp.employee_senior_manager = LM.employee_id
                         ORDER BY dates.date_between ASC
                     ");

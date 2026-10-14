@@ -1,6 +1,7 @@
 function interview_graph(overall_interviews, scheduled_interview, offerPlaced_interview, hired_interview, cancelled_interview) {
 
     var ctx = document.getElementById('kt_chartjs_3');
+    if (!ctx) { return; } // chart card is not rendered for users without access
 
     if (overall_interviews == 0 && scheduled_interview == 0 && offerPlaced_interview == 0 && hired_interview == 0 && cancelled_interview == 0) {
         $('#interview-chart').html('<div class="alert alert-primary" role="alert">No Record Found</div>')

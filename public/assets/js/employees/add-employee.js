@@ -71,7 +71,12 @@ function candidate_name_list() {
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
-        data: $("#add_employee_form").serialize(),
+        // the controller only filters on name + department, so don't send the whole form
+        // (121+ fields) in the query string - that exceeds the URL limit (HTTP 414)
+        data: {
+            employee_name: $('#add_employee_form [name="employee_name"]').val(),
+            employee_department: $('#add_employee_form [name="employee_department"]').val()
+        },
 
         success: function (data) {
             if (data.status == 'TRUE') {

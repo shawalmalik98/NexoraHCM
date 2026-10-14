@@ -1,0 +1,381 @@
+/* ==========================================================================
+   Manez theme - PART 3: bold restyle (buttons, topbar, sidebar tiles, cards,
+   row-strip tables, forms). Prefixed with `body` so it wins over earlier parts.
+   ========================================================================== */
+
+/* ---------- Buttons ---------- */
+body .btn {
+  font-size: .86rem; font-weight: 600; letter-spacing: .01em;
+  padding: .62rem 1.15rem; border-radius: 12px; border-width: 1px;
+  transition: transform .15s ease, box-shadow .15s ease, background-color .15s ease, color .15s ease;
+}
+body .btn.btn-sm { font-size: .8rem; padding: .45rem .9rem; border-radius: 10px; }
+body .btn.btn-lg { font-size: 1rem; padding: .85rem 1.6rem; border-radius: 14px; }
+body .btn.btn-icon { padding: 0; }
+body .btn:hover:not(.btn-icon) { transform: translateY(-1px); }
+
+/* primary = gradient */
+body .btn.btn-primary {
+  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+  border-color: transparent; color: #fff;
+  box-shadow: 0 8px 18px rgba(13, 148, 136, .30);
+}
+body .btn.btn-primary:hover:not(.btn-active), body .btn.btn-primary:focus:not(.btn-active),
+body .btn.btn-primary:active:not(.btn-active), body .btn.btn-primary.active {
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important; box-shadow: 0 10px 22px rgba(13, 148, 136, .38);
+}
+
+/* success / info / warning / danger = soft tinted, solid on hover */
+body .btn.btn-success { background-color: #ecfdf5; color: #059669; border-color: #a7f3d0; box-shadow: none; }
+body .btn.btn-info    { background-color: #f0f9ff; color: #0284c7; border-color: #bae6fd; box-shadow: none; }
+body .btn.btn-warning { background-color: #fffbeb; color: #b45309; border-color: #fde68a; box-shadow: none; }
+body .btn.btn-danger  { background-color: #fef2f2; color: #dc2626; border-color: #fecaca; box-shadow: none; }
+body .btn.btn-secondary, body .btn.btn-dark, body .btn.btn-light, body .btn.btn-default {
+  background-color: #f1f5f9; color: #334155; border-color: #e2e8f0; box-shadow: none;
+}
+body .btn.btn-success:hover:not(.btn-active), body .btn.btn-success:focus:not(.btn-active), body .btn.btn-success:active:not(.btn-active) { background-color: #10b981 !important; border-color: #10b981; color: #fff; }
+body .btn.btn-info:hover:not(.btn-active),    body .btn.btn-info:focus:not(.btn-active),    body .btn.btn-info:active:not(.btn-active)    { background-color: #0ea5e9 !important; border-color: #0ea5e9; color: #fff; }
+body .btn.btn-warning:hover:not(.btn-active), body .btn.btn-warning:focus:not(.btn-active), body .btn.btn-warning:active:not(.btn-active) { background-color: #f59e0b !important; border-color: #f59e0b; color: #fff; }
+body .btn.btn-danger:hover:not(.btn-active),  body .btn.btn-danger:focus:not(.btn-active),  body .btn.btn-danger:active:not(.btn-active)  { background-color: #ef4444 !important; border-color: #ef4444; color: #fff; }
+body .btn.btn-secondary:hover:not(.btn-active), body .btn.btn-dark:hover:not(.btn-active), body .btn.btn-light:hover:not(.btn-active) { background-color: #e2e8f0 !important; color: #0f172a; }
+body .btn.btn-success .svg-icon, body .btn.btn-info .svg-icon, body .btn.btn-warning .svg-icon, body .btn.btn-danger .svg-icon,
+body .btn.btn-success i, body .btn.btn-info i, body .btn.btn-warning i, body .btn.btn-danger i { color: inherit; }
+body .btn.btn-light-primary { background-color: #e6f7f4; color: #0d9488; border-color: #99e0d6; }
+
+/* ---------- Top bar ---------- */
+body .app-header {
+  background: rgba(255, 255, 255, .88);
+  -webkit-backdrop-filter: saturate(180%) blur(14px); backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid #e8ecf4; box-shadow: 0 6px 24px rgba(15, 23, 42, .04);
+}
+body .app-navbar .btn.btn-icon { border-radius: 50%; width: 40px; height: 40px; background: #f8fafc; border: 1px solid #e8ecf4; color: #64748b; }
+body .app-navbar .btn.btn-icon:hover { background: #e6f7f4; color: #0d9488; border-color: #99e0d6; transform: none; }
+body #kt_header_user_menu_toggle .symbol { padding: 3px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #10b981); }
+body #kt_header_user_menu_toggle .symbol img { border-radius: 50% !important; border: 2px solid #fff; }
+body .bullet.bullet-dot.bg-success.animation-blink { background-color: #ef4444 !important; box-shadow: 0 0 0 3px #fff; }
+
+/* ---------- Sidebar: icon tiles ---------- */
+body .app-sidebar { border-radius: 0 24px 24px 0; }
+body .app-sidebar .menu .menu-item .menu-link { padding: .5rem .75rem; margin: 2px 0; }
+body .app-sidebar .menu .menu-item > .menu-link > .menu-icon {
+  width: 34px; height: 34px; min-width: 34px; margin-right: .75rem;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px; background: #f1f5f9;
+  transition: background-color .15s ease;
+}
+body .app-sidebar .menu .menu-item.here > .menu-link > .menu-icon,
+body .app-sidebar .menu .menu-item.show > .menu-link > .menu-icon,
+body .app-sidebar .menu .menu-item > .menu-link:hover > .menu-icon { background: #fff; }
+body .app-sidebar .menu .menu-item > .menu-link.active > .menu-icon { background: rgba(255, 255, 255, .22); }
+body .app-sidebar .menu .menu-item .menu-link .menu-title { font-size: .9rem; }
+body .app-sidebar .menu-sub .menu-link { padding-left: 1rem; }
+
+/* ---------- Page heading with accent ---------- */
+body .app-toolbar .page-heading::before, body h1.page-heading::before {
+  content: ""; display: inline-block; width: 5px; height: 26px; margin-right: .75rem; vertical-align: middle;
+  border-radius: 4px; background: linear-gradient(180deg, #14b8a6, #10b981);
+}
+body .app-toolbar .page-heading, body h1.page-heading { display: flex !important; flex-direction: row !important; align-items: center; }
+
+/* ---------- Cards ---------- */
+body .card {
+  border: 0; border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, .03), 0 14px 34px rgba(15, 23, 42, .06);
+}
+body .card > .card-header { border-bottom: 1px solid #f1f5f9; padding: 1.25rem 1.75rem; }
+body .card > .card-body { padding: 1.5rem 1.75rem; }
+body .app-content .card.card-flush { position: relative; overflow: hidden; }
+body .app-content .card.card-flush::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; z-index: 2;
+  background: linear-gradient(90deg, #14b8a6, #10b981, #2dd4bf);
+}
+body .card.card-flush > .card-header.bgi-no-repeat { border-radius: 0; }
+
+/* ---------- Tables: floating row strips ---------- */
+body .card table.table, body .card table.dataTable { border-collapse: separate !important; border-spacing: 0 8px !important; }
+body .card table.table thead th, body .card table.dataTable thead th {
+  background: transparent !important; border: 0 !important; border-radius: 0 !important;
+  padding: .4rem 1rem !important; font-size: .7rem; color: #94a3b8 !important;
+}
+body .card table.table tbody tr, body .card table.dataTable tbody tr {
+  background: #f8fafc; box-shadow: none; transition: background-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+body .card table.table tbody td, body .card table.dataTable tbody td {
+  background: transparent; border: 0 !important; padding: .9rem 1rem !important;
+}
+body .card table.table tbody td:first-child, body .card table.dataTable tbody td:first-child { border-radius: 14px 0 0 14px; }
+body .card table.table tbody td:last-child,  body .card table.dataTable tbody td:last-child  { border-radius: 0 14px 14px 0; }
+body .card table.table tbody tr:hover, body .card table.dataTable tbody tr:hover {
+  background: #e6f7f4 !important; box-shadow: 0 6px 18px rgba(13, 148, 136, .10);
+}
+body .card table.table tbody tr:hover td { background: transparent !important; }
+body .card table.table tbody tr.odd, body .card table.table tbody tr.even { background: #f8fafc; }
+
+/* ---------- Forms ---------- */
+body .form-label, body label.form-label, body .col-form-label {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #64748b;
+  margin-bottom: .45rem;
+}
+body .form-control, body .form-select, body .form-control.form-control-solid, body .form-select.form-select-solid {
+  background-color: #f8fafc; border: 1px solid #e8ecf4; border-radius: 12px; padding: .8rem 1rem; min-height: 46px;
+}
+body .form-control:hover, body .form-select:hover { border-color: #99e0d6; }
+body .form-control:focus, body .form-select:focus { background-color: #fff; border-color: #14b8a6; box-shadow: 0 0 0 4px rgba(20, 184, 166, .14); }
+body .fv-row, body .mb-10 { margin-bottom: 1.5rem; }
+body .card form .card-footer, body .card > .card-footer { background: #f8fafc; border-top: 1px solid #f1f5f9; border-radius: 0 0 20px 20px; padding: 1.1rem 1.75rem; }
+
+/* ---------- Filters / toolbars in cards ---------- */
+body .app-toolbar .btn { box-shadow: none; }
+body .app-toolbar .btn.btn-primary { box-shadow: 0 8px 18px rgba(13, 148, 136, .30); }
+
+
+/* ==========================================================================
+   PART 4 - polish found while reviewing real pages
+   ========================================================================== */
+
+/* sidebar icons: the duotone icons were too faint inside their tiles */
+body .app-sidebar .menu-icon img, body .app-sidebar .menu-icon svg { opacity: .9; }
+body .app-sidebar .menu .menu-item > .menu-link > .menu-icon { background: #e6f7f4; }
+body .app-sidebar .menu .menu-item > .menu-link > .menu-icon .svg-icon,
+body .app-sidebar .menu .menu-item > .menu-link > .menu-icon i { color: #14b8a6 !important; }
+body .app-sidebar .menu .menu-item > .menu-link.active > .menu-icon .svg-icon,
+body .app-sidebar .menu .menu-item > .menu-link.active > .menu-icon i { color: #ffffff !important; }
+
+/* collapsed sidebar: the company name used to wrap over the toggle button */
+[data-kt-app-sidebar-minimize=on] .app-sidebar-logo a span { display: none; }
+[data-kt-app-sidebar-minimize=on][data-kt-app-sidebar-hoverable=true] .app-sidebar:hover .app-sidebar-logo a span { display: inline; }
+body .app-sidebar-logo a { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 150px; display: inline-block; }
+
+/* long forms (add / edit employee): clear section headings */
+body .card form h2, body .card form h3.fw-bold, body .card form .fs-2.fw-bold {
+  position: relative; margin: 1.75rem 0 1.25rem; padding-bottom: .65rem; font-size: 1.1rem; font-weight: 700; color: #0f172a;
+  border-bottom: 1px solid #eef2f7;
+}
+body .card form h2::after, body .card form h3.fw-bold::after, body .card form .fs-2.fw-bold::after {
+  content: ""; position: absolute; left: 0; bottom: -1px; width: 56px; height: 3px; border-radius: 3px;
+  background: linear-gradient(90deg, #14b8a6, #10b981);
+}
+body .card form > .card-body > h2:first-child, body .card form h2:first-of-type { margin-top: .25rem; }
+
+/* stat cards on the dashboard: tidier numbers */
+body .app-content .card.card-flush .fs-2hx { font-weight: 800; }
+body .app-content .card.card-flush .badge.badge-light-success,
+body .app-content .card.card-flush .badge.badge-light-danger { font-weight: 700; }
+
+/* empty state boxes ("No Record Found") look like a tip, not an error */
+body .alert.alert-primary.d-flex, body .card .alert-primary { border-radius: 12px; }
+
+/* toolbar action buttons keep one line */
+body .app-toolbar .d-flex.align-items-center.gap-2 { flex-wrap: wrap; }
+
+/* focus ring for keyboard users */
+body a:focus-visible, body button:focus-visible, body .btn:focus-visible { outline: 3px solid rgba(20, 184, 166, .35); outline-offset: 2px; }
+
+
+/* section titles inside long form cards (card-header > card-label) */
+body .card .card-header .card-title .card-label.fs-3 { position: relative; padding-left: .95rem; font-size: 1.1rem !important; font-weight: 700; color: #0f172a; }
+body .card .card-header .card-title .card-label.fs-3::before { content: ''; position: absolute; left: 0; top: .2em; bottom: .2em; width: 4px; border-radius: 4px; background: linear-gradient(180deg, #14b8a6, #10b981); }
+body .card .card-header.border-0 { border-bottom: 1px solid #f1f5f9 !important; margin-top: .5rem; }
+
+
+/* ==========================================================================
+   PART 6 - teal / emerald palette, dark sidebar, solid white top bar
+   ========================================================================== */
+:root, [data-theme=light] {
+  --kt-body-bg: #f1f5f5;
+  --mz-border: #e2ebeb;
+  --kt-primary-light: #e6f7f4;
+}
+body, body .app-wrapper, body .app-main { background-color: #f1f5f5 !important; }
+
+/* ---- sidebar: deep teal-black ---- */
+body[data-kt-app-layout=dark-sidebar] .app-sidebar {
+  background: linear-gradient(180deg, #0c2a2e 0%, #0a2125 55%, #08181c 100%);
+  border-right: 0 !important;
+  border-radius: 0 28px 28px 0;
+  box-shadow: 10px 0 34px rgba(8, 24, 28, .20);
+}
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .app-sidebar-logo { border-bottom: 1px solid rgba(255, 255, 255, .08); }
+body .app-sidebar-logo span, body .app-sidebar-logo span.text-white { color: #ffffff !important; }
+body .app-sidebar-logo a::before {
+  content: ""; display: inline-block; width: 11px; height: 11px; margin-right: .6rem; border-radius: 4px;
+  background: linear-gradient(135deg, #2dd4bf, #10b981); box-shadow: 0 0 0 4px rgba(45, 212, 191, .18);
+}
+body[data-kt-app-sidebar-minimize=on] .app-sidebar-logo a::before { margin-right: 0; }
+
+/* sidebar search */
+body .app-sidebar input, body .app-sidebar .form-control {
+  background: rgba(255, 255, 255, .07) !important; border: 1px solid rgba(255, 255, 255, .10) !important; color: #ffffff !important;
+}
+body .app-sidebar input::placeholder { color: rgba(255, 255, 255, .50) !important; }
+body .app-sidebar .svg-icon-2, body .app-sidebar [class*="search"] .svg-icon { color: rgba(255, 255, 255, .55); }
+
+/* menu text / states */
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item .menu-heading { color: rgba(255, 255, 255, .38) !important; }
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item .menu-link,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item .menu-link .menu-title { color: #a9c0c2; }
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item .menu-link .menu-arrow:after,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item .menu-link .menu-bullet .bullet { background-color: rgba(255, 255, 255, .45); }
+
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.hover:not(.here) > .menu-link:not(.disabled):not(.active):not(.here),
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item:not(.here) .menu-link:hover:not(.disabled):not(.active):not(.here),
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.here > .menu-link,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.show > .menu-link {
+  background-color: rgba(255, 255, 255, .08) !important; color: #ffffff !important;
+}
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.hover:not(.here) > .menu-link:not(.disabled):not(.active):not(.here) .menu-title,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item:not(.here) .menu-link:hover:not(.disabled):not(.active):not(.here) .menu-title,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.here > .menu-link .menu-title,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.show > .menu-link .menu-title { color: #ffffff !important; }
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.here > .menu-link .menu-arrow:after,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.show > .menu-link .menu-arrow:after,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.here > .menu-link .menu-bullet .bullet,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item.show > .menu-link .menu-bullet .bullet { background-color: #2dd4bf !important; }
+
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item .menu-link.active {
+  background: linear-gradient(135deg, #14b8a6, #0d9488) !important; color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(13, 148, 136, .45);
+}
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .menu .menu-item .menu-link.active .menu-title { color: #ffffff !important; }
+
+/* icon tiles stay light so the duotone icons are readable on the dark sidebar */
+body .app-sidebar .menu .menu-item > .menu-link > .menu-icon { background: #e6f7f4; }
+body .app-sidebar .menu .menu-item.here > .menu-link > .menu-icon,
+body .app-sidebar .menu .menu-item.show > .menu-link > .menu-icon,
+body .app-sidebar .menu .menu-item > .menu-link:hover > .menu-icon { background: #ffffff; }
+body .app-sidebar .menu .menu-item > .menu-link.active > .menu-icon { background: rgba(255, 255, 255, .95); }
+body .app-sidebar .menu .menu-item > .menu-link.active > .menu-icon .svg-icon,
+body .app-sidebar .menu .menu-item > .menu-link.active > .menu-icon i { color: #0d9488 !important; }
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .hover-scroll-overlay-y,
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .hover-scroll-overlay-y:hover { scrollbar-color: rgba(255, 255, 255, .18) transparent; }
+body[data-kt-app-layout=dark-sidebar] .app-sidebar .hover-scroll-overlay-y::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, .18); }
+
+/* ---- top bar: solid white, clearly separated from the dark sidebar ---- */
+body .app-header {
+  background: #ffffff !important; -webkit-backdrop-filter: none; backdrop-filter: none;
+  border-bottom: 1px solid #e2ebeb; box-shadow: 0 6px 24px rgba(12, 42, 46, .06);
+}
+body .app-navbar .btn.btn-icon { background: #f1f5f5; border-color: #e2ebeb; }
+body .app-navbar .btn.btn-icon:hover { background: #e6f7f4; border-color: #99e0d6; color: #0d9488; }
+body #kt_header_user_menu_toggle .symbol { background: linear-gradient(135deg, #2dd4bf, #10b981); }
+
+/* ---- calmer hero (teal, with a warm accent) ---- */
+.mz-hero { background: linear-gradient(120deg, #0f766e 0%, #0d9488 50%, #14b8a6 100%); box-shadow: 0 18px 40px rgba(13, 148, 136, .28); }
+.mz-hero::before { background: rgba(255, 255, 255, .09); }
+.mz-quick-icon { color: #0d9488; }
+
+/* ---- page heading + card accents use the new palette ---- */
+body .app-toolbar .page-heading::before, body h1.page-heading::before { background: linear-gradient(180deg, #14b8a6, #10b981); }
+body .app-content .card.card-flush::before { background: linear-gradient(90deg, #0d9488, #14b8a6, #fbbf24); }
+body .btn.btn-primary { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); box-shadow: 0 8px 18px rgba(13, 148, 136, .30); }
+body .btn.btn-primary:hover:not(.btn-active) { background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important; }
+body .btn.btn-success { background-color: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+body .btn.btn-success:hover:not(.btn-active) { background-color: #10b981 !important; border-color: #10b981; color: #fff; }
+
+/* sidebar collapse button: visible teal chevrons on a white chip */
+body #kt_app_sidebar_toggle { background: #ffffff !important; border: 1px solid #e2ebeb; box-shadow: 0 4px 14px rgba(12, 42, 46, .18); }
+body #kt_app_sidebar_toggle .svg-icon, body #kt_app_sidebar_toggle svg { color: #0d9488 !important; }
+
+
+/* ==========================================================================
+   PART 7 - icon visibility (sidebar PNG icons are light grey, topbar icons were muted)
+   ========================================================================== */
+/* sidebar: icons straight on the dark sidebar, forced to crisp white */
+body .app-sidebar .menu .menu-item > .menu-link > .menu-icon { background: rgba(255, 255, 255, .09) !important; }
+body .app-sidebar .menu .menu-item.here > .menu-link > .menu-icon,
+body .app-sidebar .menu .menu-item.show > .menu-link > .menu-icon,
+body .app-sidebar .menu .menu-item > .menu-link:hover > .menu-icon { background: rgba(255, 255, 255, .16) !important; }
+body .app-sidebar .menu .menu-item > .menu-link.active > .menu-icon { background: rgba(255, 255, 255, .24) !important; }
+body .app-sidebar img.sidebar-icon, body .app-sidebar .menu-icon img { height: 20px !important; opacity: 1; filter: brightness(0) invert(1); }
+body .app-sidebar .menu .menu-item > .menu-link .menu-icon .svg-icon,
+body .app-sidebar .menu .menu-item > .menu-link .menu-icon i { color: #ffffff !important; }
+
+/* top bar: dark, clearly visible icons on light chips */
+body .app-navbar .btn.btn-icon, body .app-header .btn.btn-icon { color: #334155 !important; }
+body .app-navbar .btn.btn-icon .svg-icon, body .app-navbar .btn.btn-icon svg, body .app-navbar .btn.btn-icon i,
+body .app-header .btn.btn-icon .svg-icon, body .app-header .btn.btn-icon svg, body .app-header .btn.btn-icon i { color: #334155 !important; opacity: 1 !important; }
+body .app-navbar .btn.btn-icon:hover, body .app-navbar .btn.btn-icon:hover .svg-icon, body .app-navbar .btn.btn-icon:hover svg,
+body .app-header .btn.btn-icon:hover .svg-icon { color: #0d9488 !important; }
+body .app-navbar .btn.btn-icon { background: #eaf1f1; border-color: #d5e2e2; }
+
+
+/* table action icons (message / download / edit / delete / view) were washed out */
+body .card table .svg-icon, body .card table .btn.btn-icon .svg-icon, body .card table .btn.btn-icon i,
+body .card table td > a .svg-icon, body .card table td i.fa-solid, body .card table td i.fa-regular { color: #475569 !important; opacity: 1 !important; }
+body .card table .btn.btn-icon { background: #eaf1f1; }
+body .card table .btn.btn-icon:hover { background: #d3f0ec; }
+body .card table .btn.btn-icon:hover .svg-icon, body .card table .btn.btn-icon:hover i, body .card table td a:hover .svg-icon { color: #0d9488 !important; }
+body .card table .btn.btn-icon.btn-active-color-danger:hover .svg-icon, body .card table td a[class*=delete]:hover .svg-icon { color: #ef4444 !important; }
+body .card .text-muted .svg-icon { color: #64748b; }
+
+
+/* ==========================================================================
+   PART 8 - Nexora logo mark in the sidebar header
+   ========================================================================== */
+body .app-sidebar-logo a::before {
+  width: 34px; height: 34px; margin-right: .7rem; vertical-align: middle; border-radius: 10px; box-shadow: none;
+  background: #ffffff url('../../portal_assets/images/hcm-img.png') center / 74% no-repeat;
+}
+body .app-sidebar-logo a { display: inline-flex; align-items: center; }
+body[data-kt-app-sidebar-minimize=on] .app-sidebar-logo a::before { margin-right: 0; }
+
+
+/* generic action buttons (btn-success is used for Download / Upload / Save etc.) follow the brand blue */
+body .btn.btn-success { background-color: #e6f7f4; color: #0f766e; border-color: #99e0d6; }
+body .btn.btn-success:hover:not(.btn-active), body .btn.btn-success:focus:not(.btn-active), body .btn.btn-success:active:not(.btn-active) { background-color: #0d9488 !important; border-color: #0d9488; color: #fff; }
+body .btn.btn-success .svg-icon, body .btn.btn-success i { color: inherit !important; }
+
+
+/* ==========================================================================
+   PART 9 - notification / user dropdown headers: the old blue image -> theme gradient
+   ========================================================================== */
+body .menu-sub-dropdown [style*='menu-header-bg'], body .menu-sub-dropdown .bgi-no-repeat.rounded-top,
+body .menu-sub-dropdown > div.d-flex.flex-column.bgi-no-repeat {
+  background-image: linear-gradient(125deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%) !important;
+  background-color: #0d9488 !important; border-radius: 14px 14px 0 0 !important;
+}
+body .menu-sub-dropdown [style*='menu-header-bg'] h3, body .menu-sub-dropdown [style*='menu-header-bg'] .nav-link { color: #ffffff !important; }
+body .menu-sub-dropdown .nav-line-tabs .nav-item .nav-link.active { border-bottom-color: #ffffff !important; color: #ffffff !important; opacity: 1 !important; }
+body .menu-sub-dropdown .nav-line-tabs .nav-link { color: rgba(255, 255, 255, .78) !important; }
+/* any leftover brand-blue image headers in cards / modals */
+body .card-header[style*='menu-header-bg'], body .modal-header[style*='menu-header-bg'] { background-image: linear-gradient(125deg, #0f766e, #14b8a6) !important; }
+
+
+/* leave-balance / profile card headers (image banners): same teal gradient as the hero */
+body .card > .card-header.bgi-no-repeat, body .card .card-header[class*='bgi-'] {
+  background-image: linear-gradient(125deg, #0f766e 0%, #0d9488 55%, #14b8a6 100%) !important;
+  background-color: #0d9488 !important; background-blend-mode: normal !important; position: relative; overflow: hidden;
+}
+body .card > .card-header.bgi-no-repeat::after {
+  content: ''; position: absolute; right: -60px; top: -90px; width: 220px; height: 220px; border-radius: 50%; background: rgba(255, 255, 255, .09); pointer-events: none;
+}
+body .card > .card-header.bgi-no-repeat .card-title { position: relative; z-index: 1; }
+
+
+/* ==========================================================================
+   PART 10 - default profile picture (the Nexora N) shown as a proper round avatar
+   ========================================================================== */
+body img[src*='hcm-img.png']:not(.theme-light-show):not(.app-sidebar-logo-default) {
+  border-radius: 50% !important;
+  background: linear-gradient(145deg, #e6f7f4, #cdeee9) !important;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #d5ebe7, 0 6px 16px rgba(15, 118, 110, .14);
+  object-fit: contain !important;
+  aspect-ratio: 1 / 1;
+  padding: 17%;
+  box-sizing: border-box;
+}
+/* topbar avatar: ring + white inner so the N stays readable on the gradient ring */
+body #kt_header_user_menu_toggle .symbol img[src*='hcm-img.png'] { background: #ffffff !important; border: 2px solid #ffffff !important; padding: 14%; box-shadow: none; }
+/* small list avatars */
+body .symbol img[src*='hcm-img.png'] { padding: 15%; }
+
+
+/* the same default avatar when it is used as a CSS background (Reporting Authorities, cards...) */
+body [style*='hcm-img.png'][class*='bgi-'], body [style*='hcm-img.png'].rounded-circle {
+  border-radius: 50% !important;
+  background-color: #e6f7f4 !important;
+  background-image: url('../../portal_assets/images/hcm-img.png') !important;
+  background-size: 56% !important; background-position: center !important; background-repeat: no-repeat !important;
+  border: 3px solid #ffffff; box-shadow: 0 0 0 1px #d5ebe7, 0 10px 24px rgba(15, 118, 110, .16);
+}

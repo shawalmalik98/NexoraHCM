@@ -20,7 +20,7 @@
                         @if(!empty($companySetting['company_name']))
                             {{$companySetting['company_name']}}
                         @else
-                            Ismail Industries Limited
+                            Nexora HCM
                         @endif
                     </span>
                 </a>
@@ -33,7 +33,7 @@
                         @if(!empty($companySetting['company_name']))
                             {{$companySetting['company_name']}}
                         @else
-                            Ismail Industries Limited
+                            Nexora HCM
                         @endif
                     </span>
                 </a>
@@ -429,22 +429,22 @@
                                         </div>
         
                                     @endif --}}
-                                    {{-- @if(!empty($permission) && $permission[54]['module_accessibility'] == 1 && $permission[54]['permission_status'] == 1)
-                            
+                                    @if(!empty($permission) && $permission[54]['module_accessibility'] == 1 && $permission[54]['permission_status'] == 1)
+
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'shift-management' || $title == 'add-shift') active @endif" href="{{ url('shift-management') }}" >
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Mark Attendance.png') }}" />
                                                 </span>
                                                 @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
-                                                <span class="menu-title">Shift Management</span>                                         
+                                                <span class="menu-title">Shift Management</span>
                                                 @else
                                                     <span class="menu-title">Team Shift Management</span>
                                                 @endif
                                             </a>
                                         </div>
-        
-                                    @endif --}}
+
+                                    @endif
                                     {{-- @if(!empty($permission) && $permission[59]['module_accessibility'] == 1 && $permission[59]['permission_status'] == 1)
 
                                         <div class="menu-item search-item">

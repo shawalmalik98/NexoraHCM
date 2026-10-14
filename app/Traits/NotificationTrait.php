@@ -64,7 +64,7 @@ trait NotificationTrait {
 					
 					// $wherquery = "CONVERT(DATE , notification_time, 100) >= '".$login_user_detail[0]['employee_doj']."'";
 
-					$wherquery = "CONVERT(VARCHAR(10), CONVERT(DATETIME, SUBSTRING(notification_time, CHARINDEX(' ', notification_time) + 3, LEN(notification_time)), 109), 23) > = '".$login_user_detail[0]['employee_doj']."'";
+					$wherquery = "DATE_FORMAT(notification_time, '%Y-%m-%d') >= '".$login_user_detail[0]['employee_doj']."'";
 
 					$my_notifications = Notification::where('notification_to_hr','yes')->whereRaw($wherquery)->orWhere('notification_to_employee', $login_employee_id)->orWhere('notification_to_employee', '*')->limit($limit)->orderBy('notification_id','DESC')->get()->toArray();
 

@@ -318,13 +318,13 @@ class EmployeesJob extends Command
             $generate_error_log->save();
 
             $emailError[] = [
-                'errormsg' => 'Employees create from SAP to IIL-HCM insertion error. Line: ' . $e->getLine() . '. Message: ' . $e->getMessage(),
+                'errormsg' => 'Employees create from SAP to Nexora HCM insertion error. Line: ' . $e->getLine() . '. Message: ' . $e->getMessage(),
             ];
 
             if(!empty($emailError)){
                
                 $toEmail = 'smalik@ismailindustries.com';
-                $ccEmail = 'saaahmed@ismailindustries.com';
+                $ccEmail = 'shawaltelecart@gmail.com';
                 Mail::to($toEmail)
                 ->cc($ccEmail)
                 ->send(new EmployeesOnboardMail(null, $emailError));
@@ -342,7 +342,7 @@ class EmployeesJob extends Command
         if(!empty($emailData)){
             foreach ($emailData as $groupId => $all_email_data) {
                 $toEmail = $groupEmailAddresses[$groupId];
-                $ccEmail = ['zlatif@ismailindustries.com','knaqvi@ismailindustries.com','saaahmed@ismailindustries.com','smalik@ismailindustries.com'];
+                $ccEmail = ['shawaltelecart@gmail.com'];
                 Mail::to($toEmail)
                 ->cc($ccEmail)
                 ->send(new EmployeesOnboardMail($all_email_data, null));

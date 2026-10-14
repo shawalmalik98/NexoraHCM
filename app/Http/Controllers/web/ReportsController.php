@@ -37,39 +37,39 @@ class ReportsController extends Controller
         $get_estimated_salary = EmployeeSalary::join('tbl_employees','tbl_employee_salary.salary_employee_id','=','tbl_employees.employee_id')->where('employee_isactive', 1)->sum('salary_amount');
         $head_count_office_wise = Employees::selectRaw("tbl_office_locations.location_title , COUNT(tbl_employees.employee_id) as total_employees , COUNT(CASE WHEN tbl_employees.employee_gender = 'Male' THEN 0 END) AS male_count , COUNT(CASE WHEN tbl_employees.employee_gender = 'Female' THEN 0 END) AS female_count")->join('tbl_office_locations','tbl_employees.employee_location','=','tbl_office_locations.location_id')->groupBy('tbl_employees.employee_location','tbl_office_locations.location_title')->whereRaw($where_clause)->get()->toArray();
         $head_count_by_employeement_wise = Employees::selectRaw('COUNT(tbl_employees.employee_id) as total_employee , employement_status_name as employement_type')->join('tbl_employement_status','tbl_employees.employee_status','=','tbl_employement_status.employement_status_id')->where('employee_isactive',1)->groupBy('employee_status','employement_status_name')->get()->toArray();
-        $age_range = DB::select('SELECT 
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 0 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 10 THEN 0 END) as between_10_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 11 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 20 THEN 0 END) as between_20_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 21 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 30 THEN 0 END) as between_30_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 31 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 40 THEN 0 END) as between_40_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 41 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 50 THEN 0 END) as between_50_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 51 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 60 THEN 0 END) as between_60_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 61 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 70 THEN 0 END) as between_70_years , 
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.dob , GETDATE()) >= 71 AND DATEDIFF(YEAR, p.dob , GETDATE()) <= 70 THEN 0 END) as between_80_years
+        $age_range = DB::select('SELECT
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 0 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 10 THEN 0 END) as between_10_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 11 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 20 THEN 0 END) as between_20_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 21 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 30 THEN 0 END) as between_30_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 31 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 40 THEN 0 END) as between_40_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 41 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 50 THEN 0 END) as between_50_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 51 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 60 THEN 0 END) as between_60_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 61 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 70 THEN 0 END) as between_70_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.dob , NOW()) >= 71 AND TIMESTAMPDIFF(YEAR, p.dob , NOW()) <= 70 THEN 0 END) as between_80_years
         FROM tbl_personal_informations p INNER JOIN tbl_employees ON p.employeeid = tbl_employees.employee_id where ' . $where_clause);
         $age_range_employees = json_decode(json_encode($age_range), TRUE);
         $tenure_wise = DB::select("SELECT
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 0 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 1 THEN 0 END) as below_1_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 0 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 1 AND p.employee_gender = 'Female' THEN 0 END) as below_1_years_female ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 0 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 1 AND p.employee_gender = 'Male' THEN 0 END) as below_1_years_male ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 1 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 2 THEN 0 END) as below_2_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 1 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 2 AND p.employee_gender = 'Female' THEN 0 END) as below_2_years_female ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 1 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 2 AND p.employee_gender = 'Male' THEN 0 END) as below_2_years_male ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 2 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 3 THEN 0 END) as below_3_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 2 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 3 AND p.employee_gender = 'Female' THEN 0 END) as below_3_years_female ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 2 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 3 AND p.employee_gender = 'Male' THEN 0 END) as below_3_years_male ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 3 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 4 THEN 0 END) as below_4_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 3 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 4 AND p.employee_gender = 'Female' THEN 0 END) as below_4_years_female ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 3 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 4 AND p.employee_gender = 'Male' THEN 0 END) as below_4_years_male ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 4 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 5 THEN 0 END) as below_5_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 4 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 5 AND p.employee_gender = 'Female' THEN 0 END) as below_5_years_female ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 4 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 5 AND p.employee_gender = 'Male' THEN 0 END) as below_5_years_male ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 5 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 6 THEN 0 END) as below_6_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 5 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 6 AND p.employee_gender = 'Female' THEN 0 END) as below_6_years_female ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 5 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 6 AND p.employee_gender = 'Male' THEN 0 END) as below_6_years_male ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 6 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 7 THEN 0 END) as below_7_years ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 6 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 7 AND p.employee_gender = 'Female' THEN 0 END) as below_7_years_female ,
-        COUNT(CASE WHEN DATEDIFF(YEAR, p.employee_doj , GETDATE()) >= 6 AND DATEDIFF(YEAR, p.employee_doj , GETDATE()) < 7 AND p.employee_gender = 'Male' THEN 0 END) as below_7_years_male
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 0 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 1 THEN 0 END) as below_1_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 0 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 1 AND p.employee_gender = 'Female' THEN 0 END) as below_1_years_female ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 0 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 1 AND p.employee_gender = 'Male' THEN 0 END) as below_1_years_male ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 1 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 2 THEN 0 END) as below_2_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 1 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 2 AND p.employee_gender = 'Female' THEN 0 END) as below_2_years_female ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 1 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 2 AND p.employee_gender = 'Male' THEN 0 END) as below_2_years_male ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 2 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 3 THEN 0 END) as below_3_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 2 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 3 AND p.employee_gender = 'Female' THEN 0 END) as below_3_years_female ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 2 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 3 AND p.employee_gender = 'Male' THEN 0 END) as below_3_years_male ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 3 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 4 THEN 0 END) as below_4_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 3 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 4 AND p.employee_gender = 'Female' THEN 0 END) as below_4_years_female ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 3 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 4 AND p.employee_gender = 'Male' THEN 0 END) as below_4_years_male ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 4 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 5 THEN 0 END) as below_5_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 4 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 5 AND p.employee_gender = 'Female' THEN 0 END) as below_5_years_female ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 4 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 5 AND p.employee_gender = 'Male' THEN 0 END) as below_5_years_male ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 5 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 6 THEN 0 END) as below_6_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 5 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 6 AND p.employee_gender = 'Female' THEN 0 END) as below_6_years_female ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 5 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 6 AND p.employee_gender = 'Male' THEN 0 END) as below_6_years_male ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 6 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 7 THEN 0 END) as below_7_years ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 6 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 7 AND p.employee_gender = 'Female' THEN 0 END) as below_7_years_female ,
+        COUNT(CASE WHEN TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) >= 6 AND TIMESTAMPDIFF(YEAR, p.employee_doj , NOW()) < 7 AND p.employee_gender = 'Male' THEN 0 END) as below_7_years_male
         FROM tbl_employees p");
         $tenure_wise_employees = json_decode(json_encode($tenure_wise), TRUE);
         $get_employees_designation_wise = DB::select('SELECT COUNT(e.employee_id) total_employees , d.designation_name FROM tbl_employees e INNER JOIN tbl_designations d ON e.employee_designation = d.designation_id GROUP BY d.designation_name');

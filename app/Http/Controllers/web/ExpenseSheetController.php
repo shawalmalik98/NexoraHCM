@@ -26,9 +26,9 @@ class ExpenseSheetController extends Controller
 
             if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . $expense_period . "%'";
+                $where_clause .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . $expense_period . "%'";
             } else {
-                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . date("Y-m") . "%'";
+                $where_clause .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . date("Y-m") . "%'";
             }
             
             $expenses = ExpenseSheet::whereRaw($where_clause)->get()->toArray();
@@ -73,9 +73,9 @@ class ExpenseSheetController extends Controller
             $where_clause = '1=1 ';
             if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . $expense_period . "%'";
+                $where_clause .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . $expense_period . "%'";
             } else {
-                $where_clause .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . date("Y-m") . "%'";
+                $where_clause .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . date("Y-m") . "%'";
             }
             
             $expenses = ExpenseSheet::join('tbl_employees','tbl_expense_sheet.expense_created_by','tbl_employees.employee_id')->whereRaw($where_clause)->get(['employee_id','employee_name','employee_code','expense_id','expense_date','expense_reason','expense_source','expense_attachment','expense_amount', 'expense_created_by', 'expense_created_at'])->toArray();
@@ -327,7 +327,7 @@ class ExpenseSheetController extends Controller
                 }
                 return response()->download(storage_path('app/portal_documents/'.$request->path));
             }else{
-                return redirect(url());
+                return redirect('/');
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);

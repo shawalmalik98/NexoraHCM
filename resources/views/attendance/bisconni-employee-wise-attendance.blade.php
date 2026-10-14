@@ -13,9 +13,9 @@
                 <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
                  
                     @if (!empty($month) && !empty($year) && empty(Request::get('from_date')) && empty(Request::get('to_date')))
-                        {{ $employee_data[0]['employee_name'] }} Attendance ({{date('F Y',strtotime($year . '-' . $month . '-01')) }})
+                        {{ $employee_data[0]['employee_name'] ?? '' }} Attendance ({{date('F Y',strtotime($year . '-' . $month . '-01')) }})
                     @else
-                        {{ $employee_data[0]['employee_name'] }} Attendance ( {{date('d-M-Y', strtotime(Request::get('from_date'))) .' to ' .date('d-M-Y', strtotime(Request::get('to_date')))}} )
+                        {{ $employee_data[0]['employee_name'] ?? '' }} Attendance ( {{date('d-M-Y', strtotime(Request::get('from_date'))) .' to ' .date('d-M-Y', strtotime(Request::get('to_date')))}} )
                     @endif
                 </h1>   
             </div>

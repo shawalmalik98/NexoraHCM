@@ -130,6 +130,7 @@
 
 
 @push('js-link')
+<script>var employee_isactive = '{{ $employee_detail[0]['employee_isactive'] ?? 1 }}';</script>
 <script src="{{url('assets/js/employees/edit-employee.js')}}"></script>
 <script>
 

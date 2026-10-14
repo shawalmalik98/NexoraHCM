@@ -4,7 +4,7 @@ namespace App\Http\Controllers\web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Crypt, Validator};
+use Illuminate\Support\Facades\{Crypt, Validator, Redirect};
 use App\Models\{Fund, EmployeeFund};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
 use App\Helpers\ActivityTracker;
@@ -259,7 +259,7 @@ class FundController extends Controller
                 }
                 if(!empty($get_fund_source)){
                    
-                    $get_fund_source_data = EmployeeFund::selectRaw('CONVERT(CHAR(10), [ef_created_at], 112) as ef_created_at, fund_id, ef_id, employee_code, employee_name, fund_name, ef_amount')
+                    $get_fund_source_data = EmployeeFund::selectRaw('DATE_FORMAT(ef_created_at, "%Y%m%d") as ef_created_at, fund_id, ef_id, employee_code, employee_name, fund_name, ef_amount')
                     ->join('tbl_funds', 'tbl_employees_funds.ef_fund_id', '=', 'tbl_funds.fund_id')
                     ->join('tbl_employees', 'tbl_employees_funds.ef_employee_id','=','tbl_employees.employee_id')
                     ->where('ef_amount', '>', 0) 

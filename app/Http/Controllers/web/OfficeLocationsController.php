@@ -37,7 +37,7 @@ class OfficeLocationsController extends Controller
                 'tbl_office_locations.location_attendance_radius', 
                 'tbl_office_locations.location_added_at',
                 'tbl_office_locations.location_updated_at',
-                'tbl_office_locations.last_updated_by'
+                // 'tbl_office_locations.last_updated_by'
             )
             ->orderByRaw('COUNT(e.employee_id) DESC')
             ->get()

@@ -305,7 +305,8 @@ class AttendanceApiController extends Controller
             $start_date = date("Ymd", strtotime($start_date));
             $end_date = date("Ymd", strtotime($end_date));
 
-            if ($employee_Code[0] !== '0') {
+            $employee_Code = (string) $employee_Code;
+            if ($employee_Code === '' || $employee_Code[0] !== '0') {
                 $employee_Code = '0' . $employee_Code;
             }
 

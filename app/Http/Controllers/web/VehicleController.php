@@ -697,7 +697,7 @@ class VehicleController extends Controller
                 }
                 return response()->download(storage_path('app/portal_documents/'.$request->path));
             }else{
-                return redirect(url());
+                return redirect('/');
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);

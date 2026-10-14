@@ -920,8 +920,8 @@ class CustomHelper
                 where('employee_id', $employee_id)
                 ->whereIn('shift_start_from_date', function($query) use($date) {
                     $query->fromRaw('tbl_shift_management as sub_table')
-                        ->selectRaw('MAX(CONVERT(datetime, shift_start_from_date, 120))')
-                        ->whereRaw('CONVERT(datetime, shift_start_from_date, 120) <= ?', [$date])
+                        ->selectRaw('MAX(CAST(shift_start_from_date AS DATETIME))')
+                        ->whereRaw('CAST(shift_start_from_date AS DATETIME) <= ?', [$date])
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
                 })
                 ->get('shift_start_time')
@@ -973,12 +973,12 @@ class CustomHelper
 
             $employee_work_ceremony = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('employee_isactive', 1)
-            ->whereRaw('DATEDIFF(YEAR, employee_doj, GETDATE()) >= 1')
-            ->whereRaw('MONTH(employee_doj) = MONTH(GETDATE())')->whereRaw('DAY(employee_doj) = DAY(GETDATE())')
+            ->whereRaw('TIMESTAMPDIFF(YEAR, employee_doj, NOW()) >= 1')
+            ->whereRaw('MONTH(employee_doj) = MONTH(NOW())')->whereRaw('DAY(employee_doj) = DAY(NOW())')
             ->count();
 
             $probation_completion = Employees::where('employee_isactive', 1)->where('employee_status', 2)
-            ->whereRaw('DATEADD(MONTH, 3, employee_doj) = GETDATE()')
+            ->whereRaw('DATE_ADD(employee_doj, INTERVAL 3 MONTH) = NOW()')
             ->count();
 
             $notice_period_ending = Resignation::where('resignation_status', '=', 2)->where('resignation_to_date', date('Y-m-d'))->count();
@@ -1168,7 +1168,9 @@ class CustomHelper
             $start_date = date("Ymd", strtotime($start_date));
             $end_date = date("Ymd", strtotime($end_date));
 
-            if ($employee_Code[0] !== '0') {
+            // employee_code comes from an int column, so cast before indexing the first character
+            $employee_Code = (string) $employee_Code;
+            if ($employee_Code === '' || $employee_Code[0] !== '0') {
                 $employee_Code = '0' . $employee_Code;
             }
 

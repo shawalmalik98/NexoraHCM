@@ -47,7 +47,7 @@ class NotificationsController extends Controller
             $notification = $request->input('notificationid');
       
             $user_id = session('user_session');
-            if(!empty($user_id)){
+            if(!empty($user_id) && !empty($notification)){
                 $view_notification = new NotificationStatus();
                 $view_notification->viewed_notification = $notification;
                 $view_notification->viewed_by = $user_id;
@@ -183,16 +183,16 @@ class NotificationsController extends Controller
             $employee_work_ceremony = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('employee_isactive', 1)
             // ->whereRaw('TIMESTAMPDIFF(YEAR, employee_doj, CURDATE()) >= 1')
-            ->whereRaw('DATEDIFF(YEAR, employee_doj, GETDATE()) >= 1')
-            ->whereRaw('MONTH(employee_doj) = MONTH(GETDATE())')
-            ->whereRaw('DAY(employee_doj) = DAY(GETDATE())')
+            ->whereRaw('TIMESTAMPDIFF(YEAR, employee_doj, NOW()) >= 1')
+            ->whereRaw('MONTH(employee_doj) = MONTH(NOW())')
+            ->whereRaw('DAY(employee_doj) = DAY(NOW())')
             // ->whereRaw('date_format(employee_doj,"%m") = '.date('m'))
             // ->whereRaw('date_format(employee_doj,"%d") = '.date('d'))
             ->get(['employee_id','employee_code','department_name','designation_name','employee_doj'])->toArray();
           
             $probation_completion = Employees::where('employee_isactive', 1)->where('employee_status', 2)
             // ->whereRaw('DATE_ADD(employee_doj, INTERVAL +3 MONTH) = "'.date('Y-m-d').'"')
-            ->whereRaw('DATEADD(MONTH, 3, employee_doj) = GETDATE()')
+            ->whereRaw('DATE_ADD(employee_doj, INTERVAL 3 MONTH) = NOW()')
             ->get(['employee_id','employee_code','employee_name','employee_doj'])->toArray();
     
             $notice_period_ending = Resignation::where('resignation_status', '=', 2)->where('resignation_to_date', date('Y-m-d'))->get(['resignation_employee', 'resignation_from_date','resignation_to_date'])->toArray();

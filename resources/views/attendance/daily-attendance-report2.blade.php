@@ -593,5 +593,8 @@
 
 
 @push('js-link')
+<script>
+var present_attendance = 0, absent_count_attendance = 0, late_coming_attendance = 0, early_out_attendance = 0, halfday_attendance = 0, total_offDays_holiday_attendance = 0;
+</script>
 <script src="{{url('assets/js/attendance/daily-attendance-report.js?v=3')}}"></script>
 @endpush

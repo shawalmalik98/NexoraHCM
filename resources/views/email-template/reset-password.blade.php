@@ -16,7 +16,7 @@
     <br>
     Thank you,
     <br>
-    Team IIL HCM.
+    Team Nexora HCM.
     
 </p>
     

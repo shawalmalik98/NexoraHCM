@@ -32,9 +32,43 @@
             <div class="app-content flex-column-fluid">
                 {{--begin::Content container--}}
                 <div class="app-container">
+                    @php
+                        $mz_hour = (int) date('G');
+                        $mz_greeting = $mz_hour < 12 ? 'Good Morning' : ($mz_hour < 17 ? 'Good Afternoon' : 'Good Evening');
+                        $mz_name = !empty($login_user[0]['employee_name']) ? $login_user[0]['employee_name'] : '';
+                        $mz_can = function ($url) use ($permission) {
+                            return !empty($permission) && collect($permission)->contains(function ($p) use ($url) {
+                                return $p['module_url'] == $url && $p['module_accessibility'] == 1 && $p['permission_status'] == 1;
+                            });
+                        };
+                        $mz_links = [
+                            ['/my-attendance', 'My Attendance', 'fa-fingerprint'],
+                            ['/my-leaves', 'My Leaves', 'fa-umbrella-beach'],
+                            ['/payslip', 'Payslip', 'fa-file-invoice-dollar'],
+                            ['/my-loan', 'My Loan', 'fa-hand-holding-dollar'],
+                            ['/my-tickets', 'Tickets', 'fa-ticket'],
+                        ];
+                    @endphp
+                    <div class="mz-hero mb-6">
+                        <div class="mz-hero-text">
+                            <span class="mz-hero-date"><i class="fa-regular fa-calendar me-2"></i>{{ date('l, d F Y') }}</span>
+                            <h2 class="mz-hero-title">{{ $mz_greeting }}, {{ $mz_name }} <span class="mz-wave">👋</span></h2>
+                            <p class="mz-hero-sub">Here is what is happening in your workspace today.</p>
+                        </div>
+                        <div class="mz-hero-actions">
+                            @foreach($mz_links as $mz_link)
+                                @if($mz_can($mz_link[0]))
+                                    <a href="{{ url($mz_link[0]) }}" class="mz-quick">
+                                        <span class="mz-quick-icon"><i class="fa-solid {{ $mz_link[2] }}"></i></span>
+                                        <span>{{ $mz_link[1] }}</span>
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
                     <div class="row justify-content-center">
                         @if(empty($pollings))
-                            @php $pollings = $voted_pollings; @endphp
+                            {{-- @php $pollings = $voted_pollings; @endphp --}}
                         @endif
                         @php $j=0; @endphp
                         @if(!empty($pollings))
@@ -359,14 +393,14 @@
                                                     <div class="card-rounded position-relative mb-5">
                                                         <div class="mx-auto mb-6 bgi-no-repeat bgi-size-contain bgi-position-center rounded-circle w-125px h-125px"
                                                             @if(empty($senior_manager))
-                                                                style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                             @elseif(empty($senior_manager[0]['profile_avatar'] ))
-                                                                style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                             @else
                                                                 @if(file_exists('portal_assets/profile_pictures/'.$senior_manager[0]['profile_avatar']))
                                                                     style="background-image:url('{{asset('portal_assets/profile_pictures').'/'.$senior_manager[0]['profile_avatar'] }} ')">
                                                                  @else
-                                                                   style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                   style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                                 @endif
 
                                                             @endif
@@ -391,14 +425,14 @@
                                                     <div class="card-rounded position-relative mb-5">
                                                         <div class="mx-auto mb-6 bgi-no-repeat bgi-size-contain bgi-position-center rounded-circle w-125px h-125px"
                                                             @if(empty($junior_manager))
-                                                                style="background-image:url('{{ asset('portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('portal_assets/images/hcm-img.png') }}')">
                                                             @elseif(empty($junior_manager[0]['profile_avatar'] ))
-                                                                style="background-image:url('{{ asset('portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('portal_assets/images/hcm-img.png') }}')">
                                                             @else
                                                                 @if(file_exists('portal_assets/profile_pictures/'.$junior_manager[0]['profile_avatar']))
                                                                     style="background-image:url('{{asset('portal_assets/profile_pictures').'/'.$junior_manager[0]['profile_avatar'] }} ')">
                                                                  @else
-                                                                   style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                   style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                                 @endif
 
                                                             @endif
@@ -428,7 +462,7 @@
                                 <div class="card card-flush" style="height: 500px;">
                                     <div class="card-header pt-7" >
                                         <h3 class="card-title align-items-start flex-column">
-                                            <span class="card-label fw-bold text-dark">IIL HCM Mobile App</span>
+                                            <span class="card-label fw-bold text-dark">Nexora HCM Mobile App</span>
                                             <span class="text-gray-400 mt-1 fw-semibold fs-6">Launching our newly built HCM Mobile app. Click here to download.</span>
                                         </h3>
                                     </div>
@@ -462,12 +496,12 @@
                                                                 <div class ="row">
                                                                     <div class = "col-md-3">
                                                                         @if(empty($employee['profile_avatar']))
-                                                                            <img draggable="false" src="{{ asset('portal_assets/images/default-img.png') }}" class="mt-2 w-50px h-50px ms-n1 me-1 rounded-circle imagenone" alt="">
+                                                                            <img draggable="false" src="{{ asset('portal_assets/images/hcm-img.png') }}" class="mt-2 w-50px h-50px ms-n1 me-1 rounded-circle imagenone" alt="">
                                                                         @else
                                                                             @if(file_exists('portal_assets/profile_pictures/'.$employee['profile_avatar']))
                                                                                 <img draggable="false" src="{{asset('portal_assets/profile_pictures').'/'.$employee['profile_avatar'] }}" class="mt-2 w-50px h-50px ms-n1 me-1 rounded-circle imagenone" alt="">
                                                                             @else
-                                                                                <img draggable="false" alt="Logo" src="{{ asset('/portal_assets/images/default-img.png') }}" class="mt-2 w-50px h-50px ms-n1 me-1 rounded-circle imagenone"/>
+                                                                                <img draggable="false" alt="Logo" src="{{ asset('/portal_assets/images/hcm-img.png') }}" class="mt-2 w-50px h-50px ms-n1 me-1 rounded-circle imagenone"/>
                                                                             @endif
                                                                         @endif
 
@@ -531,7 +565,7 @@
                     @else
                         <div class="row g-5 g-xl-10 mb-5">
 
-                            <div class="col-xl-4 mb-xl-10 ">
+                            <div class="col-xl-6 mb-xl-10 ">
                                 <div class="card card-flush" style="height : 500px;">
                                     <div class="card-header rounded bgi-no-repeat bgi-size-cover bgi-position-y-top bgi-position-x-center align-items-start h-150px" style="background-image:url('{{ url('/') }}/assets/media/svg/top-green.png" data-theme="light">
                                         <h3 class="card-title align-items-start flex-column text-white pt-5">
@@ -580,11 +614,11 @@
                                 </div>
                             </div>
 
-                            <div class="col-xl-4">
+                            {{-- <div class="col-xl-4">
                                 <div class="card card-flush" style="height: 500px;">
                                     <div class="card-header pt-7" >
                                         <h3 class="card-title align-items-start flex-column">
-                                            <span class="card-label fw-bold text-dark">IIL HCM Mobile App</span>
+                                            <span class="card-label fw-bold text-dark">Nexora HCM Mobile App</span>
                                             <span class="text-gray-400 mt-1 fw-semibold fs-6">Launching our newly built HCM Mobile app. Click here to download.</span>
                                         </h3>
                                     </div>
@@ -595,12 +629,12 @@
                                             <img src="{{ asset('portal_assets/images/mobile-app.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             
                                             <a target="_blank" href="https://play.google.com/store/apps/details?id=com.iil.hcm" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
-                                        {{-- </div> --}}
+                                       
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
-                            <div class="col-xl-4">
+                            <div class="col-xl-6">
                                 <div class="card card-flush" style="height : 500px;">
                                     <div class="card-header pt-7">
                                         <h3 class="card-title align-items-start flex-column">
@@ -615,14 +649,14 @@
                                                     <div class="card-rounded position-relative mb-5">
                                                         <div class="mx-auto mb-6 bgi-no-repeat bgi-size-contain bgi-position-center rounded-circle w-125px h-125px"
                                                             @if(empty($senior_manager))
-                                                                style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                             @elseif(empty($senior_manager[0]['profile_avatar'] ))
-                                                                style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                             @else
                                                                 @if(file_exists('portal_assets/profile_pictures/'.$senior_manager[0]['profile_avatar']))
                                                                     style="background-image:url('{{asset('portal_assets/profile_pictures').'/'.$senior_manager[0]['profile_avatar'] }} ')">
                                                                 @else
-                                                                    style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                    style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                                 @endif
 
                                                             @endif
@@ -648,14 +682,14 @@
                                                     <div class="card-rounded position-relative mb-5">
                                                         <div class="mx-auto mb-6 bgi-no-repeat bgi-size-contain bgi-position-center rounded-circle w-125px h-125px"
                                                             @if(empty($junior_manager))
-                                                                style="background-image:url('{{ asset('portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('portal_assets/images/hcm-img.png') }}')">
                                                             @elseif(empty($junior_manager[0]['profile_avatar'] ))
-                                                                style="background-image:url('{{ asset('portal_assets/images/default-img.png') }}')">
+                                                                style="background-image:url('{{ asset('portal_assets/images/hcm-img.png') }}')">
                                                             @else
                                                                 @if(file_exists('portal_assets/profile_pictures/'.$junior_manager[0]['profile_avatar']))
                                                                     style="background-image:url('{{asset('portal_assets/profile_pictures').'/'.$junior_manager[0]['profile_avatar'] }} ')">
                                                                 @else
-                                                                    style="background-image:url('{{ asset('/portal_assets/images/default-img.png') }}')">
+                                                                    style="background-image:url('{{ asset('/portal_assets/images/hcm-img.png') }}')">
                                                                 @endif
 
                                                             @endif

@@ -301,14 +301,14 @@ class LoginApiController extends Controller
                             // }else{
                             //     return response()->json([
                             //         'status' => 'FALSE',
-                            //         'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                            //         'msg' => "Your corporate email isn't mapped in Nexora HCM. Please contact HR.",
                             //     ]);
                             // }
                         // }
                     // }else{
                     //     return response()->json([
                     //         'status' => 'FALSE',
-                    //         'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                    //         'msg' => "Your corporate email isn't mapped in Nexora HCM. Please contact HR.",
                     //     ]);
                     // }
                 }else{

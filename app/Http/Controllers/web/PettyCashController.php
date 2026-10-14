@@ -27,17 +27,17 @@ class PettyCashController extends Controller
 
             if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause .= " AND CONVERT(VARCHAR, petty_cash_for_month_and_year, 120) LIKE '%" . $expense_period . "%'";
+                $where_clause .= " AND DATE_FORMAT(petty_cash_for_month_and_year, '%Y-%m-%d %H:%i:%s') LIKE '%" . $expense_period . "%'";
             } else {
-                $where_clause .= " AND CONVERT(VARCHAR, petty_cash_for_month_and_year, 120) LIKE '%" . date("Y-m") . "%'";
+                $where_clause .= " AND DATE_FORMAT(petty_cash_for_month_and_year, '%Y-%m-%d %H:%i:%s') LIKE '%" . date("Y-m") . "%'";
             }
             
 
             if (!empty($request->expense_period)) {
                 $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause_to .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . $expense_period . "%'";
+                $where_clause_to .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . $expense_period . "%'";
             } else {
-                $where_clause_to .= " AND CONVERT(VARCHAR, expense_date, 120) LIKE '%" . date("Y-m") . "%'";
+                $where_clause_to .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . date("Y-m") . "%'";
             }
 
             $all_cash_history = PettyCash::whereRaw($where_clause)->get()->toArray();
@@ -316,7 +316,7 @@ class PettyCashController extends Controller
                 }
                 return response()->download(storage_path('app/portal_documents/'.$request->path));
             }else{
-                return redirect(url());
+                return redirect('/');
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);

@@ -132,7 +132,7 @@
                                 <span class="">Marital Status<span>
                                 </label>
                                 
-                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_marital_status">
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Marital Status" name="employee_marital_status">
                                     <option value="">Select Marital Status</option>
                                     <option value="Single" @if($employee_bank[0]['maritalstatus'] == 'Single') selected @endif>Single</option>
                                     <option value="Engaged" @if($employee_bank[0]['maritalstatus'] == 'Engaged') selected @endif>Engaged</option>
@@ -232,7 +232,7 @@
                                     <option value="Ismail Global"@if ($employee_detail[0]['business_unit'] == 'Ismail Global') selected @endif>Ismail Global </option>        
                                     <option value="Plastiflex" @if ($employee_detail[0]['business_unit'] == 'Plastiflex') selected @endif>Plastiflex</option>  
                                     <option value="Ismail Resin" @if ($employee_detail[0]['business_unit'] == 'Ismail Resin') selected @endif>Ismail Resin</option>   
-                                    <option value="Ismail Industries Limited" @if ($employee_detail[0]['business_unit'] == 'Ismail Industries Limited') selected @endif>Ismail Industries Limited</option>                       
+                                    <option value="Nexora HCM" @if ($employee_detail[0]['business_unit'] == 'Nexora HCM') selected @endif>Nexora HCM</option>                       
                        
                                 </select>
                             </div>

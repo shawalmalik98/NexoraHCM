@@ -83,7 +83,7 @@ return [
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST', '.\sndpro'),
             'port' => env('DB_PORT', ''),
-            'database' => env('DB_DATABASE', 'iil_hcm'),
+            'database' => env('DB_DATABASE', 'nexora_hcm'),
             'username' => env('DB_USERNAME', 'sa'),
             'password' => env('DB_PASSWORD', 'sidat_l123'),
             'charset' => 'utf8',

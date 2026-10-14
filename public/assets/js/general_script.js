@@ -206,7 +206,7 @@ function runPopover() {
                 if (!profile || profile != "null") {
                     profile_img = `<img src="${base_url}/portal_assets/profile_pictures/${profile}" class="img-circle elevation-2" alt="${name} - Profile Picture" style="height: 83px;width: 80px; object-fit: cover;">`;
                 } else {
-                    profile_img = `<img src="${base_url}/portal_assets/images/default-img.png" class="img-circle elevation-2" alt="${name} - Profile Picture" style="height: 83px;width: 80px; object-fit: cover;">`;
+                    profile_img = `<img src="${base_url}/portal_assets/images/hcm-img.png" class="img-circle elevation-2" alt="${name} - Profile Picture" style="height: 83px;width: 80px; object-fit: cover;">`;
                 }
 
                 let popover_html = `

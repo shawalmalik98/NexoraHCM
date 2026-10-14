@@ -1985,7 +1985,7 @@ class PayrollController extends Controller
                 }
             }
               
-            if(implode("",$request->input('verification_code')) == Self::verification_code){
+            if(implode("",$request->input('verification_code')) == env('PAYROLL_VERIFICATION_CODE', Self::verification_code)){
                 $remaining_attempts = '';
                 $get_last_five_attempts = PayrollAttempts::where('employee_id', session('user_session'))->orderBy('attempt_id','DESC')->limit(5)->get()->toArray();
                 $attempts = array();

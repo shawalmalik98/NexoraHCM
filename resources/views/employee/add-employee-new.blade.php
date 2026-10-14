@@ -162,7 +162,7 @@
                                         <span class="">Marital Status<span>
                                         </label>
                                         
-                                        <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Employee Gender" name="employee_marital_status">
+                                        <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Marital Status" name="employee_marital_status">
                                             <option value="">Select Marital Status</option>
                                             <option value="Single">Single</option>
                                             <option value="Engaged">Engaged</option>

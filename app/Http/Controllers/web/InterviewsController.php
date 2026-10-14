@@ -71,8 +71,8 @@ class InterviewsController extends Controller
                 }
               
             }else{
-                $where_clause .= ' AND MONTH(interview_date) = MONTH(GETDATE())
-                and YEAR(interview_date) = YEAR(GETDATE())';
+                $where_clause .= ' AND MONTH(interview_date) = MONTH(NOW())
+                and YEAR(interview_date) = YEAR(NOW())';
             }
             
             $interviews =  Interview::join('tbl_interview_candidate','tbl_interviews.interview_candidate_id','tbl_interview_candidate.candidate_id')
@@ -334,11 +334,11 @@ class InterviewsController extends Controller
                     
                     // $interview_room = DB::select("SELECT ADDTIME(interview_time, SEC_TO_TIME(interview_duration*60)) as total_time FROM tbl_interviews where interview_room_nbr = '".$interviewData->input('room_no')."' && interview_date = '".$interviewData->input("interview_date")."' &&  interview_time <= '".$interviewData->input("interview_time")."' && ADDTIME(interview_time, SEC_TO_TIME(interview_duration*60))  >= '".$interviewData->input("interview_time")."'");
 
-                    $interview_room = Interview::selectRaw("DATEADD(SECOND, interview_duration * 60, interview_time) as total_time")
+                    $interview_room = Interview::selectRaw("DATE_ADD(interview_time, INTERVAL interview_duration * 60 SECOND) as total_time")
                     ->where('interview_room_nbr', $interviewData->input('room_no'))
                     ->where('interview_date', $interviewData->input('interview_date'))
                     ->where('interview_time', '<=', $interviewData->input('interview_time'))
-                    ->whereRaw("DATEADD(SECOND, interview_duration * 60, interview_time) >= ?", [$interviewData->input('interview_time')])
+                    ->whereRaw("DATE_ADD(interview_time, INTERVAL interview_duration * 60 SECOND) >= ?", [$interviewData->input('interview_time')])
                     ->get()->toArray();
                 
 
@@ -1443,7 +1443,7 @@ class InterviewsController extends Controller
                 }
                 return response()->download(storage_path('app/portal_documents/'.$request->path));
             }else{
-                return redirect(url());
+                return redirect('/');
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);

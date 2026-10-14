@@ -609,14 +609,14 @@ class LoginController extends Controller
                             // }else{
                             //     return response()->json([
                             //         'status' => 'FALSE',
-                            //         'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                            //         'msg' => "Your corporate email isn't mapped in Nexora HCM. Please contact HR.",
                             //     ]);
                             // }
                         // }
                     // }else{
                     //     return response()->json([
                     //         'status' => 'FALSE',
-                    //         'msg' => "Your corporate email isn't mapped in IIL HCM. Please contact HR.",
+                    //         'msg' => "Your corporate email isn't mapped in Nexora HCM. Please contact HR.",
                     //     ]);
                     // }
                 }else{
@@ -648,7 +648,12 @@ class LoginController extends Controller
 
         $token = $request->query('xteko');
 
-        $employee_id = Crypt::decryptString($token);
+        try{
+            $employee_id = Crypt::decryptString($token);
+        }catch(\Throwable $e){
+            // missing / tampered link
+            return 'The reset password link is invalid.';
+        }
 
         $thirtyMinutesAgo = date('Y-m-d H:i:s', strtotime('-30 minutes'));
         

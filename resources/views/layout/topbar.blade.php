@@ -377,10 +377,10 @@
                                 @if (file_exists('portal_assets/profile_pictures/' . $login_user[0]['profile_avatar']))
                                     <img src="{{ asset('portal_assets/profile_pictures') . '/' . $login_user[0]['profile_avatar'] }}" class="object-fit rounded-circle" alt="Profile Picture">
                                 @else
-                                    <img alt="Logo" src="{{ asset('portal_assets/images/default-img.png') }}" class="h-40px object-fit rounded-circle" />
+                                    <img alt="Logo" src="{{ asset('portal_assets/images/hcm-img.png') }}" class="h-40px object-fit rounded-circle" />
                                 @endif
                             @else
-                                <img alt="Logo" src="{{ asset('portal_assets/images/default-img.png') }}" class="h-40px object-fit rounded-circle" />
+                                <img alt="Logo" src="{{ asset('portal_assets/images/hcm-img.png') }}" class="h-40px object-fit rounded-circle" />
                             @endif
                         </div>
 
@@ -395,10 +395,10 @@
                                             @if (file_exists('portal_assets/profile_pictures/' . $login_user[0]['profile_avatar']))
                                                 <img src="{{ asset('portal_assets/profile_pictures') . '/' . $login_user[0]['profile_avatar'] }}" class="object-fit rounded-circle" alt="Profile Picture">
                                             @else
-                                                <img alt="Logo" src="{{ asset('portal_assets/images/default-img.png') }}" alt="Profile Picture" class="h-40px object-fit rounded-circle" />
+                                                <img alt="Logo" src="{{ asset('portal_assets/images/hcm-img.png') }}" alt="Profile Picture" class="h-40px object-fit rounded-circle" />
                                             @endif
                                         @else
-                                            <img alt="Logo" src="{{ asset('portal_assets/images/default-img.png') }}" alt="Profile Picture" class="h-40px object-fit rounded-circle" />
+                                            <img alt="Logo" src="{{ asset('portal_assets/images/hcm-img.png') }}" alt="Profile Picture" class="h-40px object-fit rounded-circle" />
                                         @endif
                                     </div>
 

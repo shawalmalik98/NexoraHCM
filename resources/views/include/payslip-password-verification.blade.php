@@ -2,24 +2,25 @@
 <html lang="en">
 
     <head>
-    <title>IIL - HCM</title>
+    <title>Nexora HCM</title>
     <meta charset="utf-8" />
-    <meta name="description" content="Ismail Industries Limited - HCM" />
-	<meta name="keywords" content="IIL - HCM, IIL - HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
+    <meta name="description" content="Nexora HCM" />
+	<meta name="keywords" content="Nexora HCM, IIL - HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="Intelligent and Efficient HCM System" />
     <meta property="og:url" content="{{ url('/') }}" />
-    <meta property="og:site_name" content="IIL - HCM" />
+    <meta property="og:site_name" content="Nexora HCM" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="canonical" href="{{ url('/') }}" />
-    <link rel="icon" href="{{ url('portal_assets/images/fav-icons.png') }}"/>
+    <link rel="icon" href="{{ url('portal_assets/images/hcm-img.png') }}"/>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
     <link href="{{ url('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ url('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url('assets/css/manez-theme.css') }}" rel="stylesheet" type="text/css" />
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.2.10/dist/css/tempus-dominus.min.css" crossorigin="anonymous">
 
@@ -47,7 +48,7 @@
                                             <div style="margin-bottom: 10px">
                                             </div>
                                             <div style="margin-bottom: 15px">
-                                                <img alt="Logo" src="{{ url('/portal_assets/images/default-img.png') }}" style="width: 30%;" draggable="false"/>
+                                                <img alt="Nexora HCM" src="{{ url('/portal_assets/images/hcm-logo.png') }}" style="width: 62%;" draggable="false"/>
                                             </div>
                                             <div style="font-size: 14px; font-weight: 500; margin-bottom: 27px; font-family:Arial,Helvetica,sans-serif;">
                                                 <p style="margin-bottom:9px; color:#181C32; font-size: 22px; font-weight:700">Account Identification</p>

@@ -322,7 +322,6 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
         Route::get('/',[VehicleController::class, 'index']);
         Route::get('/add-vehicle',[VehicleController::class, 'add_vehicle_form']);
-        Route::get('/vehicles-allotment',[VehicleController::class, 'vehicles_allotment']);
         Route::get('/vehicle-detail/{vehicle_id}',[VehicleController::class, 'vehicle_detail']);
         Route::get('/delete_maintenance_detail/{maintenance_id}', [VehicleController::class, 'delete_maintenance']);
         Route::get('/delete_allotment_detail/{maintenance_id}', [VehicleController::class, 'delete_allotment']);
@@ -804,7 +803,6 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
           Route::post('/submit_wfh_request', [WFHController::class, 'requestfor_wfh']);
 
           Route::get('/read-notification', [NotificationsController::class, 'read_notification']);
-          Route::get('/fetch_notifications', [NotificationsController::class, 'fetch_notifications']);
           Route::get('/all-notifications', [NotificationsController::class, 'view_all']);
           Route::get('/push-notification', [NotificationsController::class, 'get_pushnotification']);
           Route::get('/read-my-notifications', [NotificationsController::class, 'read_all_notification']);
@@ -1025,19 +1023,18 @@ Route::post('/checkoutattendance', [MarkAttendanceController::class, 'check_out'
 Route::get('/payslip-pdf',[PayrollController::class,'payslip_pdf']);
 
 Route::get('/employee-checkout-missing',[CustomController::class,'earlyout_of_missing_checkout_attendance']);
-Route::get('/set-employee-permissions', [CustomController::class, 'fetch_all_employees_permission']);
-Route::get('/set-attendance-access', [CustomController::class, 'add_attendance_access_data']);
-Route::get('/set-recipient-type', [CustomController::class, 'add_recipient_type']);
-Route::get('/set-room-location', [CustomController::class, 'add_room_location']);
+Route::get('/set-employee-permissions', [CustomController::class, 'fetch_all_employees_permission'])->middleware('userAuthentication');
+Route::get('/set-attendance-access', [CustomController::class, 'add_attendance_access_data'])->middleware('userAuthentication');
+Route::get('/set-recipient-type', [CustomController::class, 'add_recipient_type'])->middleware('userAuthentication');
+Route::get('/set-room-location', [CustomController::class, 'add_room_location'])->middleware('userAuthentication');
 
 Route::get('/employee-access-button', [CustomController::class, 'add_employee_button_access']);
 
 
-Route::get('/clear-all-cache', [CommandController::class , 'clear_all_cache']);
-Route::get('/clear-all-config', [CommandController::class , 'clear_all_config']);
-Route::get('/clear-all-route', [CommandController::class , 'clear_all_route']);
-Route::get('/clear-all-view', [CommandController::class , 'clear_all_view']);
-Route::get('/truncate-migration', [CommandController::class , 'truncate_migration']);
+Route::get('/clear-all-cache', [CommandController::class , 'clear_all_cache'])->middleware('userAuthentication');
+Route::get('/clear-all-config', [CommandController::class , 'clear_all_config'])->middleware('userAuthentication');
+Route::get('/clear-all-route', [CommandController::class , 'clear_all_route'])->middleware('userAuthentication');
+Route::get('/clear-all-view', [CommandController::class , 'clear_all_view'])->middleware('userAuthentication');
 Route::get('/privacy-policy', [HomeController::class , 'privacy_policy']);
 Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni_attendace_report']);
 Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
@@ -1070,7 +1067,7 @@ Route::middleware(['sapuserAuthentication'])->group(function (){
 });    
 
 
-Route::get('/update_eid', [CustomController::class, 'update_attendance_adjustment_eid']);
+Route::get('/update_eid', [CustomController::class, 'update_attendance_adjustment_eid'])->middleware('userAuthentication');
 //Route::get('/get-business-employee-data/{emp_unique_code}', [EmployeeController::class, 'get_business_card_data']);
 
 Route::get('/business-card/{employee_id}', [EmployeeController::class, 'businessCard']);

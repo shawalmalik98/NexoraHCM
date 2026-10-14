@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
-    <title>IIL - HCM</title>
+    <title>Nexora HCM</title>
     <meta charset="utf-8" />
     <meta name="description" content="" />
     <meta name="keywords" content="" />
@@ -14,7 +14,7 @@
     <meta property="og:site_name" content="Keenthemes | Metronic" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
-    <link rel="icon" href="{{ url('portal_assets/images/fav-icons.png') }}"/>
+    <link rel="icon" href="{{ url('portal_assets/images/hcm-img.png') }}"/>
     <link href="{{ url('assets/css/personal-form-style.css') }}" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -55,7 +55,7 @@
                 @if(!empty($companySetting['company_logo']))
                     <img src="{{$companySetting['company_logo']}}"  alt="logo" class="logo">
                 @else
-                    <img src="{{asset('portal_assets/images/fav-icons.png')}}"  alt="logo" class="logo">
+                    <img src="{{asset('portal_assets/images/hcm-logo.png')}}" alt="Nexora HCM" class="logo">
                 @endif
             </div>
             <div class="col-lg-3">
@@ -73,7 +73,7 @@
             <div class="col-lg-4">
                 <p>{{ $companySetting['company_address']}}</p>
                 <p><a href="#">(+92 21) 34311172 - 76</a></p>
-                <p><a href="https://ismailindustries.com.pk/">Ismail Industries Limited</a></p>
+                <p><a href="https://ismailindustries.com.pk/">Nexora HCM</a></p>
             </div>
         </div>
     </div>
@@ -615,7 +615,7 @@
                         <thead>
                             <tr>
                                 <th scope="col" colspan="4" class="pi">DO YOU HAVE ANY RELATIVES AT
-                                    ISMAIL INUDSTRIES LIMITED?</th>
+                                    NEXORA HCM?</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -674,13 +674,13 @@
                         <thead>
                             <tr>
                                 <th scope="col" colspan="4" class="pi">PREVIOUS APPLICATION IN
-                                    Ismail Industries Limited?
+                                    Nexora HCM?
                                 </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <th scope="row">Have you applied in Ismail Industries Limited before?</th>
+                                <th scope="row">Have you applied in Nexora HCM before?</th>
                                 <td>
                                     <select class="form-select" name="appliedbefore" aria-label="Default select example" onchange="appliedBefore(this.value)">
                                         <option selected>Select Option</option>

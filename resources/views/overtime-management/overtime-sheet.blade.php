@@ -239,7 +239,7 @@ table.dataTable
                                 </thead>
                                 <tbody>
 									@if (!empty($all_attendaces))
-                                        @foreach (array_reverse($all_attendaces) as $all_attendance)
+                                        @foreach (array_reverse(is_array($all_attendaces) ? $all_attendaces : []) as $all_attendance)
                                              
                                             @if(!empty($all_attendance['attendance']))
                                                 

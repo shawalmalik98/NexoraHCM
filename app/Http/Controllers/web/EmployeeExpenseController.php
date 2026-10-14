@@ -1204,7 +1204,7 @@ class EmployeeExpenseController extends Controller
                     return view('errors.404');
                 }
             }else{
-                return redirect(url());
+                return redirect('/');
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);

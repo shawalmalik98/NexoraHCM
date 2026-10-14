@@ -15,7 +15,7 @@
 	<meta property="og:type" content="website">
 	<meta property="og:title" content="Portal || IIL">
 	<meta property="og:description" content="More than five years back a group of few members started IIL Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
-    <link rel="icon" href="{{ url('portal_assets/images/fav-icons.png') }}" />
+    <link rel="icon" href="{{ url('portal_assets/images/hcm-img.png') }}" />
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" >
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 

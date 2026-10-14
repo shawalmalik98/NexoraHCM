@@ -3,24 +3,25 @@
 <meta http-equiv="content-type" content="text/html;charset=UTF-8"/>
 <meta name="csrf-token" content="{{ csrf_token() }}" />
 <head>
-	<title>IIL - HCM</title>
+	<title>Nexora HCM</title>
 	<meta charset="utf-8" />
-	<meta name="description" content="Ismail Industries Limited - HCM" />
-	<meta name="keywords" content="IIL - HCM, IIL - HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
+	<meta name="description" content="Nexora HCM" />
+	<meta name="keywords" content="HCM, HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<meta property="og:locale" content="en_US" />
 	<meta property="og:type" content="article" />
 	<meta property="og:title" content="Intelligent and Efficient HCM System" />
 	<meta property="og:url" content="{{ url('/') }}" />
-	<meta property="og:site_name" content="IIL - HCM" />
+	<meta property="og:site_name" content="Nexora HCM" />
 	<link rel="canonical" href="{{ url('/') }}" />
-	<link rel="shortcut icon" href="{{ url('portal_assets/images/fav-icons.png') }}" />
+	<link rel="shortcut icon" href="{{ url('portal_assets/images/hcm-img.png') }}" />
 	{{--begin::Fonts--}}
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
 	{{--end::Fonts--}}
 	{{--begin::Global Stylesheets Bundle(used by all pages)--}}
 	<link href="{{ url('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
 	<link href="{{ url('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ url('assets/css/manez-theme.css') }}" rel="stylesheet" type="text/css" />
 	{{--end::Global Stylesheets Bundle--}}
 	<script src="https://code.jquery.com/jquery-3.6.1.js"></script>
 	<script src="https://unpkg.com/sweetalert2@11"></script>
@@ -61,7 +62,7 @@
 						<img class="theme-light-show mx-auto mw-100 w-150px w-lg-300px mb-10 mb-lg-20" src="{{ URL('/portal_assets/images/main-login.png') }}" alt="" />
 						<h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">The Ultimate HR Management Solution</h1>
 						
-						<div class="text-gray-600 fs-base text-center fw-semibold">At IIL, we have a reliable, secure and adaptable HR management built from the ground up. 
+						<div class="text-gray-600 fs-base text-center fw-semibold">At Nexora HCM, we have a reliable, secure and adaptable HR management built from the ground up. 
 						    <br />We are determined to help our employees to give their best efforts every day to achieve the goals of their job.
 					    </div>
 						
@@ -80,14 +81,14 @@
 								
 								
                                 <div class="text-center mb-11">
-									<img alt="Logo" src="{{ url('portal_assets/images/default-img.png') }}" class="theme-light-show" style="width: 40%;" />
+									<img alt="Nexora HCM" src="{{ url('portal_assets/images/hcm-logo.png') }}" class="theme-light-show" style="width: 72%;" />
 																	
 								</div>
 
 								<div class="text-center mb-11">
 									
-									<h1 class="text-dark fw-bolder mb-3">Ismail Industries Limited - HCM</h1>
-									<div class="text-gray-500 fw-semibold fs-6">To log in to IIL-HCM, enter your employee ID and password below.</div>
+									<h1 class="text-dark fw-bolder mb-3">Nexora HCM</h1>
+									<div class="text-gray-500 fw-semibold fs-6">To log in to Nexora HCM, enter your employee ID and password below.</div>
 									
 								</div>
 								

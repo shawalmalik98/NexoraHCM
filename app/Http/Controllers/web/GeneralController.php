@@ -19,7 +19,7 @@ class GeneralController extends Controller
 
         $login_user = $this->get_login_user_detail();
         // dd($login_user);
-        $get_incentive = DB::select("SELECT incentive_period, STRING_AGG(employee_type, ', ') AS employee_types , MAX(created_at) AS max_created_at FROM  tbl_incentive GROUP BY incentive_period");
+        $get_incentive = DB::select("SELECT incentive_period, GROUP_CONCAT(employee_type SEPARATOR ', ') AS employee_types , MAX(created_at) AS max_created_at FROM  tbl_incentive GROUP BY incentive_period");
         $incentive = json_decode(json_encode($get_incentive), TRUE);
        
         $send_data = compact('title','login_user','incentive');

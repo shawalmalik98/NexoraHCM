@@ -259,7 +259,7 @@
 
             <table class="table custom_table table-bordered" style="width: 100%">
                 <tr style="background:#0000ff4d;">
-                    <th colspan="4" style="font-size:15px">DO YOU HAVE ANY RELATIVES AT ISMAIL INDUSTRIES PRIVATE LIMITED?</th>
+                    <th colspan="4" style="font-size:15px">DO YOU HAVE ANY RELATIVES AT NEXORA HCM?</th>
                 </tr>
                 <tr>
                     <td colspan="4" style="text-align: center"><b>Relative 1</b></td>
@@ -300,7 +300,7 @@
 
             <table class="table custom_table table-bordered" style="width: 100%">
                 <tr style="background:#0000ff4d;">
-                    <th colspan="4" style="font-size:15px">PREVIOUS APPLICATION IN ISMAIL INDUSTRIES LIMITED?</th>
+                    <th colspan="4" style="font-size:15px">PREVIOUS APPLICATION IN Nexora HCM?</th>
                 </tr>
 
                 <tr>

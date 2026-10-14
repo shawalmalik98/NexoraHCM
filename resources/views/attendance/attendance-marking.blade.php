@@ -26,7 +26,7 @@
 	{{-- <meta name="twitter:image" content="http://localhostpublic/banner-sc.png">
 	<link rel="canonical" href="http://localhost"> --}}
 	
-	<link rel="icon" href="{{ url('portal_assets/images/fav-icons.png') }}" />
+	<link rel="icon" href="{{ url('portal_assets/images/hcm-img.png') }}" />
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link rel="stylesheet" href="{{ URL('portal_assets/attendance/style.css') }}">
 	

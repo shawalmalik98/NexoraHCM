@@ -738,6 +738,11 @@ class EmployeeController extends Controller
                         ->Where('candidate_name','like','%' .$employee_data->input('employee_name'). '%')->where('onboard_status',0)->count();
 
                         if($all_candidates > 0){
+                            // the employee must be saved before the user picks the matching on-board
+                            // candidate; without this commit the transaction is rolled back on exit
+                            // and update_onboarding_employee_status() finds no new employee.
+                            DB::commit();
+
                             return response()->json([
                                 'status' => 'TRUE',
                                 'total_candidate' => $all_candidates,
@@ -2242,7 +2247,7 @@ class EmployeeController extends Controller
             ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('employee_isactive', 1)
             ->whereRaw('MONTH(employee_doj) = ?', $current_month)
-            ->whereRaw('DATEDIFF(DAY, employee_doj, GETDATE()) >= 365')
+            ->whereRaw('DATEDIFF(NOW(), employee_doj) >= 365')
             ->orderByRaw('DAY(employee_doj)')
             ->get(['employee_id','employee_code','department_name','designation_name','employee_doj'])
             ->toArray();
@@ -2300,7 +2305,7 @@ class EmployeeController extends Controller
             ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->where('employee_isactive', 1)
             ->whereRaw('MONTH(employee_doj) = ?', $current_month)
-            ->whereRaw('DATEDIFF(DAY, employee_doj, GETDATE()) >= 365')
+            ->whereRaw('DATEDIFF(NOW(), employee_doj) >= 365')
             ->orderByRaw('DAY(employee_doj)')
             ->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_doj'])
             ->toArray();
@@ -3308,7 +3313,7 @@ class EmployeeController extends Controller
                     return view('errors.404');
                 }
             }else{
-                return redirect(url());
+                return redirect('/');
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
@@ -3341,7 +3346,7 @@ class EmployeeController extends Controller
                     return view('errors.404');
                 }
             }else{
-                return redirect(url());
+                return redirect('/');
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
@@ -3849,6 +3854,24 @@ class EmployeeController extends Controller
             ActivityTracker::track_activity('Update Mobile Access Button'); 
         }
 
+    }
+
+    protected function download_employee_detail(Request $request){
+
+        // The old PDF/Excel builder (commented out below) was replaced by the export in index()
+        // (GET employees?download=TRUE). Keep the confirmation gate and forward to it so the
+        // "Download Employees Records" modal works again.
+        $login_user = $this->get_login_user_detail();
+
+        if('TODP-'.$login_user[0]['employee_code'] !== $request->input('confirmation_code')){
+            return "<script>alert('You have enterd incorrect information. Please try again.'); window.location.href = '/employees';</script>";
+        }
+
+        $filters = array_filter($request->only(['is_active','business_unit','department_id','employee_group','emp_status']), function($value){
+            return $value !== null && $value !== '';
+        });
+
+        return redirect('employees?'.http_build_query(array_merge($filters, ['download' => 'TRUE'])));
     }
 
     // protected function download_employee_detail(Request $request){
@@ -6931,7 +6954,7 @@ class EmployeeController extends Controller
             $employee_details = Employees::select(
                 'tbl_employees.employee_id',
                 'tbl_employees.employee_code',
-                DB::raw("ISNULL(tbl_employees.employee_alt_name, tbl_employees.employee_name) as employee_name"),            
+                DB::raw("IFNULL(tbl_employees.employee_alt_name, tbl_employees.employee_name) as employee_name"),            
                 'tbl_employees.employee_alt_name',
                 'tbl_employees.employee_contactno',
                 'tbl_employees.employee_work_email',                
@@ -6948,7 +6971,7 @@ class EmployeeController extends Controller
                     CASE 
                         WHEN tbl_personal_informations.profile_avatar IS NULL 
                             OR tbl_personal_informations.profile_avatar = '' 
-                        THEN 'images/default-img.png' 
+                        THEN 'images/hcm-img.png' 
                         ELSE CONCAT('profile_pictures/', tbl_personal_informations.profile_avatar) 
                     END as emp_photo_path
                 ")

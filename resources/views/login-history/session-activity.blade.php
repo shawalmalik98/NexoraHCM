@@ -41,10 +41,10 @@
                                             @if(file_exists('portal_assets/profile_pictures/'.$image[0]['profile_avatar']))
                                                 <img src="{{url(asset('portal_assets/profile_pictures')).'/'.$image[0]['profile_avatar'] }}" class="" alt="" style="display: block" />
                                             @else
-                                                <img src="{{url(asset('portal_assets/images/default-img.png'))}}"  style="display: block" />
+                                                <img src="{{url(asset('portal_assets/images/hcm-img.png'))}}"  style="display: block" />
                                             @endif
                                         @else
-                                            <img src="{{url(asset('portal_assets/images/default-img.png'))}}"  style="display: block" />
+                                            <img src="{{url(asset('portal_assets/images/hcm-img.png'))}}"  style="display: block" />
                                         @endif
 
                                         <a href="#" class="text-gray-900 text-hover-primary fs-2 fw-bold me-1">{!! CustomHelper::getEmpProfileDiv($history[0]['employee_id']) !!}</a>

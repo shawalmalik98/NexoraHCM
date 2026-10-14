@@ -22,7 +22,7 @@ class HomeController extends Controller
 
 
     protected function index(Request $request){
-        try{
+        // try{
             
             $title = Self::MAIN_TITLE;
 
@@ -156,107 +156,107 @@ class HomeController extends Controller
 
             $employee_voting = PollingOption::whereIn('polling_option_id', $polling_option_pluck)->pluck('polling_id')->toArray();
            
-            $pollings = Polling::whereRaw("CONVERT(DATETIME, created_at, 120) < '" . date('Y-m-d H:i:s') . "' and CONVERT(DATETIME, polling_duration, 120) > '" . date('Y-m-d H:i:s') . "'")
-            ->where(function($query) use($login_user) {
-                $query->where('polling_department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('polling_department', 'LIKE', '%*%');
-                })
-            ->where('polling_status', '=', 1)
-            ->whereNotIn('polling_id',function($query) use($login_user){
-                $query->from('tbl_polling_status')
-                ->select('tbl_polling_options.polling_id')
-                ->join('tbl_polling_options','tbl_polling_options.polling_option_id','=','tbl_polling_status.polling_option_id')
-                ->where('polling_employee_id',$login_user[0]['employee_id']);
-            })
-            ->orderBy('polling_id', 'ASC')
-            ->limit(1)
-            ->get(['polling_id','polling_title'])->toArray();
+            // $pollings = Polling::whereRaw("CONVERT(DATETIME, created_at, 120) < '" . date('Y-m-d H:i:s') . "' and CONVERT(DATETIME, polling_duration, 120) > '" . date('Y-m-d H:i:s') . "'")
+            // ->where(function($query) use($login_user) {
+            //     $query->where('polling_department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('polling_department', 'LIKE', '%*%');
+            //     })
+            // ->where('polling_status', '=', 1)
+            // ->whereNotIn('polling_id',function($query) use($login_user){
+            //     $query->from('tbl_polling_status')
+            //     ->select('tbl_polling_options.polling_id')
+            //     ->join('tbl_polling_options','tbl_polling_options.polling_option_id','=','tbl_polling_status.polling_option_id')
+            //     ->where('polling_employee_id',$login_user[0]['employee_id']);
+            // })
+            // ->orderBy('polling_id', 'ASC')
+            // ->limit(1)
+            // ->get(['polling_id','polling_title'])->toArray();
 
-            $i = 0;
-            foreach($pollings as $polling){
+            // $i = 0;
+            // foreach($pollings as $polling){
               
-              $polling_options = Polling::selectRaw('tbl_polling_options.polling_option_id,polling_options, count(polling_status_id) as vote')->join('tbl_polling_options', 'tbl_polling_options.polling_id', 'tbl_polling.polling_id')
-                    ->leftjoin('tbl_polling_status','tbl_polling_status.polling_option_id' , 'tbl_polling_options.polling_option_id')
-                    ->where('tbl_polling.polling_id',$polling['polling_id'])
-                    ->groupBy('tbl_polling_options.polling_option_id')
-                    ->get()
-                    ->toArray();
+            //   $polling_options = Polling::selectRaw('tbl_polling_options.polling_option_id,polling_options, count(polling_status_id) as vote')->join('tbl_polling_options', 'tbl_polling_options.polling_id', 'tbl_polling.polling_id')
+            //         ->leftjoin('tbl_polling_status','tbl_polling_status.polling_option_id' , 'tbl_polling_options.polling_option_id')
+            //         ->where('tbl_polling.polling_id',$polling['polling_id'])
+            //         ->groupBy('tbl_polling_options.polling_option_id')
+            //         ->get()
+            //         ->toArray();
         
-                    $polling_vote = array_sum(array_column($polling_options, 'vote'));
+            //         $polling_vote = array_sum(array_column($polling_options, 'vote'));
                     
-                    $j = 0;
-                    foreach($polling_options as $get_polling_option){
-                        if($get_polling_option['vote'] != 0){
-                            $polling_options[$j]['percentage'] = round($get_polling_option['vote']/$polling_vote * 100, 0);
-                        }else{
-                            $polling_options[$j]['percentage'] = 0;
-                        }
+            //         $j = 0;
+            //         foreach($polling_options as $get_polling_option){
+            //             if($get_polling_option['vote'] != 0){
+            //                 $polling_options[$j]['percentage'] = round($get_polling_option['vote']/$polling_vote * 100, 0);
+            //             }else{
+            //                 $polling_options[$j]['percentage'] = 0;
+            //             }
                         
-                    $j++;
-                    }
-              $pollings[$i]['polling_options'] = $polling_options;
-              $i++;
-            }
+            //         $j++;
+            //         }
+            //   $pollings[$i]['polling_options'] = $polling_options;
+            //   $i++;
+            // }
           
-            $voted_pollings = Polling::whereRaw("CONVERT(DATETIME, created_at, 120) < '".date('Y-m-d H:i:s')."' and CONVERT(DATETIME, polling_duration, 120) > '".date('Y-m-d H:i:s')."'")
-            ->where(function($query) use($login_user) {
-                $query->where('polling_department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('polling_department', 'LIKE', '%*%');
-                })
-            ->where('polling_status', '=', 1)
-            ->whereIn('polling_id',function($query) use($login_user){
-                $query->from('tbl_polling_status')
-                ->select('tbl_polling_options.polling_id')
-                ->join('tbl_polling_options','tbl_polling_options.polling_option_id','=','tbl_polling_status.polling_option_id')
-                ->where('polling_employee_id',$login_user[0]['employee_id']);
-            })
-            ->orderBy('polling_id', 'ASC')
-            ->limit(1)
-            ->get(['polling_id','polling_title'])->toArray();
+            // $voted_pollings = Polling::whereRaw("CONVERT(DATETIME, created_at, 120) < '".date('Y-m-d H:i:s')."' and CONVERT(DATETIME, polling_duration, 120) > '".date('Y-m-d H:i:s')."'")
+            // ->where(function($query) use($login_user) {
+            //     $query->where('polling_department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('polling_department', 'LIKE', '%*%');
+            //     })
+            // ->where('polling_status', '=', 1)
+            // ->whereIn('polling_id',function($query) use($login_user){
+            //     $query->from('tbl_polling_status')
+            //     ->select('tbl_polling_options.polling_id')
+            //     ->join('tbl_polling_options','tbl_polling_options.polling_option_id','=','tbl_polling_status.polling_option_id')
+            //     ->where('polling_employee_id',$login_user[0]['employee_id']);
+            // })
+            // ->orderBy('polling_id', 'ASC')
+            // ->limit(1)
+            // ->get(['polling_id','polling_title'])->toArray();
 
-            $i = 0;
-            foreach($voted_pollings as $polling){
+            // $i = 0;
+            // foreach($voted_pollings as $polling){
               
-              $polling_options = Polling::selectRaw('tbl_polling_options.polling_option_id,polling_options, count(polling_status_id) as vote')->join('tbl_polling_options', 'tbl_polling_options.polling_id', 'tbl_polling.polling_id')
-                    ->leftjoin('tbl_polling_status','tbl_polling_status.polling_option_id' , 'tbl_polling_options.polling_option_id')
-                    ->where('tbl_polling.polling_id',$polling['polling_id'])
-                    ->groupBy('tbl_polling_options.polling_option_id')
-                    ->get()
-                    ->toArray();
+            //   $polling_options = Polling::selectRaw('tbl_polling_options.polling_option_id,polling_options, count(polling_status_id) as vote')->join('tbl_polling_options', 'tbl_polling_options.polling_id', 'tbl_polling.polling_id')
+            //         ->leftjoin('tbl_polling_status','tbl_polling_status.polling_option_id' , 'tbl_polling_options.polling_option_id')
+            //         ->where('tbl_polling.polling_id',$polling['polling_id'])
+            //         ->groupBy('tbl_polling_options.polling_option_id')
+            //         ->get()
+            //         ->toArray();
         
-                    $polling_vote = array_sum(array_column($polling_options, 'vote'));
+            //         $polling_vote = array_sum(array_column($polling_options, 'vote'));
                     
-                    $j = 0;
-                    foreach($polling_options as $get_polling_option){
-                        if($get_polling_option['vote'] != 0){
-                            $polling_options[$j]['percentage'] = round($get_polling_option['vote']/$polling_vote * 100, 0);
-                        }else{
-                            $polling_options[$j]['percentage'] = 0;
-                        }
+            //         $j = 0;
+            //         foreach($polling_options as $get_polling_option){
+            //             if($get_polling_option['vote'] != 0){
+            //                 $polling_options[$j]['percentage'] = round($get_polling_option['vote']/$polling_vote * 100, 0);
+            //             }else{
+            //                 $polling_options[$j]['percentage'] = 0;
+            //             }
                         
-                    $j++;
-                    }
-              $voted_pollings[$i]['polling_options'] = $polling_options;
-              $i++;
-            }
+            //         $j++;
+            //         }
+            //   $voted_pollings[$i]['polling_options'] = $polling_options;
+            //   $i++;
+            // }
 
             $probation_employees_detail = Employees::where('employee_isactive', 1)->where('employee_status',2)->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->get(['employee_id','employee_code','employee_name','employee_doj','department_name','designation_name'])->toArray();
 
             $get_check_in_details = $this->get_latest_attendance_record();
     
-            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','pollings','employee_voting','probation_employees_detail','voted_pollings','dynamic_years','get_check_in_details','employee_location');
+            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','probation_employees_detail','dynamic_years','get_check_in_details','employee_location');
             
             return view('dashboard.dashboard', $send_data);
 
-        }catch(\Exception $e){
+        // }catch(\Exception $e){
 
-            $this->create_error_log('Employees Dashboard', $e);
-            $send_data = compact('title');
-            return view('errors.500');
+        //     $this->create_error_log('Employees Dashboard', $e);
+        //     $send_data = compact('title');
+        //     return view('errors.500');
 
-        }finally{
+        // }finally{
 
-            ActivityTracker::track_activity('Access Dashboard Module');
+        //     ActivityTracker::track_activity('Access Dashboard Module');
           
-        }
+        // }
     }
 
     protected function expense_graph(Request $request){
@@ -733,7 +733,13 @@ class HomeController extends Controller
     }
 
     protected function interview_graph(Request $request_data){
-       
+
+        $overall_interview = 0;
+        $scheduled_interview = 0;
+        $offerPlaced_interview = 0;
+        $hired_interview = 0;
+        $cancelled_interview = 0;
+
         try{
             $overall_interview = $this->interview_status_count($request_data->year,$request_data->month,array(1,5,8,9));
       
@@ -791,7 +797,7 @@ class HomeController extends Controller
                 $where_month = '1 = 1';
             }else{
                 // $where_month = 'DATE_FORMAT(STR_TO_DATE(interview_status_created_at,"%d-%m-%Y %H:%i:%s"),"%m") = "'.$month.'"';
-                $where_month = 'MONTH(CONVERT(datetime, interview_status_created_at, 120)) = '.$month;
+                $where_month = 'MONTH(CAST(interview_status_created_at AS DATETIME)) = '.$month;
             }
             if($status == 1){
                 $where_clause = 1;
@@ -807,7 +813,7 @@ class HomeController extends Controller
             
             // $interview_status = InterviewStatus::join('tbl_interview_status_level','tbl_interview_status.interview_status_level_id','tbl_interview_status_level.interview_status_level_id')->whereRaw('DATE_FORMAT(STR_TO_DATE(interview_status_created_at,"%d-%m-%Y %H:%i:%s"),"%Y") = "'.$year.'"')->whereRaw($where_month)->whereIn('tbl_interview_status.interview_status_level_id',$where_clause)->count();
 
-            $interview_status = InterviewStatus::join('tbl_interview_status_level','tbl_interview_status.interview_status_level_id','tbl_interview_status_level.interview_status_level_id')->whereRaw('YEAR(CONVERT(datetime, interview_status_created_at, 120)) = '.$year)->whereRaw($where_month)->whereIn('tbl_interview_status.interview_status_level_id',$where_clause)->count();
+            $interview_status = InterviewStatus::join('tbl_interview_status_level','tbl_interview_status.interview_status_level_id','tbl_interview_status_level.interview_status_level_id')->whereRaw('YEAR(CAST(interview_status_created_at AS DATETIME)) = '.$year)->whereRaw($where_month)->whereIn('tbl_interview_status.interview_status_level_id',$where_clause)->count();
             
 
         }catch(\Exception $e){
