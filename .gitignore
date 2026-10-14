@@ -1,2 +1,4 @@
 .env
 vendor/
+# Firebase secret key
+/app/Http/Controllers/web/firebase-secretkey.json
