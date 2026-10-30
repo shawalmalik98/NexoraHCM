@@ -85,6 +85,9 @@ class ReportsController extends Controller
     protected function attendance_report(){
         $title = Self::ATTENDANCEREPORT;
         $login_user = $this->get_login_user_detail();
+
+        // all-time totals over every attendance row: kept 10 minutes
+        [$get_attendance_stats, $get_check_in_device_wise, $get_check_out_device_wise, $get_over_all_att_device_wise] = \Cache::remember('attendance_report_totals', 600, function(){
         $get_attendance_stats = DB::select("SELECT COUNT(CASE WHEN att_check_overall_status = 'Present' THEN 0 END) present_att, COUNT(CASE WHEN att_check_overall_status = 'Absent' THEN 0 END) present_absent, COUNT(CASE WHEN att_check_overall_status = 'Late Coming' THEN 0 END) late, COUNT(CASE WHEN att_check_overall_status = 'Early Out' THEN 0 END) early_out, COUNT(CASE WHEN att_check_overall_status = 'Half day' THEN 0 END) half_day, COUNT(CASE WHEN att_check_overall_status LIKE '%Holiday%' THEN 0 END) holiday, COUNT(CASE WHEN att_check_overall_status LIKE '%Leave%' THEN 0 END) leave_att FROM tbl_attendance");
         $get_attendance_stats = json_decode(json_encode($get_attendance_stats), TRUE);
 
@@ -96,7 +99,8 @@ class ReportsController extends Controller
 
         $get_over_all_att_device_wise = DB::select("SELECT (CASE WHEN att_check_out_source = '1' OR att_check_in_source = '1' THEN 'Web Application' WHEN att_check_out_source = '2' OR att_check_in_source = '2' THEN 'Mobile Application' WHEN att_check_out_source = '3' OR att_check_in_source = '3' THEN 'Updated Attendance' WHEN att_check_out_source = '4' OR att_check_in_source = '4' THEN 'Machine Attendance' ELSE 'Not Defined' END) AS attendance_source, COUNT(attendance_id) count_attendance FROM tbl_attendance WHERE att_check_out_status = 1 GROUP BY attendance_source");
         $get_over_all_att_device_wise = json_decode(json_encode($get_over_all_att_device_wise), TRUE);
-        // dd($get_over_all_att_device_wise);
+        return [$get_attendance_stats, $get_check_in_device_wise, $get_check_out_device_wise, $get_over_all_att_device_wise];
+        });
         $send_data = compact('title','login_user','get_attendance_stats','get_check_in_device_wise','get_check_out_device_wise','get_over_all_att_device_wise');
         return view('reports.attendance-report', $send_data);
     }

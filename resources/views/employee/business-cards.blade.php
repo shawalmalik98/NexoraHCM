@@ -104,7 +104,7 @@
                     </form>
                     <form action="{{ route('generate.qr') }}" method="GET">
                         <label for="url">Enter URL:</label>
-                        <input type="hidden" name="url" id="url" value="https://ecard.ismailindustries.com.pk/view/{{ $employee_detail[0]['emp_unique_code'] }}" required>
+                        <input type="hidden" name="url" id="url" value="{{ CustomHelper::ecard_url($employee_detail[0]['emp_unique_code']) }}" required>
                         <input type="hidden" name="name" id="name" value="{{ $employee_detail[0]['employee_name'] }}" required>
                         <button type="submit">Download QR Code</button>
                     </form>

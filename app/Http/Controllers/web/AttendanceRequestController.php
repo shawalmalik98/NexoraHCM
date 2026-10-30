@@ -46,34 +46,35 @@ class AttendanceRequestController extends Controller
                 $limit_query = '*';
             }
            
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
                
                 $where_clause = "1=1 AND employee_isactive = '".$status."'";
                 $where_clause_to = '1=1';
                 if(!empty($request->employee_location) || !empty($request->emp_status) || !empty($request->emp_name) || !empty($request->request_for_date)  || !empty($request->request_submited_date) || !empty($request->req_status)){
                     
                     if(!empty($request->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
                     }
                     if(!empty($request->emp_name)){
-                        $where_clause .= ' AND request_employee_id = "'.$request->emp_name.'"';
+                        $where_clause .= ' AND request_employee_id = '.\DB::getPdo()->quote((string) $request->emp_name).'';
                     }
                     if(!empty($request->request_for_date)){
-                        $where_clause .= ' AND request_attendance_date = "'.$request->request_for_date.'"';
+                        $where_clause .= ' AND request_attendance_date = '.\DB::getPdo()->quote((string) $request->request_for_date).'';
                     }
                     if(!empty($request->request_submited_date)){
                         $submition_date = date("d F, Y", strtotime($request->request_submited_date));
                         $where_clause .= ' AND request_submition_date LIKE "%'.$submition_date.'%"';
                     }
                     if(!empty($request->req_status)){
-                        $where_clause .= ' AND request_approved_by_hr = '.$request->req_status.'';
+                        $where_clause .= ' AND request_approved_by_hr = '.\DB::getPdo()->quote((string) $request->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive', $status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-                $all_requests = AttendanceRequest::select(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time'])
+                $search = trim((string) request()->input('search'));
+                $pagination = AttendanceRequest::select(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time'])
                 ->join('tbl_employees','tbl_attendance_requests.request_employee_id','=','tbl_employees.employee_id')
                 ->leftJoin('tbl_attendance_request_time','tbl_attendance_requests.attendance_request_id','=','tbl_attendance_request_time.attendance_req_id')
                 ->where(function($query){
@@ -86,14 +87,20 @@ class AttendanceRequestController extends Controller
                 })
                 ->whereRaw($where_clause)
                 ->orderBy('attendance_request_id','desc')
-                ->limit($limit_query)
-                ->get()->toArray();
+                ->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('employee_name','like','%'.$search.'%')
+                                ->orWhere('employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->paginate(CustomHelper::per_page(), ['*'])->withQueryString();
+                $all_requests = $pagination->getCollection()->toArray();
 
 
                 $responsed_request = RequestApproval::where('request_module_id',1)->pluck('request_id')->toArray();
             }
            
-            elseif($login_user[0]['employee_department'] !== 2 && $login_user[0]['employee_department'] !== 1 &&  $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) &&  $login_user[0]['employee_is_manager'] == 1){
                
                 $login_employee_id = $login_user[0]['employee_id'];
             
@@ -104,22 +111,23 @@ class AttendanceRequestController extends Controller
                 if(!empty($request->employee_location) || !empty($request->emp_status) || !empty($request->emp_name) || !empty($request->req_status)){
                     
                     if(!empty($request->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
                     }
 
                     if(!empty($request->emp_name)){
-                        $where_clause .= ' AND request_employee_id = "'.$request->emp_name.'"';
+                        $where_clause .= ' AND request_employee_id = '.\DB::getPdo()->quote((string) $request->emp_name).'';
                     }
 
                     if(!empty($request->req_status)){
-                        $where_clause .= ' AND request_approved_by_hr = '.$request->req_status.'';
+                        $where_clause .= ' AND request_approved_by_hr = '.\DB::getPdo()->quote((string) $request->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_name','employee_code','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
                 
-                $all_requests = AttendanceRequest::join('tbl_employees', 'tbl_attendance_requests.request_employee_id', '=', 'tbl_employees.employee_id')
+                $search = trim((string) request()->input('search'));
+                $pagination = AttendanceRequest::join('tbl_employees', 'tbl_attendance_requests.request_employee_id', '=', 'tbl_employees.employee_id')
                 ->leftJoin('tbl_attendance_request_time','tbl_attendance_requests.attendance_request_id','=','tbl_attendance_request_time.attendance_req_id')
                 ->where(function($query){
                     $query->whereIn('attendance_request_time_id',function ($query) {
@@ -132,8 +140,14 @@ class AttendanceRequestController extends Controller
                 ->whereIn('request_employee_id',$total_team_member)
                 ->whereRaw($where_clause)
                 ->orderBy('attendance_request_id','DESC')
-                ->limit($limit_query)
-                ->get(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time'])->toArray();
+                ->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('employee_name','like','%'.$search.'%')
+                                ->orWhere('employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->paginate(CustomHelper::per_page(), ['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time'])->withQueryString();
+                $all_requests = $pagination->getCollection()->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id',1)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
             }
@@ -148,7 +162,8 @@ class AttendanceRequestController extends Controller
             }
 
             
-            $send_data = compact('title','login_user','employees_data','all_requests','responsed_request','employee_locations','dates');
+            $pagination = $pagination ?? null;
+            $send_data = compact('title','login_user','employees_data','all_requests','responsed_request','employee_locations','dates','pagination');
             
             return view('attendance.all-employees-request', $send_data);
         }
@@ -180,7 +195,7 @@ class AttendanceRequestController extends Controller
                 });
                 $query->orWhere('attendance_req_id',null);
             })
-            ->where('request_employee_id' , session('user_session'))
+            ->where('request_employee_id' , (string) session('user_session'))
             ->orderBy('attendance_request_id','desc')
             ->get(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time','attendance_request_time_id'])->toArray();
 
@@ -256,7 +271,7 @@ class AttendanceRequestController extends Controller
                     
                         $request_attendance_date = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request_data->input('from_date'))));
 
-                        $checking_request = AttendanceRequest::where('request_employee_id', session('user_session'))->whereIn('request_attendance_date',[$request_attendance_date])->get(['request_attendance_date'])->toArray();
+                        $checking_request = AttendanceRequest::where('request_employee_id', (string) session('user_session'))->whereIn('request_attendance_date',[$request_attendance_date])->get(['request_attendance_date'])->toArray();
                         
                         $payroll_exists = $this->check_if_payroll_exist($request_attendance_date,session('user_session'),$custom_message = NULL);
 
@@ -331,7 +346,7 @@ class AttendanceRequestController extends Controller
                   
                     $attendance_date = $request_data->input('attendance_date');
                    
-                    $checking_request = AttendanceRequest::where('request_employee_id', session('user_session'))->where('request_attendance_date', $request_data->input('attendance_date'))->where('request_approved_by_hr', '!=', 3)->get('attendance_request_id')->toArray();   
+                    $checking_request = AttendanceRequest::where('request_employee_id', (string) session('user_session'))->where('request_attendance_date', $request_data->input('attendance_date'))->where('request_approved_by_hr', '!=', 3)->get('attendance_request_id')->toArray();   
                     
                     if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
                             
@@ -350,7 +365,7 @@ class AttendanceRequestController extends Controller
                         $query->where('att_check_overall_status','LIKE', '%Holiday%')
                         ->orwhereIn('att_check_overall_status',$manage_leaves);
                         })
-                        ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = "'.$request_data->input('attendance_date').'"')
+                        ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = '.\DB::getPdo()->quote((string) $request_data->input('attendance_date')).'')
                         ->get(['attendance_id','att_check_overall_status'])->toArray();
 
                         if(!empty($get_attendances)){
@@ -374,7 +389,7 @@ class AttendanceRequestController extends Controller
                             $attendance_request = new AttendanceRequest();
                             $dates =  date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request_data->input('from_date'))));
                             
-                            $checking_request_dates = AttendanceRequest::where('request_employee_id', session('user_session'))->where('request_attendance_date',$dates)->get(['request_attendance_date'])->toArray();
+                            $checking_request_dates = AttendanceRequest::where('request_employee_id', (string) session('user_session'))->where('request_attendance_date',$dates)->get(['request_attendance_date'])->toArray();
 
                             if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
 
@@ -513,7 +528,7 @@ class AttendanceRequestController extends Controller
         }catch(\Exception $e){
             $this->create_error_log('Add New Attendance Request', $e);
             
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -538,6 +553,12 @@ class AttendanceRequestController extends Controller
   
        
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = AttendanceRequest::whereIn('attendance_request_id', explode(',', (string) $request->input('ids')))->pluck('request_employee_id')->toArray();
+            if(!$this->can_respond_for($request_employees, ['hr'])){
+                return $this->not_allowed_response();
+            }
 
             if($request['status'] == "Approve"){
 
@@ -960,7 +981,7 @@ class AttendanceRequestController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Approved And Disapproved Attendance Request by Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1016,7 +1037,7 @@ class AttendanceRequestController extends Controller
                         ->orwhereIn('att_check_overall_status',$manage_leaves);
                         
                     })
-                    ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = "'.$request_data->input('edit_attendance_date').'"')
+                    ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = '.\DB::getPdo()->quote((string) $request_data->input('edit_attendance_date')).'')
                     ->get(['attendance_id','att_check_overall_status'])->toArray();
 
                     if(!empty($get_attendances)){
@@ -1050,7 +1071,7 @@ class AttendanceRequestController extends Controller
                 
                 if(empty($checking_request_responsed) && $attendance_update_request->request_approved_by_hr == 1){
 
-                    $checking_request =  AttendanceRequest::where('request_employee_id', session('user_session'))->where('request_attendance_date',date('Y-m-d',strtotime($request_data->input('edit_attendance_date'))))->where('attendance_request_id','!=',$request_data->attendance_id)->get(['request_attendance_date'])->toArray();
+                    $checking_request =  AttendanceRequest::where('request_employee_id', (string) session('user_session'))->where('request_attendance_date',date('Y-m-d',strtotime($request_data->input('edit_attendance_date'))))->where('attendance_request_id','!=',$request_data->attendance_id)->get(['request_attendance_date'])->toArray();
 
                     if(!empty($request_data->input('edit_attendance_type')) && $request_data->input('edit_attendance_type') == 'On Time Check Out'){
 
@@ -1152,7 +1173,7 @@ class AttendanceRequestController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Update Attendance Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1227,7 +1248,7 @@ class AttendanceRequestController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Delete Attendance Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1274,7 +1295,7 @@ class AttendanceRequestController extends Controller
                     ]);
                 }
                
-                if($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2){
+                if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
 
                     if($attendance_update_request->request_approved_by_hr == 1 ){
                         $attendance_req_time = new AttRequestTime();
@@ -1348,7 +1369,7 @@ class AttendanceRequestController extends Controller
             
         }catch(\Exception $e){
             $this->create_error_log('Attendance Request Check In Time Add', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1394,7 +1415,7 @@ class AttendanceRequestController extends Controller
                     ]);
                 }
               
-                if($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2){
+                if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
 
                     if($attendance_update_request->request_approved_by_hr == 1){
                         $attendance_req_time = new AttRequestTime();             
@@ -1468,7 +1489,7 @@ class AttendanceRequestController extends Controller
            
         }catch(\Exception $e){
             $this->create_error_log('Attendance Request Check Out Time Add', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1511,7 +1532,7 @@ class AttendanceRequestController extends Controller
 
         }catch(\Exception $e){
              $this->create_error_log('View Request Response CheckIn Time Log', $e);
-             if(!env('APP_DEBUG')){
+             if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1549,7 +1570,7 @@ class AttendanceRequestController extends Controller
 
         }catch(\Exception $e){
              $this->create_error_log('View Request Response CheckOut Time Log', $e);
-             if(!env('APP_DEBUG')){
+             if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

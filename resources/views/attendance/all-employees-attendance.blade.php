@@ -35,7 +35,7 @@ table.dataTable
                 </h1>   
             </div>
             <div>
-                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2)
+                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
 
                   
                     <a href="javascript:void(0);" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#att-share-report-modal">								
@@ -142,12 +142,10 @@ table.dataTable
                                                 
                                                 <div>
                                                     <select class="form-select " data-kt-select2="true" name="emp_name"
-                                                    id="company_emp_name">
+                                                    id="company_emp_name" data-employee-select data-scope="team">
                                                         @if(!empty($all_employees))
                                                         <option value="">All Employees</option>
-                                                            @foreach($all_employees as $data)
-                                                                <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                            @endforeach
+                                                            @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                         @endif
                                                     </select>
                                                 </div>
@@ -209,7 +207,7 @@ table.dataTable
                                                 </div>
                                             </div>
 
-                                            @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2)
+                                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                 <div class="mb-3">
                                                     <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
                                                         <span>Department</span>
@@ -230,7 +228,7 @@ table.dataTable
                                                 </div>
                                             @endif
                                         
-                                            @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2)
+                                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                 @php $update_attendance = 'marked-attendance' @endphp
                                                 <div class="mb-3">
                                                     <label class="d-flex align-items-center fs-6 fw-semibold mb-2">
@@ -269,7 +267,7 @@ table.dataTable
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive">
                         
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered display nowrap" id="tableAllEmployeeAttendance" aria-describedby="tableEmployee_info">
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered display nowrap" id="tableAllEmployeeAttendance" data-server-paginated="true" aria-describedby="tableEmployee_info">
                                                                                                             
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -326,41 +324,34 @@ table.dataTable
 													$late_count = 0;
 													$leave_count = 0;
 												@endphp
-                                                @php $all_attendance['employee_offdays'] = (!empty($all_attendance['employee_offdays'])) ? explode(",",$all_attendance['employee_offdays']):[]; @endphp
+                                                @php
+                                                    $all_attendance['employee_offdays'] = (!empty($all_attendance['employee_offdays'])) ? explode(",",$all_attendance['employee_offdays']):[];
+
+                                                    // totals and per-record work hours computed once, records grouped by day for the calendar cells
+                                                    $total_working_hours = 0;
+                                                    $total_working_hours_actual = 0;
+                                                    $attendance_by_day = [];
+                                                    foreach ($all_attendance['attendance'] as $atty) {
+                                                        $calculate_shift_timing = CustomHelper::calculate_shift_timings_shift_management($atty['att_shift_start_time'],$atty['att_shift_end_time'],$atty['att_check_in_status'],$atty['att_check_out_status']);
+                                                        $atty['calculated_working_hour'] = CustomHelper::calculate_working_hour($atty['att_check_out_status'],$atty['att_check_in_time'],$atty['att_check_out_time'],$atty['att_created_at'],$atty['att_updated_at']);
+
+                                                        $shift_components = explode(":", $calculate_shift_timing);
+                                                        $total_working_hours_actual += $shift_components[0]*60*60 + $shift_components[1]*60;
+
+                                                        $components = explode(":", $atty['calculated_working_hour']);
+                                                        $total_working_hours += $components[0]*60*60 + $components[1]*60;
+
+                                                        if ($atty['att_for_date'] != '') {
+                                                            $attendance_by_day[(int) $atty['att_for_date']][] = $atty;
+                                                        }
+                                                    }
+                                                @endphp
 												@for ($month_count = 1; $month_count <= $month_days; ++$month_count)
-													@php
-														
-                                                        $date = '' . $month_count . '-' . $month . '-' . $year . '';
-														$name_of_day = date('l', strtotime($date));
-														$absent = true;
-                                                        $loop_count = 0;
-                                                        $total_working_hours = 0;
-                                                        $total_working_hours_actual = 0;
-                                                       
-													@endphp
-													
+													@php $absent = true; @endphp
 													<td>
+														@foreach ($attendance_by_day[$month_count] ?? [] as $atty)
+																@php $absent = false; $calculate_working_hour = $atty['calculated_working_hour']; @endphp
 
-														@foreach ($all_attendance['attendance'] as $key=>$atty)
-
-                                                            @php
-                                                          
-                                                            $calculate_shift_timing = CustomHelper::calculate_shift_timings_shift_management($atty['att_shift_start_time'],$atty['att_shift_end_time'],$atty['att_check_in_status'],$atty['att_check_out_status']);
-                                                            $calculate_working_hour = CustomHelper::calculate_working_hour($atty['att_check_out_status'],$atty['att_check_in_time'],$atty['att_check_out_time'],$atty['att_created_at'],$atty['att_updated_at']);
-                                                           
-                                                                $shift_components = explode(":", $calculate_shift_timing);
-                                                                $shift_seconds = $shift_components[0]*60*60 + $shift_components[1]*60;
-                                                                $total_working_hours_actual +=$shift_seconds;
-
-                                                                $components = explode(":",  $calculate_working_hour);
-                                                                $seconds = $components[0]*60*60 + $components[1]*60;
-                                                                $total_working_hours +=$seconds;
-
-                                                            @endphp
-															@if ($atty['att_for_date'] != '' && $atty['att_for_date'] == $month_count)  
-																@php $absent = false; 
-                                                                @endphp                                                                     
-															
 																@if ($atty['att_check_overall_status'] == 'Present')
 																	@php $present_count++; @endphp
 																	<i class="fa-solid fa-calendar-check {{$atty['att_remote_applicable'] == 1?'text-warning':'text-success'}} {{$update_attendance}}"
@@ -447,9 +438,8 @@ table.dataTable
 																	{{ $atty['att_check_overall_status'] }}
 																	@else
 																	CI: {{ $atty['att_check_in_time'] }} | CO: {{ $atty['att_check_out_time'] }} | WH: {{ $calculate_working_hour }} | {{ $atty['att_check_overall_status'] }}
-																	@endif 
+																	@endif
 																</span>
-															@endif
 														@endforeach
 														@php
 															
@@ -525,7 +515,7 @@ table.dataTable
                                                         <a href="{{ url('attendance/attendance-report?employee_id='.$all_attendance['employee_id'].'&month='.$month.'&year='.$year) }}" target="blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Download Attendance">
                                                             <i class="fa fa-download"></i>
                                                         </a>
-                                                        @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 )
+                                                        @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) )
                                                             <a href="{{ url('attendance/attendance-calender?employee_id='.$all_attendance['employee_id'].'&month='.$month.'&year='.$year) }}" target="blank" data-bs-toggle="tooltip" data-bs-placement="top" title="View Calender">
                                                                 <span class="svg-icon svg-icon-3">
                                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -591,6 +581,7 @@ table.dataTable
                             
                             </table>
                         </div>
+                        @include('include.server-pagination', ['paginator' => $pagination ?? null])
                     </div>  
                 </div>
                  
@@ -683,7 +674,7 @@ table.dataTable
     {{-- Check Sign Modal Ends Here --}}
 
     {{-- Mark Attendance Modal Starts Here --}}
-    @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2 || (!empty($attendance_access) && $attendance_access[0]['attendance_access'] == 1))
+    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || (!empty($attendance_access) && $attendance_access[0]['attendance_access'] == 1))
         <form id="update_attendance" class="form">
             @csrf
             <div class="modal fade" id="modal-default2" tabindex="-1" aria-hidden="true">
@@ -728,17 +719,10 @@ table.dataTable
                                 </label>
                                             
                                 <div>
-                                    <select class="form-select select" data-kt-select2="true" data-placeholder="Select Employee Name" name="employee_code" required>
+                                    <select class="form-select select" data-kt-select2="true" data-placeholder="Select Employee Name" name="employee_code" required data-employee-select data-scope="team">
                                     
                                     <option value="">Select Employee</option>
-                                    @if (!empty($all_employees))
-                                        @foreach ($all_employees as $all_employee)
-                                            <option value="{{ $all_employee['employee_id'] }}"
-                                                @if ($all_employee['employee_code'] == '' || $all_employee['employee_code'] == 'N/A') disabled @endif>
-                                                {{ $all_employee['employee_code'] . ' - ' . $all_employee['employee_name'] }}
-                                            </option>
-                                        @endforeach
-                                    @endif
+                                    @include('include.employee-selected-options', ['selected' => null])
                                     </select>
                                 </div>
                             
@@ -887,7 +871,7 @@ table.dataTable
             </div>
         </form>
     @endif
-    @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2)
+    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
         <form class="form" id="att_share_report">
             @csrf	
             <div class="modal fade" id="att-share-report-modal" tabindex="-1" aria-hidden="true">
@@ -995,15 +979,8 @@ table.dataTable
                                         <label class="form-label fw-semibold">Share With Employee</label>
                                                         
                                         <div>
-                                            <select class="form-select " id="select_all_employee" data-kt-select2="true"  data-close-on-select="false" multiple="true"   name="emp_names[]" >
-                                                <option value="">Select Employees</option>
-                                                @php $count = 0 @endphp
-                                                @if(!empty($active_employees))
-                                                    @foreach ($active_employees as $employee )
-                                                        @php $count ++; @endphp
-                                                        <option value="{{$employee['employee_id']}}">{{$employee['employee_code']}} - {{$employee['employee_name'] }}</option>
-                                                    @endforeach
-                                                @endif
+                                            {{-- searched on the server within the picked departments; left empty it means everyone in them --}}
+                                            <select class="form-select " id="select_all_employee" data-kt-select2="true"  data-close-on-select="false" multiple="true"   name="emp_names[]" data-employee-select data-scope="active" data-departments-from="#departments_all" data-placeholder="All employees of the selected departments">
                                             </select>
                                         </div>
                                     </div>
@@ -1035,7 +1012,7 @@ table.dataTable
 
 @push('js-link')
 
-<script src="{{url('assets/js/attendance/all-employees-attendance.js')}}"></script>
+<script src="{{url('assets/js/attendance/all-employees-attendance.js')}}?v=3"></script>
 
 <script>
     var length_count = {{ $count ?? 0 }};

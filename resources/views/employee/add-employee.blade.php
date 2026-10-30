@@ -236,23 +236,11 @@
 
                             <div class="col-md-4 fv-row">
                                 <label class="fs-6 fw-semibold mb-2">Business Unit</label>
-                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select Business Unit" name="business_unit">
+                                <select class="form-select " data-control="select2" data-hide-search="false" data-placeholder="Select or type a Business Unit" data-tags="true" name="business_unit">
                                     <option value="">Select Business Unit</option>
-                                    <option value="Candyland">CandyLand</option>
-                                    <option value="Bisconni">Bisconni</option>
-                                    <option value="Snackcity">Snackcity</option>
-                                    <option value="Hudson Pharma">Hudson Pharma</option>
-                                    <option value="Astro">Astro</option>  
-                                    <option value="Act Group">Act Group</option>  
-                                    <option value="Ismail Nutrition">Ismail Nutrition</option>   
-                                    <option value="Flour">Flour</option>    
-                                    <option value="Super Cereal">Super Cereal</option>  
-                                    <option value="PET Resin">PET Resin</option>  
-                                    <option value="Ismail Global">Ismail Global</option>  
-                                    <option value="Plastiflex">Plastiflex</option> 
-                                    <option value="Ismail Resin">Ismail Resin</option> 
-                                    <option value="Nexora HCM">Nexora HCM</option>   
-                                </option>                               
+                                    @foreach (CustomHelper::business_units() as $business_unit)
+                                        <option value="{{ $business_unit }}">{{ $business_unit }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             

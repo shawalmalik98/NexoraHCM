@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Helpers\CustomHelper;
+use App\Models\LeaveDeduction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -41,24 +43,24 @@ class LeaveRequestApiController extends Controller
                 $limit_query = '*';
             }
 
-            if($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
             
                 $where_clause = '1=1';
 
                 if(!empty($request->get('emp_status')) || !empty($request->get('emp_name')) || !empty($request->get('request_for_date')) || !empty($request->get('request_submited_date')) || !empty($request->get('req_status'))){
                 
                     if(!empty($request->get('emp_name'))){
-                        $where_clause .= " AND leave_applied_by = '".$request->get('emp_name')."'";
+                        $where_clause .= " AND leave_applied_by = ".\DB::getPdo()->quote((string) $request->get('emp_name'))."";
                     }
                     if(!empty($request->get('request_for_date'))){
-                        $where_clause .= " AND leave_applied_for_date = '".$request->get('request_for_date')."'";
+                        $where_clause .= " AND leave_applied_for_date = ".\DB::getPdo()->quote((string) $request->get('request_for_date'))."";
                     }
                     if(!empty($request->get('request_submited_date'))){
                         $submition_date = date("d-m-Y", strtotime($request_data->request_submited_date));
                         $where_clause .= " AND leave_applied_date LIKE '%".$submition_date."%'";
                     }
                     if(!empty($request->get('req_status'))){
-                        $where_clause .= " AND leave_approved_by_hr = '".$request->get('req_status')."'";
+                        $where_clause .= " AND leave_approved_by_hr = ".\DB::getPdo()->quote((string) $request->get('req_status'))."";
                     }
                 }
 
@@ -72,7 +74,7 @@ class LeaveRequestApiController extends Controller
 
             }
             
-            elseif($login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -85,10 +87,10 @@ class LeaveRequestApiController extends Controller
                 if(!empty($request->get('emp_status')) || !empty($request->get('emp_name')) || !empty($request->get('req_status'))){
                 
                     if(!empty($request->get('emp_name'))){
-                        $where_clause .= " AND leave_applied_by = '".$request->get('emp_name')."'";
+                        $where_clause .= " AND leave_applied_by = ".\DB::getPdo()->quote((string) $request->get('emp_name'))."";
                     }
                     if(!empty($request->get('req_status'))){
-                        $where_clause .= " AND leave_approved_by_hr = '".$request->get('req_status')."'";
+                        $where_clause .= " AND leave_approved_by_hr = ".\DB::getPdo()->quote((string) $request->get('req_status'))."";
                     }
                 }
                
@@ -128,7 +130,7 @@ class LeaveRequestApiController extends Controller
         
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
            
-            $my_leaves = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')->where('leave_applied_by', $login_user[0]['employee_id'])->orderBy('leave_applied_id','DESC')->get(['leave_applied_id','leave_applied_for_date','leave_applied_reason','leave_applied_date','leave_approved_by_hr','leave_approved_date_hr','leave_applied_attachment','leave_name','leave_manage_id'])->toArray();
+            $my_leaves = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')->where('leave_applied_by', (string) $login_user[0]['employee_id'])->orderBy('leave_applied_id','DESC')->get(['leave_applied_id','leave_applied_for_date','leave_applied_reason','leave_applied_date','leave_approved_by_hr','leave_approved_date_hr','leave_applied_attachment','leave_name','leave_manage_id'])->toArray();
 
             $leave_request_id = array_column($my_leaves,'leave_applied_id');
            
@@ -205,12 +207,12 @@ class LeaveRequestApiController extends Controller
                             $no_of_days = $this->count_days($request->post('from_date'),$request->post('to_date'));
                         }
                         
-                        $leave_request_applied = LeaveRequest::where('leave_applied_by',$login_user[0]['employee_id'])
+                        $leave_request_applied = LeaveRequest::where('leave_applied_by',(string) $login_user[0]['employee_id'])
                             ->where('leave_applied_type', $request->post('leave_type'))
                             ->where('leave_approved_by_hr',1)
                             ->count();
                             
-                        $get_availed_leaves = Attendance::where('att_employee_id',$login_user[0]['employee_id'])->where('att_check_overall_status', $leave_name[0]['leave_name'])->count();
+                        $get_availed_leaves = Attendance::where('att_employee_id',$login_user[0]['employee_id'])->where('att_check_overall_status', $leave_name[0]['leave_name'])->count() + LeaveDeduction::deducted_count($login_user[0]['employee_id'], $leave_name[0]['leave_manage_id']);
                        
                         $total_leaves = $get_availed_leaves + $leave_request_applied;
                     
@@ -239,7 +241,7 @@ class LeaveRequestApiController extends Controller
                             
                                 $request_leave_date = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request->post('from_date'))));
 
-                                $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', $login_user[0]['employee_id'])->whereIn('leave_applied_for_date',[$request_leave_date])->get(['leave_applied_for_date'])->toArray();
+                                $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', (string) $login_user[0]['employee_id'])->whereIn('leave_applied_for_date',[$request_leave_date])->get(['leave_applied_for_date'])->toArray();
                                 
                                 // if($request->post('leave_type') == "3"){
                                 //     $employement_status_check = $this->check_if_employee_permanent($request_leave_date,$login_user[0]['employee_id'],$custom_message = NULL);
@@ -317,7 +319,7 @@ class LeaveRequestApiController extends Controller
                             }
 
                             $leave_date = $request->post('leave_date');
-                            $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', $login_user[0]['employee_id'])->where('leave_applied_for_date', $request->post('leave_date'))->where('leave_approved_by_hr', '!=', 3)->get()->toArray();
+                            $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', (string) $login_user[0]['employee_id'])->where('leave_applied_for_date', $request->post('leave_date'))->where('leave_approved_by_hr', '!=', 3)->get()->toArray();
                             
                         }
                     
@@ -332,7 +334,7 @@ class LeaveRequestApiController extends Controller
                                     
                                     $dates = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request->post('from_date'))));
                                     
-                                    $checking_request_dates = LeaveRequest::where('leave_applied_by', $login_user[0]['employee_id'])->where('leave_applied_for_date',$dates)->get(['leave_applied_for_date'])->toArray();
+                                    $checking_request_dates = LeaveRequest::where('leave_applied_by', (string) $login_user[0]['employee_id'])->where('leave_applied_for_date',$dates)->get(['leave_applied_for_date'])->toArray();
                                     
                                     if(empty($checking_request_dates)){
 
@@ -494,13 +496,13 @@ class LeaveRequestApiController extends Controller
                             $leave_alloted[0]['leave_allotement'] = 0;
                         }
     
-                        $leave_request_applied = LeaveRequest::where('leave_applied_by',$login_user[0]['employee_id'])
+                        $leave_request_applied = LeaveRequest::where('leave_applied_by',(string) $login_user[0]['employee_id'])
                             ->where('leave_applied_type',$request->post('edit_leave_type'))
                             ->where('leave_applied_id','!=',$request->leave_id)
                             ->where('leave_approved_by_hr',1)
                             ->count();
     
-                        $get_availed_leaves = Attendance::where('att_employee_id',$login_user[0]['employee_id'])->where('att_check_overall_status', $leave_name[0]['leave_name'])->count();
+                        $get_availed_leaves = Attendance::where('att_employee_id',$login_user[0]['employee_id'])->where('att_check_overall_status', $leave_name[0]['leave_name'])->count() + LeaveDeduction::deducted_count($login_user[0]['employee_id'], $leave_name[0]['leave_manage_id']);
                 
                         $total_leaves = $get_availed_leaves + $leave_request_applied;
                         
@@ -550,7 +552,7 @@ class LeaveRequestApiController extends Controller
                         
                             if(empty($checking_request_responsed) && $leave_update_request->leave_approved_by_hr == 1){
         
-                                $checking_request =  $checking_request_dates = LeaveRequest::where('leave_applied_by', $login_user[0]['employee_id'])->where('leave_applied_for_date',date('Y-m-d',strtotime($request->post('leave_date'))))->where('leave_applied_id','!=',$request->post('leave_id'))->get(['leave_applied_for_date'])->toArray();
+                                $checking_request =  $checking_request_dates = LeaveRequest::where('leave_applied_by', (string) $login_user[0]['employee_id'])->where('leave_applied_for_date',date('Y-m-d',strtotime($request->post('leave_date'))))->where('leave_applied_id','!=',$request->post('leave_id'))->get(['leave_applied_for_date'])->toArray();
                                 
                                 if(empty($checking_request)){
                                 

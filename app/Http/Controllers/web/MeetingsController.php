@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -149,7 +150,7 @@ class MeetingsController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Schedule a meeting', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -309,7 +310,7 @@ class MeetingsController extends Controller
             
         }catch(\Exception $e){
             $this->create_error_log('Add Another Employee Schedule  meeting', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -397,7 +398,7 @@ class MeetingsController extends Controller
             }   
         }catch(\Exception $e){
             $this->create_error_log('Cancel Schedule a meeting', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -427,17 +428,16 @@ class MeetingsController extends Controller
 
         $login_user = $this->get_login_user_detail();
 
-        $factory = (new Factory)
-            ->withServiceAccount(__DIR__.'/firebase-secretkey.json')
-            ->withDatabaseUri('https://sourcecode-apps-d94da-hcm.firebaseio.com/');
-
-        $database = $factory->createDatabase();
+        $database = CustomHelper::firebase_database();
+        if($database === null){
+            return response()->json(['status' => 'FALSE', 'msg' => 'Chat is not configured.']);
+        }
         $NewChatMessage = $database->getReference('chats/MeetingsChat/')->push([
             'message' => $CreateChatRecord->message,
             'sender_id' => $login_user[0]['employee_id'],
             'meeting_id' => $CreateChatRecord->input('meeting_id'),
             'sender_name' => $login_user[0]['employee_name'],
-            'sender_avatar' => ($login_user[0]['profile_avatar']) ?? 'source-code.png',
+            'sender_avatar' => ($login_user[0]['profile_avatar']) ?? 'Avatar.jpg',
             'date' => date('d F, Y'),
             'time' => date('h:i A')
         ]);

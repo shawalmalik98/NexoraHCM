@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Models\LeaveDeduction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -12,6 +13,7 @@ use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEm
 use App\Helpers\ActivityTracker;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Helpers\CustomHelper;
+use Illuminate\Pagination\LengthAwarePaginator;
 use DatePeriod, DateTime, DateInterval;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\File;
@@ -30,7 +32,6 @@ class AttendanceController extends Controller
     const TITLE_GLOBAL2 = "my-attendance";
     const TITLE_GLOBAL3 = "daily-attendance";
     const TITLE_GLOBAL4 = "monthly-attendance";
-    const TITLE_GLOBAL5 = "sap-attendance";
     const TITLE_GLOBAL6 = "attendance-adjustment";
     const SERVER_ERROR = 'Unknown error occured on server. Please try again after some time.';
     
@@ -57,10 +58,10 @@ class AttendanceController extends Controller
             $where_clause = '1=1';
             $attendance_access = array();
             if(!empty($request->employee_location)){
-                $where_clause   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
             }
 
-            if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 3 ){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) ){
                 $all_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause)->limit(1000)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
             }
             else{
@@ -106,18 +107,49 @@ class AttendanceController extends Controller
                 $year = date('Y');
             }
             
-            $all_attendances =  $this->all_attendance_employee($employement_status , $month , $year ,$department , $reporting_authority , $emp_name , array_column($all_employees, 'employee_id'));
+            // employees of the grid, page by page: same scope (HR all / manager team / own) and filters as before
+            $search = trim((string) $request->input('search'));
+            $grid_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause);
+            if(!(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null))){
+                if($login_user[0]['employee_is_manager'] == 1){
+                    $grid_employees->where(function($query){
+                        $query->where('employee_senior_manager',session('user_session'));
+                        $query->orWhere('employee_junior_manager',session('user_session'));
+                    });
+                }else{
+                    $grid_employees->where('employee_id',session('user_session'));
+                }
+            }
+            if(!empty($emp_name)){
+                $grid_employees->where('employee_id',$emp_name);
+            }elseif(!empty($reporting_authority) && !empty($department)){
+                $grid_employees->where('employee_department',$department)->where(function($query) use($reporting_authority){
+                    $query->where('employee_senior_manager',$reporting_authority)
+                        ->orWhere('employee_junior_manager',$reporting_authority)
+                        ->orWhere('employee_id',$reporting_authority);
+                });
+            }elseif(!empty($department)){
+                $grid_employees->where('employee_department',$department);
+            }
+            if($search !== ''){
+                $grid_employees->where(function($query) use($search){
+                    $query->where('employee_name','like','%'.$search.'%')->orWhere('employee_code','like','%'.$search.'%');
+                });
+            }
+            $pagination = $grid_employees->orderBy('employee_id')->paginate(CustomHelper::per_page(), ['employee_id'])->withQueryString();
+
+            $all_attendances =  $this->all_attendance_employee($employement_status , $month , $year ,$department , $reporting_authority , $emp_name , $pagination->pluck('employee_id')->toArray());
 
             $all_department = Department::get(['department_id','department_name'])->toArray();
             
-            $active_employees = Employees::where('employee_isactive',1)->get(['employee_id','employee_code','employee_name'])->toArray();
+            $active_employees = []; // the share dialog searches employees through /employee-search
 
             $manage_leaves = LeaveManagement::get(['leave_manage_id','leave_name'])->toArray();
 
             $leaves_name = LeaveManagement::pluck('leave_name')->toArray();
 
            
-            $send_data = compact('title','login_user','all_attendances','month_days','all_department','all_employees','month','year','employee_locations','active_employees','manage_leaves','leaves_name','dynamic_years','attendance_access');
+            $send_data = compact('title','login_user','all_attendances','month_days','all_department','all_employees','month','year','employee_locations','active_employees','manage_leaves','leaves_name','dynamic_years','attendance_access','pagination');
             
             return view('attendance.all-employees-attendance',$send_data);
         }catch(\Exception $e){
@@ -435,12 +467,12 @@ class AttendanceController extends Controller
                             $attendance = [];
                         }    
 
-                        if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_id'] == 1){
+                        if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::has_role($login_user[0]['employee_id'], 'admin')){
                             // dd('123');
                             $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                         }
-                        elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
+                        elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::has_role($login_user[0]['employee_id'], 'admin') && $login_user[0]['employee_is_manager'] == 1){
                             // dd('321');
 
                             $login_employee_id = $login_user[0]['employee_id'];
@@ -495,11 +527,11 @@ class AttendanceController extends Controller
                 if($month_days == 0){
                     $month_days = date('t', strtotime($request->input('from_date'))); 
                 }
-                if($login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 34 || $login_user[0]['employee_id'] == 1){
+                if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::has_role($login_user[0]['employee_id'], 'admin')){
                 
                     $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
                 }
-                elseif($login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] != 34 && $login_user[0]['employee_id'] != 1 && $login_user[0]['employee_is_manager'] == 1){
+                elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::has_role($login_user[0]['employee_id'], 'admin') && $login_user[0]['employee_is_manager'] == 1){
                                 
                     $login_employee_id = $login_user[0]['employee_id'];
 
@@ -703,7 +735,7 @@ class AttendanceController extends Controller
         }catch(\Exception $e){
             $this->create_error_log('Add New Attendance Adjustment', $e);
             
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -724,797 +756,9 @@ class AttendanceController extends Controller
 
     }
     
-    protected function get_employee_monthly_attendance(Request $request){
-     
-        try{
-        
-            $title = Self::TITLE_GLOBAL2;
 
-            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-
-            if(strpos(url()->current(), 'sap-login')){
-              $login_user = $this->get_sap_login_user_detail();
-            }else{
-              $login_user = $this->get_login_user_detail();
-            }
     
-            if($request->input('from_date') == '' && $request->input('to_date') == ''){
-                $month_count = 1;
-            }
 
-
-            if($request->input('from_date') && $request->input('to_date')){
-                $validator = Validator::make($request->all(), [
-                    'from_date' => 'required|date_format:Y-m-d|before:to_date',
-                    'to_date' => 'required|date_format:Y-m-d|after:from_date',
-                ]);
-
-                $validator->after(function ($validator) use ($request) {
-                    if ($this->if_to_date_greater_than_today($request->input('to_date'))) {
-                        $validator->errors()->add('to_date', 'The to date must not be greater than today\'s date.');
-                    }
-                });
-        
-                if($validator->fails()) {
-                    foreach($validator->errors()->all() as $error){
-                        
-                        return Redirect::back()->with('error', $error);
-                    }
-                }else {
-
-                    if($request->input('from_date') < $login_user[0]['employee_doj']){
-
-                        return Redirect::back()->with('error', 'You can\'t apply filter before your joining date');
-                    }
-                    $start_date = new DateTime($request->input('from_date'));
-                    $end_date = new DateTime($request->input('to_date'));
-
-                    $interval =  $start_date->diff($end_date);
-                      
-                    $daysDifference = $interval->days;
-                   
-                    if($daysDifference < 40){
-                        $from_date =  $request->input('from_date');
-                        $to_date =  $request->input('to_date');
-
-                        $month_count = 0;
-                        $period = new DatePeriod(
-                            new DateTime($request->input('from_date')),
-                            new DateInterval('P1D'),
-                            new DateTime($request->input('to_date'))
-                        );
-
-                        $month_days = 0;
-                        foreach ($period as $key => $value) {
-                            $dates[] = $value->format('d-m-Y');
-                            $month_days++;
-                        }
-
-                        if (!in_array($to_date, $dates)){
-                                
-                            $dates[] = date('d-m-Y', strtotime($to_date));
-                        }
-                        if($month_days == 0){
-                            $month_days = date('t', strtotime($request->input('from_date')));
-                        }
-
-                    CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
-                    $query1 = Attendance::where('att_employee_id',$login_user[0]['employee_id'])
-                    ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-                    ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                    ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                    ->where('department_name', '=', 'Field Force')
-                    ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
-                    ->select('employee_code as emp_code',
-                        'employee_name as emp_name',
-                        'att_comp_date as attendance_date',
-                        'att_check_in_time as time_in',
-                        'att_check_out_time as time_out',
-                        'att_check_overall_status as attendance_status');
-
-
-                    $query2 = DB::table('sap_attendance_report')
-                    ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                    ->select(
-                        'employee_code as emp_code',
-                        'sap_attendance_report.emp_name',
-                        'sap_attendance_report.attendance_date',
-                        'sap_attendance_report.time_in',
-                        'sap_attendance_report.time_out',
-                        'sap_attendance_report.attendance_status'
-
-                    )
-                    ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
-                    ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
-
-                    $attendance = $query1->union($query2)->get()->toArray();
-
-                    $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$login_user[0]['employee_id'])
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                    ->where(function($query) use($manage_leaves){
-                        $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                        ->orWhere('att_check_overall_status','RPL');
-                    })->count();
-                    
-                   }else{
-
-                        return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
-                    
-                   }  
-
-                }
-            }else{
-
-                if(empty($request->from_date) || empty($request->to_date)){
-                    if(date('d') >= '21'){
-                        $from_date = date('Y-m-') . '20';
-                        $to_date = date('Y-m-d');
-                    }
-                    else{
-                        $today = new DateTime();
-                        $today->modify('first day of previous month');
-                        $today->modify('+20 days');
-                        $from_date = $today->format('Y-m-d');
-                        $to_date = date('Y-m-d');
-                    }
-                }
-
-                // dd($to_date);
-
-                CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
-
-                $month_count = 0;
-                $period = new DatePeriod(
-                    new DateTime($from_date),
-                    new DateInterval('P1D'),
-                    new DateTime($to_date)
-                );
-
-                $month_days = 0;
-                foreach ($period as $key => $value) {
-                    $dates[] = $value->format('d-m-Y');
-                    $month_days++;
-                }
-
-                if (!in_array($to_date, $dates)){
-                        
-                    $dates[] = date('d-m-Y', strtotime($to_date));
-                }
-                if($month_days == 0){
-                    $month_days = date('t', strtotime($request->input('from_date')));
-                }
-            
-
-                $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
-                ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                ->where('department_name', '=', 'Field Force')
-                ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
-                ->select('employee_code as emp_code',
-                    'employee_name as emp_name',
-                    'att_comp_date as attendance_date',
-                    'att_check_in_time as time_in',
-                    'att_check_out_time as time_out',
-                    'att_check_overall_status as attendance_status');
-
-
-                $query2 = DB::table('sap_attendance_report')
-                ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                ->select(
-                    'employee_code as emp_code',
-                    'sap_attendance_report.emp_name',
-                    'sap_attendance_report.attendance_date',
-                    'sap_attendance_report.time_in',
-                    'sap_attendance_report.time_out',
-                    'sap_attendance_report.attendance_status'
-
-                )
-                ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
-                ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
-
-                $attendance = $query1->union($query2)->get()->toArray();
-
-                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$login_user[0]['employee_id'])
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                ->where(function($query) use($manage_leaves){
-                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                    ->orWhere('att_check_overall_status','RPL');
-                })->count();
-                
-            }
-          
-            $leave_name = implode(',',$manage_leaves);
-
-            $send_data = compact('title','login_user','attendance','month_days','dates','month_count','from_date','to_date','t_employee_leaves','leave_name','manage_leaves');
-
-            return view('attendance.monthly-attendance-report-sap',$send_data); 
-        }catch(\Exception $e){
-            $this->create_error_log('View My Personal Attendance Sap api', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-        }finally{
-            ActivityTracker::track_activity('View My Personal Attendance Sap api');
-        }
-    }
-
-    protected function get_sap_employee_monthly_attendance(Request $request){
-     
-        try{
-        
-            $title = Self::TITLE_GLOBAL5;
-            
-            $login_user = $this->get_login_user_detail();
-            
-            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-
-            if($request->emp_status == "2"){
-                $status = 0;
-            }else{
-                $status = 1;
-            }
-
-            if($request->input('from_date') == '' && $request->input('to_date') == ''){
-                $month_count = 1;
-            }
-
-            if($request->input('from_date') && $request->input('to_date')){
-                $validator = Validator::make($request->all(), [
-                    'from_date' => 'required|date_format:Y-m-d|before:to_date',
-                    'to_date' => 'required|date_format:Y-m-d|after:from_date',
-                ]);
-
-                $validator->after(function ($validator) use ($request) {
-                    if ($this->if_to_date_greater_than_today($request->input('to_date'))) {
-                        $validator->errors()->add('to_date', 'The to date must not be greater than today\'s date.');
-                    }
-                });
-        
-                if($validator->fails()) {
-                    foreach($validator->errors()->all() as $error){
-                        
-                        return Redirect::back()->with('error', $error);
-                    }
-                }else {
-
-                    if($request->input('from_date') < $login_user[0]['employee_doj']){
-
-                        return Redirect::back()->with('error', 'You can\'t apply filter before your joining date');
-                    }
-                    $start_date = new DateTime($request->input('from_date'));
-                    $end_date = new DateTime($request->input('to_date'));
-
-                    $interval =  $start_date->diff($end_date);
-                      
-                    $daysDifference = $interval->days;
-                   
-                    // if($daysDifference < 40){
-                        $from_date =  $request->input('from_date');
-                        $to_date =  $request->input('to_date');
-
-                        $employee_id = $request->input('employee_id');
-                        
-                        $where_clause = '1=1';
-
-                        if (!empty($employee_id)) {
-                            $where_clause .= " AND tbl_employees.employee_id = '" . $employee_id . "' ";
-                        }else{
-                            $where_clause .= " AND tbl_employees.employee_id = '" .  $login_user[0]['employee_id'] . "' ";
-                        }
-
-                        if(!empty($request->emp_status)){
-                            $where_clause .= " AND employee_isactive = '".$status."'";
-                        }
-
-                        $month_count = 0;
-                        $period = new DatePeriod(
-                            new DateTime($request->input('from_date')),
-                            new DateInterval('P1D'),
-                            new DateTime($request->input('to_date'))
-                        );
-
-                        $month_days = 0;
-                        foreach ($period as $key => $value) {
-                            $dates[] = $value->format('d-m-Y');
-                            $month_days++;
-                        }
-
-                        if (!in_array($to_date, $dates)){
-                                
-                            $dates[] = date('d-m-Y', strtotime($to_date));
-                        }
-                        if($month_days == 0){
-                            $month_days = date('t', strtotime($request->input('from_date')));
-                        }
-
-                        $employee_data = Employees::where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'])->get(['employee_name','employee_code','employee_offdays'])->toArray();
-
-                        CustomHelper::refreshSapAttendance($from_date, $to_date, $employee_data[0]['employee_code']);
-
-                        $query1 = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-                        ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                        ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                        ->select(
-                        'tbl_attendance.att_employee_id',
-                        'tbl_employees.employee_code as emp_code',
-                        'tbl_employees.employee_name as emp_name', 
-                        'tbl_employees.employee_new_code as emp_new_code',
-                        'tbl_attendance.att_comp_date as attendance_date',
-                        'tbl_attendance.att_check_in_time as time_in', 
-                        'tbl_attendance.att_check_out_time as time_out',
-                        'tbl_attendance.att_check_overall_status as attendance_status',
-                        'tbl_attendance.att_request_approval as request_approval')
-                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                        ->where('department_name', '=', 'Field Force')
-                        ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
-                        ->whereRaw($where_clause);
-
-                        $query2 = DB::table('sap_attendance_report')
-                        ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                        ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
-                        ->select(
-                            'tbl_employees.employee_id',
-                            'tbl_employees.employee_new_code as emp_new_code',
-                            'sap_attendance_report.emp_code',
-                            'sap_attendance_report.emp_name',
-                            'sap_attendance_report.attendance_date',
-                            'sap_attendance_report.time_in',
-                            'sap_attendance_report.time_out',
-                            'sap_attendance_report.attendance_status',
-                            'tbl_attendance.att_request_approval as request_approval'
-
-                        )
-                        ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
-                        ->whereRaw($where_clause);
-
-                        $attendance = $query1->union($query2)->get()->toArray();
-
-                        $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                        ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                        ->where(function($query) use($manage_leaves){
-                            $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                            ->orWhere('att_check_overall_status','RPL');
-                        })->count();
-                //    }else{
-
-                //         return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
-                    
-                //    }  
-
-                }
-            }else{
-
-                if(empty($request->from_date) && empty($request->to_date)){
-                    if(date('d') >= '21'){
-                        $from_date = date('Y-m-') . '21';
-                        $to_date = date('Y-m-d');
-                    }
-                    else{
-                        $today = new DateTime();
-                        $today->modify('first day of previous month');
-                        $today->modify('+20 days');
-                        $from_date = $today->format('Y-m-d');
-                        $to_date = date('Y-m-d');
-                    }
-                }
-                
-                CustomHelper::refreshSapAttendance($from_date, $to_date, $login_user[0]['employee_code']);
-
-                $month_count = 0;
-                $period = new DatePeriod(
-                    new DateTime($from_date),
-                    new DateInterval('P1D'),
-                    new DateTime($to_date)
-                );
-
-                $month_days = 0;
-                foreach ($period as $key => $value) {
-                    $dates[] = $value->format('d-m-Y');
-                    $month_days++;
-                }
-
-                if (!in_array($to_date, $dates)){
-                        
-                    $dates[] = date('d-m-Y', strtotime($to_date));
-                }
-                if($month_days == 0){
-                    $month_days = date('t', strtotime($request->input('from_date')));
-                }
-                
-                $employee_data = Employees::where('employee_id',  $login_user[0]['employee_id'])->get(['employee_name','employee_offdays'])->toArray();
-
-                $query1 = Attendance::where('att_employee_id', $login_user[0]['employee_id'])
-                ->join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                ->where('department_name', '=', 'Field Force')
-                ->whereIn('designation_name', ['16 - DSR-3', '15 - DSR-2', '14 - DSR-1'])
-                ->select('employee_code as emp_code',
-                    'employee_name as emp_name',
-                    'employee_new_code as emp_new_code',
-                    'att_comp_date as attendance_date',
-                    'att_check_in_time as time_in',
-                    'att_check_out_time as time_out',
-                    'att_check_overall_status as attendance_status',
-                    'tbl_attendance.att_request_approval as request_approval');
-
-
-                $query2 = DB::table('sap_attendance_report')
-                ->join('tbl_employees', 'sap_attendance_report.emp_code', '=', 'tbl_employees.employee_code')
-                ->leftjoin('tbl_attendance', 'tbl_employees.employee_id', '=', 'tbl_attendance.att_employee_id')
-                ->select(
-                    'employee_code as emp_code',
-                    'employee_new_code as emp_new_code',
-                    'sap_attendance_report.emp_name',
-                    'sap_attendance_report.attendance_date',
-                    'sap_attendance_report.time_in',
-                    'sap_attendance_report.time_out',
-                    'sap_attendance_report.attendance_status',
-                    'tbl_attendance.att_request_approval as request_approval'
-
-                )
-                ->whereBetween('sap_attendance_report.attendance_date', [$from_date , $to_date])
-                ->where('tbl_employees.employee_id', '=', $login_user[0]['employee_id']);
-
-                $attendance = $query1->union($query2)->get()->toArray();
-
-                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',session('user_session'))
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                ->where(function($query) use($manage_leaves){
-                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                    ->orWhere('att_check_overall_status','RPL');
-                })->count();
-
-            }
-
-            $all_employees = Employees::where('employee_isactive', $status)->get(['employee_id','employee_name','employee_code'])->toArray();
-            
-            $leave_name = implode(',',$manage_leaves);
-            
-            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','leave_name','manage_leaves','dates','month_count','from_date','to_date','all_employees','employee_data');
-
-            return view('attendance.attendance-report-sap',$send_data); 
-        }catch(\Exception $e){
-            $this->create_error_log('View all Personal Attendance Sap api', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-        }finally{
-            ActivityTracker::track_activity('View all Personal Attendance Sap api');
-        }
-    }
-    
-    protected function bisconni_employee_report(Request $request){
-        try{
-        
-            $title = 'bisconni-report';
-      
-            $login_user = $this->get_login_user_detail();
-
-            $employee_data = Employees::where('employee_id', $request->emp_id)->get(['employee_name'])->toArray();
-
-            $dynamic_years = $this->dynamic_year_drop_down();
-            
-            $month = '';
-            $year = '';
-            $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-            $flag = true;
-            if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12 && $request->input('y') != '' && is_numeric($request->input('y')) && $request->input('y') >= 1900 && $request->input('y') <= 3000 && $request->input('from_date') == '' && $request->input('to_date') == ''){
-                $flag = false;
-                $month_count = 1;
-                $month_days = cal_days_in_month(CAL_MONTH_GREGORIAN_LONG, $request->input('m'),$request->input('y'));
-                $month = $request->input('m');
-                $year =  $request->input('y');
-
-                $dates = $this->get_all_date_from_month($month,$year,$format=Null);
-                array_unshift($dates, $dates[0]);
-                unset($dates[0]);
-
-            }
-            if($request->input('from_date') && $request->input('to_date')){
-                $validator = Validator::make($request->all(), [
-                    'from_date' => 'required|date_format:Y-m-d|before:to_date',
-                    'to_date' => 'required|date_format:Y-m-d|after:from_date',
-                ]);
-
-                $validator->after(function ($validator) use ($request) {
-                    if ($this->if_to_date_greater_than_today($request->input('to_date'))) {
-                        $validator->errors()->add('to_date', 'The to date must not be greater than today\'s date.');
-                    }
-                });
-        
-                if($validator->fails()) {
-                    foreach($validator->errors()->all() as $error){
-                        
-                        return Redirect::back()->with('error', $error);
-                    }
-                }else {
-
-                    $start_date = new DateTime($request->input('from_date'));
-                    $end_date = new DateTime($request->input('to_date'));
-
-                    $interval =  $start_date->diff($end_date);
-                      
-                    $daysDifference = $interval->days;
-                   
-                    if($daysDifference < 40){
-                        $from_date =  $request->input('from_date');
-                        $to_date =  $request->input('to_date');
-
-                        $month_count = 0;
-                        $period = new DatePeriod(
-                            new DateTime($request->input('from_date')),
-                            new DateInterval('P1D'),
-                            new DateTime($request->input('to_date'))
-                        );
-
-                        $month_days = 0;
-                        foreach ($period as $key => $value) {
-                            $dates[] = $value->format('d-m-Y');
-                            $month_days++;
-                        }
-
-                        if (!in_array($to_date, $dates)){
-                                
-                            $dates[] = date('d-m-Y', strtotime($to_date));
-                        }
-                        if($month_days == 0){
-                            $month_days = date('t', strtotime($request->input('from_date')));
-                        }
-
-                 
-                    $attendance = Attendance::where('att_employee_id',$request->emp_id)
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                    ->get()->toArray();
-
-                    $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where('att_employee_id',$request->emp_id)
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) >= '".$from_date."'")
-                    ->whereRaw("DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)) <= '".$to_date."'")
-                    ->where(function($query) use($manage_leaves){
-                        $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                        ->orWhere('att_check_overall_status','RPL');
-                    })->count();
-                   }else{
-
-                    return Redirect::back()->with('error', 'Date Range Exceeds 40 Days.Please try again!');
-                    
-                   }  
-
-                }
-            }else{
-
-                if($flag){
-                    $month_days = date('t');
-                    $month = date('m');
-                    $year =  date('Y');
-                    $dates = $this->get_all_date_from_month($month,$year,$format=Null);
-                    array_unshift($dates, $dates[0]);
-                    unset($dates[0]);
-                    $month_count = 1;
-                   
-                }
-              
-                $attendance = Attendance::where(['att_employee_id'=>$request->emp_id,'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
-
-                $t_employee_leaves = Employees::where('employee_isactive',1)->join('tbl_attendance','tbl_employees.employee_id','tbl_attendance.att_employee_id')->where(['att_employee_id'=>$request->emp_id,'att_for_month'=>$month,'att_for_year'=>$year])->where(function($query) use($manage_leaves){
-                    $query->whereIn('att_check_overall_status' ,$manage_leaves)
-                    ->orWhere('att_check_overall_status','RPL');
-                })->count();
-            
-            }
-          
-            $leave_name = implode(',',$manage_leaves);
-
-            $send_data = compact('title','login_user','attendance','month_days','t_employee_leaves','month','year','leave_name','manage_leaves','dynamic_years','dates','month_count','employee_data');
-
-            return view('attendance.bisconni-employee-wise-attendance',$send_data); 
-        }catch(\Exception $e){
-
-            $this->create_error_log('View My Personal Attendance', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-
-        }finally{
-        
-            ActivityTracker::track_activity('View My Personal Attendance');
-
-        }
-    }
-
-    protected function update_bisconni_employee_attendance(Request $request_data){
-
-        try{
-          
-            $process = '';
-            $validator = Validator::make($request_data->all(), [
-                'attendance_date' => 'required|date_format:Y-m-d|before_or_equal:now' ,
-                'attendance_type' => 'required',
-            ]);
-              
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'msg' => $error,
-                        'status' => 'FALSE'
-                    ]);
-                }
-            }
-            else{
-                
-                $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-
-                $get_employee_decoded = Employees::where('employee_id',$request_data->input('employee_code'))->get(['employee_name','employee_doj','employee_senior_manager','employee_junior_manager'])->toArray();
-
-                $doj  = strtotime($get_employee_decoded[0]['employee_doj']);
-
-                if($request_data->input('attendance_date') < $doj){
-                    return response()->json([
-                        'msg' => 'You can\'t apply attendance request before your joining date.',
-                        'status' => 'FALSE'
-                    ]);
-                }
-
-                $payroll_exists = $this->check_if_payroll_exist($request_data->input('attendance_date'),$request_data->input('employee_code'),$custom_message = NULL);
-
-                if($payroll_exists['status'] == TRUE){
-                    return response()->json([
-                        'msg' => $payroll_exists['msg'],
-                        'status' => 'FALSE'
-                    ]);
-                }
-
-                $check_attendance_sheet_availability = $this->check_if_attendance_sheet_locked($request_data->input('attendance_date'));
-
-                if($check_attendance_sheet_availability['status'] == FALSE){
-                    return response()->json([
-                        'msg' => $check_attendance_sheet_availability['msg'],
-                        'status' => 'FALSE'
-                    ]);
-                }
-                
-                $attendance_date = $request_data->input('attendance_date');
-                
-                $checking_request = AttendanceRequest::where('request_employee_id', $request_data->input('employee_code'))->where('request_attendance_date', $attendance_date)->where('request_approved_by_hr', '!=', 3)->get('attendance_request_id')->toArray();   
-
-                $day = date("d", strtotime($attendance_date));
-
-                $month = date("m", strtotime($attendance_date));
-                
-                $year = date("Y", strtotime($attendance_date));
-        
-                $attendance = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)->get(['attendance_id'])->toArray();
-
-                $employee_shift_start = $this->get_employee_today_shift($request_data->input('employee_code'),"in",$attendance_date);
-                $employees_shift_end_time = $this->get_employee_today_shift($request_data->input('employee_code'),"out",$attendance_date);
-                
-                if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
-                        
-                    $date = explode('-',$request_data->input('attendance_date'));
-                
-                    $get_attendance_check_out_time = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where('att_for_date',$date[2])->where('att_for_month',$date[1])->where('att_for_year',$date[0])->get('attendance_id')->toArray();
-                    if(empty($get_attendance_check_out_time)){
-                        return response()->json([
-                            'status' => 'False',
-                            'msg' => "You can't request for check out on ". $request_data->input('attendance_date') ." beacuse you didn't mark the attendance.",
-                        ]);
-                    }
-                    
-                    $get_attendances = Attendance::where('att_employee_id',$request_data->input('employee_code'))->where(function($query) use($manage_leaves){
-                    $query->where('att_check_overall_status','LIKE', '%Holiday%')
-                    ->orwhereIn('att_check_overall_status',$manage_leaves);
-                    })
-                    ->where('att_for_date',$day)->where('att_for_month',$month)->where('att_for_year',$year)
-                    ->get(['attendance_id','att_check_overall_status'])->toArray();
-
-                    if(!empty($get_attendances)){
-                        return response()->json([
-                            'status' => 'False',
-                            'msg' => "You can't request on this date ". $request_data->input('attendance_date')." beacuse your attendanced already marked as " .$get_attendances[0]['att_check_overall_status'],
-                        ]);
-                    }   
-                }
-              
-                if(empty($checking_request)){
-                        
-                    $attendance_request = new AttendanceRequest();
-                    $attendance_request->request_employee_id = $request_data->input('employee_code');
-                    $attendance_request->request_attendance_date = $request_data->input('attendance_date');
-                    $attendance_request->request_attendance_status = $request_data->input('attendance_type');
-                    $attendance_request->request_attendance_message = 'N/A';
-                    $attendance_request->request_approved_by_hr = '1';
-                    $attendance_request->request_submition_date = date('h:i:s a d F, Y');
-
-                    $process = $attendance_request->save();
-                    
-                    $attendance_req_time = new AttRequestTime();
-
-                    if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check In'){
-                        $attendance_req_time->attendance_req_id  = $attendance_request->attendance_request_id;
-                        $attendance_req_time->attendance_req_emp_id  = $request_data->input('employee_code');
-                        $attendance_req_time->attendance_checkin_time  = $employee_shift_start;
-                        $attendance_req_time->att_req_time_created_at  = date('h:i:s a d F, Y');
-
-                        $attendance_req_time->save();
-                    
-                    }
-                    if(!empty($request_data->input('attendance_type')) && $request_data->input('attendance_type') == 'On Time Check Out'){
-                        $attendance_req_time->attendance_req_id  = $attendance_request->attendance_request_id;
-                        $attendance_req_time->attendance_req_emp_id  = $request_data->input('employee_code');
-                        $attendance_req_time->attendance_checkout_time  =  $employees_shift_end_time;
-                        $attendance_req_time->att_req_time_created_at  = date('h:i:s a d F, Y');
-
-                        $attendance_req_time->save();
-                    }
-                    
-                 
-                    if($process == 1){
-
-                        if(!empty($get_employee_decoded[0]['employee_senior_manager']) || $get_employee_decoded[0]['employee_senior_manager'] != ''){
-                            $to_mngr1 = $get_employee_decoded[0]['employee_senior_manager'];
-                        }
-                        if(!empty($get_employee_decoded[0]['employee_junior_manager']) || $get_employee_decoded[0]['employee_junior_manager'] != ''){
-                            $to_mngr2 = $get_employee_decoded[0]['employee_junior_manager'];
-                        }
-                        
-                        $this->send_notification('New Attendance Request ', '' . $get_employee_decoded[0]['employee_name']. ' applied for an attendance request as ('. $request_data->input('attendance_type') .') for the date of '. $request_data->input('attendance_date').'. Please click here to view.','attendance-requests?employee_id='.$request_data->input('employee_code').'&date='.$request_data->input('attendance_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
-
-                        // $this->send_push_notification_mobile_app($get_employee_decoded, 'Attendance Request','You\'ve successfully applied an attendance request and has been forwarded to your reporting authorities.');
-
-                        return response()->json([
-                            'status' => 'TRUE',
-                            'msg' => "Attendance request has been submitted. Please wait for response",
-                        ]);
-                    }else{
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "You can't apply request because already marked attendance.",
-                        ]);
-                    }
-                }else{
-
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => "You've already applied a request for this date. ".$request_data->input('attendance_date'),
-                    ]);
-                
-                }
-            }
-
-        }catch(\Exception $e){
-            $this->create_error_log('Add New Attendance Request', $e);
-            
-            if(!env('APP_DEBUG')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                   
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-               
-            }
-        }
-        finally{
-            ActivityTracker::track_activity('Create an Attendance Request');
-        }
-
-		
-    }
 
     protected function all_attendance_employee($employement_status = NULL, $month = NULL , $year = NULL , $department = NULL , $reporting_authority = NULL ,$emp_name = NULL, $employee_list = NULL){
 		
@@ -1556,12 +800,22 @@ class AttendanceController extends Controller
         
             if(!empty($all_employees)){
 
+                // one query for the whole month instead of one per employee
+                $attendance_by_employee = [];
+                $listed_employee_ids = array_values(array_intersect(array_column($all_employees, 'employee_id'), (array) $employee_list));
+                foreach(array_chunk($listed_employee_ids, 1000) as $employee_ids_chunk){
+                    $month_attendance = Attendance::whereIn('att_employee_id',$employee_ids_chunk)->where('att_for_month',$month)->where('att_for_year',$year)->orderBy('attendance_id')->get()->toArray();
+                    foreach($month_attendance as $attendance_row){
+                        $attendance_by_employee[$attendance_row['att_employee_id']][] = $attendance_row;
+                    }
+                }
+
                 foreach($all_employees as $employee){
 
                     if(in_array($employee['employee_id'],$employee_list)){
 
-                        $all_attendances = Attendance::where('att_employee_id',$employee['employee_id'])->where('att_for_month',$month)->where('att_for_year',$year)->get()->toArray();
-                        
+                        $all_attendances = $attendance_by_employee[$employee['employee_id']] ?? [];
+
                         $atts = array('attendance' => $all_attendances);
                         $result[] = array_merge( $employee , $atts );
                     }
@@ -1577,7 +831,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('All  Attendance Employees Filter Function', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1730,7 +984,7 @@ class AttendanceController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Mark Employee Attendance', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1841,13 +1095,13 @@ class AttendanceController extends Controller
                                     }
                     
                                 
-                                    $leave_request_applied = LeaveRequest::where('leave_applied_by',session('user_session'))
+                                    $leave_request_applied = LeaveRequest::where('leave_applied_by',(string) $update_attendance->att_employee_id)
                                         ->where('leave_applied_type', $leave_name[0]['leave_manage_id'])
                                         ->where('leave_approved_by_hr',1)
                                         ->count();
                                         
                                 
-                                    $get_availed_leaves = Attendance::where('att_employee_id',$update_attendance->att_employee_id)->where('att_check_overall_status', $attendance_data->input('attendance_status'))->count();
+                                    $get_availed_leaves = Attendance::where('att_employee_id',$update_attendance->att_employee_id)->where('att_check_overall_status', $attendance_data->input('attendance_status'))->count() + LeaveDeduction::deducted_count($update_attendance->att_employee_id, $leave_name[0]['leave_manage_id']);
                             
                                     $total_leaves = $get_availed_leaves + $leave_request_applied;
                                 
@@ -1922,7 +1176,7 @@ class AttendanceController extends Controller
 
             $this->create_error_log('Update Employee Marked Attendance', $e);
             
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2038,13 +1292,13 @@ class AttendanceController extends Controller
                                         $leave_alloted[0]['leave_allotement'] = 0;
                                     }
                     
-                                    $leave_request_applied = LeaveRequest::where('leave_applied_by',$attendance_data->input('att_employee_id'))
+                                    $leave_request_applied = LeaveRequest::where('leave_applied_by',(string) $attendance_data->input('att_employee_id'))
                                         ->where('leave_applied_type',$leave_name[0]['leave_manage_id'])
                                         ->where('leave_approved_by_hr',1)
                                         ->count();
                                         
                                 
-                                    $get_availed_leaves = Attendance::where('att_employee_id',session('user_session'))->where('att_check_overall_status', $leave_name[0]['leave_name'])->count();
+                                    $get_availed_leaves = Attendance::where('att_employee_id',$attendance_data->input('att_employee_id'))->where('att_check_overall_status', $leave_name[0]['leave_name'])->count() + LeaveDeduction::deducted_count($attendance_data->input('att_employee_id'), $leave_name[0]['leave_manage_id']);
                             
                                     $total_leaves = $get_availed_leaves + $leave_request_applied;
                                 
@@ -2176,7 +1430,7 @@ class AttendanceController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Update Absentee Attendance', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2226,7 +1480,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Get Departments Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2260,16 +1514,16 @@ class AttendanceController extends Controller
             $where_clause = '1=1';
 
             if(!empty($request->department_id) && $request->department_id != 'All'){
-                $where_clause .= ' AND employee_department = '.$request->department_id;
+                $where_clause .= ' AND employee_department = '.\DB::getPdo()->quote((string) $request->department_id);
             }
 
             if(!empty($request->business_unit) && $request->business_unit != 'All'){
-                $where_clause .= " AND business_unit = '".$request->business_unit."'";
+                $where_clause .= " AND business_unit = ".\DB::getPdo()->quote((string) $request->business_unit)."";
             }
 
             if(!empty($request->employee_group) && $request->employee_group != 'All'){
 
-                $where_clause .= " and employee_group= '".$request->employee_group."'";
+                $where_clause .= " and employee_group= ".\DB::getPdo()->quote((string) $request->employee_group)."";
 
             }
             
@@ -2299,7 +1553,8 @@ class AttendanceController extends Controller
                     ->orWhere('att_check_overall_status','RPL');
                 })->count();
                
-                $attendance = DB::select("SELECT e.employee_code,
+                $attendance = DB::select("SELECT STRAIGHT_JOIN e.employee_code, -- employees first: the optimizer otherwise scans designations per row
+                
                 e.employee_name,
                 e.employee_new_code,
                 e.business_unit,
@@ -2328,8 +1583,8 @@ class AttendanceController extends Controller
                 FROM tbl_employees e
                 INNER JOIN tbl_departments dp ON e.employee_department = dp.department_id
                 INNER JOIN tbl_designations ds ON e.employee_designation = ds.designation_id
-                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id
-                AND att_for_date = $date AND att_for_month = $month AND att_for_year = $year
+                LEFT JOIN (SELECT * FROM tbl_attendance WHERE att_for_year ".CustomHelper::sql_attendance_eq($year)." AND att_for_month ".CustomHelper::sql_attendance_eq($month)." AND att_for_date ".CustomHelper::sql_attendance_eq($date).") a
+                ON e.employee_id = a.att_employee_id
                 WHERE $where_clause ORDER BY e.employee_code");
                 $attendance = json_decode(json_encode($attendance), TRUE);
 
@@ -2346,7 +1601,8 @@ class AttendanceController extends Controller
                     ->orWhere('att_check_overall_status','RPL');
                 })->count();
 
-                $attendance = DB::select("SELECT e.employee_code,
+                $attendance = DB::select("SELECT STRAIGHT_JOIN e.employee_code, -- employees first: the optimizer otherwise scans designations per row
+                
                 e.employee_name,
                 e.employee_new_code,
                 e.business_unit,
@@ -2375,8 +1631,8 @@ class AttendanceController extends Controller
                 FROM tbl_employees e
                 INNER JOIN tbl_departments dp ON e.employee_department = dp.department_id
                 INNER JOIN tbl_designations ds ON e.employee_designation = ds.designation_id
-                LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id
-                AND att_for_date = $date AND att_for_month = $month AND att_for_year = $year
+                LEFT JOIN (SELECT * FROM tbl_attendance WHERE att_for_year ".CustomHelper::sql_attendance_eq($year)." AND att_for_month ".CustomHelper::sql_attendance_eq($month)." AND att_for_date ".CustomHelper::sql_attendance_eq($date).") a
+                ON e.employee_id = a.att_employee_id
                 WHERE $where_clause ORDER BY e.employee_code");
                 $attendance = json_decode(json_encode($attendance), TRUE);
 
@@ -2388,7 +1644,45 @@ class AttendanceController extends Controller
 
             $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
            
-            $send_data = compact('title','login_user','attendance','t_employee_leaves','manage_leaves','leave_name','departments','employee_groups');
+            // card totals over the whole day, then the card / search filter and one page of rows for the table
+            $status_counts = [
+                'present' => 0, 'late_early' => 0, 'half_day' => 0, 'absent' => 0, 'off_days' => 0,
+            ];
+            foreach($attendance as $row){
+                $row_status = $row['att_check_overall_status'];
+                if($row_status == 'Present'){ $status_counts['present']++; }
+                elseif(in_array($row_status, ['Late Coming','Early out'])){ $status_counts['late_early']++; }
+                elseif($row_status == 'Half day'){ $status_counts['half_day']++; }
+                elseif($row_status == 'Absent'){ $status_counts['absent']++; }
+                elseif($row_status == 'Offdays' || substr($row_status, 0, 7) == 'Holiday'){ $status_counts['off_days']++; }
+            }
+
+            $status_filter = array_filter(array_map('trim', explode(',', (string) $request->input('status'))));
+            if(!empty($status_filter)){
+                $status_filter = array_map('strtolower', $status_filter);
+                $attendance = array_values(array_filter($attendance, function($row) use($status_filter){
+                    $row_status = strtolower($row['att_check_overall_status']);
+                    if($row_status == 'present' && in_array('on time', $status_filter)){ return true; }
+                    if($row_status == 'offdays' && in_array('off day', $status_filter)){ return true; }
+                    if(substr($row_status, 0, 7) == 'holiday' && in_array('holiday', $status_filter)){ return true; }
+                    return in_array($row_status, $status_filter);
+                }));
+            }
+
+            $search = trim((string) $request->input('search'));
+            if($search !== ''){
+                $attendance = array_values(array_filter($attendance, function($row) use($search){
+                    return stripos($row['employee_name'], $search) !== false || stripos((string) $row['employee_code'], $search) !== false
+                        || stripos((string) $row['department_name'], $search) !== false || stripos((string) $row['designation_name'], $search) !== false;
+                }));
+            }
+
+            $per_page = CustomHelper::per_page();
+            $current_page = LengthAwarePaginator::resolveCurrentPage();
+            $pagination = new LengthAwarePaginator(array_slice($attendance, ($current_page - 1) * $per_page, $per_page), count($attendance), $per_page, $current_page, ['path' => $request->url(), 'query' => $request->query()]);
+            $attendance = $pagination->items();
+
+            $send_data = compact('title','login_user','attendance','t_employee_leaves','manage_leaves','leave_name','departments','employee_groups','status_counts','pagination');
 
           
             return view('attendance.daily-attendance-report2',$send_data);
@@ -2414,15 +1708,15 @@ class AttendanceController extends Controller
 
             $where_clause = '1=1';
             // if(!empty($request->employee_location)){
-            //     $where_clause .= " AND employee_location = '".$request->employee_location."'";
+            //     $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request->employee_location)."";
             // }
 
             if(!empty($request->department_id) && $request->department_id != 'All'){
-                $where_clause .= ' AND employee_department = '.$request->department_id;
+                $where_clause .= ' AND employee_department = '.\DB::getPdo()->quote((string) $request->department_id);
             }
 
             if(!empty($request->business_unit) && $request->business_unit != 'All'){
-                $where_clause .= " AND business_unit = '".$request->business_unit."'";
+                $where_clause .= " AND business_unit = ".\DB::getPdo()->quote((string) $request->business_unit)."";
             }
             
             if(empty($request->is_active)){
@@ -2923,68 +2217,6 @@ class AttendanceController extends Controller
     }
     
     
-    protected function bisconni_attendace_report(Request $request){
-        $from_date = ($request->from_date) ?? '2023-09-26'; //date('Y-m-d');
-        $to_date = ($request->to_date) ?? date('Y-m-d');
-        $title = 'bisconni-report';
-        $login_user = $this->get_login_user_detail();
-        $attendance = DB::select("
-        SELECT
-        e.employee_id,e.employee_code , e.employee_name, e.business_unit, dep.department_name, des.designation_name,e.employee_offdays,
-        SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) AS total_present,
-        SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) AS total_late,
-        SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) AS total_halfday,
-        SUM(CASE WHEN att_check_overall_status = 'leaves'
-        OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) AS total_leaves,
-        (SELECT COUNT(*)
-        FROM (
-            SELECT DATE_ADD('$from_date', INTERVAL number DAY) AS DateInMonth
-            FROM (
-                SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
-                FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
-                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
-                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
-            ) AS nums
-            WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
-        ) AS DateRange
-        WHERE
-          e.employee_offdays like CONCAT('%', DAYNAME(DateInMonth), '%')
-         ) as off_days_count,
-         (
-            (DATEDIFF('$to_date', '$from_date') + 1) -
-            (SUM(CASE WHEN att_check_overall_status = 'Present' THEN 1 ELSE 0 END) +
-            SUM(CASE WHEN att_check_overall_status = 'Late Coming' OR att_check_overall_status = 'Early out' THEN 1 ELSE 0 END) +
-            SUM(CASE WHEN att_check_overall_status = 'Half day' THEN 1 ELSE 0 END) +
-            SUM(CASE WHEN att_check_overall_status = 'leaves' OR l.leave_name IS NOT NULL THEN 1 ELSE 0 END) +
-            (SELECT COUNT(*)
-        FROM (
-            SELECT DATE_ADD('$from_date', INTERVAL number DAY) AS DateInMonth
-            FROM (
-                SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number
-                FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones,
-                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens,
-                     (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds
-            ) AS nums
-            WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
-        ) AS DateRange
-        WHERE
-          e.employee_offdays like CONCAT('%', DAYNAME(DateInMonth), '%')))
-
-         ) AS absent,
-         DATEDIFF('$to_date', '$from_date') + 1 AS total_days
-        FROM tbl_attendance a
-        LEFT JOIN tbl_leave_management l ON a.att_check_overall_status = l.leave_name
-        INNER JOIN tbl_employees e ON a.att_employee_id = e.employee_id
-        INNER JOIN tbl_departments dep ON e.employee_department = dep.department_id
-        INNER JOIN tbl_designations des ON e.employee_designation = des.designation_id
-        WHERE CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) >= '$from_date'
-        AND CONCAT(a.att_for_year,'-',a.att_for_month,'-',a.att_for_date) <= '$to_date' AND e.business_unit = 'Bisconni'
-        GROUP BY e.employee_code, e.employee_name , e.business_unit, dep.department_name , des.designation_name , e.employee_offdays,e.employee_id
-        ");
-        $attendance = json_decode(json_encode($attendance), TRUE);
-        $send_data = compact('login_user','title','attendance');
-        return view('attendance.bisconni-attendance-report', $send_data);
-    }
 
 
     protected function attendance_calender(Request $request_data){
@@ -3015,12 +2247,16 @@ class AttendanceController extends Controller
             }else{
                 $employee_id = session('user_session');
             }
+            // someone else's calendar: HR / Admin, or that employee's managers
+            if($employee_id != session('user_session') && !$this->can_respond_for([$employee_id], ['hr'])){
+                $employee_id = session('user_session');
+            }
 
             $employee = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',$employee_id)->get(['employee_id','employee_code','employee_name','department_name','designation_name','employee_jobtitle','employee_offdays','employee_shift_flexibilty'])->toArray();
 
             $attendances = Attendance::where(['att_employee_id'=>$employee_id,'att_for_month'=>$month,'att_for_year'=>$year])->get()->toArray();
 
-            $all_employees = Employees::where('employee_isactive',1)->get()->toArray();
+            $all_employees = []; // the employee filter searches through /employee-search
 
             $manage_leaves = LeaveManagement::get(['leave_manage_id','leave_name'])->toArray();
 
@@ -3029,7 +2265,7 @@ class AttendanceController extends Controller
             
             $send_data = compact('title','login_user','employee','month','month_days','year','attendances','all_employees','manage_leaves','leave_names','dynamic_years');
             
-            if($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
 		        return view('attendance.attendance-calender',$send_data);
             }else{
                return redirect()->back();
@@ -3110,7 +2346,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Attendance Employees Share Report Insert Record', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3165,7 +2401,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('All  Attendance Employees Share Report', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3221,7 +2457,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('All  Attendance Employees Share Report', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3280,34 +2516,30 @@ class AttendanceController extends Controller
             $where_clause = '1=1';
 
             if(!empty($request->department_id) && $request->department_id != 'All'){
-                $where_clause .= ' AND e.employee_department = '.$request->department_id;
+                $where_clause .= ' AND e.employee_department = '.(int) $request->department_id;
             }
 
             if (!empty($request->designation_id)) {
-                // if (is_array($request->designation_id)) {
-                    $designation_ids = implode(',', $request->designation_id);
-                    $where_clause .= ' AND des.designation_id IN ('. $designation_ids .')';
-                // } else {
-                //     $where_clause .= ' AND des.designation_id = '. $request->designation_id;
-                // }
+                $designation_ids = implode(',', array_map('intval', (array) $request->designation_id));
+                $where_clause .= ' AND des.designation_id IN ('. $designation_ids .')';
             }
 
             if(!empty($request->business_unit) && $request->business_unit != 'All'){
-                $where_clause .= " AND e.business_unit = '".$request->business_unit."'";
+                $where_clause .= " AND e.business_unit = ".DB::getPdo()->quote($request->business_unit);
             }
 
             if(!empty($request->from_date)){
-                $from_date = $request->from_date;
+                $from_date = date('Y-m-d', strtotime($request->from_date));
             }
 
             if(!empty($request->to_date)){
-                $to_date = $request->to_date;
+                $to_date = date('Y-m-d', strtotime($request->to_date));
             }
 
 
             // $emp_name = '1=1';
             // if($request->input('emp_name') != '' && is_numeric($request->input('emp_name'))){
-            //     $emp_name  .= ' AND employee_id = "'. $request->input('emp_name').'"';  
+            //     $emp_name  .= ' AND employee_id = '.\DB::getPdo()->quote((string) $request->input('emp_name')).'';  
             // }
           
             // if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12){
@@ -3330,7 +2562,7 @@ class AttendanceController extends Controller
             // array_push($leave_name,"RPL");
             // $leave_name = "'" . implode("', '", $leave_name) . "'";
             
-            // if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 3){
+            // if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null)){
 
             //     $all_employees = Employees::where('employee_isactive', $employement_status);
             //     if ($where_clause != '1=1') {
@@ -3380,12 +2612,28 @@ class AttendanceController extends Controller
             $designations = Designation::where('department_id', $request->department_id)->get(['designation_id','designation_name'])->toArray();
            
             // $all_attendances = $this->get_monthly_attendance($leave_name,$last_date,$year,$month,$employement_status,$where_clause_two);
+            // on screen the report is built for one page of employees; downloads cover everyone
+            $pagination = null;
+            if($request->download != 'TRUE'){
+                $search = trim((string) $request->input('search'));
+                $pagination = DB::table('tbl_employees as e')
+                    ->leftJoin('tbl_designations as des','e.employee_designation','=','des.designation_id')
+                    ->whereRaw($where_clause)->where('e.employee_isactive',1)
+                    ->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('e.employee_name','like','%'.$search.'%')->orWhere('e.employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->orderBy('e.employee_code')
+                    ->paginate(CustomHelper::per_page(), ['e.employee_id'])->withQueryString();
+                $page_employee_ids = $pagination->pluck('employee_id')->map(function($id){ return (int) $id; })->toArray();
+                $where_clause .= ' AND e.employee_id IN ('.(empty($page_employee_ids) ? '0' : implode(',', $page_employee_ids)).')';
+            }
+
             $all_attendances = $this->get_monthly_attendance_all_employees($from_date , $to_date , $where_clause);
             $all_attendances = json_decode(json_encode($all_attendances), true);
 
-            // dd($all_attendances);
-                    // dd($from_date);
-            $send_data = compact('title','login_user','all_attendances','departments','designations','from_date','to_date');
+            $send_data = compact('title','login_user','all_attendances','departments','designations','from_date','to_date','pagination');
 
             if($request->download == 'TRUE'){
 
@@ -4031,11 +3279,11 @@ class AttendanceController extends Controller
         
             $where_clause = '1=1';
             if(!empty($request->employee_location)){
-                $where_clause .= ' AND employee_location = '.$request->employee_location;  
+                $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location);  
             }
             $emp_name = '1=1';
             if($request->input('emp_name') != '' && is_numeric($request->input('emp_name'))){
-                $emp_name  .= ' AND employee_id = "'. $request->input('emp_name').'"';  
+                $emp_name  .= ' AND employee_id = '.\DB::getPdo()->quote((string) $request->input('emp_name')).'';  
             }
           
             if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12){
@@ -4058,7 +3306,7 @@ class AttendanceController extends Controller
             array_push($leave_name,"RPL");
             $leave_name = "'" . implode("', '", $leave_name) . "'";
             
-            if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 3){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null)){
             
                 $all_employees = Employees::where('employee_isactive',$employement_status)->whereRaw($where_clause)->whereRaw($emp_name)
                 ->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
@@ -4191,7 +3439,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Attendance locking method', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -4212,9 +3460,9 @@ class AttendanceController extends Controller
 
     protected function export_data_into_dat_file(Request $request){
         try{
-            $from_date = $request->input('from_date');
+            $from_date = date('Y-m-d', strtotime($request->input('from_date')));
 
-            $to_date = $request->input('to_date');
+            $to_date = date('Y-m-d', strtotime($request->input('to_date')));
 
             $emp_group =  $request->input('emp_group');
 
@@ -4252,7 +3500,7 @@ class AttendanceController extends Controller
                 DB::raw("CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)"),
                 [$from_date, $to_date]
             )
-            ->whereIn('employee_group', $emp_group)
+            ->whereIn('employee_group', (array) $emp_group)
             ->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_for_date','att_for_month','att_for_year','tbl_employees.employee_code','tbl_employees.employee_group'])
             ->toArray();
                 
@@ -4297,7 +3545,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Download Attendance Dat file', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -4481,7 +3729,7 @@ class AttendanceController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Delete Attendance Record', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -4557,109 +3805,5 @@ class AttendanceController extends Controller
     //     }
     // }
 
-    protected function download_day_wise_attendance_report(Request $request)
-    {
-        set_time_limit(1800);
-
-        $designationNames = [
-            400 => 'Dsr-1',
-            453 => 'Dsr-2',
-            478 => 'Dsr-3',
-        ];
-    
-        $designations = [400, 453, 478];
-        $files = [];
-    
-        foreach ($designations as $designation) {
-            $employees = Employees::where('employee_designation', $designation)
-            ->where('employee_isactive', 1)
-            ->get(['employee_id'])
-            ->toArray();
-    
-            if (!empty($employees)) {
-                $attendance_array = [];
-    
-                foreach ($employees as $employee) {
-                    $employee_id = $employee['employee_id'];
-    
-                    $attendance = DB::select("
-                        SELECT
-                            emp.employee_code as 'Employee ID',
-                            emp.employee_name as  'Name',
-                            emp.employee_new_code as  'Employee New Code',
-                            CONCAT(LM.employee_code , ' - ' , LM.employee_name) as 'Line Manager',
-                            emp.business_unit as 'Business Unit',
-                            DATE(dates.date_between) as 'Date',
-                            DAYNAME(dates.date_between) as 'Day',
-                            CASE
-                                WHEN emp.employee_doj <= dates.date_between THEN
-                                    CASE
-                                        WHEN att.att_check_overall_status IS NULL AND LOCATE(DAYNAME(dates.date_between), REPLACE(emp.employee_offdays, ' ', '')) > 0 THEN 'Off Day'
-                                        WHEN att.att_check_overall_status IS NULL THEN 'Absent' ELSE 'Present'
-                                    END
-                                ELSE '-'
-                            END AS 'Attendance Status',
-                            CASE
-                                WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_in_time, '')
-                                ELSE ''
-                            END AS 'Check In',
-                            CASE
-                                WHEN emp.employee_doj <= dates.date_between THEN IFNULL(att.att_check_out_time, '')
-                                ELSE ''
-                            END AS 'Check Out'
-                        FROM (
-                            SELECT DATE_ADD('$request->from_date', INTERVAL n DAY) AS date_between
-                            FROM (
-                                SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-                                FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-                                    (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-                                    (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
-                            ) AS numbers
-                            WHERE DATE_ADD('$request->from_date', INTERVAL n DAY) BETWEEN '$request->from_date' AND '$request->to_date'
-                        ) AS dates
-                        LEFT JOIN tbl_attendance AS att ON DATE(dates.date_between) = att.att_comp_date AND att.att_employee_id = $employee_id
-                        LEFT JOIN tbl_employees AS emp ON $employee_id = emp.employee_id
-                        LEFT JOIN tbl_employees as LM ON emp.employee_senior_manager = LM.employee_id
-                        ORDER BY dates.date_between ASC
-                    ");
-    
-                    $attendance = json_decode(json_encode($attendance), TRUE);
-                    $attendance_array = array_merge($attendance_array, $attendance);
-                }
-    
-                if (!empty($attendance_array)) {
-                    $designationName = $designationNames[$designation];
-                    $fileName = "attendance_report_designation_{$designationName}.xlsx";
-                    $filePath = tempnam(sys_get_temp_dir(), $fileName);
-    
-                    $header_style = (new Style())->setFontBold();
-                    (new FastExcel($attendance_array))->headerStyle($header_style)->export($filePath);
-    
-                    $files[$fileName] = file_get_contents($filePath);
-                    unlink($filePath);  
-                }
-            }
-        }
-    
-        if (!empty($files)) {
-            $zip = new ZipArchive;
-            $zipFileName = 'attendance_reports.zip';
-            $zipPath = tempnam(sys_get_temp_dir(), $zipFileName);
-    
-            $zip->open($zipPath, ZipArchive::CREATE);
-    
-            foreach ($files as $fileName => $fileContent) {
-                $zip->addFromString($fileName, $fileContent);
-            }
-    
-            $zip->close();
-    
-            return response()->streamDownload(function () use ($zipPath) {
-                readfile($zipPath);
-            }, $zipFileName);
-        }
-    
-        return response()->json(['message' => 'No attendance data found for the given date range.']);
-    }
 
 }

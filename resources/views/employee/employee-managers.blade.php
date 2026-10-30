@@ -123,7 +123,7 @@
 
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
-                            <table class="table gs-0 gy-4 dataTable table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            <table class="table gs-0 gy-4 dataTable table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
 
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -188,6 +188,7 @@
                                 </tbody>
 
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                     </div>
 
@@ -229,33 +230,19 @@
 
                                     <div class="col-md-12 mb-8 mt-3 fv-row">
                                         <label class="required fs-6 fw-semibold mb-2">Senior Manager</label>
-                                        <select class="form-select  myselect4" data-control="select2" data-hide-search="false" name="senior_manager"
+                                        <select class="form-select  myselect4" data-control="select2" data-hide-search="false" name="senior_manager" data-employee-select data-scope="managers"
                                         id="senior_manager"
                                         required="required">
                                         {{-- <option value="">No Senior Manager</option> --}}
-                                        @if (!empty($managers))
-                                            @foreach ($managers as $manager)
-                                                <option value="{{ $manager['employee_id'] }}"
-                                                    @if ($manager['employee_code'] == '' || $manager['employee_code'] == 'N/A') disabled @endif>
-                                                    {{ $manager['employee_code'] . ' - ' . $manager['employee_name'] }}
-                                                </option>
-                                            @endforeach
-                                        @endif
+                                        {{-- managers are searched through /employee-search --}}
                                         </select>
                                     </div>
 
                                     <div class="col-md-12 mb-8 mt-3 fv-row">
                                         <label class="fs-6 fw-semibold mb-2">Junior Manager</label>
-                                        <select class="form-select  myselect5" data-control="select2" data-hide-search="false" name="junior_manager"  id="junior_manager" >
+                                        <select class="form-select  myselect5" data-control="select2" data-hide-search="false" name="junior_manager"  id="junior_manager" data-employee-select data-scope="managers" >
                                         <option value="">No Junior Manager</option>
-                                        @if (!empty($managers))
-                                            @foreach ($managers as $manager)
-                                                <option value="{{ $manager['employee_id'] }}"
-                                                    @if ($manager['employee_code'] == '' || $manager['employee_code'] == 'N/A') disabled @endif>
-                                                    {{ $manager['employee_code'] . ' - ' . $manager['employee_name'] }}
-                                                </option>
-                                            @endforeach
-                                        @endif
+                                        {{-- managers are searched through /employee-search --}}
                                         </select>
                                     </div>
 
@@ -362,31 +349,17 @@
 
                                 <div class="col-md-12 mb-8 fv-row d-none" id="employees_senior_manager">
                                     <label class="required fs-6 fw-semibold mb-2">Senior Manager</label>
-                                    <select class="form-select bulk_employee_select" data-control="select2" data-placeholder="Select Senior Manager" id="selectseniormanager" data-hide-search="false" name="employee_senior_manager">
+                                    <select class="form-select bulk_employee_select" data-control="select2" data-placeholder="Select Senior Manager" id="selectseniormanager" data-hide-search="false" name="employee_senior_manager" data-employee-select data-scope="managers">
                                     <option value=""></option>
-                                    @if (!empty($managers))
-                                        @foreach ($managers as $manager)
-                                            <option value="{{ $manager['employee_id'] }}"
-                                                @if ($manager['employee_code'] == '' || $manager['employee_code'] == 'N/A') disabled @endif>
-                                                {{ $manager['employee_code'] . ' - ' . $manager['employee_name'] }}
-                                            </option>
-                                        @endforeach
-                                    @endif
+                                    {{-- managers are searched through /employee-search --}}
                                     </select>
                                 </div>
 
                                 <div class="col-md-12 mb-8 fv-row d-none" id="employees_junior_manager">
                                     <label class="fs-6 fw-semibold mb-2">Junior Manager</label>
-                                    <select class="form-select bulk_employee_select" data-control="select2" id="selectjuniormanager" data-hide-search="false" name="employee_junior_manager">
+                                    <select class="form-select bulk_employee_select" data-control="select2" id="selectjuniormanager" data-hide-search="false" name="employee_junior_manager" data-employee-select data-scope="managers">
                                     <option value="">No Junior Manager</option>
-                                    @if (!empty($managers))
-                                        @foreach ($managers as $manager)
-                                            <option value="{{ $manager['employee_id'] }}"
-                                                @if ($manager['employee_code'] == '' || $manager['employee_code'] == 'N/A') disabled @endif>
-                                                {{ $manager['employee_code'] . ' - ' . $manager['employee_name'] }}
-                                            </option>
-                                        @endforeach
-                                    @endif
+                                    {{-- managers are searched through /employee-search --}}
                                     </select>
                                 </div>
 
@@ -470,7 +443,7 @@
 
 @push('js-link')
 
-<script src="{{url('assets/js/employees/employee-managers.js')}}"></script>
+<script src="{{url('assets/js/employees/employee-managers.js')}}?v=2"></script>
 <script>
     var count_val = {{ $count }};
 </script>

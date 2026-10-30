@@ -120,7 +120,7 @@ class RoomScreenController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Add Room", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -223,7 +223,7 @@ class RoomScreenController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Update Room", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -282,7 +282,7 @@ class RoomScreenController extends Controller
             }         
         }catch(\Exception $e){
             $this->create_error_log('Delete Room', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

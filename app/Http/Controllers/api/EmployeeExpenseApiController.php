@@ -29,11 +29,11 @@ class EmployeeExpenseApiController extends Controller
             $where_clause = '1=1 ';
             if($request->get('status')){
 
-                $where_clause .= ' and emp_expense_approved_by_hr = '.$request->get('status');
+                $where_clause .= ' and emp_expense_approved_by_hr = '.\DB::getPdo()->quote((string) $request->get('status'));
             }
             if($request->get('paid')){
 
-                $where_clause .= ' and emp_expense_reimbursement = '.$request->get('paid');
+                $where_clause .= ' and emp_expense_reimbursement = '.\DB::getPdo()->quote((string) $request->get('paid'));
             }
 
             $fetch_expense = EmployeeExpense::

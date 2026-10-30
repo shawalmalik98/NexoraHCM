@@ -26,7 +26,7 @@ class MachineAttendanceController extends Controller
                 }
             }
             if(!empty($request->input('status'))){
-                $where_clause .= ' AND logs_status like "%'.$request->input('status').'%"';
+                $where_clause .= ' AND logs_status like '.\DB::getPdo()->quote('%'.$request->input('status').'%').'';
             }
             $fetch_machine_logs = AttendanceMachineLogs::leftJoin('tbl_attendance_devices','tbl_machine_attendance_logs.machine_id','=','tbl_attendance_devices.attendance_device_id')->whereRaw($where_clause)->get()->toArray();
             $send_data = compact('title','login_user','fetch_machine_logs');
@@ -47,36 +47,29 @@ class MachineAttendanceController extends Controller
     protected function pull_attendance_from_machine_into_portal(Request $request){
         try{
 
-            $attendance_array = [
-                [
-                    'employee_id' => '1',
-                    'attendance_punched_time' => '2023-09-05 09:04:06',
-                    'attendance_type' => 'CI',
-                ],
-                [
-                    'employee_id' => '1',
-                    'attendance_punched_time' => '2023-09-06 09:22:06',
-                    'attendance_type' => 'CI',
-                ],
-                [
-                    'employee_id' => '1',
-                    'attendance_punched_time' => '2023-09-06 14:22:06',
-                    'attendance_type' => 'CO',
-                ]
-            ];
-            // $machine_attendance_records = $request->input('attendance_array');
-            $machine_attendance_records = $attendance_array;
-            
+            // the attendance machine authenticates with the shared key from ATTENDANCE_MACHINE_KEY; without a key the endpoint stays closed
+            $machine_key = (string) config('services.attendance_machine.key');
+            if($machine_key === '' || !hash_equals($machine_key, (string) $request->header('Machine-Key'))){
+                return response([
+                    'message' => 'Invalid machine key.',
+                    'status' => FALSE,
+                    'data' => ''
+                ], 403);
+            }
+
+            // [{employee_id, attendance_punched_time: 'Y-m-d H:i:s', attendance_type: CI|CO}, ...]
+            $machine_attendance_records = $request->input('attendance_array');
+
             $machine_id = ($request->input('machine_id') == 1) ? 1:2;
-            
-            if(!empty($machine_attendance_records)){
+
+            if(!empty($machine_attendance_records) && is_array($machine_attendance_records)){
                 $this->records_insertion($machine_attendance_records);
+                $this->machine_logs(1 , NULL ,$machine_id);
                 return response([
                     'message' => 'Attendance inserted successfully',
                     'status' => TRUE,
                     'data' => ''
                 ], 200);
-                $this->machine_logs(1 , NULL ,$machine_id);
             }else{
                 return response([
                     'message' => 'No attendance record in payload.',
@@ -95,7 +88,7 @@ class MachineAttendanceController extends Controller
 
     protected function records_insertion($machine_records){
         foreach($machine_records as $record){
-            if(!empty($record['employee_id']) && !empty($record['attendance_punched_time']) && !empty($record['attendance_type'])){
+            if(is_array($record) && !empty($record['employee_id']) && !empty($record['attendance_punched_time']) && !empty($record['attendance_type'])){
                 if($record['attendance_type'] == 'CI'){
                     $this->multiple_check_in_machine($record['attendance_punched_time'], $record['employee_id'],4);
                 }
@@ -106,7 +99,7 @@ class MachineAttendanceController extends Controller
         }
     }
     
-    protected function machine_logs($logs_status, $logs_errors = NULL, $machine_id){
+    protected function machine_logs($logs_status, $logs_errors, $machine_id){
         $add_logs = new AttendanceMachineLogs();
         $add_logs->logs_status = $logs_status;
         $add_logs->logs_errors = $logs_errors;

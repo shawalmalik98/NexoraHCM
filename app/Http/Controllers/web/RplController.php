@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee};
@@ -41,47 +42,54 @@ class RplController extends Controller
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
                 
                 $where_clause = "1=1 AND employee_isactive = '".$status."'";
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_for_date)  || !empty($request_data->request_submited_date) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND rpl_leave_applied_by = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND rpl_leave_applied_by = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->request_worked_on_date)){
-                        $where_clause .= ' AND rpl_leave_worked_on_date = "'.$request_data->request_worked_on_date.'"';
+                        $where_clause .= ' AND rpl_leave_worked_on_date = '.\DB::getPdo()->quote((string) $request_data->request_worked_on_date).'';
                     }
                     if(!empty($request_data->request_for_required_date)){
-                        $where_clause .= ' AND rpl_leave_required_for_date = "'.$request_data->request_for_required_date.'"';
+                        $where_clause .= ' AND rpl_leave_required_for_date = '.\DB::getPdo()->quote((string) $request_data->request_for_required_date).'';
                     }
                     if(!empty($request_data->request_submited_date)){
-                        $where_clause .= ' AND rpl_leave_applied_date = "'.$request_data->request_submited_date.'"';
+                        $where_clause .= ' AND rpl_leave_applied_date = '.\DB::getPdo()->quote((string) $request_data->request_submited_date).'';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND rpl_leave_approved_by_hr = '.$request_data->req_status.'';
+                        $where_clause .= ' AND rpl_leave_approved_by_hr = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive', $status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-               $rpl_leaves = RplLeave::select(['rpl_leave_id','rpl_leave_applied_by','rpl_leave_applied_date','rpl_leave_worked_on_date','rpl_leave_required_for_date','rpl_leave_applied_reason','rpl_leave_approved_by_hr','rpl_leave_approved_date_hr','employee_id','rpl_leave_created_at'])
+               $search = trim((string) request()->input('search'));
+               $pagination = RplLeave::select(['rpl_leave_id','rpl_leave_applied_by','rpl_leave_applied_date','rpl_leave_worked_on_date','rpl_leave_required_for_date','rpl_leave_applied_reason','rpl_leave_approved_by_hr','rpl_leave_approved_date_hr','employee_id','rpl_leave_created_at'])
                 ->join('tbl_employees','tbl_rpl_leave_applied.rpl_leave_applied_by','=','tbl_employees.employee_id')
                 ->whereRaw($where_clause)
                 ->orderBy('rpl_leave_id','desc')
-                ->limit($limit_query)
-                ->get()->toArray();
+                ->when($search !== '', function($query) use($search){
+                       $query->where(function($query) use($search){
+                           $query->where('employee_name','like','%'.$search.'%')
+                               ->orWhere('employee_code','like','%'.$search.'%');
+                       });
+                   })
+                   ->paginate(CustomHelper::per_page(), ['*'])->withQueryString();
+               $rpl_leaves = $pagination->getCollection()->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id',7)->pluck('request_id')->toArray();
 
             }
           
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -92,20 +100,28 @@ class RplController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND leave_applied_by = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND leave_applied_by = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND leave_approved_by_hr = '.$request_data->req_status.'';
+                        $where_clause .= ' AND leave_approved_by_hr = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 }
                 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-               $rpl_leaves = RplLeave::join('tbl_employees', 'tbl_rpl_leave_applied.rpl_leave_applied_by', '=', 'tbl_employees.employee_id')->whereIn('rpl_leave_applied_by',$total_team_member)->whereRaw($where_clause)->orderBy('rpl_leave_id','DESC')->limit($limit_query)->get(['rpl_leave_id','rpl_leave_applied_by','rpl_leave_applied_date','rpl_leave_worked_on_date','rpl_leave_required_for_date','rpl_leave_applied_reason','rpl_leave_approved_by_hr','rpl_leave_approved_date_hr','employee_id','rpl_leave_created_at'])->toArray();
+               $search = trim((string) request()->input('search'));
+               $pagination = RplLeave::join('tbl_employees', 'tbl_rpl_leave_applied.rpl_leave_applied_by', '=', 'tbl_employees.employee_id')->whereIn('rpl_leave_applied_by',$total_team_member)->whereRaw($where_clause)->orderBy('rpl_leave_id','DESC')->when($search !== '', function($query) use($search){
+                       $query->where(function($query) use($search){
+                           $query->where('employee_name','like','%'.$search.'%')
+                               ->orWhere('employee_code','like','%'.$search.'%');
+                       });
+                   })
+                   ->paginate(CustomHelper::per_page(), ['rpl_leave_id','rpl_leave_applied_by','rpl_leave_applied_date','rpl_leave_worked_on_date','rpl_leave_required_for_date','rpl_leave_applied_reason','rpl_leave_approved_by_hr','rpl_leave_approved_date_hr','employee_id','rpl_leave_created_at'])->withQueryString();
+               $rpl_leaves = $pagination->getCollection()->toArray();
 
                 
                 $responsed_request = RequestApproval::where('request_module_id',7)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
@@ -120,9 +136,10 @@ class RplController extends Controller
             $dates = array_column($rpl_leaves,'rpl_leave_required_for_date');
    
 
-            $send_data = compact('title','login_user','employees_data','rpl_leaves','employee_locations','responsed_request','dates');
+            $pagination = $pagination ?? null;
+            $send_data = compact('title','login_user','employees_data','rpl_leaves','employee_locations','responsed_request','dates','pagination');
            
-            if($login_user[0]['employee_department'] == 1 ||$login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 && $login_user[0]['employee_is_manager'] == 1) ){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1) ){
                 return view('leave.all-rpl-employees-request', $send_data);
             }else{
                 return view('errors.403');
@@ -152,7 +169,7 @@ class RplController extends Controller
 
             $send_data = compact('login_user','title','my_rpl_leaves','responsed_request');
 
-            if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 7 ){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) ){
                 return view('leave.my-rpl-leave', $send_data);
             }else{
                 return view('errors.403');
@@ -160,7 +177,7 @@ class RplController extends Controller
            
         }catch(\Exception $e){
             $this->create_error_log("My RPL Leave Module Access", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -309,7 +326,7 @@ class RplController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Add New RPL Leave Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -483,7 +500,7 @@ class RplController extends Controller
             }        
         }catch(\Exception $e){
             $this->create_error_log('Update RPL Leave Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -555,7 +572,7 @@ class RplController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Delete RPL Leave Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -929,7 +946,7 @@ class RplController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Approved And Disapproved RPL Leave Request by Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

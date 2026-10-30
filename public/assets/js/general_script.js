@@ -6,7 +6,16 @@ $('#downloadbutton').submit(function () {
 });
 
 $(function () {
-    dataTable = $('#system_datatable').DataTable({
+    // tables marked data-server-paginated get their rows page by page from the server:
+    // no client paging, and the search box searches on the server
+    var serverPaginated = $('table[data-server-paginated]').length > 0;
+
+    dataTable = $('#system_datatable').DataTable(serverPaginated ? {
+        order: false,
+        paging: false,
+        info: false,
+        searching: false
+    } : {
         order: false,
         search: { regex: true },
         aLengthMenu: [
@@ -17,9 +26,25 @@ $(function () {
 
     });
 
-    $('#searchFilter').keyup(function () {
-        dataTable.search($(this).val()).draw();
-    });
+    if (serverPaginated) {
+        var searchParams = new URLSearchParams(window.location.search);
+        $('#searchFilter').val(searchParams.get('search') || '');
+        var searchTimer;
+        $('#searchFilter').on('keyup', function (e) {
+            var value = $(this).val();
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(function () {
+                var params = new URLSearchParams(window.location.search);
+                if (value) { params.set('search', value); } else { params.delete('search'); }
+                params.delete('page');
+                window.location.search = params.toString();
+            }, e.key === 'Enter' ? 0 : 600);
+        });
+    } else {
+        $('#searchFilter').keyup(function () {
+            dataTable.search($(this).val()).draw();
+        });
+    }
 
     $(".showpassword").on("input", function () {
         var inputVal = $(this).val();
@@ -388,6 +413,15 @@ function resetCardStyles(card) {
 
 
 $('.filter-record').on('click', function () {
+    // server paginated tables filter on the server: clicking a card toggles ?status=
+    if ($('table[data-server-paginated]').length > 0) {
+        var params = new URLSearchParams(window.location.search);
+        var status = $(this).attr('data-value');
+        if (params.get('status') === status) { params.delete('status'); } else { params.set('status', status); }
+        params.delete('page');
+        window.location.search = params.toString();
+        return;
+    }
     var value_search = '';
     value = $(this).attr('data-value');
     value = value.split(',');
@@ -432,3 +466,101 @@ if (document.querySelector('#meeting_description') != null) {
             console.error(error);
         });
 }    
+
+// Employee dropdowns (<select data-employee-select data-scope="team|active|managers" data-status="1|0|all">)
+// search employees on the server instead of rendering every employee as an option.
+function initEmployeeSelect(element) {
+    var $select = $(element);
+    if ($select.data('employee-select-ready')) {
+        return;
+    }
+    if ($select.hasClass('select2-hidden-accessible')) {
+        $select.select2('destroy');
+    }
+    var $modal = $select.closest('.modal');
+    $select.select2({
+        dropdownParent: $modal.length ? $modal : $(document.body),
+        placeholder: $select.data('placeholder') || 'Search employee',
+        allowClear: !$select.prop('required') && !$select.prop('multiple'),
+        minimumInputLength: 0,
+        ajax: {
+            url: base_url + '/employee-search',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                var request = {
+                    q: params.term || '',
+                    page: params.page || 1,
+                    scope: $select.data('scope') || 'team',
+                    status: $select.data('status') || '1'
+                };
+                // data-departments-from="#select": only employees of the departments picked there
+                if ($select.data('departments-from')) {
+                    request.departments = $($select.data('departments-from')).val() || [];
+                }
+                return request;
+            },
+            processResults: function (data, params) {
+                var results = data.results || [];
+                // keep the "all" style empty option of filters selectable
+                var $empty = $select.find('option[value=""]');
+                if ($empty.length && (params.page || 1) == 1 && !params.term) {
+                    results = [{ id: '', text: $empty.text() }].concat(results);
+                }
+                return { results: results, pagination: { more: data.pagination && data.pagination.more } };
+            }
+        }
+    });
+    element.setAttribute('data-kt-initialized', '1');
+    $select.data('employee-select-ready', true);
+}
+
+function initEmployeeSelects(context) {
+    $(context || document).find('select[data-employee-select]').each(function () {
+        initEmployeeSelect(this);
+    });
+}
+
+// Edit forms set employees with .val(id): add the option first (labelled from the server) so the value sticks
+(function ($) {
+    var originalVal = $.fn.val;
+    $.fn.val = function (value) {
+        if (arguments.length && value !== null && value !== undefined) {
+            this.each(function () {
+                if (this.tagName !== 'SELECT' || !this.hasAttribute('data-employee-select')) {
+                    return;
+                }
+                var $select = $(this);
+                var values = $.isArray(value) ? value : [value];
+                var missing = [];
+                values.forEach(function (v) {
+                    if (v === '' || v === null) { return; }
+                    if (!$select.find('option').filter(function () { return this.value == v; }).length) {
+                        $select.append(new Option('#' + v, v, false, false));
+                        missing.push(v);
+                    }
+                });
+                if (missing.length) {
+                    $.getJSON(base_url + '/employee-search', { ids: missing.join(','), scope: 'active', status: 'all' }, function (data) {
+                        (data.results || []).forEach(function (row) {
+                            $select.find('option').filter(function () { return this.value == row.id; }).text(row.text);
+                        });
+                        $select.trigger('change.select2');
+                    });
+                }
+            });
+        }
+        return originalVal.apply(this, arguments);
+    };
+})(jQuery);
+
+$(function () {
+    initEmployeeSelects();
+    // Metronic may initialise select2 after us; take the employee selects back
+    setTimeout(function () {
+        $('select[data-employee-select]').each(function () {
+            $(this).data('employee-select-ready', false);
+            initEmployeeSelect(this);
+        });
+    }, 0);
+});

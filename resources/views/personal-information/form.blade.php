@@ -72,8 +72,8 @@
             </div>
             <div class="col-lg-4">
                 <p>{{ $companySetting['company_address']}}</p>
-                <p><a href="#">(+92 21) 34311172 - 76</a></p>
-                <p><a href="https://ismailindustries.com.pk/">Nexora HCM</a></p>
+                <p>{{ $companySetting['company_email'] ?? '' }}</p>
+                <p>{{ $companySetting['company_name'] ?: 'Nexora HCM' }}</p>
             </div>
         </div>
     </div>

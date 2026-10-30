@@ -22,7 +22,7 @@ class SalaryDivisionSeeder extends Seeder
                 'salary_division_percentage' => 50],
                 ['salary_division_title' => "Utilities",
                 'salary_division_percentage' => 25],
-                ['salary_division_title' => "Fuel Allownce",
+                ['salary_division_title' => "Fuel Allowance",
                 'salary_division_percentage' => 25]
             ]);
         }

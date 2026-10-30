@@ -1,5 +1,9 @@
 @extends('layout.main')
 
+@push('cs-link')
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+@endpush
+
 @section('main-section')
 
 <div class="d-flex flex-column flex-column-fluid">
@@ -251,14 +255,8 @@
                                         </label>
 
                                         <div class="position-relative d-flex align-items-center">
-                                            <select class="form-select myselect2" data-control="select2" multiple="multiple" data-hide-search="false" data-close-on-select="false" data-placeholder="Select Employees For Meeting Invitation" name="meeting_users[]" required=""> 
-                                                @if (!empty($active_employees))
-                                                    @foreach ($active_employees as $active_employee)
-                                                        @if($active_employee['employee_id'] != session('user_session'))
-                                                            <option value="{{ $active_employee['employee_id'] }}">{{ $active_employee['employee_name'] }} - {{ $active_employee['employee_code'] }}</option>
-                                                        @endif
-                                                    @endforeach
-                                                @endif
+                                            <select class="form-select myselect2" data-control="select2" multiple="multiple" data-hide-search="false" data-close-on-select="false" data-placeholder="Select Employees For Meeting Invitation" name="meeting_users[]" required="" data-employee-select data-scope="active"> 
+                                                @include('include.employee-selected-options', ['selected' => null])
                                             </select>
                                         </div>
                                         

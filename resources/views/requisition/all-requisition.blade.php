@@ -78,7 +78,7 @@
                                             
                                     </div>
 
-                                    @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                         <div class="mb-3">
                                             
                                             <label class="form-label fw-semibold">Requisition Department</label>
@@ -118,13 +118,9 @@
                                         
                                         <div>
                                             <select class="form-select" data-kt-select2="true" name="emp_name"
-                                            id="company_emp_name" aria-required="true">
+                                            id="company_emp_name" aria-required="true" data-employee-select data-scope="team">
                                                 <option value="">All Employees</option>
-                                                @if(!empty($employees_data))
-                                                    @foreach($employees_data as $data)
-                                                        <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                    @endforeach
-                                                @endif
+                                                @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                             </select>
                                         </div>
                                         

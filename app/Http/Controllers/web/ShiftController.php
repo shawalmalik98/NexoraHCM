@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -47,64 +48,41 @@ class ShiftController extends Controller
 
             $where_clause = '1=1';
             if(!empty($request->employee_location)){
-                $where_clause   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
             }
 
-            if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2){
-                $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], $status);
-
-                $employees = Employees::whereIn('employee_id', $total_team_member)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
-                
-            }else{
-                $total_team_member = Employees::where('employee_isactive',$status)->whereRaw($where_clause)->pluck('employee_id')->toArray();
-                $employees = Employees::where('employee_isactive',$status)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
+            // HR / Admin see everyone, a manager the team (status / location filters apply to both)
+            $employee_scope = Employees::select('employee_id')->where('employee_isactive',$status)->whereRaw($where_clause);
+            if(!CustomHelper::has_role($login_user[0]['employee_id'], 'hr')){
+                $employee_scope->whereIn('employee_id', $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], $status) ?: [0]);
             }
+            // the name filter searches employees through /employee-search
+            $employees = [];
 
+            $columns = ['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by', 'shift_id', 'tbl_employees.employee_name', 'tbl_employees.employee_code', 'emp_shift.employee_code as employee_shift_code', 'emp_shift.employee_name as employee_shift_name'];
+            $shifts = Employees::
+                join('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
+                ->leftJoin('tbl_employees as emp_shift', 'emp_shift.employee_id', '=', 'tbl_shift_management.shift_created_by')
+                ->whereIn('tbl_employees.employee_id', $employee_scope);
 
             if(empty($request->input('emp_name'))){
-               
-                $fetch_shift_timing = [];
-                $employee_arrays = array_chunk($total_team_member , 2000);
-                
-                foreach($employee_arrays as $employee){
-                    
-                    $fetch_shift_timings = Employees::
-                    join('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
-                    ->leftJoin('tbl_employees as emp_shift', 'emp_shift.employee_id', '=', 'tbl_shift_management.shift_created_by')
-                    ->whereRaw($where_clause)
-                    ->whereIn('tbl_employees.employee_id', $employee)
-                    ->whereIn('shift_start_from_date',function($query) use($date){
+                // the shift in effect on the date for every employee in scope, a page at a time
+                $pagination = $shifts->whereIn('shift_start_from_date',function($query) use($date){
                         $query->fromRaw('tbl_shift_management as sub_table')
                         ->selectRaw('MAX(DATE(shift_start_from_date))')
-                        ->whereRaw("DATE(shift_start_from_date) <= '".$date."'")
+                        ->whereRaw("DATE(shift_start_from_date) <= ".\DB::getPdo()->quote($date))
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
-                    })->get(['tbl_shift_management.employee_id', 
-                        'shift_start_from_date',
-                        'shift_start_time',
-                        'shift_end_time',
-                        'shift_created_by',
-                        'shift_id',
-                        'tbl_employees.employee_name',
-                        'tbl_employees.employee_code',
-                        'emp_shift.employee_code as employee_shift_code',
-                        'emp_shift.employee_name as employee_shift_name'
-                    ])->toArray();
-                    
-                    $fetch_shift_timing = array_merge($fetch_shift_timing , $fetch_shift_timings);    
-                }    
-
+                    })
+                    ->orderBy('tbl_employees.employee_code')
+                    ->paginate(CustomHelper::per_page(), $columns)->withQueryString();
+                $fetch_shift_timing = $pagination->getCollection()->toArray();
             }else{
-               
-                $fetch_shift_timing = Employees::
-                    join('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
-                    ->where('tbl_employees.employee_id',$request->input('emp_name'))
-                    ->whereRaw($where_clause)
-                    ->get(['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by','shift_id','employee_name','employee_code'])->toArray();
+                // every shift of one employee
+                $fetch_shift_timing = $shifts->where('tbl_employees.employee_id',$request->input('emp_name'))->get($columns)->toArray();
 
                 $employee_name = Employees::where('employee_id',$request->input('emp_name'))->whereRaw($where_clause)->get(['employee_name','employee_code'])->toArray();
             }
-            
-            $send_data = compact('title','login_user','fetch_shift_timing','date','employees','employee_name','employee_locations');
+            $send_data = compact('title','login_user','fetch_shift_timing','date','employees','employee_name','employee_locations') + ['pagination' => $pagination ?? null];
 
             return view('shift-management.shift-management', $send_data);
 
@@ -162,10 +140,10 @@ class ShiftController extends Controller
 
             $where_clause = '1=1';
             if(!empty($request->employee_location)){
-                $where_clause   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
             }
 
-            if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2){
+            if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
                 $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], $status);
                 $employees = Employees::whereIn('employee_id',$total_team_member)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
             }else{
@@ -189,9 +167,11 @@ class ShiftController extends Controller
 
                 $fetch_shift_timing = Employees::
                     join('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
+                    ->leftJoin('tbl_employees as emp_shift', 'emp_shift.employee_id', '=', 'tbl_shift_management.shift_created_by')
                     ->where('tbl_employees.employee_id',$request->input('emp_name'))
+                    ->whereIn('tbl_employees.employee_id', $total_team_member)
                     ->whereRaw($where_clause)
-                    ->get(['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by','shift_id','employee_name','employee_code'])->toArray();
+                    ->get(['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time', 'shift_created_by','shift_id','tbl_employees.employee_name','tbl_employees.employee_code','emp_shift.employee_code as employee_shift_code','emp_shift.employee_name as employee_shift_name'])->toArray();
 
                 $employee_name = Employees::where('employee_id',$request->input('emp_name'))->whereRaw($where_clause)->get(['employee_name','employee_code'])->toArray();
             }
@@ -220,12 +200,8 @@ class ShiftController extends Controller
             $login_user = $this->get_login_user_detail();
             $all_department = Department::get(['department_id','department_name'])->toArray();
 
-            if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2){
-                $employees = Employees::where('employee_isactive',1)->get(['employee_id','employee_name','employee_code'])->toArray();
-            }else{
-                $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], 1);
-                $employees = Employees::where('employee_isactive',1)->whereIn('employee_id', $total_team_member)->get(['employee_id','employee_name','employee_code'])->toArray();
-            }
+            // the employee dropdown searches through /employee-search (HR / Admin everyone, managers their team)
+            $employees = [];
             $send_data = compact('title','login_user','all_department','employees');
             return view('shift-management.add-shift', $send_data);
         }catch(\Exception $e){
@@ -252,12 +228,18 @@ class ShiftController extends Controller
                     ]);
                 }
             }
+            // HR / Admin work with everyone, a manager only with the team
+            $login_user = $this->get_login_user_detail();
+            $team_only = !CustomHelper::has_role($login_user[0]['employee_id'], 'hr');
+            $team = $team_only ? $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], 1) : [];
+
             if(!empty($request->input('employee_id'))){
 
                 $fetch_employee = Employees::
                 leftjoin('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
                 ->where('employee_isactive',1)
-                ->whereIn('tbl_employees.employee_id',$request->input('employee_id'))
+                ->whereIn('tbl_employees.employee_id',(array) $request->input('employee_id'))
+                ->when($team_only, function($query) use($team){ $query->whereIn('tbl_employees.employee_id', $team ?: [0]); })
                 ->where(function($query_main){
                     $query_main->whereIn('shift_start_from_date',function($query){
                         $query->fromRaw('tbl_shift_management as sub_table')
@@ -283,7 +265,8 @@ class ShiftController extends Controller
                 $fetch_employee = Employees::
                 leftjoin('tbl_shift_management','tbl_employees.employee_id','tbl_shift_management.employee_id')
                 ->where('employee_isactive',1)
-                ->whereIn('employee_department',$request->input('department'))
+                ->whereIn('employee_department',(array) $request->input('department'))
+                ->when($team_only, function($query) use($team){ $query->whereIn('tbl_employees.employee_id', $team ?: [0]); })
                 ->where(function($query_main){
                     $query_main->whereIn('shift_start_from_date',function($query){
                         $query->fromRaw('tbl_shift_management as sub_table')
@@ -291,6 +274,8 @@ class ShiftController extends Controller
                         ->whereRaw("DATE(shift_start_from_date) <= '".date('Y-m-d')."'")
                         ->whereRaw('sub_table.employee_id = tbl_shift_management.employee_id');
                     });
+                    // employees without any shift yet are listed too (same as picking them by name)
+                    $query_main->orWhere('shift_start_from_date',null);
                 })
                 ->get(['tbl_shift_management.employee_id', 'shift_start_from_date', 'shift_start_time', 'shift_end_time','tbl_employees.employee_id','employee_name','employee_code'])->toArray();
 
@@ -339,7 +324,7 @@ class ShiftController extends Controller
         
             $login_user = $this->get_login_user_detail();
 
-            if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2){
+            if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
                 $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], 1);
                 $employee_shift_updated_array = $request->input('employee_id');
                 $result_diff = array_diff($employee_shift_updated_array,$total_team_member);
@@ -380,7 +365,7 @@ class ShiftController extends Controller
                 $notification_message = "Dear employee, your shift timing has been updated which is effecting from ".date('jS M, Y',strtotime($effected_date)).'. Please click here to view.';
                 $this->send_notification('Shift Time Update', $notification_message ,'/my-shift-time?m='.date('m',strtotime($effected_date)).'&y='.date('Y',strtotime($effected_date)),$request->input('employee_id')[$i],NULL,NULL,'No');
                 
-                if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2){
+                if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
     
                     $notification_message = $employee_name[0]['employee_name']."'s manager updated their shift timings which is effecting from ".date('jS M, Y',strtotime($effected_date));
                     $this->send_notification('Shift Time Update', $notification_message ,'shift-management?emp_name='.$request->input('employee_id')[$i].'&shift-id='.$add_shift->shift_id,NULL,NULL,NULL,'Yes');
@@ -394,7 +379,7 @@ class ShiftController extends Controller
             ]);
         }catch(\Exception $e){
             $this->create_error_log('Add employee shift', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -440,7 +425,7 @@ class ShiftController extends Controller
                 }
             }
 
-            $shift_requests = ShiftRequest::leftJoin('tbl_employees','tbl_employees.employee_id','=','request_approved_by_hr')->where('request_employee_id',$login_user[0]['employee_id'])->orderBy('shift_request_id','DESC')->get()->toArray();
+            $shift_requests = ShiftRequest::leftJoin('tbl_employees','tbl_employees.employee_id','=','request_approved_by_hr')->where('request_employee_id',(string) $login_user[0]['employee_id'])->orderBy('shift_request_id','DESC')->get()->toArray();
             $send_data = compact('title','login_user','month','year','shift_calender','shift_requests');
             return view('shift-management.my-shift-time', $send_data);
         }catch(\Exception $e){
@@ -485,7 +470,7 @@ class ShiftController extends Controller
                 }
             }
             
-            $check_resquest_exist = ShiftRequest::where('request_employee_id',$login_user[0]['employee_id'])->where('request_shift_effect_date',$request->input('effect_date'))->get()->toArray();
+            $check_resquest_exist = ShiftRequest::where('request_employee_id',(string) $login_user[0]['employee_id'])->where('request_shift_effect_date',$request->input('effect_date'))->get()->toArray();
 
             if(empty($check_resquest_exist)){
                 $add_shift_request = new ShiftRequest();
@@ -533,7 +518,7 @@ class ShiftController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Employee shift request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -584,7 +569,7 @@ class ShiftController extends Controller
                 }
             }
                 
-            $get_request = ShiftRequest::where('request_employee_id',$login_user[0]['employee_id'])->where('shift_request_id',$request->input('request_id'))->get()->toArray();
+            $get_request = ShiftRequest::where('request_employee_id',(string) $login_user[0]['employee_id'])->where('shift_request_id',$request->input('request_id'))->get()->toArray();
 
             if(!empty($get_request)){
 
@@ -630,7 +615,7 @@ class ShiftController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Update shift request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -668,14 +653,14 @@ class ShiftController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
-            $get_request = ShiftRequest::where('request_employee_id',$login_user[0]['employee_id'])->where('shift_request_id',$request->input('request_id'))->get()->toArray();
+            $get_request = ShiftRequest::where('request_employee_id',(string) $login_user[0]['employee_id'])->where('shift_request_id',$request->input('request_id'))->get()->toArray();
 
             if(!empty($get_request)){
 
                 if($get_request[0]['request_status'] == 1){
 
                     $delete_log = ShiftRequestLog::where('shift_request_id',$request->input('request_id'))->delete();
-                    $delete_request = ShiftRequest::where('request_employee_id',$login_user[0]['employee_id'])->where('shift_request_id',$request->input('request_id'))->delete();
+                    $delete_request = ShiftRequest::where('request_employee_id',(string) $login_user[0]['employee_id'])->where('shift_request_id',$request->input('request_id'))->delete();
 
                     if($delete_request == 1){
                         return response()->json([
@@ -703,7 +688,7 @@ class ShiftController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Delete shift request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -751,6 +736,12 @@ class ShiftController extends Controller
     protected function disapproved_shift_time_request(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = ShiftRequest::whereIn('shift_request_id', explode(',', (string) $request->input('disapproved_id')))->pluck('request_employee_id')->toArray();
+            if(!$this->can_respond_for($request_employees, ['hr'])){
+                return $this->not_allowed_response();
+            }
             $validator = Validator::make($request->all(), [
                 'disapproved_id' => 'required',
             ]);
@@ -808,7 +799,7 @@ class ShiftController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Disapproved shift request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -830,6 +821,12 @@ class ShiftController extends Controller
     protected function approved_shift_time_request(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = ShiftRequest::whereIn('shift_request_id', explode(',', (string) $request->input('approved_id')))->pluck('request_employee_id')->toArray();
+            if(!$this->can_respond_for($request_employees, ['hr'])){
+                return $this->not_allowed_response();
+            }
             $validator = Validator::make($request->all(), [
                 'approved_id' => 'required',
                 'shift_start' => 'required',
@@ -934,7 +931,7 @@ class ShiftController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Approved shift request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -988,7 +985,7 @@ class ShiftController extends Controller
             
         }catch(\Exception $e){
             $this->create_error_log('Log shift request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

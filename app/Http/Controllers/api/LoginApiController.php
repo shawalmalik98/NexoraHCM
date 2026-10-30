@@ -50,7 +50,7 @@ class LoginApiController extends Controller
                                     // $welcome_notification = CustomHelper::employee_welcome_status_api($filter_user[0]['employee_id']);
                                     // if($welcome_notification == 1){
 
-                                    //     $this->send_push_notification_mobile_app($filter_user[0]['employee_id'], 'Welcome on MegaHCM Mobile App.','Dear employee, we welcome you on our HCM\'s mobile application. Click here to explore more features in our updated app.');
+                                    //     $this->send_push_notification_mobile_app($filter_user[0]['employee_id'], 'Welcome on the Mobile App.','Dear employee, we welcome you on our HCM\'s mobile application. Click here to explore more features in our updated app.');
                                     // }
                                 
                                     $bearer_token_value = $filter_user[0]['employee_code'].time().rand(1000,9999).bin2hex(random_bytes(2));
@@ -260,10 +260,10 @@ class LoginApiController extends Controller
                         // $emailParts = explode('@', $get_employee_detail[0]['employee_work_email']);
                         // if (count($emailParts) === 2) {
                             // $afterAtSymbol = $emailParts[1];
-                            // if($afterAtSymbol == 'ismailindustries.com' || $afterAtSymbol == 'ismailindustries.com.pk'){
+                            // if(the email domain is allowed){
                                 // $data['link'] = 'reset-password-link?xteko=' . Crypt::encryptString($get_employee_detail[0]['employee_id']);
                                 // Mail::send('email-template.reset-password',$data,function($message) use ($get_employee_detail) {
-                                //     $message->from('iilinnovations@ismailindustries.com', 'IIL Innovations');
+                                //     $message->from(config('mail.from.address'), config('mail.from.name'));
                                 //     $message->to($get_employee_detail[0]['employee_work_email']);
                                 //     $message->subject('Reset Password');
                                 // });
@@ -320,7 +320,7 @@ class LoginApiController extends Controller
 
             }
         }catch(\Exception $e){
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

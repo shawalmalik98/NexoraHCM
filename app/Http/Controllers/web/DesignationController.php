@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Models\{Designation, Department, Employees};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
-use App\Helpers\ActivityTracker;
+use App\Helpers\{ActivityTracker, CustomHelper};
 
 
 class DesignationController extends Controller
@@ -23,11 +23,21 @@ class DesignationController extends Controller
             
             $login_user = $this->get_login_user_detail();
 
-            $designations = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')->get(['designation_id','designation_name','tbl_designations.department_id','department_name','designation_create_time','designation_update_time']);
+            // one page at a time; the search box filters on designation / department name
+            $search = trim((string) request()->input('search'));
+            $pagination = Department::join('tbl_designations', 'tbl_departments.department_id', '=', 'tbl_designations.department_id')
+                ->when($search !== '', function($query) use($search){
+                    $query->where(function($query) use($search){
+                        $query->where('designation_name', 'like', '%'.$search.'%')->orWhere('department_name', 'like', '%'.$search.'%');
+                    });
+                })
+                ->orderBy('designation_id')
+                ->paginate(CustomHelper::per_page(), ['designation_id','designation_name','tbl_designations.department_id','department_name','designation_create_time','designation_update_time'])->withQueryString();
+            $designations = $pagination->getCollection();
 
             $departments = Department::all()->toArray();
 
-            $send_data = compact('title' , 'login_user' , 'designations', 'departments' );
+            $send_data = compact('title' , 'login_user' , 'designations', 'departments', 'pagination' );
 
             return view('designation.designation')->with($send_data);
         }
@@ -143,7 +153,7 @@ class DesignationController extends Controller
             }
         } catch (\Exception $e) {
             $this->create_error_log('Add New Designation', $e);
-            if (!env('APP_DEBUG')) {
+            if (!config('app.debug')) {
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -224,7 +234,7 @@ class DesignationController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Update Designation", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -278,7 +288,7 @@ class DesignationController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Delete Designation", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -313,7 +323,7 @@ class DesignationController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Fetch Designations For Create Employee Page", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

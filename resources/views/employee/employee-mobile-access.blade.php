@@ -102,14 +102,9 @@
                                                     <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
                                                     <option value="">Select Business Unit</option>
                                                     <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
-                                                    <option value="Candyland" @if (Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
-                                                    <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
-                                                    <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
-                                                    <option value="Hudson Pharma" @if (Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
-                                                    <option value="Astro" @if (Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
-                                                    <option value="Act Group" @if (Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
-                                                    <option value="Ismail Nutrition" @if (Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>
-                                                    <option value="Flour" @if (Request::get('business_unit') == 'Flour') selected @endif>Flour</option>
+                                                    @foreach (CustomHelper::business_units() as $business_unit)
+                                                        <option value="{{ $business_unit }}" @if (Request::get('business_unit') == $business_unit) selected @endif>{{ $business_unit }}</option>
+                                                    @endforeach
                                                 </select>
                                                 </div>
                                                 
@@ -154,7 +149,7 @@
 
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
 
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -216,6 +211,7 @@
 
                             </table>
                         </div>
+                        @include('include.server-pagination', ['paginator' => $pagination ?? null])
 
                     </div>
 
@@ -249,14 +245,9 @@
                             <div class="col-md-12 mb-8 mt-3 fv-row">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Name</label>
                                 <div class="position-relative d-flex align-items-center">
-                                    <select class="form-select addemployeeaccess" data-control="select2" data-placeholder="Select Employee" name="employee_name" required>
+                                    <select class="form-select addemployeeaccess" data-control="select2" data-placeholder="Select Employee" name="employee_name" required data-employee-select data-scope="active">
                                         <option value="">Select Employee </option>
-                                        @if(!empty($all_employees))
-                                            @foreach ($all_employees as $employees)
-                                                <option value="{{ $employees['employee_id'] }}">
-                                                    {{ $employees['employee_name'] }}</option>
-                                            @endforeach 
-                                        @endif    
+                                        @include('include.employee-selected-options', ['selected' => null])    
                                     </select>
                                    
                                 </div>
@@ -327,14 +318,9 @@
                             <div class="col-md-12 mb-8 mt-3 fv-row">
                                 <label class="required fs-6 fw-semibold mb-2">Employee Name</label>
                                 <div class="position-relative d-flex align-items-center">
-                                    {{-- <select class="form-select updateemployeeaccess" data-control="select2" data-placeholder="Select Employee" id="employee_id" name="employee_name" required>
+                                    {{-- <select class="form-select updateemployeeaccess" data-control="select2" data-placeholder="Select Employee" id="employee_id" name="employee_name" required data-employee-select data-scope="active">
                                         <option value="">Select Employee </option>
-                                        @if(!empty($all_employees))
-                                            @foreach ($all_employees as $employees)
-                                                <option value="{{ $employees['employee_id'] }}">
-                                                    {{ $employees['employee_name'] }}</option>
-                                            @endforeach 
-                                        @endif    
+                                        @include('include.employee-selected-options', ['selected' => null])    
                                     </select> --}}
                                     
                                     <input type="text" class="form-control" name="employee_name"  id="employee_id"  required="" readonly=""/>

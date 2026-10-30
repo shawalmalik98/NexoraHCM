@@ -87,7 +87,7 @@
                                         </span>
                                     </button>
 
-                                    <a href="{{ url('/sap-login') }}" class="btn btn-light">Cancel</a>
+                                    <a href="{{ url('/') }}" class="btn btn-light">Cancel</a>
                                 </div>
                             </form>
                             {{--end::Form--}}
@@ -149,7 +149,7 @@
                             timer: 3000,
                         })
                         setTimeout(() => {
-                            window.location.href = "{{ url('/sap-login') }}"; 
+                            window.location.href = "{{ url('/') }}"; 
                         }, 3000);
                     } else {
                         if(response.error == 'Error on line 214 The payload is invalid.'){
@@ -160,7 +160,7 @@
                             })
 
                             setTimeout(() => {
-                                window.location.href = "{{ url('/sap-login') }}"; 
+                                window.location.href = "{{ url('/') }}"; 
                             }, 3000);
                         }else{
                             Toast.fire({

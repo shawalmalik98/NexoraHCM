@@ -76,7 +76,7 @@
             @if(!empty($companySetting['company_logo']))
                 <img src="{{$companySetting['company_logo']}}" draggable="false" alt="logo" class="logo" style="width:10%">
             @else
-                <img src="{{ url('/portal_assets/images/logo.png') }}" draggable="false" class="img-fluid" >
+                <img src="{{ CustomHelper::hcm_default_settings()['company_logo'] ?? '' }}" draggable="false" class="img-fluid" >
             @endif
             
             <h1 class="text-center" style="margin-top:1%">{{ $companySetting['company_name']}} </h1>

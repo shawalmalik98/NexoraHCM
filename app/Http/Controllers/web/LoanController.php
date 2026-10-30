@@ -45,11 +45,11 @@ class LoanController extends Controller
             if(!empty($request->emp_status) || !empty($request->employee_location) || !empty($request->emp_name) || !empty($request->loan_issuance_date || !empty($request->loan_status))){
                
                 if(!empty($request->employee_location)){
-                    $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
-                    $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
+                    $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request->employee_location)." ";
+                    $where_clause_to   .= " AND employee_location = ".\DB::getPdo()->quote((string) $request->employee_location)." "; 
                 }
                 if(!empty($request->emp_name)){
-                    $where_clause .= " AND tbl_loans.employee_code = '".$request->emp_name."'";
+                    $where_clause .= " AND tbl_loans.employee_code = ".\DB::getPdo()->quote((string) $request->emp_name)."";
                 }
                 if(!empty($request->loan_issuance_date)){
                     $where_clause .= " AND loan_issuance_date like '%".CustomHelper::dateformatDFY($request->loan_issuance_date)."%' ";
@@ -59,20 +59,26 @@ class LoanController extends Controller
                     $where_clause_to   .= " AND employee_isactive = '".$status."'"; 
                 }
                 if(!empty($request->loan_status)){
-                    $where_clause .= " AND loan_status = '".$request->loan_status."'";
+                    $where_clause .= " AND loan_status = ".\DB::getPdo()->quote((string) $request->loan_status)."";
                 }
 
             }
 
-            $all_loans = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')
+            $search = trim((string) request()->input('search'));
+            $pagination = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')
             ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
             ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
             ->whereRaw($where_clause)
             ->orderBy('loan_id','DESC')
-            ->limit($limit_query)
-            ->get(['loan_id','loan_given_amount','loan_submitted_amount','loan_remaining_amount','loan_issuance_date','employee_name','employee_id','tbl_employees.employee_code','profile_avatar','loan_deduction_type','loan_deduction_amount','loan_deduction_start','loan_status','department_name','designation_name'])
-            ->toArray();
+            ->when($search !== '', function($query) use($search){
+                    $query->where(function($query) use($search){
+                        $query->where('employee_name','like','%'.$search.'%')
+                            ->orWhere('employee_code','like','%'.$search.'%');
+                    });
+                })
+                ->paginate(CustomHelper::per_page(), ['loan_id','loan_given_amount','loan_submitted_amount','loan_remaining_amount','loan_issuance_date','employee_name','employee_id','tbl_employees.employee_code','profile_avatar','loan_deduction_type','loan_deduction_amount','loan_deduction_start','loan_status','department_name','designation_name'])->withQueryString();
+            $all_loans = $pagination->getCollection()->toArray();
 
 
             $total_loan = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id' )
@@ -88,7 +94,8 @@ class LoanController extends Controller
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            $send_data = compact('title','login_user','all_loans','total_loan','loan_return','loan_reamining','all_employees', 'employee_locations','currency');
+            $pagination = $pagination ?? null;
+            $send_data = compact('title','login_user','all_loans','total_loan','loan_return','loan_reamining','all_employees', 'employee_locations','currency','pagination');
             
             return view('loan.all-loans', $send_data);     
 
@@ -145,11 +152,11 @@ class LoanController extends Controller
             if(!empty($request->emp_status) || !empty($request->employee_location) || !empty($request->emp_name) || !empty($request->loan_issuance_date || !empty($request->loan_status))){
                
                 if(!empty($request->employee_location)){
-                    $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
-                    $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
+                    $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request->employee_location)." ";
+                    $where_clause_to   .= " AND employee_location = ".\DB::getPdo()->quote((string) $request->employee_location)." "; 
                 }
                 if(!empty($request->emp_name)){
-                    $where_clause .= " AND tbl_loans.employee_code = '".$request->emp_name."'";
+                    $where_clause .= " AND tbl_loans.employee_code = ".\DB::getPdo()->quote((string) $request->emp_name)."";
                 }
                 if(!empty($request->loan_issuance_date)){
                     $where_clause .= " AND loan_issuance_date like '%".CustomHelper::dateformatDFY($request->loan_issuance_date)."%' ";
@@ -159,7 +166,7 @@ class LoanController extends Controller
                     $where_clause_to   .= " AND employee_isactive = '".$status."'"; 
                 }
                 if(!empty($request->loan_status)){
-                    $where_clause .= " AND loan_status = '".$request->loan_status."'";
+                    $where_clause .= " AND loan_status = ".\DB::getPdo()->quote((string) $request->loan_status)."";
                 }
 
             }
@@ -301,7 +308,7 @@ class LoanController extends Controller
                 }
             }    
         }catch(\Exception $e){
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -414,7 +421,7 @@ class LoanController extends Controller
                             'loan_reason' => $loan_data->input('loan_type')
                         ];
 
-                        $update_loan_request = LoanRequest::where('request_employee_id',$loan_data->input('employee_code'))
+                        $update_loan_request = LoanRequest::where('request_employee_id',(string) $loan_data->input('employee_code'))
                         ->where('loan_request_amount',$loan_data->input('loan_amount'))
                         ->where('loan_applied_date',$loan_data->input('loan_issuance_date'))
                         ->update($update_record);
@@ -439,7 +446,7 @@ class LoanController extends Controller
 
             }   
         }catch(\Exception $e){
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -529,7 +536,7 @@ class LoanController extends Controller
                 }
             }   
         }catch(\Exception $e){
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -558,7 +565,7 @@ class LoanController extends Controller
         
                 $process = Loan::where('loan_id', $request_data->delete_id)->delete();
                 if($process == 1){
-                    LoanRequest::where('request_employee_id', $loan_delete_request->employee_code)->where('loan_request_amount', $loan_delete_request->loan_given_amount)->where('loan_applied_date', $loan_delete_request->loan_issuance_date)->delete();
+                    LoanRequest::where('request_employee_id', (string) $loan_delete_request->employee_code)->where('loan_request_amount', $loan_delete_request->loan_given_amount)->where('loan_applied_date', $loan_delete_request->loan_issuance_date)->delete();
                     return response()->json([
                         'status' => 'TRUE',
                         'msg' => 'Loan has been deleted',
@@ -581,7 +588,7 @@ class LoanController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Delete Loan', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -621,29 +628,29 @@ class LoanController extends Controller
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
             
-            if($login_user[0]['employee_department'] == 3 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
              
                 $where_clause = "1=1 AND employee_isactive = '".$status."'";
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_created_date) || !empty($request_data->req_status)){
                     $limit_query = '';
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND request_employee_id = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND request_employee_id = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->request_created_date)){
                         $created_date = date("Y-m-d", strtotime($request_data->request_created_date));
                         $where_clause .= ' AND loan_applied_date LIKE "%'.$created_date.'%"';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND request_approved_by_finance = "'.$request_data->req_status.'"';
+                        $where_clause .= ' AND request_approved_by_finance = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
                 $all_requests = LoanRequest::select('*')
                 ->join('tbl_employees', 'tbl_loan_request.request_employee_id', '=', 'tbl_employees.employee_id')
@@ -655,7 +662,7 @@ class LoanController extends Controller
     
             }
     
-            elseif($login_user[0]['employee_department'] != 3 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
               
                 $login_employee_id = $login_user[0]['employee_id'];
                 
@@ -666,18 +673,18 @@ class LoanController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND request_employee_id = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND request_employee_id = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND request_approved_by_finance = "'.$request_data->req_status.'"';
+                        $where_clause .= ' AND request_approved_by_finance = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
                
                 $all_requests = LoanRequest::join('tbl_employees', 'tbl_loan_request.request_employee_id', '=', 'tbl_employees.employee_id')->whereIn('request_employee_id',$total_team_member)->whereRaw($where_clause)->orderBy('loan_request_id','DESC')->get()->toArray();
 
@@ -716,13 +723,13 @@ class LoanController extends Controller
 
             $login_user = $this->get_login_user_detail();
 
-            $all_loans = LoanRequest::where('request_employee_id' , session('user_session'))->orderBy('loan_request_id', 'DESC')->get()->toArray();
+            $all_loans = LoanRequest::where('request_employee_id' , (string) session('user_session'))->orderBy('loan_request_id', 'DESC')->get()->toArray();
 
             $loans_request_id = array_column($all_loans,'loan_request_id');
 
             $responsed_request = RequestApproval::where('request_module_id', 5)->whereIn('request_id', $loans_request_id)->pluck('request_id')->toArray();
 
-            $loan_given_amount = LoanRequest::selectRaw('sum(loan_request_amount) as total')->where('request_approved_by_finance', 2)->where('request_employee_id',session('user_session'))->get()->toArray();
+            $loan_given_amount = LoanRequest::selectRaw('sum(loan_request_amount) as total')->where('request_approved_by_finance', 2)->where('request_employee_id',(string) session('user_session'))->get()->toArray();
           
             $loan_return_amount = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_loan_installments', 'tbl_loan_installments.loan_installment_loan_id', '=', 'tbl_loans.loan_id')->where('employee_id',session('user_session'))->selectRaw('sum(loan_installment_amount) as total')->get()->toArray();
             
@@ -793,7 +800,7 @@ class LoanController extends Controller
                 }
         
                 $login_user = $this->get_login_user_detail();
-                $checking_request = LoanRequest::where('request_employee_id', session('user_session'))->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->get()->toArray();
+                $checking_request = LoanRequest::where('request_employee_id', (string) session('user_session'))->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->get()->toArray();
                 if(empty($checking_request)){
                     $new_loan = new LoanRequest();
                     $new_loan->request_employee_id = $request_data->session()->get('user_session');
@@ -839,7 +846,7 @@ class LoanController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Apply For Loan Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -861,6 +868,12 @@ class LoanController extends Controller
     protected function loan_request_approval(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = LoanRequest::whereIn('loan_request_id', explode(',', (string) $request->input('ids')))->pluck('request_employee_id')->toArray();
+            if(!$this->can_respond_for($request_employees, ['finance'])){
+                return $this->not_allowed_response();
+            }
 
             if($request['status'] == "Approve"){
 
@@ -1155,7 +1168,7 @@ class LoanController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Approved And Disapproved Loan Request by Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1249,7 +1262,7 @@ class LoanController extends Controller
                 
                     if(empty($checking_request_responsed) && $loan_update_request->request_approved_by_finance == 1){   
 
-                        $checking_request = LoanRequest::where('request_employee_id', session('user_session'))->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->where('loan_request_id','!=',$request_data->request_id)->get()->toArray();
+                        $checking_request = LoanRequest::where('request_employee_id', (string) session('user_session'))->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->where('loan_request_id','!=',$request_data->request_id)->get()->toArray();
 
                         if(empty($checking_request)){
 
@@ -1313,7 +1326,7 @@ class LoanController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Update Loan Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1380,7 +1393,7 @@ class LoanController extends Controller
             }         
         }catch(\Exception $e){
             $this->create_error_log('Delete Loan Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1431,7 +1444,7 @@ class LoanController extends Controller
          
         }catch(\Exception $e){
             $this->create_error_log('My Loan Request Detail', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1470,7 +1483,7 @@ class LoanController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Loan Installement Source Modal Access', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

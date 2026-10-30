@@ -47,7 +47,7 @@
                         
                         <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer table-row-bordered">
                         <div class="table-responsive popup-visible ">
-                            <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable">
+                            <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true">
                                 				
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -98,6 +98,7 @@
                                 </tbody>
                             
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                     </div>
                     

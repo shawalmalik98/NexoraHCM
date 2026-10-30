@@ -90,7 +90,7 @@ class PollingsController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('polling options Log', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -226,7 +226,7 @@ class PollingsController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('polling status Log', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -348,7 +348,7 @@ class PollingsController extends Controller
             }   
         }catch(\Exception $e){
             $this->create_error_log("Add Poll", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -473,7 +473,7 @@ class PollingsController extends Controller
             }   
         }catch(\Exception $e){
             $this->create_error_log("Update Poll", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -539,7 +539,7 @@ class PollingsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Delete Polling", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

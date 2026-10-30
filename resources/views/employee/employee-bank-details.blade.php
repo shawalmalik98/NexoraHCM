@@ -117,13 +117,9 @@
 
                                         <div>
                                             <select class="form-select " data-kt-select2="true" name="emp_name"
-                                            id="company_emp_name">
-                                                @if(!empty($employee_bank))
+                                            id="company_emp_name" data-employee-select data-scope="active" data-status="{{ Request::get('emp_status') == '2' ? '0' : '1' }}">
                                                 <option value="">All Employees</option>
-                                                    @foreach($employee_bank as $data)
-                                                        <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                    @endforeach
-                                                @endif
+                                                @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                             </select>
                                         </div>
 
@@ -147,7 +143,7 @@
 
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
 
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -176,6 +172,7 @@
                                 </tbody>
 
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
 
                     </div>

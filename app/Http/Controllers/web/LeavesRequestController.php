@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Models\LeaveDeduction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -43,47 +44,54 @@ class LeavesRequestController extends Controller
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            if($login_user[0]['employee_department'] == 34 || $login_user[0]['employee_department'] == 9 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
                 
                 $where_clause = '1=1 AND employee_isactive = '.$status.'';
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_for_date)  || !empty($request_data->request_submited_date) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= " AND employee_location = '".$request_data->employee_location."'";
-                        $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."'"; 
+                        $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location)."";
+                        $where_clause_to   .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location).""; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= " AND leave_applied_by = '".$request_data->emp_name."'";
+                        $where_clause .= " AND leave_applied_by = ".\DB::getPdo()->quote((string) $request_data->emp_name)."";
                     }
                     if(!empty($request_data->request_for_date)){
-                        $where_clause .= " AND leave_applied_for_date = '".$request_data->request_for_date."' ";
+                        $where_clause .= " AND leave_applied_for_date = ".\DB::getPdo()->quote((string) $request_data->request_for_date)." ";
                     }
                     if(!empty($request_data->request_submited_date)){
                         $submition_date = date("d-m-Y", strtotime($request_data->request_submited_date));
                         $where_clause .= " AND leave_applied_date LIKE '%".$submition_date."%'";
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= " AND leave_approved_by_hr = '".$request_data->req_status."'";
+                        $where_clause .= " AND leave_approved_by_hr = ".\DB::getPdo()->quote((string) $request_data->req_status)."";
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive', $status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-                $my_leaves = LeaveRequest::select(['leave_applied_id','leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name','employee_code','employee_name','department_name','designation_name'])
+                $search = trim((string) request()->input('search'));
+                $pagination = LeaveRequest::select([\DB::raw('STRAIGHT_JOIN leave_applied_id'),'leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name','employee_code','employee_name','department_name','designation_name'])
                 ->join('tbl_employees','tbl_leaves_applied.leave_applied_by','=','tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->whereRaw($where_clause)
                 ->orderBy('leave_applied_id','desc')
-                ->limit($limit_query)
-                ->get()->toArray();
+                ->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('employee_name','like','%'.$search.'%')
+                                ->orWhere('employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->paginate(CustomHelper::per_page(), ['*'])->withQueryString();
+                $my_leaves = $pagination->getCollection()->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id',2)->pluck('request_id')->toArray();
 
             }
           
-            elseif($login_user[0]['employee_department'] != 34 && $login_user[0]['employee_department'] != 9 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -94,25 +102,32 @@ class LeavesRequestController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= " AND employee_location = '".$request_data->employee_location."'";
-                        $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."'";
+                        $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location)."";
+                        $where_clause_to   .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location)."";
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= " AND leave_applied_by = '".$request_data->emp_name."'";
+                        $where_clause .= " AND leave_applied_by = ".\DB::getPdo()->quote((string) $request_data->emp_name)."";
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= " AND leave_approved_by_hr = '".$request_data->req_status."'";
+                        $where_clause .= " AND leave_approved_by_hr = ".\DB::getPdo()->quote((string) $request_data->req_status)."";
                     }
                 }
                 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-                $my_leaves = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')
+                $search = trim((string) request()->input('search'));
+                $pagination = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')
                 ->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-                ->whereIn('leave_applied_by',$total_team_member)->whereRaw($where_clause)->orderBy('leave_applied_id','DESC')->limit($limit_query)
-                ->get(['leave_applied_id','leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name','employee_code','employee_name','department_name','designation_name'])->toArray();
+                ->whereIn('leave_applied_by',$total_team_member)->whereRaw($where_clause)->orderBy('leave_applied_id','DESC')->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('employee_name','like','%'.$search.'%')
+                                ->orWhere('employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->paginate(CustomHelper::per_page(), [\DB::raw('STRAIGHT_JOIN leave_applied_id'),'leave_applied_by','leave_applied_date','leave_applied_for_date','leave_applied_reason','leave_applied_type','leave_applied_attachment','leave_approved_by_hr','leave_approved_date_hr','employee_id','leave_name','employee_code','employee_name','department_name','designation_name'])->withQueryString();
+                $my_leaves = $pagination->getCollection()->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id',2)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
 
@@ -135,7 +150,8 @@ class LeavesRequestController extends Controller
             }
 
 
-            $send_data = compact('title','login_user','employees_data','my_leaves','employee_locations','responsed_request','dates');
+            $pagination = $pagination ?? null;
+            $send_data = compact('title','login_user','employees_data','my_leaves','employee_locations','responsed_request','dates','pagination');
             
             return view('leave.all-employees-request', $send_data);
 
@@ -158,7 +174,7 @@ class LeavesRequestController extends Controller
         
             $login_user = $this->get_login_user_detail();
 
-            $my_leaves = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')->where('leave_applied_by', session('user_session'))->orderBy('leave_applied_id','DESC')->get(['leave_applied_id','leave_applied_for_date','leave_applied_type','leave_applied_reason','leave_applied_date','leave_approved_by_hr','leave_approved_date_hr','leave_applied_attachment','leave_manage_id','leave_name'])->toArray();
+            $my_leaves = LeaveRequest::join('tbl_employees', 'tbl_leaves_applied.leave_applied_by', '=', 'tbl_employees.employee_id')->join('tbl_leave_management', 'tbl_leaves_applied.leave_applied_type','=', 'tbl_leave_management.leave_manage_id')->where('leave_applied_by', (string) session('user_session'))->orderBy('leave_applied_id','DESC')->get(['leave_applied_id','leave_applied_for_date','leave_applied_type','leave_applied_reason','leave_applied_date','leave_approved_by_hr','leave_approved_date_hr','leave_applied_attachment','leave_manage_id','leave_name'])->toArray();
 
             $leave_request_id = array_column($my_leaves,'leave_applied_id');
             
@@ -237,13 +253,13 @@ class LeavesRequestController extends Controller
                             $no_of_days = $this->count_days($leave_data->input('from_date'),$leave_data->input('to_date'));
                         }
                         
-                        $leave_request_applied = LeaveRequest::where('leave_applied_by',session('user_session'))
+                        $leave_request_applied = LeaveRequest::where('leave_applied_by',(string) session('user_session'))
                             ->where('leave_applied_type', $leave_data->input('leave_type'))
                             ->where('leave_approved_by_hr',1)
                             ->count();
                             
                     
-                        $get_availed_leaves = Attendance::where('att_employee_id',session('user_session'))->where('att_check_overall_status', $leave_name[0]['leave_name'])->count();
+                        $get_availed_leaves = Attendance::where('att_employee_id',session('user_session'))->where('att_check_overall_status', $leave_name[0]['leave_name'])->count() + LeaveDeduction::deducted_count(session('user_session'), $leave_name[0]['leave_manage_id']);
                 
                         $total_leaves = $get_availed_leaves + $leave_request_applied;
                     
@@ -276,7 +292,7 @@ class LeavesRequestController extends Controller
                             
                                 $request_leave_date = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($leave_data->input('from_date'))));
         
-                                $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', session('user_session'))->whereIn('leave_applied_for_date',[$request_leave_date])->get(['leave_applied_for_date'])->toArray();
+                                $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', (string) session('user_session'))->whereIn('leave_applied_for_date',[$request_leave_date])->get(['leave_applied_for_date'])->toArray();
 
                                 // if($leave_data->leave_type == "3"){
                                 //     $employement_status_check = $this->check_if_employee_permanent($request_leave_date,session('user_session'),$custom_message = NULL);
@@ -361,7 +377,7 @@ class LeavesRequestController extends Controller
                             }
         
                             $leave_date = $leave_data->input('leave_date');
-                            $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', session('user_session'))->where('leave_applied_for_date', $leave_data->input('leave_date'))->where('leave_approved_by_hr', '!=', 3)->get()->toArray();
+                            $checking_applied_leave_request = LeaveRequest::where('leave_applied_by', (string) session('user_session'))->where('leave_applied_for_date', $leave_data->input('leave_date'))->where('leave_approved_by_hr', '!=', 3)->get()->toArray();
                             
                         }
                     
@@ -381,7 +397,7 @@ class LeavesRequestController extends Controller
                                     
                                     $dates = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($leave_data->input('from_date'))));
                                     
-                                    $checking_request_dates = LeaveRequest::where('leave_applied_by', session('user_session'))->where('leave_applied_for_date',$dates)->get(['leave_applied_for_date'])->toArray();
+                                    $checking_request_dates = LeaveRequest::where('leave_applied_by', (string) session('user_session'))->where('leave_applied_for_date',$dates)->get(['leave_applied_for_date'])->toArray();
                                     
                                     if(empty($checking_request_dates)){
                                         
@@ -488,7 +504,7 @@ class LeavesRequestController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Add New Leave Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -513,6 +529,12 @@ class LeavesRequestController extends Controller
         
        
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = LeaveRequest::whereIn('leave_applied_id', explode(',', (string) $request->input('ids')))->pluck('leave_applied_by')->toArray();
+            if(!$this->can_respond_for($request_employees, ['hr'])){
+                return $this->not_allowed_response();
+            }
 
             if($request['status'] == "DisApprove"){
 
@@ -630,14 +652,14 @@ class LeavesRequestController extends Controller
                         $leave_alloted = Leave::where('leaves_employee_id',$single_leave['leave_applied_by'])->where('leave_type_id',$single_leave['leave_manage_id'])->get(['leave_allotement'])->toArray();
 
                         $leave_request_applied = LeaveRequest::whereIn('leave_applied_id',$leave_request_ids)
-                        ->where('leave_applied_by',$single_leave['leave_applied_by'])
+                        ->where('leave_applied_by',(string) $single_leave['leave_applied_by'])
                         ->where('leave_applied_type',$single_leave['leave_manage_id'])
                         ->where('leave_approved_by_hr',1)
                         ->count();
                         
                         $get_availed_leaves =  Attendance::where('att_employee_id',$single_leave['leave_applied_by'])
                         ->where('att_check_overall_status', $single_leave['leave_name']) 
-                        ->count();
+                        ->count() + LeaveDeduction::deducted_count($single_leave['leave_applied_by'], $single_leave['leave_manage_id']);
 
                         $reamining_leaves = $leave_alloted[0]['leave_allotement'] - $get_availed_leaves;
                         
@@ -804,7 +826,7 @@ class LeavesRequestController extends Controller
             //         $leave_alloted = Leave::where('leaves_employee_id',$single_leave['leave_applied_by'])->where('leave_type_id',$single_leave['leave_manage_id'])->get(['leave_allotement'])->toArray();
 
             //         $leave_request_applied = LeaveRequest::whereIn('leave_applied_id',$leave_request_ids)
-            //         ->where('leave_applied_by',$single_leave['leave_applied_by'])
+            //         ->where('leave_applied_by',(string) $single_leave['leave_applied_by'])
             //         ->where('leave_applied_type',$single_leave['leave_manage_id'])
             //         ->where('leave_approved_by_hr',1)
             //         ->count();
@@ -1099,7 +1121,7 @@ class LeavesRequestController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Approved And Disapproved Leave Request by Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1181,13 +1203,13 @@ class LeavesRequestController extends Controller
                             $leave_alloted[0]['leave_allotement'] = 0;
                         }
     
-                        $leave_request_applied = LeaveRequest::where('leave_applied_by',session('user_session'))
+                        $leave_request_applied = LeaveRequest::where('leave_applied_by',(string) session('user_session'))
                             ->where('leave_applied_type', $request_data->input('edit_leave_type'))
                             ->where('leave_applied_id','!=',$request_data->leave_id)
                             ->where('leave_approved_by_hr',1)
                             ->count();
     
-                        $get_availed_leaves = Attendance::where('att_employee_id',session('user_session'))->where('att_check_overall_status', $leave_name[0]['leave_name'])->count();
+                        $get_availed_leaves = Attendance::where('att_employee_id',session('user_session'))->where('att_check_overall_status', $leave_name[0]['leave_name'])->count() + LeaveDeduction::deducted_count(session('user_session'), $leave_name[0]['leave_manage_id']);
                 
                         $total_leaves = $get_availed_leaves + $leave_request_applied;
                         
@@ -1240,7 +1262,7 @@ class LeavesRequestController extends Controller
                         
                             if(empty($checking_request_responsed) && $leave_update_request->leave_approved_by_hr == 1){
     
-                                $checking_request =  LeaveRequest::where('leave_applied_by', session('user_session'))->where('leave_applied_for_date',date('Y-m-d',strtotime($request_data->input('leave_date'))))->where('leave_applied_id','!=',$request_data->leave_id)->get(['leave_applied_for_date'])->toArray();
+                                $checking_request =  LeaveRequest::where('leave_applied_by', (string) session('user_session'))->where('leave_applied_for_date',date('Y-m-d',strtotime($request_data->input('leave_date'))))->where('leave_applied_id','!=',$request_data->leave_id)->get(['leave_applied_for_date'])->toArray();
                                 
                                 if(empty($checking_request)){
                                 
@@ -1330,7 +1352,7 @@ class LeavesRequestController extends Controller
             }          
         }catch(\Exception $e){
             $this->create_error_log('Update Leave Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1409,7 +1431,7 @@ class LeavesRequestController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Delete Leave Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1464,7 +1486,7 @@ class LeavesRequestController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

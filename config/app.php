@@ -56,6 +56,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // asked before opening payroll
+    'payroll_verification_code' => env('PAYROLL_VERIFICATION_CODE', '123789'),
+
     'asset_url' => env('ASSET_URL'),
 
     /*

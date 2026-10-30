@@ -18,18 +18,6 @@ trait LoginEmployee {
 
 	}
 
-    public static function get_sap_login_user_detail(){
-
-		$get_login_user_sap = Employees::join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id')
-		->where('employee_id', session('user_session_id'))
-		->get(['employee_id','employee_code','employee_personal_email','employee_name','employee_doj','employee_designation','employee_department','employee_offdays','employee_shift_flexibilty','employee_senior_manager','employee_junior_manager','employee_is_manager','employee_isactive','employee_password','dob','employee_jobtype','profile_avatar','employee_earning_type'])
-		->toArray();
-
-		return $get_login_user_sap;
-
-	}
-
-
     public static function get_token_user_detail($token){
 
 		$get_login_user = Employees::join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id')
@@ -65,24 +53,52 @@ trait LoginEmployee {
         return  $employees_shift_end_time;
     }
 
-    public function get_employee_hierarchy($manager_id, $status) {
-    
-        if($status != 1){
-            $status == 0;
-        }
+    // manager id => direct reports (senior or junior manager), per status, loaded once per request
+    private static $reports_by_manager = [];
 
-        $all_company_employees = Employees::where('employee_isactive', $status)->get(['employee_name','employee_id','employee_senior_manager','employee_junior_manager','employee_is_manager'])->toArray();
-        $my_all_employees = array();
-        if(!empty($all_company_employees)){
-            foreach ($all_company_employees as $employee) {
-                if ($employee['employee_senior_manager'] == $manager_id || $employee['employee_junior_manager'] == $manager_id) {
-                    $my_all_employees[] = $employee;
-                    if($employee['employee_is_manager'] == 1 && $employee['employee_senior_manager'] != $employee['employee_id']){
-                        $my_all_employees = array_merge($my_all_employees, $this->get_employee_hierarchy($employee['employee_id'], $status));
+    private static function reports_by_manager($status){
+        // fresh for every request, so long running workers never see an old team
+        $request_key = spl_object_id(request());
+        if((self::$reports_by_manager['request'] ?? null) !== $request_key){
+            self::$reports_by_manager = ['request' => $request_key];
+        }
+        if(!isset(self::$reports_by_manager[$status])){
+            $map = [];
+            // plain rows: building 20k models here cost ~0.3s
+            foreach(\DB::table('tbl_employees')->where('employee_isactive', $status)->get(['employee_name','employee_id','employee_senior_manager','employee_junior_manager','employee_is_manager']) as $row){
+                $employee = (array) $row;
+                foreach(array_unique([$employee['employee_senior_manager'], $employee['employee_junior_manager']]) as $manager){
+                    if(!empty($manager)){
+                        $map[$manager][] = $employee;
                     }
                 }
             }
-        }   
+            self::$reports_by_manager[$status] = $map;
+        }
+        return self::$reports_by_manager[$status];
+    }
+
+    // everyone under a manager, all levels down (same rows and order as before, without reloading employees per level)
+    public function get_employee_hierarchy($manager_id, $status, &$visited = []) {
+
+        // nobody reports to this employee: no need to load the whole company
+        if(empty($visited) && !isset(self::$reports_by_manager[$status])
+            && !\DB::table('tbl_employees')->where('employee_isactive', $status)->where(function($query) use($manager_id){
+                $query->where('employee_senior_manager', $manager_id)->orWhere('employee_junior_manager', $manager_id);
+            })->exists()){
+            return [];
+        }
+
+        $map = self::reports_by_manager($status);
+        $visited[$manager_id] = true;
+        $my_all_employees = array();
+        foreach ($map[$manager_id] ?? [] as $employee) {
+            $my_all_employees[] = $employee;
+            // follow sub-managers once; a reporting loop can't recurse forever
+            if($employee['employee_is_manager'] == 1 && $employee['employee_senior_manager'] != $employee['employee_id'] && !isset($visited[$employee['employee_id']])){
+                $my_all_employees = array_merge($my_all_employees, $this->get_employee_hierarchy($employee['employee_id'], $status, $visited));
+            }
+        }
         return $my_all_employees;
     }
 
@@ -91,6 +107,33 @@ trait LoginEmployee {
         $all_members = array_column($all_team_members,'employee_id');
         $all_team_members = array_unique($all_members);
         return $all_team_members;
+    }
+
+    // Can the approver respond to requests of these employees? Holders of $roles (Admin always) for everyone,
+    // a manager only for their own team, nobody for their own request.
+    public function can_respond_for($employee_ids, $roles = ['hr'], $approver_id = null){
+        $approver_id = $approver_id ?? session('user_session');
+        $employee_ids = array_unique(array_filter((array) $employee_ids));
+        if(empty($approver_id)){
+            return false;
+        }
+        if(in_array('admin', \App\Helpers\CustomHelper::employee_roles($approver_id))){
+            return true;
+        }
+        if(in_array($approver_id, $employee_ids)){
+            return false;
+        }
+        foreach((array) $roles as $role){
+            if(\App\Helpers\CustomHelper::has_role($approver_id, $role)){
+                return true;
+            }
+        }
+        $team = array_merge($this->get_employee_hierarchy_unique($approver_id, 1), $this->get_employee_hierarchy_unique($approver_id, 0));
+        return empty(array_diff($employee_ids, $team));
+    }
+
+    public function not_allowed_response(){
+        return response()->json(['status' => 'FALSE', 'msg' => 'You are not allowed to respond to this request.']);
     }
 
     public static function get_all_date_from_month($month,$year,$format){
@@ -130,15 +173,15 @@ trait LoginEmployee {
         $employee_id = $employee_id ?? session('user_session');
         
         if($module_id == 1){ //Attendance
-            $request_data = AttendanceRequest::where('attendance_request_id',$request_id)->where('request_employee_id',$employee_id)->get(['attendance_request_id'])->toArray();
+            $request_data = AttendanceRequest::where('attendance_request_id',$request_id)->where('request_employee_id',(string) $employee_id)->get(['attendance_request_id'])->toArray();
         }
 
         if($module_id == 2){ //Leave
-            $request_data = LeaveRequest::where('leave_applied_id',$request_id)->where('leave_applied_by',$employee_id)->get(['leave_applied_id'])->toArray();
+            $request_data = LeaveRequest::where('leave_applied_id',$request_id)->where('leave_applied_by',(string) $employee_id)->get(['leave_applied_id'])->toArray();
         }
 
         if($module_id == 3){ //Work From Home
-            $request_data = WFH::where('wfh_request_id',$request_id)->where('wfh_employee_id',$employee_id)->get(['wfh_request_id'])->toArray();
+            $request_data = WFH::where('wfh_request_id',$request_id)->where('wfh_employee_id',(string) $employee_id)->get(['wfh_request_id'])->toArray();
         }
 
         if($module_id == 4){ //AdvanceSalary
@@ -146,7 +189,7 @@ trait LoginEmployee {
         }
 
         if($module_id == 5){ //Loan
-            $request_data = LoanRequest::where('loan_request_id',$request_id)->where('request_employee_id',$employee_id)->get(['loan_request_id'])->toArray();
+            $request_data = LoanRequest::where('loan_request_id',$request_id)->where('request_employee_id',(string) $employee_id)->get(['loan_request_id'])->toArray();
         }
 
         if($module_id == 6){ //Reimbursement

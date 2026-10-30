@@ -151,13 +151,9 @@
                                             
                                             <div>
                                                 <select class="form-select" data-kt-select2="true" data-placeholder="Select Name" name="emp_name"
-                                                id="company_emp_name" >
+                                                id="company_emp_name" data-employee-select data-scope="team">
                                                     <option value="">Select Name</option>
-                                                    @if(!empty($employee))
-                                                        @foreach($employee as $data)
-                                                            <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                        @endforeach
-                                                    @endif
+                                                    @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                 </select>
                                             </div>
                                             
@@ -215,7 +211,7 @@
                     <div class="table-responsive">
                         
                         <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer table-row-bordered"><div class="table-responsive popup-visible ">
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info" >
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info" >
                                					 				
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -308,7 +304,7 @@
                                                 <td>{{ $expense['emp_expense_created_at'] }}</td>
                                                 <td>
                                                        
-                                                    @if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2)
+                                                    @if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                         
                                                         @if ($expense['emp_expense_approved_by_hr'] == 1 && !in_array($expense['emp_expense_id'],$responsed_request))
                                         
@@ -345,6 +341,7 @@
                                 </tbody>
                             
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                         
                     </div>
@@ -533,7 +530,7 @@
 @push('js-link')
 <script type="text/javascript" src="{{ url('assets/js/request-status-response-log.js') }}?js_v=2"></script>
 
-@if(!empty($login_user) && $login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2)
+@if(!empty($login_user) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
     <script src="{{url('assets/js/employee-expense/all-expense-manager-approved.js')}}"></script>
     <script src="{{url('assets/js/employee-expense/all-expense-script.js')}}"></script>
 @else

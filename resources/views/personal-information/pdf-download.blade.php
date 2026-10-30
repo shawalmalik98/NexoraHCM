@@ -28,7 +28,7 @@
 <body>
         <div class="row">
             <div class="col-md-12 text-center">
-                <img src="{{ url(asset('portal_assets/form/img/SourceCode-logo.png')) }}" alt="logo" class="logo">
+                <img src="{{ CustomHelper::hcm_default_settings()['company_logo'] ?? '' }}" alt="logo" class="logo">
             </div>
         </div>
 
@@ -37,9 +37,9 @@
                 <tr>
                     <td class="small-font" style="width:60%"> Date: <b>{{ date('Y-m-d') }}</b></td>
                     <td class="small-font" style="width:20%;">
-                        17, Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan. <br>
-                        Contact: (+92 21) 34311172 - 76 <br>
-						https://ismailindustries.com.pk/
+                        @php $pdfCompany = CustomHelper::hcm_default_settings(); @endphp
+                        {{ $pdfCompany['company_address'] ?? '' }} <br>
+                        {{ $pdfCompany['company_email'] ?? '' }}
                     </td>
                 </tr>
             </table>  
@@ -304,7 +304,7 @@
                 </tr>
 
                 <tr>
-                    <td colspan="2" width="50%">Have you applied in IIL before?</td>
+                    <td colspan="2" width="50%">Have you applied in {{ CustomHelper::hcm_default_settings()['company_name'] ?? 'this company' }} before?</td>
                     <td colspan="2"  width="50%">{{ $information_data[0]['appliedbefore'] }}</td>
                 </tr>
                 <tr>

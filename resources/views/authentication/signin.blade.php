@@ -130,7 +130,6 @@
 								</div> --}}
 
 								<div class="d-grid mb-10">
-								    {{-- <span class="text-center">© {{ date('Y') }} MegaHCM. All Rights Reserved</span> --}}
 									<a href="{{ url('/forgot-password') }}" class="text-center">Forgot Password</a>
 								</div>
 								
@@ -149,7 +148,6 @@
 		<script src="{{url('assets/js/authentication/signin.js')}}"></script>
 		<script>
 		 var url = "{{ url('/') }}";
-		 var sap_url = "{{ url('/sap-login') }}";
 		</script>
 
 		{{-- Get Current Location --}}

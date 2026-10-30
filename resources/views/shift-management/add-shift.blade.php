@@ -38,7 +38,7 @@
                     <form  id="shiftEmployeeForm" class="form" autocomplete="off">
 
                         @if(!empty($login_user))
-                            @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                             <div class="row mt-5" >
                                 <div class="col-md-9 fv-row" id="selectDepartmentCalculate" >
                                     <label class="fs-6 fw-semibold mb-2">Department</label>
@@ -65,12 +65,7 @@
                             <div class="col-md-9 fv-row" id="selectEmployeeCalculate">
                                 <label class="fs-6 fw-semibold mb-2">Employees</label>
                                 <div class="col-md-12 fv-row">
-                                    <select class="form-select  " data-control="select2" multiple="multiple" data-hide-search="true" data-close-on-select="false" data-placeholder="Select Employee" name="employee_id[]" id="employees">
-                                        @if(!empty($employees))
-                                            @foreach($employees as $employee)
-                                            <option value="{{$employee['employee_id']}}">{{$employee['employee_code']}} - {{$employee['employee_name']}}</option>';
-                                            @endforeach
-                                        @endif
+                                    <select class="form-select  " multiple="multiple" data-close-on-select="false" data-placeholder="Select Employee" name="employee_id[]" id="employees" data-employee-select data-scope="team" data-departments-from="#departments_all">
                                     </select>
                                 </div>
                                 
@@ -158,6 +153,6 @@
 
 @push('js-link')
 
-<script src="{{url('assets/js/shift-management/add-shift.js')}}"></script>
+<script src="{{url('assets/js/shift-management/add-shift.js')}}?v=2"></script>
 
 @endpush

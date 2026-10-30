@@ -333,10 +333,19 @@
                         <div class="col-md-3 mt-3 fv-row">
                             <label class="fs-6 fw-semibold mb-2">All Departments</label>
                                 <label class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
-                                    <input class="form-check-input h-20px w-20px" type="checkbox" id="department_all" name="select_all" value="Select All" /> 
+                                    <input class="form-check-input h-20px w-20px" type="checkbox" id="department_all" name="select_all" value="Select All" />
                                 </label>
-                        </div> 
+                        </div>
                     </div>
+                    <div class="row mt-5">
+                        <div class="col-md-12 fv-row">
+                            <label class="fs-6 fw-semibold mb-2">Hold payroll of</label>
+                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="These employees are left out of this run; generate their payroll later from Individual Payroll."></i>
+                            <select class="form-select" multiple="multiple" name="hold_employee_id[]" data-close-on-select="false" data-placeholder="Nobody (pay everyone in the departments)" data-employee-select data-scope="active" data-departments-from="#departments_all">
+                            </select>
+                        </div>
+                    </div>
+                    @include('payroll.partials.sandwich-toggle', ['toggle_id' => 'sandwich_rule_bulk'])
                     @if(!empty($tax_system_setting) && $tax_system_setting[0]['tax_deduction_apply'] == 1 )
                     <div class="row mt-5" >
                         <div class="col-md-12 fv-row">
@@ -584,11 +593,12 @@
                             <label class="fs-6 fw-semibold mb-2">All Departments</label>
                                 <label class="form-check form-check-custom me-10 fs-6 fw-semibold mb-2 form-check-solid">
                                 {{-- <input type = "hidden" name="count" value=""> --}}
-                                <input class="form-check-input h-20px w-20px" type="checkbox" id="department_all_calculate" name="select_all" value="Select All" /> 
-                        
+                                <input class="form-check-input h-20px w-20px" type="checkbox" id="department_all_calculate" name="select_all" value="Select All" />
+
                             </label>
-                        </div> 
+                        </div>
                     </div>
+                    @include('payroll.partials.sandwich-toggle', ['toggle_id' => 'sandwich_rule_calculate'])
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
@@ -640,6 +650,7 @@
                             </select>
                         </div>
                     </div>
+                    @include('payroll.partials.sandwich-toggle', ['toggle_id' => 'sandwich_rule_individual'])
                     @if(!empty($tax_system_setting) && $tax_system_setting[0]['tax_deduction_apply'] == 1 )
                     <div class="row mt-5" >
                         <div class="col-md-12 fv-row">

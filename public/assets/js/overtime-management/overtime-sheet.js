@@ -7,6 +7,9 @@ $(function () {
             [10, 25, 50, 100, 500, "All"]
         ],
         iDisplayLength: 500,
+        paging: $('#tableEmployeeOverTime').is('[data-server-paginated]') ? false : true,
+        info: $('#tableEmployeeOverTime').is('[data-server-paginated]') ? false : true,
+        searching: $('#tableEmployeeOverTime').is('[data-server-paginated]') ? false : true,
     });
 });
 

@@ -2,7 +2,8 @@
 
 @section('main-section')
     @php
-        $permission = CustomHelper::access_permission();
+        $permission = CustomHelper::permission_map();
+        $permission_map = CustomHelper::permission_map();
         $attendance_summary = CustomHelper::attendance_summary_employee();
     @endphp
 
@@ -36,10 +37,8 @@
                         $mz_hour = (int) date('G');
                         $mz_greeting = $mz_hour < 12 ? 'Good Morning' : ($mz_hour < 17 ? 'Good Afternoon' : 'Good Evening');
                         $mz_name = !empty($login_user[0]['employee_name']) ? $login_user[0]['employee_name'] : '';
-                        $mz_can = function ($url) use ($permission) {
-                            return !empty($permission) && collect($permission)->contains(function ($p) use ($url) {
-                                return $p['module_url'] == $url && $p['module_accessibility'] == 1 && $p['permission_status'] == 1;
-                            });
+                        $mz_can = function ($url) {
+                            return CustomHelper::can_access($url);
                         };
                         $mz_links = [
                             ['/my-attendance', 'My Attendance', 'fa-fingerprint'],
@@ -472,7 +471,7 @@
                                             <img src="{{ asset('portal_assets/images/mobile-app2.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             <img src="{{ asset('portal_assets/images/mobile-app.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             
-                                            <a target="_blank" href="https://play.google.com/store/apps/details?id=com.iil.hcm" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
+                                            <a target="_blank" href="javascript:void(0)" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
                                     </div>
                                 </div>
                             </div> --}}
@@ -482,7 +481,7 @@
                                         <div class="card-header pt-7" >
                                             <h3 class="card-title align-items-start flex-column">
                                                 <span class="card-label fw-bold text-dark">My Team</span>
-                                                <span class="text-gray-400 mt-1 fw-semibold fs-6">Approx. {{ count($my_team_mates) }} employees under your reporting</span>
+                                                <span class="text-gray-400 mt-1 fw-semibold fs-6">{{ $my_team_count }} employees under your reporting</span>
                                             </h3>
                                         </div>
 
@@ -628,7 +627,7 @@
                                             <img src="{{ asset('portal_assets/images/mobile-app2.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             <img src="{{ asset('portal_assets/images/mobile-app.png') }}" style="width:49%;height:245px;object-fit: contain;border-radius:10px;" draggable="false">
                                             
-                                            <a target="_blank" href="https://play.google.com/store/apps/details?id=com.iil.hcm" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
+                                            <a target="_blank" href="javascript:void(0)" style="display:block; text-align:center;"><img src="{{ asset('portal_assets/images/play-store.png') }}" style="margin-top:15px;width:100%;max-width: 250px;" draggable="false"></a>
                                        
                                     </div>
                                 </div>
@@ -755,7 +754,7 @@
                         @endif
                     @endif
 
-                    @if(!empty($permission) && $permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1)
+                    @if(!empty($permission) && $permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1)
                         <div class="row  gy-5 g-xl-10">
                             <div class="col-md-3 col-6 mb-10">
 
@@ -1062,7 +1061,7 @@
                     @endif
 
                     <div class="row">
-                        @if(!empty($permission) && $permission[29]['module_accessibility'] == 1 && $permission[29]['permission_status'] == 1 )
+                        @if(!empty($permission) && $permission_map['/daily-expense']['module_accessibility'] == 1 && $permission_map['/daily-expense']['permission_status'] == 1 )
                             <div class="col-xl-12">
                                 <div class="card card-flush overflow-hidden h-md-100">
                                     <div class="card-header py-5">
@@ -1167,7 +1166,7 @@
 
                         @endif
 
-                        @if(!empty($permission) && $permission[12]['module_accessibility'] == 1  && $permission[12]['permission_status'] == 1)
+                        @if(!empty($permission) && $permission_map['/employees']['module_accessibility'] == 1  && $permission_map['/employees']['permission_status'] == 1)
                             <div class="col-xl-12 mt-4">
                                 <div class="card card-xl-stretch mb-5 mb-xl-8">
                                     <div class="card-header border-0 pt-5">
@@ -1184,7 +1183,7 @@
                             </div>
                         @endif
 
-                        @if(!empty($permission) && ($permission[23]['module_accessibility'] == 1  && $permission[23]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+                        @if(!empty($permission) && ($permission_map['/employees-leaves']['module_accessibility'] == 1  && $permission_map['/employees-leaves']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
                             <div class="col-xl-12 mb-5">
                                 <div class="card card-flush overflow-hidden h-md-100">
                                     <div class="card-header py-5">
@@ -1271,7 +1270,7 @@
 
                         @endif
 
-                        @if(!empty($permission) && ($permission[22]['module_accessibility'] == 1  && $permission[22]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+                        @if(!empty($permission) && ($permission_map['/wfh-requests']['module_accessibility'] == 1  && $permission_map['/wfh-requests']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
                             <div class="col-xl-12 mb-5">
                                 <div class="card card-flush overflow-hidden h-md-100">
                                     <div class="card-header py-5">
@@ -1357,7 +1356,7 @@
                             </div>
                         @endif
 
-                        @if(!empty($permission) && ($permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+                        @if(!empty($permission) && ($permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
                             <div class="col-xl-12 mb-5">
                                 <div class="card card-flush overflow-hidden h-md-100">
                                     <div class="card-header py-5">
@@ -1443,7 +1442,7 @@
                             </div>
 
                         @endif
-                        @if(!empty($permission) && ($permission[25]['module_accessibility'] == 1 && $permission[25]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+                        @if(!empty($permission) && ($permission_map['/interviews']['module_accessibility'] == 1 && $permission_map['/interviews']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
                             <div class="col-xl-6 mb-5">
                                 <div class="card card-flush overflow-hidden h-md-100">
                                     <div class="card-header py-5">
@@ -1572,7 +1571,7 @@
                             </div>
                         </div>
 
-                        @if(!empty($permission) && $permission[14]['module_accessibility'] == 1 && $permission[14]['permission_status'] == 1)
+                        @if(!empty($permission) && $permission_map['/employee-birthdays']['module_accessibility'] == 1 && $permission_map['/employee-birthdays']['permission_status'] == 1)
 
                             <div class="col-xl-6">
                                 <div class="card mb-5 mb-xl-8">
@@ -1649,7 +1648,7 @@
                                                             <td>{{ $interview['candidate_name'] }}</td>
                                                             <td>{{ $interview['interview_date'] }} - {{ date('h:i A', strtotime($interview['interview_time'])) }}</td>
                                                             <td>
-                                                            @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
 
                                                                 @if($interview['interview_interviewer1'] == $login_user[0]['employee_id'] || $interview['interview_interviewer2'] == $login_user[0]['employee_id'])
                                                                     <a href="{{url('my-interviews')}}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" data-bs-title="View Interview">
@@ -1681,12 +1680,15 @@
                             </div>
                         </div>
 
-                        @if(!empty($permission) &&  $permission[12]['module_accessibility'] == 1 &&  $permission[12]['permission_status'] == 1)
+                        @if(!empty($permission) &&  $permission_map['/employees']['module_accessibility'] == 1 &&  $permission_map['/employees']['permission_status'] == 1)
 
                             <div class="col-xl-8">
                                 <div class="card mb-5 mb-xl-8">
                                     <div class="card-header border-0 pt-5">
                                         <div class="card-title">Probation Period Employee(s)</div>
+                                        @if($probation_employees > count($probation_employees_detail))
+                                            <div class="card-toolbar text-muted fs-7">Showing {{ count($probation_employees_detail) }} of {{ $probation_employees }}</div>
+                                        @endif
                                     </div>
 
                                     <div class="card-body py-3">
@@ -1756,29 +1758,29 @@
 <script src="{{url('assets/js/widgets.bundle.js')}}"></script>
 <script src="{{url('assets/js/custom/widgets.js')}}"></script>
 
-@if(!empty($permission) && $permission[29]['module_accessibility'] == 1 && $permission[29]['permission_status'] == 1)
+@if(!empty($permission) && $permission_map['/daily-expense']['module_accessibility'] == 1 && $permission_map['/daily-expense']['permission_status'] == 1)
 <script src="{{url('assets/js/dashboard-expense-charts.js')}}?js_v=2"></script>
 @endif
 
 
-@if(!empty($permission) && ($permission[22]['module_accessibility'] == 1 && $permission[22]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+@if(!empty($permission) && ($permission_map['/wfh-requests']['module_accessibility'] == 1 && $permission_map['/wfh-requests']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
     <script src="{{url('assets/js/dashboard-wfh-request-chart.js')}}?js_v=2"></script>
 @endif
 
-@if(!empty($permission) && ($permission[23]['module_accessibility'] == 1 && $permission[23]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+@if(!empty($permission) && ($permission_map['/employees-leaves']['module_accessibility'] == 1 && $permission_map['/employees-leaves']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
     <script src="{{url('assets/js/dashboard-leave-request-chart.js')}}?js_v=2"></script>
 @endif
 
-@if(!empty($permission) && ($permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+@if(!empty($permission) && ($permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
     <script src="{{url('assets/js/dashboard-employee-monthly-strength-charts.js')}}?js_v=2"></script>
 @endif
 
-@if(!empty($permission) && ($permission[12]['module_accessibility'] == 1 && $permission[25]['permission_status'] == 1) && ($login_user[0]['employee_department'] == 1 ||  $login_user[0]['employee_department'] == 2))
+@if(!empty($permission) && ($permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/interviews']['permission_status'] == 1) && (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) ||  CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)))
     <script src="{{url('assets/js/dashboard-interview-chart.js')}}?js_v=2"></script>
 @endif
 
 
-@if(!empty($permission) && $permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1)
+@if(!empty($permission) && $permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1)
     <script src="{{url('assets/js/dashboard-department-charts.js')}}?js_v=2"></script>
     <script src="{{url('assets/js/dashboard-employee-card-charts.js')}}?js_v=2"></script>
 

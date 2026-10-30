@@ -32,10 +32,10 @@ class LettersApiController extends Controller
                 $limit_query = '';
 
                 if(!empty($request->get('emp_name'))){
-                    $where_clause .= ' AND tbl_letters.letter_employee_id = "'.$request->get('emp_name').'"';
+                    $where_clause .= ' AND tbl_letters.letter_employee_id = '.\DB::getPdo()->quote((string) $request->get('emp_name')).'';
                 }
                 if(strlen($request->get('emp_status'))>0){
-                    $where_clause .= ' AND letter_employee.employee_isactive = "'.$request->get('emp_status').'"';
+                    $where_clause .= ' AND letter_employee.employee_isactive = '.\DB::getPdo()->quote((string) $request->get('emp_status')).'';
                 }
 
             }

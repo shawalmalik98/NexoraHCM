@@ -25,13 +25,10 @@
 
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.2.10/dist/css/tempus-dominus.min.css" crossorigin="anonymous">
 	
-		<script src="https://code.jquery.com/jquery-3.6.1.js"></script>
+		{{-- jQuery, select2, SweetAlert2, Dropzone, Popper and the other plugins (single copy) --}}
+		<script type="text/javascript" src="{{ url('assets/plugins/global/plugins.bundle.js') }}"></script>
 
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.0/min/dropzone.min.css">
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.0/dropzone.js"></script>
-		<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
 
-		<script src="https://unpkg.com/sweetalert2@11"></script>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 		@stack('cs-link')
@@ -179,7 +176,7 @@
 	</head>
 	{{--end::Head--}}
 	{{--begin::Body--}}
-	<body id="kt_app_body" data-kt-app-layout="dark-sidebar" data-kt-app-header-fixed="true" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true" data-kt-app-sidebar-hoverable="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true" data-kt-app-sidebar-push-footer="true" data-kt-app-toolbar-enabled="true" class="app-default" @if(Request::path() =="attendance" || Request::path() =="interviews" || Request::path() =="payroll" || Request::path() == "reports/employee-report" || Request::path() == "reports/attendance-report" || Request::path() == "employees"|| Request::path() == "attendance-requests" || Request::path() == "wfh-requests" || Request::path() == "employees-leaves" || Request::path() == "my-expense" || Request::path() == "employee-expense" || Request::path() == "daily-wages-payroll" || Request::path() == "locations" || Request::path() == "daily-attendance-report" || Request::path() == 'employee-devices' || Request::path() == 'bisconni-attendance-report' || Request::path() == 'bisconni-employee-report' || Request::path() == 'employee-location' || Request::path() == 'monthly-attendance' || Request::path() == 'login-history' || Request::path() == 'employee-salary') data-kt-app-sidebar-minimize="on" @endif >
+	<body id="kt_app_body" data-kt-app-layout="dark-sidebar" data-kt-app-header-fixed="true" data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true" data-kt-app-sidebar-hoverable="true" data-kt-app-sidebar-push-header="true" data-kt-app-sidebar-push-toolbar="true" data-kt-app-sidebar-push-footer="true" data-kt-app-toolbar-enabled="true" class="app-default" @if(Request::path() =="attendance" || Request::path() =="interviews" || Request::path() =="payroll" || Request::path() == "reports/employee-report" || Request::path() == "reports/attendance-report" || Request::path() == "employees"|| Request::path() == "attendance-requests" || Request::path() == "wfh-requests" || Request::path() == "employees-leaves" || Request::path() == "my-expense" || Request::path() == "employee-expense" || Request::path() == "daily-wages-payroll" || Request::path() == "locations" || Request::path() == "daily-attendance-report" || Request::path() == 'employee-devices' || Request::path() == 'employee-location' || Request::path() == 'monthly-attendance' || Request::path() == 'login-history' || Request::path() == 'employee-salary') data-kt-app-sidebar-minimize="on" @endif >
 		
 		<div class="page-loader flex-column vertical-center">
 			<div class="spinner-border text-primary" role="status"></div>

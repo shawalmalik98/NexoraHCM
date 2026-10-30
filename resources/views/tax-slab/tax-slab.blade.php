@@ -269,6 +269,7 @@
 
                                 <button class="btn btn-primary" type="button" onclick="addSlabRow()"><i class="fa fa-plus"></i></button>
                                 <button class="btn btn-danger" type="button" onclick="deleteSlabRow()"><i class="fa fa-minus"></i></button>
+                                <button class="btn btn-light-primary" type="button" onclick="fillPakistanSalariedSlabs()" title="Fills the Pakistan salaried individual slabs (Finance Act 2026, from 1 July 2026). Verify against the current Finance Act before saving.">Pakistan Salaried Slabs</button>
 
                             </div>
                             
@@ -412,6 +413,6 @@
 
 @push('js-link')
 
-<script src="{{url('assets/js/tax-slab/tax-slab.js')}}"></script>
+<script src="{{url('assets/js/tax-slab/tax-slab.js')}}?v=2"></script>
 
 @endpush

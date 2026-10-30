@@ -38,29 +38,198 @@ use Exception;
 
 class CustomHelper
 {
+    // per request caches of employee_roles() / permission_map(), emptied by forget_roles() when roles change
+    private static $role_cache = [];
+    private static $permission_maps = [];
+
+    public static function forget_roles(){
+        self::$role_cache = [];
+        self::$permission_maps = [];
+    }
+
+    // Role keys of an employee: the roles management assigned to the employee in Roles & Permissions
+    // (any number of them) + "employee", the self-service role everyone has. Nothing comes from the department
+    // or the "is manager" flag.
+    public static function employee_roles($employee_id){
+        if(empty($employee_id)){
+            return [];
+        }
+        if(!isset(self::$role_cache[$employee_id])){
+            $roles = \DB::table('tbl_employee_roles')->join('tbl_roles','tbl_roles.role_id','=','tbl_employee_roles.role_id')
+                ->where('employee_id', $employee_id)->pluck('role_key')->toArray();
+            if(Employees::where('employee_id', $employee_id)->exists()){
+                $roles[] = 'employee';
+            }
+            self::$role_cache[$employee_id] = array_values(array_unique($roles));
+        }
+        return self::$role_cache[$employee_id];
+    }
+
+    // Active employees holding a role, plus Super Admins
+    public static function role_employee_ids($role_key){
+        $role_ids = \DB::table('tbl_roles')->whereIn('role_key', array_unique([$role_key, 'admin']))->pluck('role_id')->toArray();
+        $direct = \DB::table('tbl_employee_roles')->whereIn('role_id', $role_ids)->pluck('employee_id')->toArray();
+        return Employees::where('employee_isactive', 1)->whereIn('employee_id', $direct ?: [0])->pluck('employee_id')->toArray();
+    }
+
+    // Admin counts as every role
+    public static function has_role($employee_id, $role_key){
+        $roles = self::employee_roles($employee_id);
+        return in_array('admin', $roles) || in_array($role_key, $roles);
+    }
+
+    // Role check kept for the many existing callers: roles belong to employees, so this is has_role() of the employee
+    // (a department alone no longer gives a role)
+    public static function dept_has_role($department_id, $role_key, $employee_id = null){
+        return !empty($employee_id) && self::has_role($employee_id, $role_key);
+    }
+
+    // Permissions of an employee keyed by module url, e.g. $map['/my-salary-request']['permission_status'].
+    // Own permission rows + the modules of every role of the employee, each module once; Admin has every module.
+    // Every system module is present; modules without access are 0.
+    public static function permission_map($employee_id = null){
+        $employee_id = $employee_id ?? session('user_session');
+        if(!isset(self::$permission_maps[$employee_id])){
+            $roles = self::employee_roles($employee_id);
+            $is_admin = in_array('admin', $roles);
+            $map = [];
+            foreach(SystemModule::get(['module_url','module_accessibility']) as $module){
+                // Super Admin: complete access, including modules switched off for everyone else
+                $map[$module->module_url] = ['permission_status' => $is_admin ? 1 : 0, 'module_accessibility' => $is_admin ? 1 : $module->module_accessibility];
+            }
+            if(!$is_admin){
+                $rows = Permission::join('tbl_system_modules','tbl_employee_permission.module_url','=','tbl_system_modules.module_url')
+                    ->where('employee_id', $employee_id)
+                    ->get(['tbl_employee_permission.module_url','permission_status']);
+                foreach($rows as $row){
+                    if($row->permission_status == 1){
+                        $map[$row->module_url]['permission_status'] = 1;
+                    }
+                }
+                $role_modules = \DB::table('tbl_role_permissions')->join('tbl_roles','tbl_roles.role_id','=','tbl_role_permissions.role_id')
+                    ->whereIn('role_key', $roles)->distinct()->pluck('module_url');
+                foreach($role_modules as $module_url){
+                    if(isset($map[$module_url])){
+                        $map[$module_url]['permission_status'] = 1;
+                    }
+                }
+            }
+            self::$permission_maps[$employee_id] = $map;
+        }
+        return self::$permission_maps[$employee_id];
+    }
+
+    // Can the logged in (or given) employee open this module?
+    public static function can_access($module_url, $employee_id = null){
+        $map = self::permission_map($employee_id);
+        return isset($map[$module_url]) && $map[$module_url]['permission_status'] == 1 && $map[$module_url]['module_accessibility'] == 1;
+    }
+
+    // Firebase realtime database for the chat screens, or null when Firebase is not configured
+    public static function firebase_database(){
+        $credentials = config('services.firebase.credentials');
+        $database_url = config('services.firebase.web.databaseURL');
+        if(empty($database_url) || empty($credentials) || !file_exists($credentials)){
+            return null;
+        }
+        return (new \Kreait\Firebase\Factory)->withServiceAccount($credentials)->withDatabaseUri($database_url)->createDatabase();
+    }
+
+    // SQL for "attendance day / month / year column equals a number" as a string comparison ("= '05'"), which uses
+    // the index (a bare number can't). Day / month are stored two digits (Attendance model + 2026_10_28_000007 migration).
+    public static function sql_attendance_eq($value){
+        return "= '".str_pad((int) $value, 2, '0', STR_PAD_LEFT)."'";
+    }
+
+    // rows per page for server paginated lists (?per_page=25|50|100, default 50)
+    public static function per_page(){
+        $per_page = (int) request()->input('per_page', 50);
+        return in_array($per_page, [25, 50, 100]) ? $per_page : 50;
+    }
+
+    // URL behind an employee's business card QR code
+    public static function ecard_url($emp_unique_code){
+        $base = config('services.ecard.url') ?: url('get-business-employee-data');
+        return rtrim($base, '/').'/'.$emp_unique_code;
+    }
+
+    // business units in use, for the business unit dropdowns and filters
+    public static function business_units(){
+        static $business_units = null;
+        if($business_units === null){
+            $business_units = Employees::whereNotNull('business_unit')->where('business_unit','!=','')->distinct()->orderBy('business_unit')->pluck('business_unit')->toArray();
+        }
+        return $business_units;
+    }
+
     public static function dateformatDFY($date){
         return date('d, F Y',strtotime($date));
+    }
+
+    // employee_id => profile row (false when not found), shared by every getEmpProfileDiv call in a request
+    private static $empProfileCache = [];
+    private static $empProfileCacheComplete = false;
+
+    private static function getEmpProfileData($employee_id){
+        if(!array_key_exists($employee_id, self::$empProfileCache)){
+
+            // listing pages call this once per row; after a few misses load every employee in one query instead of one query per row
+            $load_all = !self::$empProfileCacheComplete && count(self::$empProfileCache) >= 10;
+
+            if($load_all){
+                // plain employee rows + the small department / designation tables (no joins, no models): at 20k employees this
+                // is ~40ms instead of ~0.4s; the avatar is read below only for employees actually shown
+                $departments = \DB::table('tbl_departments')->pluck('department_name', 'department_id');
+                $designations = \DB::table('tbl_designations')->pluck('designation_name', 'designation_id');
+                foreach(\DB::table('tbl_employees')->get(['employee_id','employee_code','employee_name','employee_department','employee_designation']) as $loaded){
+                    if(isset(self::$empProfileCache[$loaded->employee_id]) || !isset($departments[$loaded->employee_department], $designations[$loaded->employee_designation])){
+                        continue;
+                    }
+                    self::$empProfileCache[$loaded->employee_id] = [
+                        'employee_id' => $loaded->employee_id, 'employee_code' => $loaded->employee_code, 'employee_name' => $loaded->employee_name,
+                        'employee_designation' => $designations[$loaded->employee_designation], 'department_name' => $departments[$loaded->employee_department],
+                    ];
+                }
+                self::$empProfileCacheComplete = true;
+            }elseif(!self::$empProfileCacheComplete){
+                $loaded = \DB::table('tbl_employees')->join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id')
+                    ->join('tbl_departments', 'tbl_employees.employee_department', '=', 'tbl_departments.department_id')
+                    ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                    ->where('tbl_employees.employee_id', $employee_id)
+                    ->first(['employee_id','employee_code','employee_name','profile_avatar','designation_name as employee_designation','department_name']);
+                if($loaded){
+                    self::$empProfileCache[$loaded->employee_id] = (array) $loaded;
+                }
+            }
+
+            if(!array_key_exists($employee_id, self::$empProfileCache)){
+                self::$empProfileCache[$employee_id] = false;
+            }
+        }
+        // avatar file check only for employees actually shown, once each
+        $row = &self::$empProfileCache[$employee_id];
+        if($row !== false && !array_key_exists('profile_avatar', $row)){
+            // loaded in bulk: read the avatar now (an employee without personal information shows as N/A, as before)
+            $avatar = \DB::table('tbl_personal_informations')->where('employeeid', $employee_id)->first(['profile_avatar']);
+            if($avatar){
+                $row['profile_avatar'] = $avatar->profile_avatar;
+            }else{
+                $row = false;
+            }
+        }
+        if($row !== false && !isset($row['profile'])){
+            $row['profile'] = (!empty($row['profile_avatar']) && file_exists('portal_assets/profile_pictures/'.$row['profile_avatar'])) ? $row['profile_avatar'] : 'null';
+        }
+        return $row;
     }
 
     public static function getEmpProfileDiv($employee_id){
         try{
 
-            $employeeData = Employees::join('tbl_personal_informations', 'tbl_personal_informations.employeeid', '=', 'tbl_employees.employee_id')
-            ->join('tbl_departments', 'tbl_employees.employee_department', '=', 'tbl_departments.department_id')
-            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->where('tbl_employees.employee_id', $employee_id)
-            ->get(['employee_id','employee_code','employee_name','profile_avatar','designation_name as employee_designation','department_name'])
-            ->toArray();
-    
+            $employeeData = self::getEmpProfileData($employee_id);
+
             if(!empty($employeeData)){
-                $profile = 'null';
-                if(!empty($employeeData[0]['profile_avatar'])){
-                    if(file_exists('portal_assets/profile_pictures/'.$employeeData[0]['profile_avatar'])){
-                        $profile = $employeeData[0]['profile_avatar'];
-                    }
-                }
-    
-                $employeeProfileDiv = "<span href='javascript:;' class='text-dark fw-bold mb-1 fs-6 employee-hover' style='cursor:pointer;' data-profile='".  $profile."' data-name='".$employeeData[0]['employee_name']." - (".$employeeData[0]['employee_code'].")' data-department='".$employeeData[0]['department_name']."' data-designation='".$employeeData[0]['employee_designation']."'>".$employeeData[0]['employee_name']."</span>";
+                $employeeProfileDiv = "<span href='javascript:;' class='text-dark fw-bold mb-1 fs-6 employee-hover' style='cursor:pointer;' data-profile='".  $employeeData['profile']."' data-name='".$employeeData['employee_name']." - (".$employeeData['employee_code'].")' data-department='".$employeeData['department_name']."' data-designation='".$employeeData['employee_designation']."'>".$employeeData['employee_name']."</span>";
             }else{
                 $employeeProfileDiv = "<span href='javascript:;' class='text-dark fw-bold mb-1 fs-6 employee-hover' style='cursor:pointer;' data-profile='N/A' data-name='N/A' data-department='N/A' data-designation='N/A'>N/A</span>";
             }
@@ -97,22 +266,6 @@ class CustomHelper
              return  $candidateDetail;
         }
        
-    }
-
-
-    public static function access_permission(){
-        $get_permission_details = Permission::join('tbl_system_modules','tbl_employee_permission.module_url','=','tbl_system_modules.module_url')->where('employee_id', session('user_session'))->get(['permission_status','module_accessibility','tbl_employee_permission.module_url'])->toArray();
-        if(!empty($get_permission_details)){
-            return $get_permission_details;
-        }
-    }
-
-
-    public static function access_permission_from_api($employee_id){
-        $get_permission_details = Permission::join('tbl_system_modules','tbl_employee_permission.module_url','=','tbl_system_modules.module_url')->where('employee_id',$employee_id)->get(['permission_status','module_accessibility'])->toArray();
-        if(!empty($get_permission_details)){
-            return $get_permission_details;
-        }
     }
 
 
@@ -629,7 +782,7 @@ class CustomHelper
     public static function hcm_default_settings($pdflogo=Null){
 
         try{
-            $setting = HrmSetting::get(['company_favicon','company_logo','company_name','company_address'])->toArray();
+            $setting = HrmSetting::get(['company_favicon','company_logo','company_name','company_address','company_email'])->toArray();
 
             if(!empty($setting)){
 
@@ -658,7 +811,7 @@ class CustomHelper
                         if(file_exists('portal_assets/setting/images/'.$company_fav_icon)){
                             $company_fav_icon =  url('portal_assets/setting/images/'.$company_fav_icon);
                         }else{
-                            $company_fav_icon = url('portal_assets/setting/images/default-company-logo.png');
+                            $company_fav_icon = url('portal_assets/setting/images/hcm-logo.png');
                         }
     
                     }
@@ -668,7 +821,7 @@ class CustomHelper
                             $company_logo =  url('portal_assets/setting/images/'.$company_logo);
                         }
                         else{
-                            $company_logo = url('portal_assets/setting/images/default-company-logo.png');
+                            $company_logo = url('portal_assets/setting/images/hcm-logo.png');
                         }
                     }
                 }else{
@@ -677,7 +830,7 @@ class CustomHelper
                         if(file_exists('portal_assets/setting/images/'.$company_fav_icon)){
                             $company_fav_icon =  public_path('portal_assets/setting/images/'.$company_fav_icon);
                         }else{
-                            $company_fav_icon = public_path('portal_assets/setting/images/default-company-logo.png');
+                            $company_fav_icon = public_path('portal_assets/setting/images/hcm-logo.png');
                         }
     
                     }
@@ -687,7 +840,7 @@ class CustomHelper
                             $company_logo =  public_path('portal_assets/setting/images/'.$company_logo);
                         }
                         else{
-                            $company_logo = public_path('portal_assets/setting/images/default-company-logo.png');
+                            $company_logo = public_path('portal_assets/setting/images/hcm-logo.png');
                         }
                     }
                 }
@@ -699,7 +852,7 @@ class CustomHelper
 
         }
         finally{
-            return ['company_name'=>$company_name,'company_logo'=>$company_logo,'company_favicon'=>$company_fav_icon,'company_address'=>$company_address];
+            return ['company_name'=>$company_name,'company_logo'=>$company_logo,'company_favicon'=>$company_fav_icon,'company_address'=>$company_address,'company_email'=>$setting[0]['company_email'] ?? ''];
         }
 
     }
@@ -969,17 +1122,22 @@ class CustomHelper
 
             $meetings = Meeting::where('meeting_time','like' ,'%'.date('Y-m-d').'%')->count();
 
-            $birthdays = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')->where('employee_isactive', 1)->whereRaw('MONTH(dob) = '.date('m'))->whereRaw('LEFT(dob, 2) = '.date('d'))->count();
+            // the top bar is on every page; these three scan all employees and only change with the date, so keep them 10 minutes
+            [$birthdays, $employee_work_ceremony, $probation_completion] = \Cache::remember('topbar_employee_alerts_'.date('Y-m-d'), 600, function(){
+                return [
+                    Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')->where('employee_isactive', 1)->whereRaw('MONTH(dob) = '.date('m'))->whereRaw('LEFT(dob, 2) = '.date('d'))->count(),
 
-            $employee_work_ceremony = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->where('employee_isactive', 1)
-            ->whereRaw('TIMESTAMPDIFF(YEAR, employee_doj, NOW()) >= 1')
-            ->whereRaw('MONTH(employee_doj) = MONTH(NOW())')->whereRaw('DAY(employee_doj) = DAY(NOW())')
-            ->count();
+                    Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                    ->where('employee_isactive', 1)
+                    ->whereRaw('TIMESTAMPDIFF(YEAR, employee_doj, NOW()) >= 1')
+                    ->whereRaw('MONTH(employee_doj) = MONTH(NOW())')->whereRaw('DAY(employee_doj) = DAY(NOW())')
+                    ->count(),
 
-            $probation_completion = Employees::where('employee_isactive', 1)->where('employee_status', 2)
-            ->whereRaw('DATE_ADD(employee_doj, INTERVAL 3 MONTH) = NOW()')
-            ->count();
+                    Employees::where('employee_isactive', 1)->where('employee_status','2')
+                    ->whereRaw('DATE_ADD(employee_doj, INTERVAL 3 MONTH) = NOW()')
+                    ->count(),
+                ];
+            });
 
             $notice_period_ending = Resignation::where('resignation_status', '=', 2)->where('resignation_to_date', date('Y-m-d'))->count();
 
@@ -1001,6 +1159,26 @@ class CustomHelper
         finally{
             // return $notification_alerts;
         }
+    }
+
+    // Same result as AttendanceEmployee::get_employee_today_shift(), computed from already loaded shift rows:
+    // the shift starting on the latest date that is not after $date, else the default 09:00 - 18:00 shift.
+    private static function shift_time_for_date(array $shifts, $column, $date){
+        $latest = null;
+        foreach($shifts as $shift){
+            $start = date('Y-m-d', strtotime($shift['shift_start_from_date']));
+            if($start <= $date && ($latest === null || $start > $latest)){
+                $latest = $start;
+            }
+        }
+        if($latest !== null){
+            foreach($shifts as $shift){
+                if(strtotime($shift['shift_start_from_date']) == strtotime($latest)){
+                    return $shift[$column];
+                }
+            }
+        }
+        return "09:00:00";
     }
 
     public static function employee_shift_time_calculation_absent($employee_id,$month,$year,$from_date,$to_date){
@@ -1031,20 +1209,25 @@ class CustomHelper
          
             $employee_shift_start = [];
             $employee_shift_end = [];
+            $employee_shift_out = [];
+            $total_working_hours_actual = 0;
+            $att_date_sql = "DATE(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date))";
             foreach($employee_records as $employee_record){
                 if(!empty($month) && !empty($year)){
-                    $employee_attendance = Attendance::selectRaw('att_for_year + CHAR(45) + att_for_month + CHAR(45) + att_for_date as date')
+                    $employee_attendance = Attendance::selectRaw("DATE_FORMAT($att_date_sql, '%Y-%m-%d') as date")
                     ->where('att_employee_id',$employee_record['employee_id'])
                     ->where(['att_for_month'=>$month])->where(['att_for_year'=>$year])->get()->toArray();
-                       
-                   
-                }else{
-                    $employee_attendance = Attendance::selectRaw('att_for_year + CHAR(45) + att_for_month + CHAR(45) + att_for_date as date')->where('att_employee_id',$employee_record['employee_id'])->whereRaw("DATEFROMPARTS(CONCAT(att_for_year + CHAR(45) + att_for_month + CHAR(45) + att_for_date)) >= '".$from_date ."' and DATEFROMPARTS(CONCAT(att_for_year + CHAR(45) + att_for_month + CHAR(45) + att_for_date)) <= '".$to_date."'  ")->get()->toArray();
 
-                  
+
+                }else{
+                    $employee_attendance = Attendance::selectRaw("DATE_FORMAT($att_date_sql, '%Y-%m-%d') as date")->where('att_employee_id',$employee_record['employee_id'])->whereRaw("$att_date_sql >= ? and $att_date_sql <= ?", [$from_date, $to_date])->get()->toArray();
+
+
                 }
-              
+
                 $employee_attendance = array_column($employee_attendance,'date');
+                // all shift rows of the employee, resolved per date in PHP instead of two queries per absent day
+                $employee_shifts = ShiftManagement::where('employee_id',$employee_record['employee_id'])->get(['shift_start_from_date','shift_start_time','shift_end_time'])->toArray();
                 $employee_record['employee_offdays'] = (!empty($employee_record['employee_offdays'])) ? explode(",",$employee_record['employee_offdays']):[];
                 
                 foreach($month_dates as $date){
@@ -1061,9 +1244,9 @@ class CustomHelper
                             }
                             else{
                                 // array_push($employee_attendance,$date);
-                                $employee_shift_start[] = AttendanceEmployee::get_employee_today_shift($employee_record['employee_id'],"in",$date);
+                                $employee_shift_start[] = self::shift_time_for_date($employee_shifts,'shift_start_time',$date);
 
-                                $employee_shift_out[] = AttendanceEmployee::get_employee_today_shift($employee_record['employee_id'],"out",$date);
+                                $employee_shift_out[] = self::shift_time_for_date($employee_shifts,'shift_end_time',$date);
                                 
                             }
                             
@@ -1124,97 +1307,21 @@ class CustomHelper
 
     }
 
-    public static function hcm_sap_attendance(){
-      
-        try{
-
-            $login_user = session('user_session');
-
-            $sap_permission = Permission::where('employee_id', $login_user)->where('permission_status', '=', 1)->where('module_url', '=', '/sap-attendance')->get()->toArray();           
-
-            if(!empty($sap_permission)){
-                return $sap_permission;
-            }
-
-        }catch(\Exception $e){
-            LogGenerateTrait::create_error_log('Get sap permission ', $e);
-        }
-        
-    }
-
     public static function hcm_attendance_adjustment(){
       
         try{
 
             $login_user = session('user_session');
 
-            $att_adjustment_permission = Permission::where('employee_id', $login_user)->where('permission_status', '=', 1)->where('module_url', '=', '/attendance-adjustment')->get()->toArray();           
-
-            if(!empty($att_adjustment_permission)){
-                return $att_adjustment_permission;
+            // own permission or a role with the module (Super Admin always)
+            if(self::can_access('/attendance-adjustment', $login_user)){
+                return [['employee_id' => $login_user, 'module_url' => '/attendance-adjustment', 'permission_status' => 1]];
             }
 
         }catch(\Exception $e){
             LogGenerateTrait::create_error_log('Get attendance adjustment permission ', $e);
         }
         
-    }
-
-
-    public static function refreshSapAttendance($start_date, $end_date, $employee_Code)
-    {
-        try {
-
-            $start_date = date("Ymd", strtotime($start_date));
-            $end_date = date("Ymd", strtotime($end_date));
-
-            // employee_code comes from an int column, so cast before indexing the first character
-            $employee_Code = (string) $employee_Code;
-            if ($employee_Code === '' || $employee_Code[0] !== '0') {
-                $employee_Code = '0' . $employee_Code;
-            }
-
-            // $endpoint = env("SAP_API") . "/get-employee-sap-attendance/$employee_Code/$start_date/$end_date";
-
-            $endpoint = Http::get("http://172.19.0.101:8080/get-employee-sap-attendance/$employee_Code/$start_date/$end_date");
-
-            // dd($endpoint);
-
-            // $thirtyMinutesAgo = Carbon::now()->subMinutes(30);
-
-            // $recordExists = DB::table('sap_attendance_report')
-            //     ->whereBetween('sap_attendance_report.attendance_date', [$start_date, $end_date])
-            //     ->where('sap_attendance_report.emp_code', '=', $employee_Code)
-            //     ->where('sap_attendance_report.updated_at', '>=', $thirtyMinutesAgo)
-            //     ->exists();
-
-            $recordExists = false; // hardcoded
-            if (!$recordExists ) {    // Send HTTP GET request
-                
-                // $response = Http::get($endpoint);
-                $response = $endpoint;
-                Log::Info($response);
-                // Check if the request was successful
-                if ($response->successful()) {
-                    // Get the response content
-                    $responseData = $response->body();
-                } 
-                // else {
-
-                //     // Handle the case where the request failed
-                //     echo "Failed to fetch data from the SAP API.";
-                // }
-            }
-        } catch (Exception $e) {
-            $generate_error_log = new ErrorLog();
-            $generate_error_log->error_log_module = 'refresh Sap Attendance';
-            $generate_error_log->error_log_action_url = URL::current();
-            $generate_error_log->error_log_current_url = URL::previous();
-            $generate_error_log->error_log_message = $e->getMessage();
-            $generate_error_log->error_log_generated_employee = (session('user_session_id')) ?? 1;
-            $generate_error_log->error_log_schedule_time = date('h:i:s a d F, Y');
-            $generate_error_log->save();
-        }
     }
 
 

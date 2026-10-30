@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -37,7 +38,7 @@ class WFHController extends Controller
             $responsed_request = array();
             // $dates = array();
 
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
              
                 $limit_query = '300';
                 $where_clause = "1=1 AND employee_isactive = '".$status."'";
@@ -45,37 +46,45 @@ class WFHController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_for_date)  || !empty($request_data->request_submited_date) || !empty($request_data->req_status)){
                     $limit_query = '';
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND wfh_employee_id = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND wfh_employee_id = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->request_for_date)){
-                        $where_clause .= ' AND wfh_request_date = "'.$request_data->request_for_date.'"';
+                        $where_clause .= ' AND wfh_request_date = '.\DB::getPdo()->quote((string) $request_data->request_for_date).'';
                     }
                     if(!empty($request_data->request_submited_date)){
                         $submition_date = date("d-m-Y", strtotime($request_data->request_submited_date));
                         $where_clause .= ' AND wfh_request_submition_date LIKE "%'.$submition_date.'%"';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND wfh_request_approved_by_hr = "'.$request_data->req_status.'"';
+                        $where_clause .= ' AND wfh_request_approved_by_hr = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-                $all_requests = WFH::
+                $search = trim((string) request()->input('search'));
+                $pagination = WFH::
                 join('tbl_employees', 'tbl_work_from_homes.wfh_employee_id', '=', 'tbl_employees.employee_id')
                 ->whereRaw($where_clause)
                 ->orderBy('wfh_request_id', 'DESC')
-                ->get(['wfh_request_id','wfh_employee_id','wfh_request_date','wfh_request_message','wfh_request_approved_by_hr','wfh_request_approved_date_hr','wfh_request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager'])->toArray();
+                ->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('employee_name','like','%'.$search.'%')
+                                ->orWhere('employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->paginate(CustomHelper::per_page(), ['wfh_request_id','wfh_employee_id','wfh_request_date','wfh_request_message','wfh_request_approved_by_hr','wfh_request_approved_date_hr','wfh_request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager'])->withQueryString();
+                $all_requests = $pagination->getCollection()->toArray();
                 
                 $responsed_request = RequestApproval::where('request_module_id', 3)->pluck('request_id')->toArray();
                 
             }
     
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
               
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -86,18 +95,18 @@ class WFHController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND wfh_employee_id = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND wfh_employee_id = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND wfh_request_approved_by_hr = "'.$request_data->req_status.'"';
+                        $where_clause .= ' AND wfh_request_approved_by_hr = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
                
                 $all_requests = WFH::join('tbl_employees', 'tbl_work_from_homes.wfh_employee_id', '=', 'tbl_employees.employee_id')->whereIn('wfh_employee_id',$total_team_member)->whereRaw($where_clause)->orderBy('wfh_request_id','DESC')->get(['wfh_request_id','wfh_employee_id','wfh_request_date','wfh_request_message','wfh_request_approved_by_hr','wfh_request_approved_date_hr','wfh_request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager'])->toArray();
             
@@ -122,7 +131,8 @@ class WFHController extends Controller
                 $dates[] = $request_data->date;
             }
 
-           $send_data = compact('title','login_user','all_requests','employees_data','departments','responsed_request','employee_locations','dates');
+           $pagination = $pagination ?? null;
+           $send_data = compact('title','login_user','all_requests','employees_data','departments','responsed_request','employee_locations','dates','pagination');
 
            return view('wfh.all-request', $send_data);
 
@@ -171,7 +181,7 @@ class WFHController extends Controller
 
                         $message = 'Remote work access given by : '.$login_user[0]['employee_name'].', at : '.date('d M, Y h:i:s A').'';
 
-                        $checking_request = WFH::where('wfh_employee_id', $employees['employee_id'])->where('wfh_request_date',$request_data->input('request_date'))->get()->toArray();
+                        $checking_request = WFH::where('wfh_employee_id', (string) $employees['employee_id'])->where('wfh_request_date',$request_data->input('request_date'))->get()->toArray();
                         if(empty($checking_request)){
                             $wfh_request = new WFH();
                             $wfh_request->wfh_employee_id = $employees['employee_id'];
@@ -227,7 +237,7 @@ class WFHController extends Controller
 
                         $message = 'Remote work access given by : '.$login_user[0]['employee_name'].', at : '.date('d M, Y h:i:s A').'';
 
-                        $checking_request = WFH::where('wfh_employee_id', $employees['employee_id'])->where('wfh_request_date',$request_data->input('request_date'))->get()->toArray();
+                        $checking_request = WFH::where('wfh_employee_id', (string) $employees['employee_id'])->where('wfh_request_date',$request_data->input('request_date'))->get()->toArray();
                         if(empty($checking_request)){
                             $wfh_request = new WFH();
                             $wfh_request->wfh_employee_id = $employees['employee_id'];
@@ -275,7 +285,7 @@ class WFHController extends Controller
             }    
         }catch(\Exception $e){
             $this->create_error_log('All Remote Work Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -302,7 +312,7 @@ class WFHController extends Controller
       
             $login_user = $this->get_login_user_detail();
             
-            $my_requests = WFH::where('wfh_employee_id' , session('user_session'))->orderBy('wfh_request_id', 'DESC')->get()->toArray();
+            $my_requests = WFH::where('wfh_employee_id' , (string) session('user_session'))->orderBy('wfh_request_id', 'DESC')->get()->toArray();
 
             $wfh_request_id = array_column($my_requests,'wfh_request_id');
 
@@ -368,7 +378,7 @@ class WFHController extends Controller
                     
                         $request_date = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request_data->input('from_date'))));
 
-                        $checking_request = WFH::where('wfh_employee_id', session('user_session'))->whereIn('wfh_request_date',[$request_date])->get(['wfh_request_date'])->toArray();
+                        $checking_request = WFH::where('wfh_employee_id', (string) session('user_session'))->whereIn('wfh_request_date',[$request_date])->get(['wfh_request_date'])->toArray();
                         
                         foreach($checking_request as $request_date){
                             
@@ -399,11 +409,11 @@ class WFHController extends Controller
                     }
 
                     $date = $request_data->input('request_date');
-                    $checking_request = WFH::where('wfh_employee_id', session('user_session'))->where('wfh_request_date', $request_data->input('request_date'))->where('wfh_request_approved_by_hr', '!=', 3)->get()->toArray();
+                    $checking_request = WFH::where('wfh_employee_id', (string) session('user_session'))->where('wfh_request_date', $request_data->input('request_date'))->where('wfh_request_approved_by_hr', '!=', 3)->get()->toArray();
                     
                 }
 
-                $checking_request = WFH::where('wfh_employee_id', session('user_session'))->where('wfh_request_date',$request_data->input('request_date'))->get()->toArray();
+                $checking_request = WFH::where('wfh_employee_id', (string) session('user_session'))->where('wfh_request_date',$request_data->input('request_date'))->get()->toArray();
                 if(empty($checking_request)){
 
                     if(!empty($request_data->input('from_date')) && !empty($request_data->input('to_date'))){
@@ -415,7 +425,7 @@ class WFHController extends Controller
 
                             $dates =  date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request_data->input('from_date'))));
                             
-                            $checking_request_dates = WFH::where('wfh_employee_id', session('user_session'))->where('wfh_request_date',$dates)->get(['wfh_request_date'])->toArray();
+                            $checking_request_dates = WFH::where('wfh_employee_id', (string) session('user_session'))->where('wfh_request_date',$dates)->get(['wfh_request_date'])->toArray();
 
                             if(empty($checking_request_dates)){
                                 
@@ -426,10 +436,10 @@ class WFHController extends Controller
                                 $wfh_request->wfh_request_submition_date = date('d-m-Y H:i:s');
                                 $process = $wfh_request->save();   
                                 
-                                if($login_user[0]['employee_department'] != 7){
-                                    $month = date('m', strtotime($dates));
+                                if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
+                                    $month = date('m', strtotime($dates)); $wfh_year = date('Y', strtotime($dates));
                                     
-                                    $default_approved_wfh = WFH::where('wfh_employee_id', session('user_session'))->whereMonth('wfh_request_date',$month)->count();
+                                    $default_approved_wfh = WFH::where('wfh_employee_id', (string) session('user_session'))->whereMonth('wfh_request_date',$month)->whereYear('wfh_request_date',$wfh_year)->count();
                                     
                                     if($default_approved_wfh == 1){
 
@@ -452,9 +462,9 @@ class WFHController extends Controller
                         
                         $process = $wfh_request->save();  
 
-                        if($login_user[0]['employee_department'] != 7){
-                            $month = date('m', strtotime($request_data->input('request_date')));
-                            $default_approved_wfh = WFH::where('wfh_employee_id', session('user_session'))->whereMonth('wfh_request_date',$month)->count();
+                        if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
+                            $month = date('m', strtotime($request_data->input('request_date'))); $wfh_year = date('Y', strtotime($request_data->input('request_date')));
+                            $default_approved_wfh = WFH::where('wfh_employee_id', (string) session('user_session'))->whereMonth('wfh_request_date',$month)->whereYear('wfh_request_date',$wfh_year)->count();
                             
                             if($default_approved_wfh == 1){
     
@@ -514,7 +524,7 @@ class WFHController extends Controller
             }    
         }catch(\Exception $e){
             $this->create_error_log('Apply Remote Work Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -536,6 +546,12 @@ class WFHController extends Controller
     protected function wfh_request(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = WFH::whereIn('wfh_request_id', explode(',', (string) $request->input('ids')))->pluck('wfh_employee_id')->toArray();
+            if(!$this->can_respond_for($request_employees, ['hr'])){
+                return $this->not_allowed_response();
+            }
 
             if($request['status'] == "Approve"){
                 $process = '';
@@ -792,7 +808,7 @@ class WFHController extends Controller
             
         }catch(\Exception $e){
             $this->create_error_log('Approved And Disapproved Work From Home Request by Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -848,7 +864,7 @@ class WFHController extends Controller
                 
                     if(empty($checking_request_responsed) && $wfh_update_request->wfh_request_approved_by_hr == 1){
 
-                        $checking_request = WFH::where('wfh_employee_id', session('user_session'))->where('wfh_request_date',$request_data->input('request_date'))->where('wfh_request_id','!=',$request_data->request_id)->get()->toArray();
+                        $checking_request = WFH::where('wfh_employee_id', (string) session('user_session'))->where('wfh_request_date',$request_data->input('request_date'))->where('wfh_request_id','!=',$request_data->request_id)->get()->toArray();
 
                         if(empty($checking_request)){
                         
@@ -903,7 +919,7 @@ class WFHController extends Controller
             }                  
         }catch(\Exception $e){
             $this->create_error_log('Update Remote Work Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -973,7 +989,7 @@ class WFHController extends Controller
             }         
         }catch(\Exception $e){
             $this->create_error_log('Delete Remote Work Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

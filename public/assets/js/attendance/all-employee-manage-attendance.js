@@ -16,6 +16,8 @@ $(function () {
             [10, 25, 50, 100, 500, "All"]
         ],
         iDisplayLength: 500,
+        paging: $('#tableAllEmployeeAttendance').is('[data-server-paginated]') ? false : true,
+        info: $('#tableAllEmployeeAttendance').is('[data-server-paginated]') ? false : true,
 
     });
 

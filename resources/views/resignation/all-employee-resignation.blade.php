@@ -1,5 +1,9 @@
 @extends('layout.main')
 
+@push('cs-link')
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+@endpush
+
 @section('main-section')
 
 <div class="d-flex flex-column flex-column-fluid">
@@ -14,7 +18,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                     <div class="m-0">   
                         <a href="javascript:void(0)" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#rejectresignation" >
                             <span class="svg-icon svg-icon-2">
@@ -123,13 +127,9 @@
                                         
                                         <div>
                                             <select class="form-select" data-kt-select2="true"  name="emp_name"
-                                            id="company_emp_name" >
+                                            id="company_emp_name"  data-employee-select data-scope="team">
                                                 <option value="">All Employees</option>
-                                                @if(!empty($employees_data))
-                                                    @foreach($employees_data as $data)
-                                                        <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                    @endforeach
-                                                @endif
+                                                @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                             </select>
                                         </div>
                                         
@@ -245,7 +245,7 @@
                                                     </a>
                                                 </td>
                                                 <td class="text-center">
-                                                    @if ($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                                    @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                                     
 
                                                         @if ($all_resignation['resignation_status'] != 1 )
@@ -330,11 +330,11 @@
                     <div class="modal-body pt-0">
                         <p class="pt-4 fs-6 msg">Are you sure to <b>Approve</b> selected Resignation request ?</p>
 
-                         @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                         @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                             <textarea class="form-control" rows="3" name="approvermsg" placeholder="Message" id="approvermessage" required></textarea>
                         @endif
 
-                        @if($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                        @if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                 <textarea class="form-control " rows="3" name="approvermessage" placeholder="Message" id="approvermessage" required></textarea>
                         @endif
                     </div>
@@ -372,11 +372,11 @@
                     <div class="modal-body pt-0">
                         <p class="pt-4 fs-6 msg">Are you sure to <b>Disapprove</b> selected Resignation request ?</p>
 
-                        @if ($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                        @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                             <textarea class="form-control" rows="3" name="disapprovermsg" placeholder="Message" id="disapprovermessage" required></textarea>
                         @endif
 
-                        @if($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                        @if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                             <textarea class="form-control " rows="3" name="disapprovermessage" placeholder="Message" id="disapprovermessage" required></textarea>
                         @endif
                     </div>
@@ -394,7 +394,7 @@
         </div>
     </div>
 
-    @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
         <form id="reject_resignation" class="form">
             @csrf 
             <div class="modal fade" id="rejectresignation" tabindex="-1" aria-hidden="true">

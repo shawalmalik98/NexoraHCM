@@ -193,7 +193,7 @@ class PettyCashController extends Controller
             }  
         }catch(\Exception $e){
             $this->create_error_log("Add Cash", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -282,7 +282,7 @@ class PettyCashController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Update Cash", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -320,7 +320,7 @@ class PettyCashController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -41,12 +42,12 @@ class OvertimeController extends Controller
             }
 
             if(!empty($request->employee_location)){
-                $where_clause   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
             }
             
             $emp_id = '1 = 1';
             if($request->input('emp_name') != '' && is_numeric($request->input('emp_name'))){
-                $emp_id .= " and employee_id = ".$request->input('emp_name');
+                $emp_id .= " and employee_id = ".\DB::getPdo()->quote((string) $request->input('emp_name'));
             }
             
             if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12){
@@ -63,11 +64,27 @@ class OvertimeController extends Controller
                 $year = date('Y');
             }
             
-            $all_attendaces =  $this->monthly_attendance_all_employee($emp_id,$month,$year,$where_clause);
-          
+            // on screen one page of employees (ascending, as the sheet shows them); the PDF download covers everyone
+            $pagination = null;
+            $page_employee_ids = NULL;
+            if($request->input('download') != 'TRUE'){
+                $search = trim((string) $request->input('search'));
+                $pagination = Employees::whereRaw($emp_id)->whereRaw($where_clause)
+                    ->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('employee_name','like','%'.$search.'%')->orWhere('employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->orderBy('employee_id')
+                    ->paginate(CustomHelper::per_page(), ['employee_id'])->withQueryString();
+                $page_employee_ids = $pagination->pluck('employee_id')->toArray();
+            }
+
+            $all_attendaces =  $this->monthly_attendance_all_employee($emp_id,$month,$year,$where_clause,$page_employee_ids);
+
             $all_employees = Employees::whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
 
-            $send_data = compact('title','login_user','all_attendaces','all_employees','month','year','employee_locations','dynamic_years');
+            $send_data = compact('title','login_user','all_attendaces','all_employees','month','year','employee_locations','dynamic_years','pagination');
 
         
             if($request->input('download') == 'TRUE'){
@@ -132,12 +149,12 @@ class OvertimeController extends Controller
             }
 
             if(!empty($request->employee_location)){
-                $where_clause   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
             }
             
             $emp_id = '1 = 1';
             if($request->input('emp_name') != '' && is_numeric($request->input('emp_name'))){
-                $emp_id .= " and employee_id = ".$request->input('emp_name');
+                $emp_id .= " and employee_id = ".\DB::getPdo()->quote((string) $request->input('emp_name'));
             }
             
             if($request->input('m') != '' && is_numeric($request->input('m')) && $request->input('m') >= 01 && $request->input('m') <= 12){
@@ -192,7 +209,7 @@ class OvertimeController extends Controller
             $where_clause = '1=1';
             $employee_id = '';
             if($request->id != '' && is_numeric($request->id)){
-                $emp_id .= " and employee_id = ".$request->id;
+                $emp_id .= " and employee_id = ".\DB::getPdo()->quote((string) $request->id);
                 $employee_id = $request->id;
             }
             
@@ -274,7 +291,7 @@ class OvertimeController extends Controller
             $where_clause = '1=1';
             $employee_id = '';
             if($request->id != '' && is_numeric($request->id)){
-                $emp_id .= " and employee_id = ".$request->id;
+                $emp_id .= " and employee_id = ".\DB::getPdo()->quote((string) $request->id);
                 $employee_id = $request->id;
             }
             
@@ -407,7 +424,7 @@ class OvertimeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Singal Record OverTime Insert', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -528,7 +545,7 @@ class OvertimeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Multiple Record OverTime Insert or Remove', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -602,7 +619,7 @@ class OvertimeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Singal Delete Record OverTime Insert', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -707,7 +724,7 @@ class OvertimeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Amount Payable  Record Update OverTime', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -728,29 +745,37 @@ class OvertimeController extends Controller
         }
     }
 
-    protected function monthly_attendance_all_employee($employee_id = NULL ,$month = NULL , $year = NULL, $location = NULL){
-        
-   
+    protected function monthly_attendance_all_employee($employee_id = NULL ,$month = NULL , $year = NULL, $location = NULL, $only_employee_ids = NULL){
+
+
         $all_employees = Employees::whereRaw($employee_id)
         ->whereRaw($location)
+        ->when($only_employee_ids !== NULL, function($query) use($only_employee_ids){
+            $query->whereIn('employee_id', $only_employee_ids);
+        })
         ->orderBy('employee_id','DESC')
         ->get(['employee_id','employee_code','employee_name','employee_isactive'])->toArray();
 		
         if(!empty($all_employees)){
 
+            if(empty($month) || empty($year)){
+                $month = date('m');
+                $year = date('Y');
+            }
+
+            // one query per 1000 employees instead of one per employee
+            $attendance_by_employee = [];
+            foreach(array_chunk(array_column($all_employees, 'employee_id'), 1000) as $employee_ids_chunk){
+                $month_attendance = Attendance::whereIn('att_employee_id',$employee_ids_chunk)->where('att_for_month',$month)->where('att_for_year',$year)->orderBy('attendance_id')->get()->toArray();
+                foreach($month_attendance as $attendance_row){
+                    $attendance_by_employee[$attendance_row['att_employee_id']][] = $attendance_row;
+                }
+            }
+
             foreach($all_employees as $employee){
 
-                if(!empty($month) && !empty($year)){
-					
-					$all_attendances = Attendance::where('att_employee_id',$employee['employee_id'])->where('att_for_month',$month)->where('att_for_year',$year)->get()->toArray();
+                $all_attendances = $attendance_by_employee[$employee['employee_id']] ?? [];
 
-                }
-                else{
-
-                    $all_attendances = Attendance::where('att_employee_id',$employee['employee_id'])->where('att_for_month',date('m'))->where('att_for_year',date('Y'))->get()->toArray();
-
-                }
-          
                 $atts = array('attendance' => $all_attendances);
                 $result[] = array_merge( $employee , $atts );
 

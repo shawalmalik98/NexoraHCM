@@ -81,7 +81,7 @@ class DepartmentController extends Controller
         catch(\Exception $e){
 
             $this->create_error_log('Add new Department', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -151,7 +151,7 @@ class DepartmentController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Update department", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -215,7 +215,7 @@ class DepartmentController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Delete department", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -249,7 +249,7 @@ class DepartmentController extends Controller
             
         }catch(\Exception $e){
             $this->create_error_log('Get Departments Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

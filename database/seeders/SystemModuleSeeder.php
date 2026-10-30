@@ -30,7 +30,7 @@ class SystemModuleSeeder extends Seeder
                 ('My Interviews', '/my-interviews', '0',1),
                 ('My Payslips', '/payslip', '0',1),
                 ('My Meetings', '/my-meetings', '0',1),
-                ('My Work From Home Requests', '/my-wfh-requests', '0',0),
+                ('My Work From Home Requests', '/my-wfh-requests', '0',1),
                 ('My Resignation', '/employee-resignation', '0',1),
                 ('My Salary Request', '/my-salary-request', '0',1),
                 ('My Loan Request', '/my-loan', '0',1),
@@ -45,7 +45,7 @@ class SystemModuleSeeder extends Seeder
                 ('Detailed Attendance', '/attendance', '1',1),
                 ('All Attendance Requests', '/attendance-requests', '1',1),
                 ('Daily Attendance Report', '/daily-attendance-report', '1',1),
-                ('All WFH Requests', '/wfh-requests', '0',0),
+                ('All WFH Requests', '/wfh-requests', '0',1),
                 ('All Leaves Requests', '/employees-leaves', '1',1),
                 ('Leaves Entitlement', '/manage-leaves', '1',1),
                 ('Manage Interviews', '/interviews', '1',1),
@@ -103,8 +103,8 @@ class SystemModuleSeeder extends Seeder
                 ('All Funds','/funds', '1',1),
                 ('Employee Funds','/employee-fund', '1',1),
                 ('Employee Locations','/employee-location', '1',1),
-                ('Sap Attendance','/sap-attendance', '1',1),
-                ('Attendance Adjustment','/attendance-adjustment', '1',1)
+                                ('Attendance Adjustment','/attendance-adjustment', '1',1),
+                ('Roles & Permissions','/roles', '1',1)
             ");
         }
       

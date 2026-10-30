@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Models\LeaveDeduction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\{Employees, Payslip, Leave, EmployeeInformation, Attendance, Interview, Alert, AlertStatus, LateComers, ExpenseSheet, Meeting, MeetingUsers, Permission,LeaveManagement};
+use App\Models\{Employees, Payslip, Leave, EmployeeInformation, Attendance, Interview, Alert, AlertStatus, LateComers, ExpenseSheet, Meeting, MeetingUsers, Permission, LeaveManagement, SystemModule};
 use App\Traits\{LogGenerateTrait, LoginEmployee, ApiResponseTrait};
 use App\Helpers\{ActivityTracker, CustomHelper};
 use Illuminate\Support\Facades\File;
@@ -22,7 +23,8 @@ class HomeControllerApi extends Controller
 
             
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
-            $permission = CustomHelper::access_permission_from_api($login_user[0]['employee_id']);
+            $permission = CustomHelper::permission_map($login_user[0]['employee_id']);
+            $permission_map = CustomHelper::permission_map($login_user[0]['employee_id']);
           
             if(!empty($login_user[0]['profile_avatar'])){
                 if(file_exists('portal_assets/profile_pictures/'.$login_user[0]['profile_avatar'])){
@@ -43,7 +45,7 @@ class HomeControllerApi extends Controller
             $welcome_greeting = CustomHelper::employee_welcome_status_api($login_user[0]['employee_id']);
             $employee_statistics = ['status' => FALSE, 'data' => []];
             
-            if(!empty($permission) && $permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1){
+            if(!empty($permission) && $permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1){
 
                 $employee_statistics['status'] = TRUE;
 
@@ -75,27 +77,27 @@ class HomeControllerApi extends Controller
 
                 $employee_statistics['data']['total_employees'] = $total_employees;
 
-                $permanent_employees = Employees::where('employee_isactive', 1)->where('employee_status',3)->count();
+                $permanent_employees = Employees::where('employee_isactive', 1)->where('employee_status','3')->count();
 
                 $employee_statistics['data']['permanent_employees'] = $permanent_employees;
 
-                $permanent_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status',3)->count();
+                $permanent_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status','3')->count();
 
                 $employee_statistics['data']['permanent_male_employees'] = $permanent_male_employees;
 
-                $permanent_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status',3)->count();
+                $permanent_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status','3')->count();
                 
                 $employee_statistics['data']['permanent_female_employees'] = $permanent_female_employees;
                 
-                $probation_employees = Employees::where('employee_isactive', 1)->where('employee_status',2)->count();
+                $probation_employees = Employees::where('employee_isactive', 1)->where('employee_status','2')->count();
 
                 $employee_statistics['data']['probation_employees'] = $probation_employees;
 
-                $probation_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status',2)->count();
+                $probation_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status','2')->count();
 
                 $employee_statistics['data']['probation_male_employees'] = $probation_male_employees;
 
-                $probation_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status',2)->count();
+                $probation_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status','2')->count();
 
                 $employee_statistics['data']['probation_female_employees'] = $probation_female_employees;
 
@@ -105,16 +107,16 @@ class HomeControllerApi extends Controller
 
             $leaves_entitiled = LeaveManagement::join('tbl_leave_entitlement','tbl_leave_management.leave_manage_id','=','tbl_leave_entitlement.leave_type_id')->WhereIN('leave_type_id',array(1,2,3))->where('leaves_employee_id',$login_user[0]['employee_id'])->get(['leave_name','leave_allotement'])->toArray();
 
-            $annual_used = Attendance::where('att_employee_id', $login_user[0]['employee_id'])->where('att_check_overall_status','Annual Leave')->count();
+            $annual_used = Attendance::where('att_employee_id', $login_user[0]['employee_id'])->where('att_check_overall_status','Annual Leave')->count() + LeaveDeduction::deducted_count_by_name($login_user[0]['employee_id'], 'Annual Leave');
 
-            $casual_used = Attendance::where('att_employee_id', $login_user[0]['employee_id'])->where('att_check_overall_status','Casual Leave')->count();
+            $casual_used = Attendance::where('att_employee_id', $login_user[0]['employee_id'])->where('att_check_overall_status','Casual Leave')->count() + LeaveDeduction::deducted_count_by_name($login_user[0]['employee_id'], 'Casual Leave');
 
             $sick_used = Attendance::where('att_employee_id', $login_user[0]['employee_id'])->where('att_check_overall_status','Sick Leave')->count();
 
             $todays_interviews = Interview::where('interview_date',date('Y-m-d'))->count();
 
 
-            if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
                 $where_clause = 'interview_date LIKE  "%'.date("Y-m-d").'%"';
             }else{
                 $where_clause = 'interview_date LIKE  "%'.date("Y-m-d").'%"  and ( interview_interviewer1 = '.$login_user[0]['employee_id'].' or interview_interviewer2 = '.$login_user[0]['employee_id'].' )';
@@ -133,7 +135,7 @@ class HomeControllerApi extends Controller
             
             $employee_birthdays = ['status' => FALSE, 'data' => []];
 
-            if(!empty($permission) &&  $permission[14]['module_accessibility'] == 1 && $permission[14]['permission_status'] == 1){ 
+            if(!empty($permission) &&  $permission_map['/employee-birthdays']['module_accessibility'] == 1 && $permission_map['/employee-birthdays']['permission_status'] == 1){ 
 
                 $employee_birthdays['status'] = TRUE;
 
@@ -178,7 +180,7 @@ class HomeControllerApi extends Controller
 
             $bad_attendance_employees = ['status' => FALSE, 'data' => [] ];
 
-            if(!empty($permission) && $permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1){
+            if(!empty($permission) && $permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1){
 
                 $bad_attendance_employees['status'] = TRUE;
 
@@ -271,7 +273,10 @@ class HomeControllerApi extends Controller
 
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
-            $permission = Permission::where('employee_id', $login_user[0]['employee_id'])->where('permission_status',1)->join('tbl_system_modules','tbl_system_modules.module_url','tbl_employee_permission.module_url')->where('module_accessibility',1)->pluck('module_id');
+            // modules of the employee's own permissions + roles (Super Admin: all)
+            $permission_map = CustomHelper::permission_map($login_user[0]['employee_id']);
+            $allowed_urls = array_keys(array_filter($permission_map, fn($module) => $module['permission_status'] == 1 && $module['module_accessibility'] == 1));
+            $permission = SystemModule::whereIn('module_url', $allowed_urls)->orderBy('module_id')->pluck('module_id');
           
             $companySetting = CustomHelper::hcm_default_settings();
 

@@ -5,7 +5,7 @@
     <title>Nexora HCM</title>
     <meta charset="utf-8" />
     <meta name="description" content="Nexora HCM" />
-    <meta name="keywords" content="Nexora HCM, IIL - HRM, HCM, HRM, Human Capital Management, Human Resource Management." />
+    <meta name="keywords" content="Nexora HCM, HCM, HRM, Human Capital Management, Human Resource Management." />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />

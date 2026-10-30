@@ -217,14 +217,9 @@
                                                     <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
                                                     <option value="">Select Business Unit</option>
                                                     <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
-                                                    <option value="Candyland" @if (Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
-                                                    <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
-                                                    <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
-                                                    <option value="Hudson Pharma" @if (Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
-                                                    <option value="Astro" @if (Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
-                                                    <option value="Act Group" @if (Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
-                                                    <option value="Ismail Nutrition" @if (Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>
-                                                    <option value="Flour" @if (Request::get('business_unit') == 'Flour') selected @endif>Flour</option>
+                                                    @foreach (CustomHelper::business_units() as $business_unit)
+                                                        <option value="{{ $business_unit }}" @if (Request::get('business_unit') == $business_unit) selected @endif>{{ $business_unit }}</option>
+                                                    @endforeach
                                                 </select>
                                                 </div>
                                                 

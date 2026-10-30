@@ -12,6 +12,11 @@ class Employees extends Model
     protected $primaryKey = 'employee_id';
     public $timestamps = false;
 
+    public function newEloquentBuilder($query)
+    {
+        return new EmployeesBuilder($query);
+    }
+
     protected static function booted()
     {
         // every employee needs a unique public code for the business card / QR link

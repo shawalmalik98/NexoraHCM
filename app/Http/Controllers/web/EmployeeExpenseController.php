@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -39,138 +40,74 @@ class EmployeeExpenseController extends Controller
             $where_clause = '1=1' ;
 
             if(!empty($request->emp_name)){
-                $where_clause .= " AND employee_id = '".$request->emp_name."'";
+                $where_clause .= " AND employee_id = ".\DB::getPdo()->quote((string) $request->emp_name)."";
             }
             if(!empty($request->employee_location)){
-                $where_clause .= " AND employee_location = '".$request->employee_location."'";
+                $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request->employee_location)."";
                 
             }
                
-            $employees_data = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause)->pluck('employee_id')->toArray();
-
             $whereRaw = '1=1 ';
-            $where_clause_to = '1=1 ';
-           
+
             if($request->get('expense_type')){
-                $whereRaw .= ' and  emp_expense_type = '.$request->get('expense_type');
+                $whereRaw .= ' and  emp_expense_type = '.\DB::getPdo()->quote((string) $request->get('expense_type'));
             }
             if($request->get('status')){
 
-                $whereRaw .= ' and emp_expense_approved_by_hr = '.$request->get('status');
+                $whereRaw .= ' and emp_expense_approved_by_hr = '.\DB::getPdo()->quote((string) $request->get('status'));
             }
             if($request->get('paid')){
 
-                $whereRaw .= ' and emp_expense_reimbursement = '.$request->get('paid');
+                $whereRaw .= ' and emp_expense_reimbursement = '.\DB::getPdo()->quote((string) $request->get('paid'));
             }
             if($request->get('req_status')){
 
-                $whereRaw .= ' and emp_expense_approved_by_hr = '.$request->get('req_status');
+                $whereRaw .= ' and emp_expense_approved_by_hr = '.\DB::getPdo()->quote((string) $request->get('req_status'));
             }
 
             $responsed_request = RequestApproval::where('request_module_id',7)->pluck('request_id')->toArray();
-            
-            if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 3){
-                
-                $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],  $status);
 
-                $where_clause_to .= ' and emp_expense_employee in ('.implode(",",$total_team_member).')';
-                
+            // HR / Finance / Admin see every employee's expenses, a manager the team's; name / location / status filters apply to both
+            $employee_scope = Employees::select('employee_id')->where('employee_isactive','=',$status)->whereRaw($where_clause);
+            if(!CustomHelper::has_role($login_user[0]['employee_id'], 'hr') && !CustomHelper::has_role($login_user[0]['employee_id'], 'finance')){
+
+                $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],  $status);
+                $employee_scope->whereIn('employee_id', $total_team_member ?: [0]);
+
                 $responsed_request = RequestApproval::where('request_module_id',7)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
             }
 
-            $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],  $status);
+            // latest amount of every expense in scope
+            $expenses = function() use($employee_scope){
+                return EmployeeExpense::join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
+                ->whereIn('emp_expense_amt_id',function($query){
+                    $query->from('tbl_employee_expense_amount')
+                    ->selectRaw('MAX(emp_expense_amt_id)')
+                    ->groupBy('emp_expense_exp_id');
+                })
+                ->whereIn('emp_expense_employee', clone $employee_scope);
+            };
 
-            $fetch_expenses = [];
-          
-            $employee_arrays = array_chunk($total_team_member , 2000);
-            
-            foreach($employee_arrays as $employee){
-
-                $fetch_expense = EmployeeExpense::
-                selectRaw('emp_expense_employee,emp_expense_id,emp_expense_date,emp_expense_description,emp_expense_type,emp_expense_amount,emp_expense_approved_by_hr,emp_expense_reimbursement,emp_expense_created_at,employee_name,employee_name,employee_code,emp_expense_approved_by_hr_time,emp_expense_attachment,emp_expense_approved_by_hr_reason,(select count(emp_expense_exp_id) from tbl_employee_expense_amount where emp_expense_exp_id = emp_expense_id   ) as update_amount, pc_id, pc_month, pc_year, disburse')
-                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
+            $pagination = $expenses()
+                ->selectRaw('emp_expense_employee,emp_expense_id,emp_expense_date,emp_expense_description,emp_expense_type,emp_expense_amount,emp_expense_approved_by_hr,emp_expense_reimbursement,emp_expense_created_at,employee_name,employee_name,employee_code,emp_expense_approved_by_hr_time,emp_expense_attachment,emp_expense_approved_by_hr_reason,(select count(emp_expense_exp_id) from tbl_employee_expense_amount where emp_expense_exp_id = emp_expense_id   ) as update_amount, pc_id, pc_month, pc_year, disburse')
                 ->leftjoin('tbl_employees','tbl_employees.employee_id','tbl_employee_expense.emp_expense_approved_by_hr_id')
                 ->leftjoin('tbl_payroll_calculation','tbl_payroll_calculation.pc_id','tbl_employee_expense.emp_expense_payslip_id')
-                ->whereIn('emp_expense_amt_id',function($query){
-                    $query->from('tbl_employee_expense_amount')
-                    ->selectRaw('MAX(emp_expense_amt_id)')
-                    ->groupBy('emp_expense_exp_id');
-                })
-                ->whereRaw($where_clause_to)
                 ->whereRaw($whereRaw)
-                ->whereIn('emp_expense_employee', $employee)
-                ->groupBy('emp_expense_exp_id','emp_expense_employee','emp_expense_id','emp_expense_date','emp_expense_description','emp_expense_type','emp_expense_amount','emp_expense_approved_by_hr','emp_expense_reimbursement','emp_expense_created_at','employee_name','employee_code','emp_expense_approved_by_hr_time','emp_expense_attachment','emp_expense_approved_by_hr_reason','pc_id','pc_month','pc_year','disburse')
                 ->orderBy('emp_expense_id','DESC')
-                ->get()->toArray();
+                ->paginate(CustomHelper::per_page())->withQueryString();
+            $fetch_expenses = $pagination->getCollection()->toArray();
 
-                $fetch_expenses = array_merge($fetch_expenses , $fetch_expense);    
-            }    
+            // card totals: every expense in scope
+            $fetch_expenses_total = $expenses()->selectRaw('sum(emp_expense_amount) as total')->get()->toArray();
+            $fetch_expenses_approved = $expenses()->selectRaw('sum(emp_expense_amount) as total')->where('emp_expense_approved_by_hr',2)->get()->toArray();
+            $fetch_expenses_paid = $expenses()->selectRaw('sum(emp_expense_amount) as total')->where('emp_expense_reimbursement',2)->get()->toArray();
 
-            $fetch_expenses_total = [];
-            $expense_arrays = array_chunk($total_team_member , 2000);
-            foreach($expense_arrays as $employee_expense){
-                $fetch_expense_total = EmployeeExpense::selectRaw(' sum(emp_expense_amount) as total')
-                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
-                ->whereIn('emp_expense_amt_id',function($query){
-                    $query->from('tbl_employee_expense_amount')
-                    ->selectRaw('MAX(emp_expense_amt_id)')
-                    ->groupBy('emp_expense_exp_id');
-                })
-                ->whereRaw($where_clause_to)
-                ->whereIn('emp_expense_employee', $employee_expense)
-                ->get()->toArray();
-
-                $fetch_expenses_total = array_merge($fetch_expenses_total , $fetch_expense_total);    
-            }        
-           
-            $fetch_expenses_approved  = [];
-            $expense_approved_arrays = array_chunk($total_team_member , 2000);
-            foreach($expense_approved_arrays as $employee_approved){
-                $fetch_expense_total_approved = EmployeeExpense::selectRaw('sum(emp_expense_amount) as total')
-                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
-                ->whereIn('emp_expense_amt_id',function($query){
-                    $query->from('tbl_employee_expense_amount')
-                    ->selectRaw('MAX(emp_expense_amt_id)')
-                    ->groupBy('emp_expense_exp_id');
-                })
-                ->whereRaw($where_clause_to)
-                ->whereIn('emp_expense_employee', $employee_approved)
-                ->where('emp_expense_approved_by_hr',2)
-                ->get()->toArray();
-
-                $fetch_expenses_approved = array_merge($fetch_expenses_approved , $fetch_expense_total_approved);    
-            }        
-
-            $fetch_expenses_paid  = [];
-            $expense_paid_arrays = array_chunk($total_team_member , 2000);
-            foreach($expense_paid_arrays as $employee_paid){
-                $fetch_expense_total_paid = EmployeeExpense::selectRaw('sum(emp_expense_amount) as total')
-                ->join('tbl_employee_expense_amount','tbl_employee_expense.emp_expense_id','tbl_employee_expense_amount.emp_expense_exp_id')
-                ->whereIn('emp_expense_amt_id',function($query){
-                    $query->from('tbl_employee_expense_amount')
-                    ->selectRaw('MAX(emp_expense_amt_id)')
-                    ->groupBy('emp_expense_exp_id');
-                })
-                ->whereRaw($where_clause_to)
-                ->whereIn('emp_expense_employee', $employee_paid)
-                ->where('emp_expense_reimbursement',2)
-                ->get()->toArray();
-            
-                $fetch_expenses_paid = array_merge($fetch_expenses_paid , $fetch_expense_total_paid);    
-            }         
             $expense_type_list = $this->expense_type_list;
 
-            if($login_user[0]['employee_department'] != 1 && $login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 3){
-                
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
-
-            }else{
-
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
-
-            }
+            // the name filter searches employees through /employee-search
+            $employees_data = [];
             
-            $send_data = compact('title','login_user','fetch_expenses','fetch_expenses_total','fetch_expenses_approved','fetch_expenses_paid','expense_type_list','responsed_request','employees_data','employee_locations');
+            $send_data = compact('title','login_user','fetch_expenses','fetch_expenses_total','fetch_expenses_approved','fetch_expenses_paid','expense_type_list','responsed_request','employees_data','employee_locations','pagination');
             
             return view('employee-expense.all-expense',$send_data);
         }catch(\Exception $e){
@@ -197,11 +134,11 @@ class EmployeeExpenseController extends Controller
             $whereRaw = '1=1 ';
             if($request->get('status')){
 
-                $whereRaw .= ' and emp_expense_approved_by_hr = '.$request->get('status');
+                $whereRaw .= ' and emp_expense_approved_by_hr = '.\DB::getPdo()->quote((string) $request->get('status'));
             }
             if($request->get('paid')){
 
-                $whereRaw .= ' and emp_expense_reimbursement = '.$request->get('paid');
+                $whereRaw .= ' and emp_expense_reimbursement = '.\DB::getPdo()->quote((string) $request->get('paid'));
             }
 
             $fetch_expense = EmployeeExpense::
@@ -372,7 +309,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Add My Reimbursement', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -413,7 +350,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Amount Log Reimbursement', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -520,7 +457,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Delete My Reimbursement', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -665,7 +602,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Update My Reimbursement', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -691,6 +628,12 @@ class EmployeeExpenseController extends Controller
     protected function approved_expense(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = EmployeeExpense::whereIn('emp_expense_id', explode(',', (string) $request->input('approved_expense_id')))->pluck('emp_expense_employee')->toArray();
+            if(!$this->can_respond_for($request_employees, ['finance'])){
+                return $this->not_allowed_response();
+            }
 
             $login_user = $this->get_login_user_detail();
 
@@ -782,7 +725,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Approved reimbursement By HR', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -808,6 +751,12 @@ class EmployeeExpenseController extends Controller
     protected function disapproved_expense(Request $request){
     
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = EmployeeExpense::whereIn('emp_expense_id', explode(',', (string) $request->input('disapproved_expense_id')))->pluck('emp_expense_employee')->toArray();
+            if(!$this->can_respond_for($request_employees, ['finance'])){
+                return $this->not_allowed_response();
+            }
             
             $login_user = $this->get_login_user_detail();
 
@@ -885,7 +834,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Disapproved Reimbursement By HR', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -910,6 +859,12 @@ class EmployeeExpenseController extends Controller
 
     protected function approved_expense_manager(Request $request){
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = EmployeeExpense::whereIn('emp_expense_id', explode(',', (string) $request->input('approved_expense_id')))->pluck('emp_expense_employee')->toArray();
+            if(!$this->can_respond_for($request_employees, [])){
+                return $this->not_allowed_response();
+            }
 
             $login_user = $this->get_login_user_detail();
 
@@ -1034,7 +989,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Disapproved Reimbursement By Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1060,6 +1015,12 @@ class EmployeeExpenseController extends Controller
     protected function disapproved_expense_manager(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = EmployeeExpense::whereIn('emp_expense_id', explode(',', (string) $request->input('disapproved_expense_id')))->pluck('emp_expense_employee')->toArray();
+            if(!$this->can_respond_for($request_employees, [])){
+                return $this->not_allowed_response();
+            }
 
             $login_user = $this->get_login_user_detail();
     
@@ -1171,7 +1132,7 @@ class EmployeeExpenseController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Disapproved Reimbursement By HR', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1208,7 +1169,7 @@ class EmployeeExpenseController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

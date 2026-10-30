@@ -827,15 +827,9 @@
                                         
                                             {{--begin::Input--}}
                                             <div class="d-flex align-items-center">
-                                               <select class="form-select mySelect3" data-control="select2" data-hide-search="true" name="interviewer_2" id="depart_name" required="">
+                                               <select class="form-select mySelect3" data-control="select2" data-hide-search="true" name="interviewer_2" id="depart_name" required="" data-employee-select data-scope="active">
                                                     <option value="">Select New Interviewer</option>
-                                                    @if (!empty($employees))
-                                                        @foreach ($employees as $employee)
-                                                            <option value="{{ $employee['employee_id'] }}">
-                                                                {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
+                                                    @include('include.employee-selected-options', ['selected' => null])
                                                 </select>        
                                             </div>
                                             {{--end::Input--}}

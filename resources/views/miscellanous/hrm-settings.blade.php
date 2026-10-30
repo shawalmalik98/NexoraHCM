@@ -181,17 +181,9 @@
                                                     <div class="mb-4">
                                                         <label class="form-label email_configurationl_label">Representative Finance Employee</label>
                                                         <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="This representative Finance employee's name will be used in system generated pay slips and reports."></i>
-                                                        <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Finance" name="name_on_payslip" data-close-on-select="true">
+                                                        <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select Finance" name="name_on_payslip" data-close-on-select="true" data-employee-select data-scope="active">
                                                             <option value="">Select Finance</option>
-                                                            @if(!empty($finance_employees))
-                                                                @foreach($finance_employees as $finance)
-                                                                    <option value="{{$finance['employee_id']}}"
-                                                                    @if(!empty($setting) && $setting[0]['name_on_payslip'] == $finance['employee_id'])
-                                                                        selected
-                                                                    @endif
-                                                                     >{{$finance['employee_name']}}</option>
-                                                                @endforeach
-                                                            @endif
+                                                            @include('include.employee-selected-options', ['selected' => $setting[0]['name_on_payslip'] ?? null])
                                                         </select>
                                                     </div>
 
@@ -366,6 +358,45 @@
                                                             <input class="form-check-input" name="tax_deduction" type="checkbox" value="1"  @if(!empty($setting[0]['tax_deduction_apply']) && $setting[0]['tax_deduction_apply'] == 1) checked="checked"  @endif />
                                                             <span class="form-check-label fw-semibold text-muted">Tax Deduction on Payroll</span>
                                                         </label>
+                                                    </div>
+
+                                                    <div class="mb-4">
+                                                        <label class="form-check form-switch form-check-custom form-check-solid">
+                                                            <input class="form-check-input" name="eobi_apply" type="checkbox" value="1" @if(!empty($setting[0]['eobi_apply']) && $setting[0]['eobi_apply'] == 1) checked="checked" @endif />
+                                                            <span class="form-check-label fw-semibold text-muted">EOBI Deduction on Payroll</span>
+                                                        </label>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-4">
+                                                            <label class="form-label">EOBI Minimum Wage</label>
+                                                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Government notified minimum monthly wage used for EOBI contribution"></i>
+                                                            <input type="number" class="form-control" name="eobi_minimum_wage" value="{{ $setting[0]['eobi_minimum_wage'] ?? 37000 }}" min="0" step="0.01" />
+                                                        </div>
+                                                        <div class="col-md-6 mb-4">
+                                                            <label class="form-label">EOBI Employee Share</label>
+                                                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Employee contribution as % of minimum wage, deducted every payslip"></i>
+                                                            <div class="input-group">
+                                                                <input type="number" class="form-control" name="eobi_employee_percentage" value="{{ $setting[0]['eobi_employee_percentage'] ?? 1 }}" min="0" max="100" step="0.01" />
+                                                                <span class="input-group-text">%</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-4">
+                                                        <label class="form-check form-switch form-check-custom form-check-solid">
+                                                            <input class="form-check-input" name="pf_apply" type="checkbox" value="1" @if(!empty($setting[0]['pf_apply']) && $setting[0]['pf_apply'] == 1) checked="checked" @endif />
+                                                            <span class="form-check-label fw-semibold text-muted">Provident Fund Deduction on Payroll</span>
+                                                        </label>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6 mb-4">
+                                                            <label class="form-label">PF Employee Share</label>
+                                                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Employee contribution as % of basic salary, deducted every payslip"></i>
+                                                            <div class="input-group">
+                                                                <input type="number" class="form-control" name="pf_employee_percentage" value="{{ $setting[0]['pf_employee_percentage'] ?? 8.33 }}" min="0" max="100" step="0.01" />
+                                                                <span class="input-group-text">% of basic</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
                                                     <div class="card card-flush">
@@ -648,23 +679,13 @@
                                                     <div class="row">
                                                         <div class="col-md-6 mb-4">
                                                             <label class="form-label email_configurationl_label">To Recipients</label>
-                                                            <select class="form-select" data-control="select2" multiple="multiple" data-hide-search="false" data-placeholder="Select Employee" name="email_reciever[]" data-close-on-select="true">
-                                                                @if(!empty($operation_manager))
-                                                                    @foreach($operation_manager as $manager)
-                                                                        <option value="{{$manager['employee_id']}}" >{{$manager['employee_name']}}</option>
-                                                                    @endforeach
-                                                                @endif
+                                                            <select class="form-select" data-control="select2" multiple="multiple" data-hide-search="false" data-placeholder="Select Employee" name="email_reciever[]" data-close-on-select="true" data-employee-select data-scope="active">
                                                             </select>
                                                         </div>
     
                                                         <div class="col-md-6 mb-4">
                                                             <label class="form-label email_configurationl_label">Cc Recipients</label>
-                                                            <select class="form-select" data-control="select2" multiple="multiple" data-hide-search="false" data-placeholder="Select Employee" name="cc_recipients[]" data-close-on-select="true">
-                                                                @if(!empty($operation_manager))
-                                                                    @foreach($operation_manager as $manager)
-                                                                        <option value="{{$manager['employee_id']}}" >{{$manager['employee_name']}}</option>
-                                                                    @endforeach
-                                                                @endif
+                                                            <select class="form-select" data-control="select2" multiple="multiple" data-hide-search="false" data-placeholder="Select Employee" name="cc_recipients[]" data-close-on-select="true" data-employee-select data-scope="active">
                                                             </select>
                                                         </div>
                                                     </div>

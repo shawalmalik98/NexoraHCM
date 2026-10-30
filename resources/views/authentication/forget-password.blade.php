@@ -92,7 +92,7 @@
                                         </span>
                                     </button>
 
-                                    <a href="{{ url('/sap-login') }}" class="btn btn-light">Cancel</a>
+                                    <a href="{{ url('/') }}" class="btn btn-light">Cancel</a>
                                 </div>
                                 {{--end::Actions--}}
                             </form>
@@ -159,7 +159,7 @@
                             timer: 5000,
                         })
                         setTimeout(() => {
-                            window.location.href = "{{ url('/sap-login') }}"; 
+                            window.location.href = "{{ url('/') }}"; 
                         }, 5000);  
 
                     } else {

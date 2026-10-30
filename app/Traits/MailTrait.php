@@ -11,7 +11,7 @@ trait MailTrait {
         $email_permission = HrmSetting::get('company_email_permission')->toArray();
         if(!empty($email_permission) && $email_permission[0]['company_email_permission'] == 1){
             $user_logined = session('user_session');
-            if (!empty(env('MAIL_MAILER')) && !empty(env('MAIL_HOST')) && !empty(env('MAIL_PORT')) && !empty(env('MAIL_FROM_ADDRESS')) && !empty(env('MAIL_FROM_NAME'))) {
+            if (!empty(config('mail.default')) && !empty(config('mail.mailers.smtp.host')) && !empty(config('mail.mailers.smtp.port')) && !empty(config('mail.from.address')) && !empty(config('mail.from.name'))) {
                 $SendEmailJob = new SendEmailJob($email,$cc_reciepents,$subject, $body, $url, $user_logined);
                 dispatch($SendEmailJob);
             }
@@ -22,7 +22,7 @@ trait MailTrait {
 
     protected function sent_interview_candidate_email($email,$subject, $body){
         $email_permission = HrmSetting::get('company_email_permission')->toArray();
-        if (!empty(env('MAIL_MAILER')) && !empty(env('MAIL_HOST')) && !empty(env('MAIL_PORT')) && !empty(env('MAIL_FROM_ADDRESS')) && !empty(env('MAIL_FROM_NAME'))) {
+        if (!empty(config('mail.default')) && !empty(config('mail.mailers.smtp.host')) && !empty(config('mail.mailers.smtp.port')) && !empty(config('mail.from.address')) && !empty(config('mail.from.name'))) {
             if(!empty($email_permission) && $email_permission[0]['company_email_permission'] == 1){
                 $user_logined = session('user_session');
                 $SendEmailJob = new SendCandidateEmailJob($email,$subject, $body,$user_logined);

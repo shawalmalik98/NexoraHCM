@@ -13,7 +13,7 @@
                     <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">All Remote
                         Work Requests</h1>
                 </div>
-                @if ($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                     <div class="d-flex align-items-center gap-2 gap-lg-3">
 
                         <div class="m-0">
@@ -65,7 +65,7 @@
 
                             <div class="d-flex align-items-center  on-check d-none">
 
-                                @if ($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                     <a href="javascript:void(0)"
                                         class="wfh_request text-white  btn btn-sm fw-bold btn-success mx-2"
                                         data-value="Approve" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -179,16 +179,9 @@
 
                                             <div>
                                                 <select class="form-select" data-kt-select2="true" name="emp_name"
-                                                    id="company_emp_name" aria-required="true">
+                                                    id="company_emp_name" aria-required="true" data-employee-select data-scope="team">
                                                     <option value="">All Employees</option>
-                                                    @if (!empty($employees_data))
-                                                        @foreach ($employees_data as $data)
-                                                            <option
-                                                                value="{{ $data['employee_id'] }}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>
-                                                                {{ $data['employee_code'] . ' - ' . $data['employee_name'] }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
+                                                    @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                 </select>
                                             </div>
 
@@ -215,7 +208,7 @@
 
                                         </div>
 
-                                        @if ($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                        @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                             <div class="mb-3">
 
                                                 <label class="form-label fw-semibold">Request Date</label>
@@ -270,7 +263,7 @@
                             <div id="tableEmployee_wrapper"
                                 class="dataTables_wrapper dt-bootstrap4 no-footer table-row-bordered">
                                 <div class="table-responsive popup-visible ">
-                                    <table class="table align-middle gs-0 gy-4 dataTable no-footer" id="system_datatable"
+                                    <table class="table align-middle gs-0 gy-4 dataTable no-footer" id="system_datatable" data-server-paginated="true"
                                         aria-describedby="tableEmployee_info">
                                         <thead>
                                             <tr class="fw-bold text-muted bg-light">
@@ -295,7 +288,7 @@
                                                                 in_array($all_request['wfh_request_date'], $dates)) style="background-color:bisque;" @endif>
                                                         <td>
 
-                                                            @if ($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                                            @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                                                 @if ($all_request['wfh_request_approved_by_hr'] != 1 || $all_request['wfh_request_date'] < date('Y-m-d'))
                                                                     <div
                                                                         class="form-check form-check-sm form-check-custom form-check-solid">
@@ -399,7 +392,7 @@
                                                         </td>
 
                                                         <td class="text-center">
-                                                            @if ($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                                            @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                                                 @if ($all_request['wfh_request_approved_by_hr'] != 1 || $all_request['wfh_request_date'] < date('Y-m-d'))
                                                                     <i class="fa-regular fa-circle-check  text-success mx-2"
                                                                         style="font-size: 20px; cursor: not-allowed;"
@@ -472,6 +465,7 @@
 
 
                                     </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                                 </div>
                             </div>
 
@@ -546,14 +540,8 @@
                                                 <select class="form-select" data-control="select2" multiple="multiple"
                                                     data-hide-search="true" data-close-on-select="false"
                                                     data-placeholder="Select Employee" name="employee[]" id="employees"
-                                                    required>
-                                                    @if (!empty($employees_data))
-                                                        @foreach ($employees_data as $employee)
-                                                            <option value="{{ $employee['employee_id'] }}">
-                                                                {{ $employee['employee_code'] }} -
-                                                                {{ $employee['employee_name'] }}</option>';
-                                                        @endforeach
-                                                    @endif
+                                                    required data-employee-select data-scope="team">
+                                                    @include('include.employee-selected-options', ['selected' => null])
                                                 </select>
 
                                             </div>
@@ -636,7 +624,7 @@
                             <div class="modal-body pt-0">
                                 <p class="pt-4 fs-6 msg">Are you sure to <b>Approve</b> selected Remote Work request ?</p>
 
-                                @if ($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                                @if (!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                     <textarea class="form-control " rows="3" name="approvermessage" placeholder="Message" id="approvermessage"
                                         required></textarea>
                                 @endif
@@ -681,7 +669,7 @@
                                 <p class="pt-4 fs-6 msg">Are you sure to <b>Disapprove</b> selected Remote Work request ?
                                 </p>
 
-                                @if ($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                                @if (!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                     <textarea class="form-control " rows="3" name="disapprovermessage" placeholder="Message"
                                         id="disapprovermessage" required></textarea>
                                 @endif

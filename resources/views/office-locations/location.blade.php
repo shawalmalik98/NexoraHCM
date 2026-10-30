@@ -38,7 +38,7 @@
                                 <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
                             </svg>
                         </span>										
-                        Distributors Location Import
+                        Bulk Location Import
                     </a>
                 </div> --}}
                 {{-- <div class="m-0">
@@ -95,7 +95,7 @@
                     
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
                             
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -105,7 +105,7 @@
                                         <th>Latitude</th>
                                         <th>Longitude</th>
                                         <th>Allowed Range (meters)</th>
-                                        <th>Distributor Code</th>
+                                        <th>Location Code</th>
                                         <th>Tagged Employees</th>
                                         {{-- <th>Create date</th> --}}
                                         {{-- <th>Update date</th> --}}
@@ -166,6 +166,7 @@
                                 </tbody>
                             
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                     
                     </div>
@@ -227,8 +228,8 @@
                                 </div>
 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
-                                    <label class="fs-6 fw-semibold mb-2">Distributor Code</label>
-                                    <input type="text" class="form-control " name="distributor_code" placeholder="Distributor Code">
+                                    <label class="fs-6 fw-semibold mb-2">Location Code</label>
+                                    <input type="text" class="form-control " name="distributor_code" placeholder="Location Code">
                                 </div>
 
                                 <div class="col-sm-6 col-md-6 col-lg-9" >
@@ -311,8 +312,8 @@
                                 </div>
 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
-                                    <label class="fs-6 fw-semibold mb-2">Distributor Code</label>
-                                    <input type="text" class="form-control " name="distributor_code" id="dist_code" placeholder="Distributor Code">
+                                    <label class="fs-6 fw-semibold mb-2">Location Code</label>
+                                    <input type="text" class="form-control " name="distributor_code" id="dist_code" placeholder="Location Code">
                                 </div>
 
                                 @if(!empty($locations)) 
@@ -472,7 +473,7 @@
                         <div class="modal-content rounded">
                         
                             <div class="modal-header">
-                                <h4 class="modal-title pl-4">Upload Distributors Location Records</h4>
+                                <h4 class="modal-title pl-4">Upload Location Records</h4>
                                 <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
                                     <span class="svg-icon svg-icon-1">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -489,7 +490,7 @@
                                     <div class="col-md-12 fv-row">
                                         <label class="fs-6 fw-semibold mb-2 required">File Attachment</label>
                                         <input type="file" class="form-control" accept=".csv" name="file">
-                                        <p class="text-danger mt-1">Please <b>Download Format File</b> and Distributors locations(s) record. All the fields exist in file are required.</p>
+                                        <p class="text-danger mt-1">Please <b>Download Format File</b> and location(s) record. All the fields exist in file are required.</p>
                                         <p class="text-danger mt-0">Only CSV file is supported for distributions location(s) upload process.</p>
                                     </div>
                                 </div>

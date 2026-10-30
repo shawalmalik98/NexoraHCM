@@ -1,5 +1,9 @@
 @extends('layout.main')
 
+@push('cs-link')
+<script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+@endpush
+
 @section('main-section')
 
 <div class="d-flex flex-column flex-column-fluid">

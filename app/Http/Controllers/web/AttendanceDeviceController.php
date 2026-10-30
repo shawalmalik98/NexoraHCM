@@ -83,7 +83,7 @@ class AttendanceDeviceController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Add Attendance Device", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -155,7 +155,7 @@ class AttendanceDeviceController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Update Attendance Device", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -205,7 +205,7 @@ class AttendanceDeviceController extends Controller
             }         
         }catch(\Exception $e){
             $this->create_error_log('Delete Attendance Device', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

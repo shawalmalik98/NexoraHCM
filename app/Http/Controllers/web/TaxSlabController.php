@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -191,7 +192,7 @@ class TaxSlabController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Add Tax Slab", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -310,7 +311,7 @@ class TaxSlabController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Edit Tax Slab", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -440,7 +441,7 @@ class TaxSlabController extends Controller
 
             $send_data = compact('fetch_employee_tax','month','year','download_button_show');
 
-            if( $login_user[0]['employee_department'] == "1" || $login_user[0]['employee_department'] == "2" || $login_user[0]['employee_department'] == "10" ){
+            if( CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) ){
 
                 if($request->input('download')=="TRUE"){
                     

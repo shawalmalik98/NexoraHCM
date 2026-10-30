@@ -130,9 +130,8 @@
 
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
-                            @if (!empty(Request::get('employee_location'))) 
-                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="location_datatable" aria-describedby="tableEmployee_info">
-                                    
+                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
+
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
                                             <th class="ps-4">Employee Code & Name</th>
@@ -160,25 +159,9 @@
                                             @endforeach
                                         @endif
                                     </tbody>
-                                        
-                                </table>
-                            @else
-                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="location_datatable_ajax" aria-describedby="tableEmployee_info">
-                                    <thead>
-                                        <tr class="fw-bold text-muted bg-light">
-                                            <th class="ps-4">Employee Code & Name</th>
-                                            <th>Depart & Desig</th>
-                                            <th>Business Unit</th>
-                                            <th>Location Title</th>
-                                            <th>Latitude</th>
-                                            <th>Longitude</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="loc_datatable_ajax">
 
-                                    </tbody>
-                                </table>     
-                            @endif   
+                                </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                            
                         </div>
 
@@ -195,101 +178,4 @@
 @endsection
 
 @push('js-link')
-<script>
-    $(function () {
-        dataTable = $('#location_datatable').DataTable({
-            order: false,
-            search: { regex: true },
-            aLengthMenu: [
-                [10, 25, 50, 100, -1],
-                [10, 25, 50, 100, "All"]
-            ],
-            iDisplayLength: 100
-
-        });
-    });  
-
-    var location_main_url =  "{{ url('/employee-location') }}";
-   
-    if (window.location.href == location_main_url) {
-        $('#loc_datatable_ajax').html(`
-                <td class="text-center"></td>
-                <td class="text-center"> </td> 
-                <td class="preloader text-center">
-                    <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div class="spinner-border text-primary" role="status"></div>
-                        <div class="text-muted fs-6 fw-semibold mt-3">Loading...</div>
-                    </div>
-                </td>
-            `);
-
-        $.ajax({
-            url: "{{ url('/get-employee-location') }}",
-            type: 'GET',
-            success: function(response) {
-                //  console.log(response);   
-                if (response.status == true) {
-                    var emp_record = '';
-                    var employees_location = response.data; 
-
-                    $.each(employees_location, function (key, employee_loc) {
-                        emp_record +=  
-                        
-                            `<tr>
-                                <td class="ps-4">${employee_loc.employee_code} - ${employee_loc.employee_name}</td>
-                                <td>
-                                    <p class="text-dark fw-bold mb-1 fs-6">${employee_loc.department_name}</p>
-                                    <p class="text-muted fw-semibold text-muted fs-7">${employee_loc.designation_name}</p>
-                                </td>                        
-                                <td> ${employee_loc.business_unit ?? '-'}</td>
-                                <td> ${employee_loc.location_title}</td>
-                                <td> ${employee_loc.location_latitude}</td>
-                                <td> ${employee_loc.location_longitude}</td>
-                            </tr>`;
-                    });
-                    $('#loc_datatable_ajax').html(emp_record);
-
-                    dataTable = $('#location_datatable_ajax').DataTable({
-                        order: false,
-                        search: { regex: true },
-                        aLengthMenu: [
-                            [10, 25, 50, 100, -1],
-                            [10, 25, 50, 100, "All"]
-                        ],
-                        iDisplayLength: 100
-                    
-                    });
-                
-                } else {
-                    
-                    console.error('Failed to retrieve employees location:', response.message);
-                }
-            },
-            error: function(jqXHR, textStatus) {
-                var errorStatus = jqXHR.status;
-                if (errorStatus == 0) {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Employee location records failed please try again',
-                        timer: 4000,
-                    });
-                    setTimeout(() => {
-                        location.reload();
-                    }, 4000);
-                } else {
-                    if (errorStatus == 419) {
-                        location.reload();
-                    } else {
-                        Toast.fire({
-                            icon: 'warning',
-                            title: 'Try Again. Error Code ' + errorStatus,
-                            timer: 3000,
-                        })
-                    }
-                }
-            }
-        });
-    }    
-    
-</script>
 @endpush

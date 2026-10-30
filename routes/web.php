@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController,AppFlowController, SalaryController, GeneralController};
-use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
 
 
@@ -12,11 +11,11 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
  
 
   Route::middleware(['userAuthentication','userPermission','userStatusChecker'])->group(function (){
-      Route::get('/incentive', [GeneralController::class, 'index'])->withoutMiddleware(['userPermission','userStatusChecker']);
-      Route::post('/save-incentive', [GeneralController::class, 'saveIncentive'])->withoutMiddleware(['userPermission','userStatusChecker']);
-      Route::post('/update-incentive', [GeneralController::class, 'updateIncentive'])->withoutMiddleware(['userPermission','userStatusChecker']);
-      Route::get('/get-incentive-details', [GeneralController::class, 'getIncentiveDetails'])->withoutMiddleware(['userPermission','userStatusChecker']);
-      Route::get('/download-incentive-details', [GeneralController::class, 'downloadIncentiveDetails'])->withoutMiddleware(['userPermission','userStatusChecker']);
+      Route::get('/incentive', [GeneralController::class, 'index'])->withoutMiddleware(['userPermission','userStatusChecker'])->middleware('access:role,finance');
+      Route::post('/save-incentive', [GeneralController::class, 'saveIncentive'])->withoutMiddleware(['userPermission','userStatusChecker'])->middleware('access:role,finance');
+      Route::post('/update-incentive', [GeneralController::class, 'updateIncentive'])->withoutMiddleware(['userPermission','userStatusChecker'])->middleware('access:role,finance');
+      Route::get('/get-incentive-details', [GeneralController::class, 'getIncentiveDetails'])->withoutMiddleware(['userPermission','userStatusChecker'])->middleware('access:role,finance');
+      Route::get('/download-incentive-details', [GeneralController::class, 'downloadIncentiveDetails'])->withoutMiddleware(['userPermission','userStatusChecker'])->middleware('access:role,finance');
       Route::prefix('/login-history')->group(function () {
 
         Route::get('/', [LoginController::class, 'login_history']);
@@ -387,6 +386,13 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
       //Hrm Setting Controller Start
 
+      Route::prefix('/roles')->group(function () {
+        Route::get('/', [\App\Http\Controllers\web\RoleController::class, 'index']);
+        Route::post('/update-role', [\App\Http\Controllers\web\RoleController::class, 'update_role']);
+        Route::post('/add-role', [\App\Http\Controllers\web\RoleController::class, 'add_role']);
+        Route::post('/delete-role', [\App\Http\Controllers\web\RoleController::class, 'delete_role']);
+      });
+
       Route::prefix('/system-settings')->group(function () {
 
         Route::get('/', [HrmSettingController::class , 'index']);
@@ -683,7 +689,6 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
         Route::get('/', [AttendanceController::class, 'monthly_attendance']);
         Route::post('/download-monthly-attendance',[AttendanceController::class, 'download_monthly_attendance']);
-        Route::get('/download-day-wise-attendance-report',[AttendanceController::class, 'download_day_wise_attendance_report']);
 
 
       });
@@ -747,13 +752,15 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
 
       Route::withoutMiddleware(['userPermission'])->group(function () {
 
-          Route::post('authenticate', [LoginController::class, 'login_process_sap'])->withoutMiddleware('userAuthentication');
+          Route::post('authenticate', [LoginController::class, 'login_process'])->withoutMiddleware('userAuthentication');
 
-          Route::get('/employee-location', [EmployeeController::class, 'employees_location_detail']);
+          Route::get('/employee-location', [EmployeeController::class, 'employees_location_detail'])->middleware('access:module,/employee-location');
 
           Route::get('/',[HomeController::class, 'index']);
 
           Route::get('/user-detail/{id}', [HomeController::class , 'get_user_detail']);
+
+          Route::get('/employee-search', [\App\Http\Controllers\web\EmployeeSearchController::class, 'search']);
 
           Route::get('/my-loan', [LoanController::class, 'my_loan']);
           Route::post('/loan-request', [LoanController::class, 'new_loan_request']);
@@ -780,13 +787,12 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
           Route::post('/proxy-user',[LoginController::class, 'proxy_user']);
 
 
-          Route::get('/my-attendance', [AttendanceController::class, 'get_employee_monthly_attendance']);
+          Route::get('/my-attendance', [AttendanceController::class, 'personal_attendace']);
           Route::get('/share-attendance-report/{report_id}', [AttendanceController::class, 'access_attendance_sheet_report']);
 
-          Route::get('/sap-attendance',[AttendanceController::class,'get_sap_employee_monthly_attendance']);
 
-          Route::get('/attendance-adjustment',[AttendanceController::class,'attendance_adjustment']);
-          Route::post('/attendance-adjustment-update',[AttendanceController::class,'update_attendance_adjustment']);
+          Route::get('/attendance-adjustment',[AttendanceController::class,'attendance_adjustment'])->middleware('access:module,/attendance-adjustment');
+          Route::post('/attendance-adjustment-update',[AttendanceController::class,'update_attendance_adjustment'])->middleware('access:module,/attendance-adjustment');
        
 
           Route::get('/my-attendance-request', [AttendanceRequestController::class, 'my_requests']);
@@ -929,7 +935,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
           Route::post('/polling/employee-polling',[PollingsController::class,'polling_employee']);
           //employee polling
 
-          Route::prefix('/employee-mobile-access')->group(function (){
+          Route::prefix('/employee-mobile-access')->middleware('access:role,admin')->group(function (){
 
             Route::get('/', [EmployeeController::class, 'employee_mobile_access']);
             Route::post('/add-button', [EmployeeController::class, 'add_mobile_access_button']);
@@ -939,15 +945,12 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
           
           //employee api controller start
 
-          Route::get('/get-employee-location', [EmployeeApiController::class, 'employees_location_api']);
-          Route::get('/get-all-employees', [EmployeeApiController::class, 'get_all_employees_api']);
-          Route::get('/get-all-employees-devices', [EmployeeApiController::class, 'employees_devices_api']);
           
           //employee api controller end
 
           //salary controller start
 
-          Route::get('/employee-salary', [SalaryController::class, 'index']);
+          Route::get('/employee-salary', [SalaryController::class, 'index'])->middleware('access:role,hr|finance');
 
           //salary controller end
 
@@ -987,7 +990,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
     
   });
 
-  Route::prefix('/appflow')->group(function () {
+  Route::prefix('/appflow')->middleware(['userAuthentication', 'access:role,admin'])->group(function () {
 
     Route::get('/', [AppFlowController::class, 'appflow_modules']);
     Route::get('/detail/{id}', [AppFlowController::class, 'appflow_detail']);
@@ -1014,7 +1017,7 @@ use App\Http\Controllers\api\{EmployeeApiController,AttendanceApiController};
   
   //Leave Request Controller End
 
-  Route::get('reports/attendance-report',[ReportsController::class, 'attendance_report']);
+  Route::get('reports/attendance-report',[ReportsController::class, 'attendance_report'])->middleware(['userAuthentication', 'access:module,/reports']);
 
 Route::get('/procced-to-dashboard', [HomeController::class, 'procced_to_dashboard']);
 Route::get('/mark-attendance', [MarkAttendanceController::class, 'index']);
@@ -1022,13 +1025,11 @@ Route::post('/checkinattendance', [MarkAttendanceController::class, 'check_in'])
 Route::post('/checkoutattendance', [MarkAttendanceController::class, 'check_out'])->middleware('WebAttendancePermission');
 Route::get('/payslip-pdf',[PayrollController::class,'payslip_pdf']);
 
-Route::get('/employee-checkout-missing',[CustomController::class,'earlyout_of_missing_checkout_attendance']);
-Route::get('/set-employee-permissions', [CustomController::class, 'fetch_all_employees_permission'])->middleware('userAuthentication');
-Route::get('/set-attendance-access', [CustomController::class, 'add_attendance_access_data'])->middleware('userAuthentication');
-Route::get('/set-recipient-type', [CustomController::class, 'add_recipient_type'])->middleware('userAuthentication');
-Route::get('/set-room-location', [CustomController::class, 'add_room_location'])->middleware('userAuthentication');
+Route::get('/employee-checkout-missing',[CustomController::class,'earlyout_of_missing_checkout_attendance'])->middleware('userAuthentication');
+Route::get('/set-attendance-access', [CustomController::class, 'add_attendance_access_data'])->middleware(['userAuthentication', 'access:role,admin']);
+Route::get('/set-recipient-type', [CustomController::class, 'add_recipient_type'])->middleware(['userAuthentication', 'access:role,admin']);
+Route::get('/set-room-location', [CustomController::class, 'add_room_location'])->middleware(['userAuthentication', 'access:role,admin']);
 
-Route::get('/employee-access-button', [CustomController::class, 'add_employee_button_access']);
 
 
 Route::get('/clear-all-cache', [CommandController::class , 'clear_all_cache'])->middleware('userAuthentication');
@@ -1036,9 +1037,6 @@ Route::get('/clear-all-config', [CommandController::class , 'clear_all_config'])
 Route::get('/clear-all-route', [CommandController::class , 'clear_all_route'])->middleware('userAuthentication');
 Route::get('/clear-all-view', [CommandController::class , 'clear_all_view'])->middleware('userAuthentication');
 Route::get('/privacy-policy', [HomeController::class , 'privacy_policy']);
-Route::get('/bisconni-attendance-report',[AttendanceController::class, 'bisconni_attendace_report']);
-Route::get('/bisconni-employee-report',[AttendanceController::class, 'bisconni_employee_report']);
-Route::post('update-bisconni-employee-report',[AttendanceController::class, 'update_bisconni_employee_attendance']);
 
 
 Route::get('/forgot-password',[LoginController::class, 'forgot_password']);
@@ -1046,32 +1044,12 @@ Route::post('/reset-password',[LoginController::class, 'reset_password']);
 Route::get('/reset-password-link',[LoginController::class, 'reset_password_page']);
 Route::post('/reset-update-password',[LoginController::class, 'reset_update_password']);
 
-//attendance sap api start
-
-// Route::get('/get-employee-attendance-sap-api', [AttendanceController::class, 'get_employee_monthly_attendance']);
-
-//attendance sap api end
 
 
-Route::middleware(['sapuserAuthentication'])->group(function (){
-  Route::get('/sap-login', [AttendanceController::class, 'get_employee_monthly_attendance']);
-
-  Route::post('/sap-login/authenticate', [LoginController::class, 'login_process_sap'])->withoutMiddleware('sapuserAuthentication');
-
-    Route::get('/sap-login/sign-out', function (Request $request) {
-     
-      $request->session()->flush();
-      return redirect('/sap-login');
-      
-    });
-});    
-
-
-Route::get('/update_eid', [CustomController::class, 'update_attendance_adjustment_eid'])->middleware('userAuthentication');
 //Route::get('/get-business-employee-data/{emp_unique_code}', [EmployeeController::class, 'get_business_card_data']);
 
-Route::get('/business-card/{employee_id}', [EmployeeController::class, 'businessCard']);
+Route::get('/business-card/{employee_id}', [EmployeeController::class, 'businessCard'])->middleware('userAuthentication');
 
-Route::get('/load-business-cards', [EmployeeController::class, 'generateAllQR']);
+Route::get('/load-business-cards', [EmployeeController::class, 'generateAllQR'])->middleware('userAuthentication');
 
 Route::get('/get-business-employee-data/{emp_unique_code}', [EmployeeController::class, 'get_business_card_data']);

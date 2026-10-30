@@ -214,7 +214,7 @@
                                         {{--end::Label--}}
 
                                         <div class="position-relative d-flex align-items-center">
-                                            @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 )
+                                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) )
                                                 <select class="form-select" data-control="select2" data-hide-search="true" data-placeholder="Select Department" name="requisition_department" required="required">
                                                     <option value="">Select Department</option>
                                                     @if(!empty($get_all_departments))

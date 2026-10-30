@@ -1,30 +1,17 @@
 {{--begin::sidebar--}}
 
     @php
-        $permission = CustomHelper::access_permission();
+        $permission = CustomHelper::permission_map();
+        $permission_map = CustomHelper::permission_map();
         $meetings  = CustomHelper::get_my_todays_meeting_status();
         $companySetting = CustomHelper::hcm_default_settings();
-        $sap_permission = CustomHelper::hcm_sap_attendance();
         $att_attendance_permission = CustomHelper::hcm_attendance_adjustment();
     @endphp
 
     <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
 
         <div class="app-sidebar-logo px-12" id="kt_app_sidebar_logo">
-            @if(strpos(url()->current(), 'sap-login'))
-                <a href="{{url('/sap-login')}}">
-                    {{-- <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" /> --}}
-
-                    {{-- <img alt="Logo" src="{{$companySetting['company_favicon']}}" class="h-20px app-sidebar-logo-minimize" /> --}}
-                    <span class="font-weight-bold text-white text-capitalize text-center">
-                        @if(!empty($companySetting['company_name']))
-                            {{$companySetting['company_name']}}
-                        @else
-                            Nexora HCM
-                        @endif
-                    </span>
-                </a>
-            @else
+            
                 <a href="{{url('/')}}">
                     {{-- <img alt="Logo"  src=" {{$companySetting['company_favicon']}}" class="h-45px app-sidebar-logo-default" /> --}}
 
@@ -37,7 +24,7 @@
                         @endif
                     </span>
                 </a>
-            @endif
+            
 
 
             <div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary body-bg h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
@@ -70,20 +57,7 @@
 
                     </div>
 
-                    @if(strpos(url()->current(), 'sap-login'))
-
-                        <div class="menu-item search-item">
-                            <a class="menu-link nav-link @if($title == 'my-attendance') active @endif" href="{{url('sap-login')}}">
-                                <span class="menu-icon">
-                                    <span class="menu-icon">
-                                        <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/My Attendance.png') }}" />
-                                    </span>
-                                </span>
-                                <span class="menu-title">My Attendance</span>
-                            </a>
-                        </div>
-                            
-                    @else    
+                        
         
 
                         <div class="menu-item search-item">
@@ -102,7 +76,7 @@
                             </a>
                         </div>
                     
-                        @if(!empty($permission) && ($permission[12]['permission_status'] == 1 || $permission[13]['permission_status'] == 1 || $permission[14]['permission_status'] == 1  ||  $permission[15]['permission_status'] == 1 ||  $permission[52]['permission_status'] == 1 || $permission[66]['permission_status'] == 1 || $permission[73]['permission_status'] == 1) && ($permission[12]['module_accessibility'] == 1 || $permission[13]['module_accessibility'] == 1 || $permission[14]['module_accessibility'] == 1  ||  $permission[15]['module_accessibility'] == 1 ||  $permission[52]['module_accessibility'] == 1 || $permission[66]['module_accessibility'] == 1 || $permission[73]['module_accessibility'] == 1))
+                        @if(!empty($permission) && ($permission_map['/employees']['permission_status'] == 1 || $permission_map['/employees-managers']['permission_status'] == 1 || $permission_map['/employee-birthdays']['permission_status'] == 1  ||  $permission_map['/employee-work-anniversay']['permission_status'] == 1 ||  $permission_map['/employee-devices']['permission_status'] == 1 || $permission_map['/employee-bank']['permission_status'] == 1 || $permission_map['/employee-group']['permission_status'] == 1) && ($permission_map['/employees']['module_accessibility'] == 1 || $permission_map['/employees-managers']['module_accessibility'] == 1 || $permission_map['/employee-birthdays']['module_accessibility'] == 1  ||  $permission_map['/employee-work-anniversay']['module_accessibility'] == 1 ||  $permission_map['/employee-devices']['module_accessibility'] == 1 || $permission_map['/employee-bank']['module_accessibility'] == 1 || $permission_map['/employee-group']['module_accessibility'] == 1))
 
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'employee' || $title == 'employee-managers' || $title == 'birthdays' || $title == 'work-anniversay' || $title == 'employee-devices' || $title == 'employee-bank' || $title == 'employment-group' || $title == 'employee-location') show @endif">
 
@@ -116,7 +90,7 @@
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                                    @if(!empty($permission) && $permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'employee') active @endif" href="{{ url('/employees') }}">
@@ -129,7 +103,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[13]['module_accessibility'] == 1 && $permission[13]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employees-managers']['module_accessibility'] == 1 && $permission_map['/employees-managers']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link @if($title == 'employee-managers') active @endif" href="{{ url('/employees-managers') }}">
@@ -143,7 +117,7 @@
 
                                     @endif
 
-                                    {{-- @if(!empty($permission) && $permission[79]['module_accessibility'] == 1 && $permission[79]['permission_status'] == 1) --}}
+                                    {{-- @if(!empty($permission) && $permission_map['/employee-location']['module_accessibility'] == 1 && $permission_map['/employee-location']['permission_status'] == 1) --}}
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link @if($title == 'employee-location') active @endif" href="{{ url('/employee-location') }}">
@@ -159,7 +133,7 @@
 
 
 
-                                    @if(!empty($permission) && $permission[14]['module_accessibility'] == 1 && $permission[14]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-birthdays']['module_accessibility'] == 1 && $permission_map['/employee-birthdays']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'birthdays') active @endif" href="{{ url('/employee-birthdays') }}">
@@ -173,7 +147,7 @@
                                     @endif
 
 
-                                    @if(!empty($permission) && $permission[15]['module_accessibility'] == 1 && $permission[15]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-work-anniversay']['module_accessibility'] == 1 && $permission_map['/employee-work-anniversay']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'work-anniversay') active @endif" href="{{ url('/employee-work-anniversay') }}">
@@ -186,7 +160,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[52]['module_accessibility'] == 1 && $permission[52]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-devices']['module_accessibility'] == 1 && $permission_map['/employee-devices']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'employee-devices') active @endif" href="{{ url('/employee-devices') }}">
@@ -199,8 +173,7 @@
 
                                     @endif
 
-                                    {{-- @if(!empty($permission) && $permission[80]['module_accessibility'] == 1 && $permission[80]['permission_status'] == 1) --}}
-                                        @if($login_user[0]['employee_id'] == 1)
+                                        @if(CustomHelper::has_role($login_user[0]['employee_id'], 'admin'))
                                             <div class="menu-item search-item">
                                                 <a class="menu-link nav-link @if($title == 'employee-mobile-access') active @endif" href="{{ url('/employee-mobile-access') }}">
                                                     <span class="menu-bullet">
@@ -211,9 +184,8 @@
                                             </div>
                                         @endif    
 
-                                    {{-- @endif --}}
 
-                                    @if(!empty($permission) && $permission[66]['module_accessibility'] == 1 && $permission[66]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-bank']['module_accessibility'] == 1 && $permission_map['/employee-bank']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'employee-bank') active @endif" href="{{ url('/employee-bank') }}">
@@ -226,7 +198,7 @@
 
                                     @endif
                                     
-                                    @if(!empty($permission) && $permission[73]['module_accessibility'] == 1 && $permission[73]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-group']['module_accessibility'] == 1 && $permission_map['/employee-group']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'employment-group') active @endif" href="{{ url('/employee-group') }}">
                                                 <span class="menu-bullet">
@@ -245,9 +217,9 @@
 
                         @endif
                         
-                        @if(!empty($permission) && ($permission[19]['permission_status'] == 1 || $permission[20]['permission_status'] == 1 || $permission[21]['permission_status'] == 1 || $permission[1]['permission_status'] == 1 || $permission[2]['permission_status'] == 1 || $permission[54]['permission_status'] == 1 || $permission[22]['permission_status'] == 1 || $permission[22]['permission_status'] == 1 ||  $permission[59]['permission_status'] == 1 || $permission[65]['permission_status'] == 1 || $permission[67]['permission_status'] == 1 || $permission[70]['permission_status'] == 1 || $permission[72]['permission_status'] == 1) && ($permission[19]['module_accessibility'] == 1 || $permission[20]['module_accessibility'] == 1 || $permission[21]['module_accessibility'] == 1 || $permission[1]['module_accessibility'] == 1 || $permission[2]['module_accessibility'] == 1 || $permission[54]['module_accessibility'] == 1 || $permission[22]['module_accessibility'] == 1 || $permission[22]['module_accessibility'] == 1 ||  $permission[59]['module_accessibility'] == 1 || $permission[65]['module_accessibility'] == 1 ||  $permission[67]['module_accessibility'] == 1 ||  $permission[70]['module_accessibility'] == 1 ||  $permission[72]['module_accessibility'] == 1 || !empty($att_attendance_permission))) 
+                        @if(!empty($permission) && ($permission_map['/attendance']['permission_status'] == 1 || $permission_map['/attendance-requests']['permission_status'] == 1 || $permission_map['/daily-attendance-report']['permission_status'] == 1 || $permission_map['/my-attendance']['permission_status'] == 1 || $permission_map['/my-attendance-request']['permission_status'] == 1 || $permission_map['/shift-management']['permission_status'] == 1 || $permission_map['/wfh-requests']['permission_status'] == 1 || $permission_map['/wfh-requests']['permission_status'] == 1 ||  $permission_map['/my-shift-time']['permission_status'] == 1 || $permission_map['/shift-time-request']['permission_status'] == 1 || $permission_map['/monthly-attendance']['permission_status'] == 1 || $permission_map['/attendance-devices']['permission_status'] == 1 || $permission_map['/attendance-locker']['permission_status'] == 1) && ($permission_map['/attendance']['module_accessibility'] == 1 || $permission_map['/attendance-requests']['module_accessibility'] == 1 || $permission_map['/daily-attendance-report']['module_accessibility'] == 1 || $permission_map['/my-attendance']['module_accessibility'] == 1 || $permission_map['/my-attendance-request']['module_accessibility'] == 1 || $permission_map['/shift-management']['module_accessibility'] == 1 || $permission_map['/wfh-requests']['module_accessibility'] == 1 || $permission_map['/wfh-requests']['module_accessibility'] == 1 ||  $permission_map['/my-shift-time']['module_accessibility'] == 1 || $permission_map['/shift-time-request']['module_accessibility'] == 1 ||  $permission_map['/monthly-attendance']['module_accessibility'] == 1 ||  $permission_map['/attendance-devices']['module_accessibility'] == 1 ||  $permission_map['/attendance-locker']['module_accessibility'] == 1 || !empty($att_attendance_permission))) 
                         
-                            <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-attendance' || $title == 'daily-attendance' || $title == 'overtime-management' || $title == 'my-attendance' || $title == 'attendance-request' || $title == 'my-attendance-request' || $title == 'wfh-request' || $title == 'my-wfh-requests' || $title == 'shift-management' || $title == 'my-shift-time' || $title == 'shift-time-request' || $title == 'monthy-attendance' || $title == 'manage-attendance-devices' || $title == 'monthly-attendance' || $title == 'add-shift' || $title == 'attendance-locker' || $title == 'bisconni-report' || $title == 'attendance-adjustment') show @endif">
+                            <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-attendance' || $title == 'daily-attendance' || $title == 'overtime-management' || $title == 'my-attendance' || $title == 'attendance-request' || $title == 'my-attendance-request' || $title == 'wfh-request' || $title == 'my-wfh-requests' || $title == 'shift-management' || $title == 'my-shift-time' || $title == 'shift-time-request' || $title == 'monthy-attendance' || $title == 'manage-attendance-devices' || $title == 'monthly-attendance' || $title == 'add-shift' || $title == 'attendance-locker' || $title == 'attendance-adjustment') show @endif">
 
                                 <span class="menu-link">
                                     <span class="menu-icon">
@@ -268,10 +240,10 @@
                                         </a>
                                     </div> --}}
                                 
-                                    @if(!empty($permission) && $permission[67]['module_accessibility'] == 1 && $permission[67]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/monthly-attendance']['module_accessibility'] == 1 && $permission_map['/monthly-attendance']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
-                                            <a class="menu-link nav-link @if($title == 'monthly-attendance') active @endif" href="{{url('monthly-attendance')}}?department_id=14&designation_id[]=400&designation_id[]=453&designation_id[]=478">
+                                            <a class="menu-link nav-link @if($title == 'monthly-attendance') active @endif" href="{{url('monthly-attendance')}}">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Manage Attendance.png') }}" />
                                                 </span>
@@ -281,7 +253,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[19]['module_accessibility'] == 1 && $permission[19]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/attendance']['module_accessibility'] == 1 && $permission_map['/attendance']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-attendance') active @endif" href="{{url('attendance')}}">
@@ -296,7 +268,7 @@
 
                                     
 
-                                    @if(!empty($permission) && $permission[21]['module_accessibility'] == 1 && $permission[21]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/daily-attendance-report']['module_accessibility'] == 1 && $permission_map['/daily-attendance-report']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'daily-attendance') active @endif" href="{{url('daily-attendance-report')}}">
@@ -325,21 +297,9 @@
                                     
                                     @endif
 
-                                    {{-- @if(!empty($permission) && $permission[21]['module_accessibility'] == 1 && $permission[21]['permission_status'] == 1) --}}
-
-                                        {{-- <div class="menu-item search-item">
-                                            <a class="menu-link nav-link @if($title == 'bisconni-report') active @endif" href="{{url('bisconni-attendance-report')}}">
-                                                <span class="menu-icon">
-
-                                                    <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Daily Attendance Report.png') }}" />
-                                                </span>
-                                                <span class="menu-title">Bisconni Attendance Report</span>
-                                            </a>
-                                        </div> --}}
-
-                                    {{-- @endif --}}
                                     
-                                    @if(!empty($permission) && $permission[72]['module_accessibility'] == 1 && $permission[72]['permission_status'] == 1)
+                                    
+                                    @if(!empty($permission) && $permission_map['/attendance-locker']['module_accessibility'] == 1 && $permission_map['/attendance-locker']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'attendance-locker') active @endif" href="{{url('attendance-locker')}}">
                                                 <span class="menu-icon">
@@ -350,7 +310,7 @@
                                             </a>
                                         </div>
                                     @endif
-                                    @if(!empty($permission) && $permission[1]['module_accessibility'] == 1 && $permission[1]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-attendance']['module_accessibility'] == 1 && $permission_map['/my-attendance']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-attendance') active @endif" href="{{url('my-attendance')}}">
@@ -365,28 +325,15 @@
                                         
                                     @endif
 
-                                    @if(!empty($sap_permission))
+                                    
 
-                                        <div class="menu-item search-item">
-                                            <a class="menu-link nav-link @if($title == 'sap-attendance') active @endif" href="{{url('sap-attendance')}}">
-                                                <span class="menu-icon">
-                                                    <span class="menu-icon">
-                                                        <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/My Attendance.png') }}" />
-                                                    </span>
-                                                </span>
-                                                <span class="menu-title">Employee wise Attendance</span>
-                                            </a>
-                                        </div>    
-                                        
-                                    @endif
-
-                                    @if(!empty($permission) && $permission[20]['module_accessibility'] == 1 && $permission[20]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/attendance-requests']['module_accessibility'] == 1 && $permission_map['/attendance-requests']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'attendance-request') active @endif" href="{{url('attendance-requests')}}" >
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/All Attendance Requests.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                     <span class="menu-title">All Attendance Requests</span>
                                                 @else
                                                     <span class="menu-title">Team Attendance Requests</span>
@@ -395,7 +342,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[2]['module_accessibility'] == 1 && $permission[2]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-attendance-request']['module_accessibility'] == 1 && $permission_map['/my-attendance-request']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-attendance-request') active @endif" href="{{url('my-attendance-request')}}" >
@@ -407,7 +354,7 @@
                                         </div>
 
                                     @endif
-                                    @if(!empty($permission) && $permission[70]['module_accessibility'] == 1 && $permission[70]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/attendance-devices']['module_accessibility'] == 1 && $permission_map['/attendance-devices']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-attendance-devices') active @endif " href="{{url('attendance-devices')}}">
                                                 <span class="menu-icon">
@@ -417,7 +364,7 @@
                                             </a>
                                         </div>
                                     @endif
-                                    {{-- @if(!empty($permission) && $permission[65]['module_accessibility'] == 1 && $permission[65]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/shift-time-request']['module_accessibility'] == 1 && $permission_map['/shift-time-request']['permission_status'] == 1)
                             
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'shift-time-request') active @endif" href="{{ url('shift-time-request') }}" >
@@ -428,15 +375,15 @@
                                             </a>
                                         </div>
         
-                                    @endif --}}
-                                    @if(!empty($permission) && $permission[54]['module_accessibility'] == 1 && $permission[54]['permission_status'] == 1)
+                                    @endif
+                                    @if(!empty($permission) && $permission_map['/shift-management']['module_accessibility'] == 1 && $permission_map['/shift-management']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'shift-management' || $title == 'add-shift') active @endif" href="{{ url('shift-management') }}" >
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Mark Attendance.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                 <span class="menu-title">Shift Management</span>
                                                 @else
                                                     <span class="menu-title">Team Shift Management</span>
@@ -445,7 +392,7 @@
                                         </div>
 
                                     @endif
-                                    {{-- @if(!empty($permission) && $permission[59]['module_accessibility'] == 1 && $permission[59]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-shift-time']['module_accessibility'] == 1 && $permission_map['/my-shift-time']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-shift-time') active @endif" href="{{ url('my-shift-time') }}" >
@@ -456,9 +403,9 @@
                                             </a>
                                         </div>
 
-                                    @endif --}}
+                                    @endif
                                     
-                                    @if(!empty($permission) && $permission[56]['module_accessibility'] == 1 && $permission[56]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/overtime-management']['module_accessibility'] == 1 && $permission_map['/overtime-management']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'overtime-management') active @endif" href="{{url('overtime-management')}}">
@@ -471,14 +418,14 @@
                                         </div>
 
                                     @endif
-                                    @if(!empty($permission) && $permission[22]['module_accessibility'] == 1 && $permission[22]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/wfh-requests']['module_accessibility'] == 1 && $permission_map['/wfh-requests']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'wfh-request') active @endif" href="{{url('wfh-requests')}}">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/All WFH Requests.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                     <span class="menu-title">All Remote Work Requests</span>
                                                 @else
                                                     <span class="menu-title">Team Remote Work Requests</span>
@@ -488,7 +435,7 @@
         
                                     @endif
 
-                                    @if(!empty($permission) && $permission[7]['module_accessibility'] == 1 && $permission[7]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-wfh-requests']['module_accessibility'] == 1 && $permission_map['/my-wfh-requests']['permission_status'] == 1)
         
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-wfh-requests') active @endif " href="{{url('my-wfh-requests')}}">
@@ -505,7 +452,7 @@
                             </div>
                         @endif
 
-                        @if(!empty($permission) && ($permission[3]['permission_status'] == 1 || $permission[23]['permission_status'] == 1 || $permission[24]['permission_status'] == 1 || $permission[31]['permission_status'] == 1 || $permission[63]['permission_status'] == 1 ||  $permission[74]['permission_status'] == 1) && ($permission[3]['module_accessibility'] == 1 || $permission[23]['module_accessibility'] == 1 || $permission[24]['module_accessibility'] == 1 || $permission[31]['module_accessibility'] == 1 || $permission[63]['module_accessibility'] == 1 || $permission[74]['module_accessibility'] == 1))
+                        @if(!empty($permission) && ($permission_map['/my-leaves']['permission_status'] == 1 || $permission_map['/employees-leaves']['permission_status'] == 1 || $permission_map['/manage-leaves']['permission_status'] == 1 || $permission_map['/holidays']['permission_status'] == 1 || $permission_map['/leave-management']['permission_status'] == 1 ||  $permission_map['/leave-policy']['permission_status'] == 1) && ($permission_map['/my-leaves']['module_accessibility'] == 1 || $permission_map['/employees-leaves']['module_accessibility'] == 1 || $permission_map['/manage-leaves']['module_accessibility'] == 1 || $permission_map['/holidays']['module_accessibility'] == 1 || $permission_map['/leave-management']['module_accessibility'] == 1 || $permission_map['/leave-policy']['module_accessibility'] == 1))
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'employees-leaves' || $title == 'my-leaves' || $title == 'manage-leaves' || $title == 'holidays' || $title == 'leave-management' || $title == 'leave-policy') show @endif">
 
                                 <span class="menu-link">
@@ -518,14 +465,14 @@
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                                    @if(!empty($permission) && $permission[23]['module_accessibility'] == 1 && $permission[23]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employees-leaves']['module_accessibility'] == 1 && $permission_map['/employees-leaves']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'employees-leaves') active @endif" href="{{url('employees-leaves')}}">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/All Leave Requests.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                     <span class="menu-title">All Leaves Requests</span>                                         
                                                 @else
                                                     <span class="menu-title">Team Leaves Requests</span>
@@ -536,7 +483,7 @@
 
                                     @endif
 
-                                    {{-- @if(!empty($permission) && $permission[3]['module_accessibility'] == 1 && $permission[3]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-leaves']['module_accessibility'] == 1 && $permission_map['/my-leaves']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-leaves') active @endif" href="{{url('/my-leaves')}}">
@@ -547,9 +494,9 @@
                                             </a>
                                         </div>
 
-                                    @endif --}}
+                                    @endif
 
-                                    @if(!empty($permission) && $permission[63]['module_accessibility'] == 1 && $permission[63]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/leave-management']['module_accessibility'] == 1 && $permission_map['/leave-management']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'leave-management') active @endif" href="{{url('leave-management')}}">
@@ -562,7 +509,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[24]['module_accessibility'] == 1 && $permission[24]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/manage-leaves']['module_accessibility'] == 1 && $permission_map['/manage-leaves']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-leaves') active @endif" href="{{url('manage-leaves')}}">
@@ -575,7 +522,7 @@
 
                                     @endif
                                     
-                                    @if(!empty($permission) && $permission[74]['module_accessibility'] == 1 && $permission[74]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/leave-policy']['module_accessibility'] == 1 && $permission_map['/leave-policy']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'leave-policy') active @endif" href="{{ url('leave-policy') }}">
                                                 <span class="menu-icon">
@@ -586,13 +533,13 @@
                                         </div>
                                     @endif
                                 
-                                    <!-- @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2 || ($login_user[0]['employee_department'] == 7 &&  $login_user[0]['employee_is_manager'] == 1))
+                                    <!-- @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) &&  $login_user[0]['employee_is_manager'] == 1))
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'rpl-leaves') active @endif" href="{{url('rpl-leaves')}}">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Leave Entilement.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                     <span class="menu-title">All RPL Leaves</span>                                         
                                                 @else
                                                     <span class="menu-title">Team RPL Leaves</span>
@@ -602,7 +549,7 @@
                                         </div>
                                     
                                     @endif -->
-                                    <!-- @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 7 )
+                                    <!-- @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) )
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-rpl-leaves') active @endif" href="{{url('my-rpl-leave')}}">
                                                 <span class="menu-icon">
@@ -613,7 +560,7 @@
                                         </div>
                                     @endif -->
 
-                                    @if(!empty($permission) && $permission[31]['module_accessibility'] == 1 && $permission[31]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/holidays']['module_accessibility'] == 1 && $permission_map['/holidays']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'holidays') active @endif" href="{{url('holidays')}}">
@@ -629,7 +576,7 @@
 
                         @endif
 
-                        {{-- @if(!empty($permission) && ($permission[4]['permission_status'] == 1 || $permission[25]['permission_status'] == 1 || $permission[26]['permission_status'] == 1 || $permission[51]['permission_status'] == 1 || $permission[40]['permission_status'] == 1 || $permission[41]['permission_status'] == 1) && ($permission[4]['module_accessibility'] == 1 || $permission[25]['module_accessibility'] == 1 || $permission[26]['module_accessibility'] == 1 || $permission[51]['module_accessibility'] == 1 || $permission[40]['module_accessibility'] == 1 || $permission[41]['module_accessibility'] == 1))
+                        @if(!empty($permission) && ($permission_map['/my-interviews']['permission_status'] == 1 || $permission_map['/interviews']['permission_status'] == 1 || $permission_map['/employee-onboarding']['permission_status'] == 1 || $permission_map['/candiddate-interviews']['permission_status'] == 1 || $permission_map['/requisition']['permission_status'] == 1 || $permission_map['/my-requisition']['permission_status'] == 1) && ($permission_map['/my-interviews']['module_accessibility'] == 1 || $permission_map['/interviews']['module_accessibility'] == 1 || $permission_map['/employee-onboarding']['module_accessibility'] == 1 || $permission_map['/candiddate-interviews']['module_accessibility'] == 1 || $permission_map['/requisition']['module_accessibility'] == 1 || $permission_map['/my-requisition']['module_accessibility'] == 1))
                             
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-interviews' || $title == 'interview-candidate-list' || $title == 'my-interviews' || $title == 'employee-on-boarding' || $title == 'all-requisition' || $title == 'my-requisition') show @endif">
 
@@ -643,7 +590,7 @@
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                                    @if(!empty($permission) && $permission[25]['module_accessibility'] == 1 && $permission[25]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/interviews']['module_accessibility'] == 1 && $permission_map['/interviews']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-interviews') active @endif" href="{{url('interviews')}}">
@@ -656,7 +603,7 @@
 
                                     @endif
                                     
-                                    @if(!empty($permission) && $permission[51]['module_accessibility'] == 1 && $permission[51]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/candiddate-interviews']['module_accessibility'] == 1 && $permission_map['/candiddate-interviews']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link  @if($title == 'interview-candidate-list') active @endif" href="{{ url('/candiddate-interviews') }}">
                                                 <span class="menu-icon">
@@ -667,7 +614,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[4]['module_accessibility'] == 1 && $permission[4]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-interviews']['module_accessibility'] == 1 && $permission_map['/my-interviews']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-interviews') active @endif" href="{{url('my-interviews')}}">
@@ -680,7 +627,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[26]['module_accessibility'] == 1 && $permission[26]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-onboarding']['module_accessibility'] == 1 && $permission_map['/employee-onboarding']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link  @if($title == 'employee-on-boarding') active @endif" href="{{ url('/employee-onboarding') }}">
@@ -693,7 +640,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[40]['module_accessibility'] == 1 && $permission[40]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/requisition']['module_accessibility'] == 1 && $permission_map['/requisition']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'all-requisition') active @endif" href="{{url('requisition')}}">
                                                 <span class="menu-icon">
@@ -704,7 +651,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[41]['module_accessibility'] == 1 && $permission[41]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-requisition']['module_accessibility'] == 1 && $permission_map['/my-requisition']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-requisition') active @endif" href="{{url('my-requisition')}}">
                                                 <span class="menu-icon">
@@ -717,9 +664,9 @@
                                 </div>
                             </div>
 
-                        @endif --}}
+                        @endif
 
-                        {{-- @if(!empty($permission) && ($permission[27]['permission_status'] == 1 || $permission[5]['permission_status'] == 1 || $permission[9]['permission_status'] == 1 || $permission[43]['permission_status'] == 1 || $permission[47]['permission_status'] == 1 || $permission[48]['permission_status'] == 1 || $permission[28]['permission_status'] == 1 || $permission[29]['permission_status'] == 1 || $permission[55]['permission_status'] == 1 || $permission[58]['permission_status'] == 1|| $permission[68]['permission_status'] == 1 || $permission[75]['permission_status'] == 1 || $permission[78]['permission_status'] == 1  ) && ($permission[27]['module_accessibility'] == 1 || $permission[5]['module_accessibility'] == 1 || $permission[9]['module_accessibility'] == 1 || $permission[43]['module_accessibility'] == 1 || $permission[47]['module_accessibility'] == 1 || $permission[48]['module_accessibility'] == 1 || $permission[28]['module_accessibility'] == 1 || $permission[29]['module_accessibility'] == 1 || $permission[55]['module_accessibility'] == 1 || $permission[58]['module_accessibility'] == 1 || $permission[68]['module_accessibility'] == 1 || $permission[75]['module_accessibility'] == 1 || $permission[78]['module_accessibility'] == 1))
+                        @if(!empty($permission) && ($permission_map['/payroll']['permission_status'] == 1 || $permission_map['/payslip']['permission_status'] == 1 || $permission_map['/my-salary-request']['permission_status'] == 1 || $permission_map['/all-salary-request']['permission_status'] == 1 || $permission_map['/tax-slab']['permission_status'] == 1 || $permission_map['/tax-collection']['permission_status'] == 1 || $permission_map['/petty-cash']['permission_status'] == 1 || $permission_map['/daily-expense']['permission_status'] == 1 || $permission_map['/employee-expense']['permission_status'] == 1 || $permission_map['/my-expense']['permission_status'] == 1|| $permission_map['/daily-wages-payroll']['permission_status'] == 1 || $permission_map['/deduction-policy']['permission_status'] == 1 || $permission_map['/employee-fund']['permission_status'] == 1  ) && ($permission_map['/payroll']['module_accessibility'] == 1 || $permission_map['/payslip']['module_accessibility'] == 1 || $permission_map['/my-salary-request']['module_accessibility'] == 1 || $permission_map['/all-salary-request']['module_accessibility'] == 1 || $permission_map['/tax-slab']['module_accessibility'] == 1 || $permission_map['/tax-collection']['module_accessibility'] == 1 || $permission_map['/petty-cash']['module_accessibility'] == 1 || $permission_map['/daily-expense']['module_accessibility'] == 1 || $permission_map['/employee-expense']['module_accessibility'] == 1 || $permission_map['/my-expense']['module_accessibility'] == 1 || $permission_map['/daily-wages-payroll']['module_accessibility'] == 1 || $permission_map['/deduction-policy']['module_accessibility'] == 1 || $permission_map['/employee-fund']['module_accessibility'] == 1))
                         
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'my-payroll' || $title == 'all-salary-request' || $title == 'my-salary-request' || $title == 'Tax Slab' || $title == 'Tax Collection' || $title == 'cash' || $title == 'expense' || $title == 'employee-expense' || $title == 'my-expense' || $title == 'My Payslip' || $title == 'daily-wages' || $title == 'deduction policy' || $title == 'employee_funds') show @endif">
 
@@ -731,7 +678,7 @@
                                     <span class="menu-arrow"></span></span>
 
                                     <div class="menu-sub menu-sub-accordion menu-active-bg">
-                                        @if(!empty($permission) && $permission[27]['module_accessibility'] == 1 && $permission[27]['permission_status'] == 1)
+                                        @if(!empty($permission) && $permission_map['/payroll']['module_accessibility'] == 1 && $permission_map['/payroll']['permission_status'] == 1)
                                         <div data-kt-menu-trigger="click" class="menu-item menu-accordion @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'daily-wages') show @endif">
                                             <span class="menu-link">
                                                 <span class="menu-icon">
@@ -741,7 +688,7 @@
                                                 <span class="menu-arrow"></span>
                                             </span>
                                             <div class="menu-sub menu-sub-accordion">
-                                                @if(!empty($permission) && $permission[27]['module_accessibility'] == 1 && $permission[27]['permission_status'] == 1)
+                                                @if(!empty($permission) && $permission_map['/payroll']['module_accessibility'] == 1 && $permission_map['/payroll']['permission_status'] == 1)
                                                 <div class="menu-item">
                                                     <a class="menu-link nav-link @if($title == 'Payroll') active @endif" href="{{url('payroll')}}">
                                                         <span class="menu-icon">
@@ -751,7 +698,7 @@
                                                     </a>
                                                 </div>
                                                 @endif
-                                                @if(!empty($permission) && $permission[68]['module_accessibility'] == 1 && $permission[68]['permission_status'] == 1)
+                                                @if(!empty($permission) && $permission_map['/daily-wages-payroll']['module_accessibility'] == 1 && $permission_map['/daily-wages-payroll']['permission_status'] == 1)
                                                 <div class="menu-item">
                                                     <a class="menu-link nav-link @if($title == 'daily-wages') active @endif" href="{{url('daily-wages-payroll')}}">
                                                         <span class="menu-icon">
@@ -766,7 +713,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission)  && $permission[78]['module_accessibility'] == 1 && $permission[78]['permission_status'] == 1)
+                                    @if(!empty($permission)  && $permission_map['/employee-fund']['module_accessibility'] == 1 && $permission_map['/employee-fund']['permission_status'] == 1)
                                         <div class="menu-item search-item">
 
                                             <a class="menu-link nav-link  @if($title == 'employee-funds') active @endif" href="{{ url('/employee-fund') }}">
@@ -779,7 +726,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[5]['module_accessibility'] == 1 && $permission[5]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/payslip']['module_accessibility'] == 1 && $permission_map['/payslip']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'My Payslip') active @endif" href="{{ url('my-payroll') }}">
@@ -792,13 +739,13 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[43]['module_accessibility'] == 1 && $permission[43]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/all-salary-request']['module_accessibility'] == 1 && $permission_map['/all-salary-request']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'all-salary-request') active @endif" href="{{url('all-salary-request')}}">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/All Requisition.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                     <span class="menu-title">All Advance Salary Request</span>                                         
                                                 @else
                                                     <span class="menu-title">Team Advance Salary Request</span>
@@ -808,7 +755,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[9]['module_accessibility'] == 1 && $permission[9]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-salary-request']['module_accessibility'] == 1 && $permission_map['/my-salary-request']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-salary-request') active @endif" href="{{url('my-salary-request')}}">
                                                 <span class="menu-icon">
@@ -819,7 +766,7 @@
                                         </div>
                                     @endif 
 
-                                    @if(!empty($permission) && $permission[47]['module_accessibility'] == 1 && $permission[47]['permission_status'] == 1 )
+                                    @if(!empty($permission) && $permission_map['/tax-slab']['module_accessibility'] == 1 && $permission_map['/tax-slab']['permission_status'] == 1 )
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'Tax Slab') active @endif" href="{{url('/tax-slab')}}">
                                                 <span class="menu-icon">
@@ -830,7 +777,7 @@
                                         </div>
                                     @endif
                                     
-                                    @if(!empty($permission) && $permission[75]['module_accessibility'] == 1 && $permission[75]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/deduction-policy']['module_accessibility'] == 1 && $permission_map['/deduction-policy']['permission_status'] == 1)
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'deduction policy') active @endif" href="{{url('/deduction-policy')}}">
                                             <span class="menu-icon">
@@ -841,7 +788,7 @@
                                     </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[48]['module_accessibility'] == 1 && $permission[48]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/tax-collection']['module_accessibility'] == 1 && $permission_map['/tax-collection']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'Tax Collection') active @endif" href="{{url('/tax-collection')}}">
                                                 <span class="menu-icon">
@@ -852,7 +799,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[28]['module_accessibility'] == 1 && $permission[28]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/petty-cash']['module_accessibility'] == 1 && $permission_map['/petty-cash']['permission_status'] == 1)
 
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'cash') active @endif" href="{{url('petty-cash')}}">
@@ -865,7 +812,7 @@
 
                                 @endif
 
-                                @if(!empty($permission) && $permission[29]['module_accessibility'] == 1 && $permission[29]['permission_status'] == 1)
+                                @if(!empty($permission) && $permission_map['/daily-expense']['module_accessibility'] == 1 && $permission_map['/daily-expense']['permission_status'] == 1)
 
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'expense') active @endif" href="{{url('daily-expense')}}">
@@ -878,14 +825,14 @@
 
                                 @endif
 
-                                @if(!empty($permission) && $permission[55]['module_accessibility'] == 1 && $permission[55]['permission_status'] == 1)
+                                @if(!empty($permission) && $permission_map['/employee-expense']['module_accessibility'] == 1 && $permission_map['/employee-expense']['permission_status'] == 1)
 
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'employee-expense') active @endif" href="{{url('employee-expense')}}">
                                             <span class="menu-icon">
                                                 <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Daily Expenses.png') }}" />
                                             </span>
-                                            @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                 <span class="menu-title">All Reimbursement Request</span>                                         
                                             @else
                                                 <span class="menu-title">Team Reimbursement Request</span>
@@ -896,7 +843,7 @@
 
                                 @endif
 
-                                @if(!empty($permission) && $permission[58]['module_accessibility'] == 1 && $permission[58]['permission_status'] == 1)
+                                @if(!empty($permission) && $permission_map['/my-expense']['module_accessibility'] == 1 && $permission_map['/my-expense']['permission_status'] == 1)
                                     <div class="menu-item search-item">
                                         <a class="menu-link nav-link @if($title == 'my-expense') active @endif" href="{{url('my-expense')}}">
                                             <span class="menu-icon">
@@ -910,9 +857,9 @@
                             
                                 </div>
                             </div>
-                        @endif --}}
+                        @endif
 
-                        @if(!empty($permission) && ($permission[10]['permission_status'] == 1 || $permission[30]['permission_status'] == 1 || $permission[44]['permission_status'] == 1) && ($permission[10]['module_accessibility'] == 1 || $permission[30]['module_accessibility'] == 1 || $permission[44]['module_accessibility'] == 1))
+                        @if(!empty($permission) && ($permission_map['/my-loan']['permission_status'] == 1 || $permission_map['/loans']['permission_status'] == 1 || $permission_map['/all-loan-request']['permission_status'] == 1) && ($permission_map['/my-loan']['module_accessibility'] == 1 || $permission_map['/loans']['module_accessibility'] == 1 || $permission_map['/all-loan-request']['module_accessibility'] == 1))
                         
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-loan' || $title == 'all-loan-request' || $title == 'my-loan') show @endif">
 
@@ -925,7 +872,7 @@
                                 </span>
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
-                                    @if(!empty($permission) && $permission[30]['module_accessibility'] == 1 && $permission[30]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/loans']['module_accessibility'] == 1 && $permission_map['/loans']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-loan') active @endif" href="{{url('loans')}}">
@@ -937,13 +884,13 @@
                                         </div>
 
                                     @endif
-                                    @if(!empty($permission) && $permission[44]['module_accessibility'] == 1 && $permission[44]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/all-loan-request']['module_accessibility'] == 1 && $permission_map['/all-loan-request']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'all-loan-request') active @endif" href="{{url('all-loan-request')}}">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/All Requisition.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                 <span class="menu-title">All Loan Requests</span>                                         
                                                 @else
                                                     <span class="menu-title">Team Loan Requests</span>
@@ -953,7 +900,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[10]['module_accessibility'] == 1 && $permission[10]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-loan']['module_accessibility'] == 1 && $permission_map['/my-loan']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-loan') active @endif" href="{{url('my-loan')}}">
                                                 <span class="menu-icon">
@@ -970,7 +917,7 @@
                         @endif
 
                                                 
-                        @if(!empty($permission) && ($permission[32]['permission_status'] == 1 || $permission[33]['permission_status'] == 1 || $permission[49]['permission_status'] == 1 || $permission[50]['permission_status'] == 1 || $permission[36]['permission_status'] == 1 ) && ($permission[32]['module_accessibility'] == 1 || $permission[33]['module_accessibility'] == 1 || $permission[49]['module_accessibility'] == 1 || $permission[50]['module_accessibility'] == 1 || $permission[36]['module_accessibility'] == 1 ))
+                        @if(!empty($permission) && ($permission_map['/departments']['permission_status'] == 1 || $permission_map['/designations']['permission_status'] == 1 || $permission_map['/rooms']['permission_status'] == 1 || $permission_map['/locations']['permission_status'] == 1 || $permission_map['/system-settings']['permission_status'] == 1 ) && ($permission_map['/departments']['module_accessibility'] == 1 || $permission_map['/designations']['module_accessibility'] == 1 || $permission_map['/rooms']['module_accessibility'] == 1 || $permission_map['/locations']['module_accessibility'] == 1 || $permission_map['/system-settings']['module_accessibility'] == 1 ))
                             
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-rooms' || $title == 'manage-locations' || $title == 'system-settings' || $title == 'manage-companies' || $title == 'appflow-detail') show @endif">
 
@@ -984,7 +931,7 @@
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                                    @if(!empty($permission) && $permission[76]['module_accessibility'] == 1 && $permission[76]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/companies']['module_accessibility'] == 1 && $permission_map['/companies']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-companies') active @endif" href="{{url('companies')}}">
                                                 <span class="menu-bullet">
@@ -995,7 +942,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[32]['module_accessibility'] == 1 && $permission[32]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/departments']['module_accessibility'] == 1 && $permission_map['/departments']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-departments') active @endif" href="{{url('departments')}}">
@@ -1008,7 +955,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[33]['module_accessibility'] == 1 && $permission[33]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/designations']['module_accessibility'] == 1 && $permission_map['/designations']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-designations') active @endif" href="{{url('designations')}}">
@@ -1021,7 +968,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission)  && $permission[49]['module_accessibility'] == 1 && $permission[49]['permission_status'] == 1)
+                                    @if(!empty($permission)  && $permission_map['/rooms']['module_accessibility'] == 1 && $permission_map['/rooms']['permission_status'] == 1)
                                             
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-rooms') active @endif" href="{{url('/rooms')}}">
@@ -1034,7 +981,7 @@
                                 
                                     @endif
 
-                                    @if(!empty($permission)  && $permission[50]['module_accessibility'] == 1 && $permission[50]['permission_status'] == 1)
+                                    @if(!empty($permission)  && $permission_map['/locations']['module_accessibility'] == 1 && $permission_map['/locations']['permission_status'] == 1)
                                     
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-locations') active @endif" href="{{url('/locations')}}">
@@ -1046,7 +993,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission)  && $permission[36]['module_accessibility'] == 1 && $permission[36]['permission_status'] == 1)
+                                    @if(!empty($permission)  && $permission_map['/system-settings']['module_accessibility'] == 1 && $permission_map['/system-settings']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link @if($title == 'system-settings') active @endif" href="{{url('system-settings')}}">
@@ -1059,7 +1006,18 @@
 
                                     @endif
 
-                                    {{-- @if(!empty($permission)  && $permission[36]['module_accessibility'] == 1 && $permission[36]['permission_status'] == 1) --}}
+                                    @if(CustomHelper::can_access('/roles'))
+                                        <div class="menu-item search-item">
+                                            <a class="menu-link @if($title == 'roles') active @endif" href="{{url('roles')}}">
+                                                <span class="menu-icon">
+                                                    <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/System Settings.png') }}" />
+                                                </span>
+                                                <span class="menu-title">Roles &amp; Permissions</span>
+                                            </a>
+                                        </div>
+                                    @endif
+
+                                    {{-- @if(!empty($permission)  && $permission_map['/system-settings']['module_accessibility'] == 1 && $permission_map['/system-settings']['permission_status'] == 1) --}}
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link @if($title == 'appflow' || $title == 'appflow-detail') active @endif" href="{{url('appflow')}}">
@@ -1076,7 +1034,7 @@
                             </div>
                         @endif
 
-                        @if(!empty($permission) && ($permission[16]['permission_status'] == 1 || $permission[77]['permission_status'] == 1 || $permission[17]['permission_status'] == 1  || $permission[42]['permission_status'] == 1 || $permission[18]['permission_status'] == 1 || $permission[6]['permission_status'] == 1 || $permission[38]['permission_status'] == 1 || $permission[8]['permission_status'] == 1 || $permission[39]['permission_status'] == 1 || $permission[33]['permission_status'] == 1 || $permission[34]['permission_status'] == 1 || $permission[46]['permission_status'] == 1 || $permission[11]['permission_status'] == 1  || $permission[53]['permission_status'] == 1 || $permission[57]['permission_status'] == 1 || $permission[35]['permission_status'] == 1 || $permission[37]['permission_status'] == 1 || $permission[61]['permission_status'] == 1  || $permission[60]['permission_status'] == 1 || $permission[62]['permission_status'] == 1 ||  $permission[64]['permission_status'] || $permission[69]['permission_status'] == 1 ) && ($permission[16]['module_accessibility'] == 1 || $permission[77]['module_accessibility'] == 1 || $permission[17]['module_accessibility'] == 1  || $permission[42]['module_accessibility'] == 1 || $permission[18]['module_accessibility'] == 1 || $permission[6]['module_accessibility'] == 1 || $permission[38]['module_accessibility'] == 1 || $permission[8]['module_accessibility'] == 1 || $permission[39]['module_accessibility'] == 1 || $permission[33]['module_accessibility'] == 1 || $permission[34]['module_accessibility'] == 1 || $permission[46]['module_accessibility'] == 1 || $permission[11]['module_accessibility'] == 1  || $permission[53]['module_accessibility'] == 1 || $permission[57]['module_accessibility'] == 1 || $permission[35]['module_accessibility'] == 1 || $permission[37]['module_accessibility'] == 1 || $permission[61]['module_accessibility'] == 1  || $permission[60]['module_accessibility'] == 1 || $permission[62]['module_accessibility'] == 1 ||  $permission[64]['module_accessibility'] || $permission[69]['module_accessibility'] == 1))
+                        @if(!empty($permission) && ($permission_map['/gadgets-inventory']['permission_status'] == 1 || $permission_map['/funds']['permission_status'] == 1 || $permission_map['/gadgets-allotment']['permission_status'] == 1  || $permission_map['/letters']['permission_status'] == 1 || $permission_map['/meetings']['permission_status'] == 1 || $permission_map['/my-meetings']['permission_status'] == 1 || $permission_map['/resignations']['permission_status'] == 1 || $permission_map['/employee-resignation']['permission_status'] == 1 || $permission_map['/alerts']['permission_status'] == 1 || $permission_map['/designations']['permission_status'] == 1 || $permission_map['/vehicles']['permission_status'] == 1 || $permission_map['/all-tickets']['permission_status'] == 1 || $permission_map['/my-tickets']['permission_status'] == 1  || $permission_map['/linked-in-post']['permission_status'] == 1 || $permission_map['/organogram']['permission_status'] == 1 || $permission_map['/login-history']['permission_status'] == 1 || $permission_map['/system-error-logs']['permission_status'] == 1 || $permission_map['/letter-template']['permission_status'] == 1  || $permission_map['/employee-letter']['permission_status'] == 1 || $permission_map['/machine-attendance-logs']['permission_status'] == 1 ||  $permission_map['/polling']['permission_status'] || $permission_map['/employment-status']['permission_status'] == 1 ) && ($permission_map['/gadgets-inventory']['module_accessibility'] == 1 || $permission_map['/funds']['module_accessibility'] == 1 || $permission_map['/gadgets-allotment']['module_accessibility'] == 1  || $permission_map['/letters']['module_accessibility'] == 1 || $permission_map['/meetings']['module_accessibility'] == 1 || $permission_map['/my-meetings']['module_accessibility'] == 1 || $permission_map['/resignations']['module_accessibility'] == 1 || $permission_map['/employee-resignation']['module_accessibility'] == 1 || $permission_map['/alerts']['module_accessibility'] == 1 || $permission_map['/designations']['module_accessibility'] == 1 || $permission_map['/vehicles']['module_accessibility'] == 1 || $permission_map['/all-tickets']['module_accessibility'] == 1 || $permission_map['/my-tickets']['module_accessibility'] == 1  || $permission_map['/linked-in-post']['module_accessibility'] == 1 || $permission_map['/organogram']['module_accessibility'] == 1 || $permission_map['/login-history']['module_accessibility'] == 1 || $permission_map['/system-error-logs']['module_accessibility'] == 1 || $permission_map['/letter-template']['module_accessibility'] == 1  || $permission_map['/employee-letter']['module_accessibility'] == 1 || $permission_map['/machine-attendance-logs']['module_accessibility'] == 1 ||  $permission_map['/polling']['module_accessibility'] || $permission_map['/employment-status']['module_accessibility'] == 1))
                             
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'gadgets-inventory' || $title == 'gadgets-allotment' || $title == 'letters' || $title == 'all-meetings' || $title == 'my-meetings' || $title == 'all-resignation' || $title == 'resignation' || $title == 'Alerts' || $title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-vehicles' || $title == 'help-desk' || $title == 'my-help-desk' || $title == 'link-post' || $title == 'organogram' || $title == 'system-errors' || $title == 'login-history' || $title == 'letter-templates' || $title == 'employee-letters' || $title == 'machine-logs' || $title == 'polling' || $title == 'employment-status' || $title == 'manage-funds') show @endif">
 
@@ -1089,7 +1047,7 @@
                                 </span>
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
-                                    @if(!empty($permission)  && $permission[69]['module_accessibility'] == 1 && $permission[69]['permission_status'] == 1)
+                                    @if(!empty($permission)  && $permission_map['/employment-status']['module_accessibility'] == 1 && $permission_map['/employment-status']['permission_status'] == 1)
                                         <div class="menu-item search-item">
 
                                             <a class="menu-link nav-link  @if($title == 'employment-status') active @endif" href="{{ url('/employment-status') }}">
@@ -1102,7 +1060,7 @@
 
                                     @endif
 
-                                    {{-- @if(!empty($permission)  && $permission[81]['module_accessibility'] == 1 && $permission[81]['permission_status'] == 1) --}}
+                                    {{-- @if(!empty($permission)  && $permission_map['/attendance-adjustment']['module_accessibility'] == 1 && $permission_map['/attendance-adjustment']['permission_status'] == 1) --}}
                                         {{-- <div class="menu-item search-item">
 
                                             <a class="menu-link nav-link  @if($title == 'manage-salary') active @endif" href="{{ url('/employee-salary') }}">
@@ -1115,7 +1073,7 @@
 
                                     {{-- @endif --}}
 
-                                    @if(!empty($permission)  && $permission[77]['module_accessibility'] == 1 && $permission[77]['permission_status'] == 1)
+                                    @if(!empty($permission)  && $permission_map['/funds']['module_accessibility'] == 1 && $permission_map['/funds']['permission_status'] == 1)
                                         <div class="menu-item search-item">
 
                                             <a class="menu-link nav-link  @if($title == 'manage-funds') active @endif" href="{{ url('/funds') }}">
@@ -1128,7 +1086,7 @@
 
                                     @endif
                                 
-                                    @if(!empty($permission)  && $permission[16]['module_accessibility'] == 1 && $permission[16]['permission_status'] == 1)
+                                    @if(!empty($permission)  && $permission_map['/gadgets-inventory']['module_accessibility'] == 1 && $permission_map['/gadgets-inventory']['permission_status'] == 1)
                                         <div class="menu-item search-item">
 
                                             <a class="menu-link nav-link  @if($title == 'gadgets-inventory') active @endif" href="{{ url('/gadgets-inventory') }}">
@@ -1141,7 +1099,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[17]['module_accessibility'] == 1 && $permission[17]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/gadgets-allotment']['module_accessibility'] == 1 && $permission_map['/gadgets-allotment']['permission_status'] == 1)
                                         <div class="menu-item search-item">
 
                                             <a class="menu-link nav-link  @if($title == 'gadgets-allotment') active @endif" href="{{ url('/gadgets-allotment') }}">
@@ -1153,7 +1111,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[42]['module_accessibility'] == 1 && $permission[42]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/letters']['module_accessibility'] == 1 && $permission_map['/letters']['permission_status'] == 1)
                                 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link  @if($title == 'letters') active @endif" href="{{ url('/letters') }}">
@@ -1165,7 +1123,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[61]['module_accessibility'] == 1 && $permission[61]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/letter-template']['module_accessibility'] == 1 && $permission_map['/letter-template']['permission_status'] == 1)
                                 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link  @if($title == 'letter-templates') active @endif" href="{{ url('/letter-template') }}">
@@ -1177,7 +1135,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[60]['module_accessibility'] == 1 && $permission[60]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-letter']['module_accessibility'] == 1 && $permission_map['/employee-letter']['permission_status'] == 1)
                                 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link  @if($title == 'employee-letters') active @endif" href="{{ url('/employee-letter') }}">
@@ -1189,7 +1147,7 @@
                                         </div>
                                     @endif
                                     
-                                    @if(!empty($permission) && $permission[18]['module_accessibility'] == 1 && $permission[18]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/meetings']['module_accessibility'] == 1 && $permission_map['/meetings']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'all-meetings') active @endif" href="{{ url('/meetings') }}">
@@ -1201,7 +1159,7 @@
                                         </div>
 
                                     @endif
-                                    @if(!empty($permission) && $permission[6]['module_accessibility'] == 1 && $permission[6]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-meetings']['module_accessibility'] == 1 && $permission_map['/my-meetings']['permission_status'] == 1)
 
                                         <div class="menu-item search-item"> 
                                             <a class="menu-link nav-link @if($title == 'my-meetings') active @endif" href="{{ url('/my-meetings') }}">
@@ -1220,14 +1178,14 @@
                                         </div>
 
                                     @endif
-                                    @if(!empty($permission) && $permission[38]['module_accessibility'] == 1 && $permission[38]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/resignations']['module_accessibility'] == 1 && $permission_map['/resignations']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'all-resignation') active @endif" href="{{url('resignations')}}">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/All Resignation.png') }}" />
                                                 </span>
-                                                @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                                @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                 <span class="menu-title">All Resignations</span>                                         
                                                 @else
                                                     <span class="menu-title">Team Resignations</span>
@@ -1239,7 +1197,7 @@
                                     @endif
 
 
-                                    @if(!empty($permission) && $permission[8]['module_accessibility'] == 1 && $permission[8]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/employee-resignation']['module_accessibility'] == 1 && $permission_map['/employee-resignation']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'resignation') active @endif" href="{{url('employee-resignation')}}">
@@ -1251,7 +1209,7 @@
                                         </div>
 
                                     @endif
-                                    @if(!empty($permission) && $permission[39]['module_accessibility'] == 1 && $permission[39]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/alerts']['module_accessibility'] == 1 && $permission_map['/alerts']['permission_status'] == 1)
                                 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'Alerts') active @endif" href="{{url('alerts')}}">
@@ -1263,7 +1221,7 @@
                                         </div>
                                     @endif
                                     
-                                    @if(!empty($permission) && $permission[34]['module_accessibility'] == 1 && $permission[34]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/vehicles']['module_accessibility'] == 1 && $permission_map['/vehicles']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'manage-vehicles') active @endif" href="{{url('vehicles')}}">
@@ -1276,7 +1234,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[35]['module_accessibility'] == 1 && $permission[35]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/login-history']['module_accessibility'] == 1 && $permission_map['/login-history']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link @if($title == 'login-history' || $title == 'login-activity') active @endif" href="{{url('login-history')}}">
@@ -1289,7 +1247,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[37]['module_accessibility'] == 1 && $permission[37]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/system-error-logs']['module_accessibility'] == 1 && $permission_map['/system-error-logs']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link @if($title == 'system-errors') active @endif" href="{{url('system-error-logs')}}">
@@ -1302,7 +1260,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[62]['module_accessibility'] == 1 && $permission[62]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/machine-attendance-logs']['module_accessibility'] == 1 && $permission_map['/machine-attendance-logs']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link @if($title == 'machine-logs') active @endif" href="{{url('machine-attendance-logs')}}">
@@ -1315,7 +1273,7 @@
 
                                     @endif
 
-                                    @if(!empty($permission) && $permission[46]['module_accessibility'] == 1 && $permission[46]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/all-tickets']['module_accessibility'] == 1 && $permission_map['/all-tickets']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'help-desk') active @endif" href="{{url('/all-tickets')}}">
                                                 <span class="menu-icon">
@@ -1326,7 +1284,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[11]['module_accessibility'] == 1 && $permission[11]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/my-tickets']['module_accessibility'] == 1 && $permission_map['/my-tickets']['permission_status'] == 1)
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'my-help-desk') active @endif" href="{{url('my-tickets')}}">
                                                 <span class="menu-icon">
@@ -1337,7 +1295,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[53]['module_accessibility'] == 1 && $permission[53]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/linked-in-post']['module_accessibility'] == 1 && $permission_map['/linked-in-post']['permission_status'] == 1)
                                     
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'link-post') active @endif"  href="{{url('/linked-in-post')}}" >
@@ -1349,7 +1307,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[57]['module_accessibility'] == 1 && $permission[57]['permission_status'] == 1 )
+                                    @if(!empty($permission) && $permission_map['/organogram']['module_accessibility'] == 1 && $permission_map['/organogram']['permission_status'] == 1 )
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'organogram') active @endif"  href="{{url('/organogram')}}">
                                                 <span class="menu-icon">
@@ -1360,7 +1318,7 @@
                                         </div>
                                     @endif
 
-                                    @if(!empty($permission) && $permission[64]['module_accessibility'] == 1 && $permission[64]['permission_status'] == 1 )
+                                    @if(!empty($permission) && $permission_map['/polling']['module_accessibility'] == 1 && $permission_map['/polling']['permission_status'] == 1 )
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'polling') active @endif" href="{{url('/polling')}}">
@@ -1376,7 +1334,7 @@
                             </div>
 
                         @endif
-                        @if(!empty($permission) && ($permission[71]['permission_status'] == 1) && ($permission[71]['module_accessibility'] == 1 ))
+                        @if(!empty($permission) && ($permission_map['/reports']['permission_status'] == 1) && ($permission_map['/reports']['module_accessibility'] == 1 ))
                     
                             <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion  main-menu-employee @if($title == 'employee-report') show @endif">
 
@@ -1389,7 +1347,7 @@
                                 </span>
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
-                                    @if(!empty($permission) && $permission[71]['module_accessibility'] == 1 && $permission[71]['permission_status'] == 1)
+                                    @if(!empty($permission) && $permission_map['/reports']['module_accessibility'] == 1 && $permission_map['/reports']['permission_status'] == 1)
 
                                         <div class="menu-item search-item">
                                             <a class="menu-link nav-link @if($title == 'employee-report') active @endif" href="{{ url('/reports/employee-report') }}">
@@ -1417,7 +1375,7 @@
                             </div>
                         @endif
                        
-                    @endif
+                    
 
                     @if($login_user[0]['employee_code'] == '1000000' || $login_user[0]['employee_code'] == '1011281' || $login_user[0]['employee_code'] == '1000114' || $login_user[0]['employee_code'] == '1006346')
                     <div class="menu-item search-item">
@@ -1459,7 +1417,7 @@
 
                         <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                            @if(!empty($permission) && $permission[76]['module_accessibility'] == 1 && $permission[76]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/companies']['module_accessibility'] == 1 && $permission_map['/companies']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link nav-link @if($title == 'manage-companies') active @endif" href="{{ url('/companies') }}">
@@ -1472,7 +1430,7 @@
 
                             @endif
 
-                            @if(!empty($permission) && $permission[50]['module_accessibility'] == 1 && $permission[50]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/locations']['module_accessibility'] == 1 && $permission_map['/locations']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link @if($title == 'manage-locations') active @endif" href="{{ url('/locations') }}">
@@ -1488,7 +1446,7 @@
 
 
 
-                            @if(!empty($permission) && $permission[32]['module_accessibility'] == 1 && $permission[32]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/departments']['module_accessibility'] == 1 && $permission_map['/departments']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link nav-link @if($title == 'manage-departments') active @endif" href="{{ url('/departments') }}">
@@ -1502,7 +1460,7 @@
                             @endif
 
 
-                            @if(!empty($permission) && $permission[33]['module_accessibility'] == 1 && $permission[33]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/designations']['module_accessibility'] == 1 && $permission_map['/designations']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link nav-link @if($title == 'manage-designations') active @endif" href="{{ url('/designations') }}">
@@ -1515,7 +1473,7 @@
 
                             @endif
 
-                            @if(!empty($permission) && $permission[12]['module_accessibility'] == 1 && $permission[12]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/employees']['module_accessibility'] == 1 && $permission_map['/employees']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link nav-link @if($title == 'employee') active @endif" href="{{ url('/employees') }}">
@@ -1549,7 +1507,7 @@
 
                         <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                            @if(!empty($permission) && $permission[67]['module_accessibility'] == 1 && $permission[67]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/monthly-attendance']['module_accessibility'] == 1 && $permission_map['/monthly-attendance']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link @if($title == 'monthly-attendance') active @endif" href="{{ url('/monthly-attendance') }}">
@@ -1563,7 +1521,7 @@
 
                             @endif
 
-                            @if(!empty($permission) && $permission[19]['module_accessibility'] == 1 && $permission[19]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/attendance']['module_accessibility'] == 1 && $permission_map['/attendance']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link @if($title == 'manage-attendance') active @endif" href="{{ url('/attendance') }}">
@@ -1577,7 +1535,7 @@
 
                             @endif
 
-                            @if(!empty($permission) && $permission[27]['module_accessibility'] == 1 && $permission[27]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/payroll']['module_accessibility'] == 1 && $permission_map['/payroll']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link @if($title == 'payroll') active @endif" href="{{ url('/payroll') }}">
@@ -1593,7 +1551,7 @@
 
 
 
-                            @if(!empty($permission) && $permission[30]['module_accessibility'] == 1 && $permission[30]['permission_status'] == 1)
+                            @if(!empty($permission) && $permission_map['/loans']['module_accessibility'] == 1 && $permission_map['/loans']['permission_status'] == 1)
 
                                 <div class="menu-item search-item">
                                     <a class="menu-link nav-link @if($title == 'manage-loan') active @endif" href="{{ url('/loans') }}">

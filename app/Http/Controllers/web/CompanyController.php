@@ -76,7 +76,7 @@ class CompanyController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Add new Company', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -141,7 +141,7 @@ class CompanyController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Update company", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -195,7 +195,7 @@ class CompanyController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Delete company", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

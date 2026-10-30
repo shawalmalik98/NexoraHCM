@@ -28,7 +28,7 @@
 
 @if(!empty($emailData))
     <p>Greetings,<br><br>
-    <p>Some of our newly joined employee(s) accounts are created in Nexora HCM from SAP – Nexora HCM integration. Please verify and add the appropriate information for their attendance marking purpose.</p>
+    <p>Some of our newly joined employee(s) accounts have been created in Nexora HCM. Please verify and add the appropriate information for their attendance marking purpose.</p>
     <p>Thanks!</p>
     
     {{-- <p>Portal Link : {{ url('/employees/editemployee/' . $employee_registration_id) }}</p>

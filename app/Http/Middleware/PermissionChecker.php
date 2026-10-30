@@ -4,12 +4,13 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\SystemModule;
+use App\Helpers\CustomHelper;
 
 class PermissionChecker
 {
     /**
-     * Handle an incoming request.
+     * Only lets the logged in employee open a module (first url segment) granted to them,
+     * directly or through one of their roles.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
@@ -18,18 +19,9 @@ class PermissionChecker
     public function handle(Request $request, Closure $next)
     {
         if(!empty(session('user_session'))){
-            $url = '/';
-          
-            $first_URI = $request->segment(1);
-            if($first_URI){
-                $url .= $first_URI;
-             
-            }
-            
-            $route = $url;
+            $route = '/' . ($request->segment(1) ?? '');
 
-            $get_permission_detail = SystemModule::join('tbl_employee_permission','tbl_system_modules.module_url','=','tbl_employee_permission.module_url')->where('employee_id', session('user_session'))->where('tbl_employee_permission.module_url', $route)->get(['permission_status','module_accessibility'])->toArray();
-            if(empty($get_permission_detail) || $get_permission_detail[0]['permission_status'] === '0' || $get_permission_detail[0]['permission_status'] === 0 || $get_permission_detail[0]['module_accessibility'] === '0' || $get_permission_detail[0]['module_accessibility'] === 0){
+            if(!CustomHelper::can_access($route)){
                 return response()->view('errors.403', [], 403);
             }
         }

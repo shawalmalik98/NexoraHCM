@@ -169,20 +169,9 @@
                                             <select class="form-select " data-kt-select2="true" data-placeholder="Select business unit" name="business_unit">
                                                 <option value="">Select Business Unit</option>
                                                 <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
-                                                <option value="Candyland" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
-                                                <option value="Bisconni" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
-                                                <option value="Snackcity" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
-                                                <option value="Hudson Pharma" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
-                                                <option value="Astro" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
-                                                <option value="Act Group" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
-                                                <option value="Ismail Nutrition" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>   
-                                                <option value="Flour" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Flour') selected @endif>Flour</option>     
-                                                <option value="Super Cereal" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Super Cereal') selected @endif>Super Cereal</option>                              
-                                                <option value="PET Resin" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'PET Resin') selected @endif>PET Resin</option>                              
-                                                <option value="Ismail Global" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Ismail Global') selected @endif>Ismail Global</option>   
-                                                <option value="Ismail Resin" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Ismail Resin') selected @endif>Ismail Resin</option>  
-                                                <option value="Nexora HCM" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == 'Nexora HCM') selected @endif>Nexora HCM</option>                       
-                      
+                                                @foreach (CustomHelper::business_units() as $business_unit)
+                                                    <option value="{{ $business_unit }}" @if (!empty(Request::get('business_unit')) && Request::get('business_unit') == $business_unit) selected @endif>{{ $business_unit }}</option>
+                                                @endforeach
                                             </select>
                                         </div> 
                                     </div>
@@ -225,9 +214,11 @@
                                     </div>
 
                                     <div class="d-flex justify-content-end">
+                                        
                                         @if(!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('employee_group')) || !empty(Request::get('is_active')))
                                             <a href="{{ url('employees') }}" class="btn btn-sm btn-danger btn-active-light-danger me-2 ">Reset Filter</a>
                                         @endif
+                                        
                                         <button type="reset" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Close</button>
                                         <button type="submit" class="btn btn-sm btn-primary">Apply</button>
                                     </div>
@@ -242,8 +233,8 @@
                      
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible">
-                            @if(!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('employee_group')) || !empty(Request::get('is_active')))
-                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            
+                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
                                 
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
@@ -311,28 +302,8 @@
                                     </tbody>
                                 
                                 </table>
-                            @else
-                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="employee_datatable_ajax" aria-describedby="tableEmployee_info">
-                                    
-                                    <thead>
-                                        <tr class="fw-bold text-muted bg-light">
-                                            <th class="ps-4">Employee ID</th>
-                                            <th>Name</th>
-                                            <th>Employee New Code</th>
-                                            <th>Email</th>
-                                            <th>Depart &amp; Desig</th>
-                                            <th>Group</th>
-                                            <th>Business Unit</th>
-                                            <th>Manager Rights</th>
-                                            <th class="text-center">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="all_employee_records">
-                                    
-                                    </tbody>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                                 
-                                </table>
-                            @endif    
                         </div>
                     
                     </div>
@@ -586,124 +557,6 @@
 @push('js-link')
 
 <script src="{{url('assets/js/employees/manage-employee.js')}}"></script>
-<script>
-
-    var location_main_url =  "{{ url('/employees') }}";
-   
-    if (window.location.href == location_main_url) {
-
-       $('#all_employee_records').html(`
-               <td class="text-center"></td>
-               <td class="text-center"></td> 
-               <td class="text-center"></td>
-               <td class="text-center"></td> 
-               <td class="text-center"></td> 
-               <td class="preloader text-center">
-                   <div style="display: flex; flex-direction: column; align-items: center;">
-                       <div class="spinner-border text-primary" role="status"></div>
-                       <div class="text-muted fs-6 fw-semibold mt-3">Loading...</div>
-                   </div>
-               </td>
-           `);
-
-        $.ajax({
-            url: "{{ url('/get-all-employees') }}",
-            type: 'GET',
-            success: function(response) {
-                // console.log(response);
-                if (response.status == true) {
-                    var emp_record = '';
-                    var employees = response.data; 
-                  
-                    $.each(employees, function (key, employee) {
-                        emp_record += `
-                            <tr>
-                                <td class="ps-4">${employee.employee_code}</td>
-                                <td>${employee.employee_name}</td>
-                                <td>${employee.employee_new_code ?? '-'}</td>
-                                <td>${employee.employee_personal_email}</td>
-                                <td>
-                                    <p class="text-dark fw-bold mb-1 fs-6">${employee.department_name}</p>
-                                    <p class="text-muted fw-semibold text-muted fs-7">${employee.designation_name}</p>
-                                </td>
-
-                                <td> ${employee.group_name ?? '-'}</td>
-                                <td> ${employee.business_unit ?? '-'}</td>
-                                <td>
-                                    ${employee.employee_is_manager !== '' && employee.employee_is_manager == 1 ?
-                                        `<span class="badge badge-light-success font-weight-bold">Yes, Given</span>` :
-                                        `<span class="badge badge-light-danger font-weight-bold">Not Given</span>`}
-                                </td>
-                                <td class="text-center">
-                                    <a href="/employees/editemployee/${employee.employee_id}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Edit Employee Details">
-                                        <span class="svg-icon svg-icon-3">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
-                                                <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
-                                            </svg>
-                                        </span>
-                                    </a>
-
-                                    <a href="/business-card/${employee.employee_id}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn fas fa-id-card" data-bs-toggle="tooltip" title="Employee Business Cards">
-                                        <span class="svg-icon svg-icon-3">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path opacity="0.3" d="M21.4 8.35303L19.241 10.511L13.485 4.755L15.643 2.59595C16.0248 2.21423 16.5426 1.99988 17.0825 1.99988C17.6224 1.99988 18.1402 2.21423 18.522 2.59595L21.4 5.474C21.7817 5.85581 21.9962 6.37355 21.9962 6.91345C21.9962 7.45335 21.7817 7.97122 21.4 8.35303ZM3.68699 21.932L9.88699 19.865L4.13099 14.109L2.06399 20.309C1.98815 20.5354 1.97703 20.7787 2.03189 21.0111C2.08674 21.2436 2.2054 21.4561 2.37449 21.6248C2.54359 21.7934 2.75641 21.9115 2.989 21.9658C3.22158 22.0201 3.4647 22.0084 3.69099 21.932H3.68699Z" fill="currentColor"></path>
-                                                <path d="M5.574 21.3L3.692 21.928C3.46591 22.0032 3.22334 22.0141 2.99144 21.9594C2.75954 21.9046 2.54744 21.7864 2.3789 21.6179C2.21036 21.4495 2.09202 21.2375 2.03711 21.0056C1.9822 20.7737 1.99289 20.5312 2.06799 20.3051L2.696 18.422L5.574 21.3ZM4.13499 14.105L9.891 19.861L19.245 10.507L13.489 4.75098L4.13499 14.105Z" fill="currentColor"></path>
-                                            </svg>
-                                        </span>
-                                    </a>
-                                </td>
-                            </tr>`;
-                    });
-                    $('#all_employee_records').html(emp_record);
-
-                    dataTable = $('#employee_datatable_ajax').DataTable({
-                        order: false,
-                        search: { regex: true },
-                        aLengthMenu: [
-                            [10, 25, 50, 100, -1],
-                            [10, 25, 50, 100, "All"]
-                        ],
-                        iDisplayLength: 100
-                    
-                    });
-                
-                } else {
-                    
-                    console.error('Failed to retrieve employees:', response.message);
-                }
-            },
-            error: function(jqXHR, textStatus) {
-                var errorStatus = jqXHR.status;
-                if (errorStatus == 0) {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Employee records failed please try again',
-                        timer: 4000,
-                    });
-                    setTimeout(() => {
-                        location.reload();
-                    }, 4000);
-                } else {
-                    if (errorStatus == 419) {
-                        location.reload();
-                    } else {
-                        Toast.fire({
-                            icon: 'warning',
-                            title: 'Try Again. Error Code ' + errorStatus,
-                            timer: 3000,
-                        })
-                    }
-                }
-            }
-        });
-    }
-    
-
-
-
-
-</script>
     
 @endpush
 

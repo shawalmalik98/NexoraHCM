@@ -139,12 +139,10 @@ table.dataTable
                                             
                                             <div>
                                                 <select class="form-select " data-kt-select2="true"  name="emp_name"
-                                                 id="company_emp_name">
+                                                 id="company_emp_name" data-employee-select data-scope="active">
                                                     @if(!empty($all_employees))
                                                     <option value="">All Employees</option>
-                                                        @foreach($all_employees as $data)
-                                                            <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                        @endforeach
+                                                        @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                     @endif
                                                 </select>
                                             </div>
@@ -226,7 +224,7 @@ table.dataTable
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive">
                         
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="tableEmployeeOverTime" aria-describedby="tableEmployee_info">
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="tableEmployeeOverTime" data-server-paginated="true" aria-describedby="tableEmployee_info">
                                                                                                             
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -274,6 +272,7 @@ table.dataTable
 								
                             
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                     </div>  
                 </div>
@@ -358,6 +357,6 @@ table.dataTable
     var download_button =  '{{ $download_overtime}}';
 </script>
 
-<script src="{{url('assets/js/overtime-management/overtime-sheet.js')}}"></script>
+<script src="{{url('assets/js/overtime-management/overtime-sheet.js')}}?v=2"></script>
 
 @endpush

@@ -1,6 +1,6 @@
 @extends('layout.main')
 
-@push('title') {{ $title ?? 'Source Code' }} @endpush
+@push('title') {{ $title ?? 'Nexora HCM' }} @endpush
 
 @section('main-section')
 
@@ -795,16 +795,9 @@
                                                                 <input type="text" class="d-none form-control " id="allotment_employee_id_text" value="" readonly>
                                                                 <div id="allotment_employee_container">
                                                                     <select class="form-select" name="allotment_employee_id" id="allotment_employee_id_show"
-                                                                            required="required"  data-control="select2" data-hide-search="false">
+                                                                            required="required"  data-control="select2" data-hide-search="false" data-employee-select data-scope="active">
                                                                         <option value="">Select Employee</option>
-                                                                        @if (!empty($all_employees))
-                                                                            @foreach ($all_employees as $all_employee)
-                                                                                <option value="{{ $all_employee['employee_id'] }}"
-                                                                                    @if ($all_employee['employee_code'] == '' || $all_employee['employee_code'] == 'N/A') disabled @endif>
-                                                                                    {{ $all_employee['employee_code'] . ' - ' . $all_employee['employee_name'] }}
-                                                                                </option>
-                                                                            @endforeach
-                                                                        @endif
+                                                                        @include('include.employee-selected-options', ['selected' => null])
                                                                     </select>
                                                                 </div>
                                                             </div>

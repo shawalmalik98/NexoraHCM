@@ -106,7 +106,7 @@
 
                 <div class="card-body py-3">
 
-                    <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                    <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
 
                         <thead>
                             <tr class="fw-bold text-muted bg-light">
@@ -160,6 +160,7 @@
                         </tbody>
 
                     </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
 
                 </div>
 

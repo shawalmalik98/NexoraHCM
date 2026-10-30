@@ -20,12 +20,12 @@ class EmailConfiguration extends Seeder
         if(empty($email_config)){
             DB::table('tbl_email_configuration')->insert([
                 'email_config_mailer' => "smtp",
-                'email_config_host' => "smtp.office365.com",
-                'email_config_email' => "goms@ismailglobal.com",
+                'email_config_host' => "",
+                'email_config_email' => "",
                 'email_config_pass' => env('SEED_EMAIL_CONFIG_PASSWORD', ''),
                 'email_config_port' => "587",
                 'email_config_encryption'=>"tls",
-                'email_config_from_address'=>"goms@ismailglobal.com",
+                'email_config_from_address'=>"",
                 'email_config_from_name'=>"Nexora HCM",
                 'email_config_created_at'=>date('d-m-Y H:i:s'),
             ]);

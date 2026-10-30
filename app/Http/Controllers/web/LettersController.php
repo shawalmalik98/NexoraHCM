@@ -40,11 +40,11 @@ class LettersController extends Controller
             if(!empty($request->employee_location) || !empty($request->emp_status) || !empty($request->emp_name)){
                 $limit_query = '';
                 if(!empty($request->employee_location)){
-                    $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
-                    $where_clause_to   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                    $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).'';
+                    $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
                 }
                 if(!empty($request->emp_name)){
-                    $where_clause .= ' AND tbl_letters.letter_employee_id = "'.$request->emp_name.'"';
+                    $where_clause .= ' AND tbl_letters.letter_employee_id = '.\DB::getPdo()->quote((string) $request->emp_name).'';
                 }
 
             }
@@ -155,7 +155,7 @@ class LettersController extends Controller
             }   
         }catch(\Exception $e){
             $this->create_error_log("Add Letter", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -241,7 +241,7 @@ class LettersController extends Controller
             }   
         }catch(\Exception $e){
             $this->create_error_log("Update Letter", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -298,7 +298,7 @@ class LettersController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -331,7 +331,7 @@ class LettersController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -455,7 +455,7 @@ class LettersController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log("Add Letter Template", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -547,7 +547,7 @@ class LettersController extends Controller
             
         }catch(\Exception $e){
             $this->create_error_log("Add Employee Letter Template", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -702,7 +702,7 @@ class LettersController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Add Letter", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

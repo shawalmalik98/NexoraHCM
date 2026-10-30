@@ -10,9 +10,9 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\File;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
-use App\Models\{Employees, MobileAccess, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation, Fund, EmployeeFund};
+use App\Models\{Employees, EmployeeQrCode, MobileAccess, Leave, Notification, EmployeeInformation, EmployeeDocument, Department, Designation, Bank, Permission, EmployeeSalary, OnBoardingEmployee, GadgetAllotment, Vehicle, InterviewCandidate, Interview, SystemModule, OfficeLocation, EmployeeDevice,ShiftManagement, HrmSetting,Holiday,Attendance,VehicleAllotment,EmployeeGadget,LeaveManagement,EmploymentStatus,EmploymentPeriod, EmailConfiguration, EmployeeGroup, AttendanceAccess, Company, EmployeeLocation, Fund, EmployeeFund};
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, AttendanceEmployee, MailTrait};
-use App\Helpers\ActivityTracker;
+use App\Helpers\{ActivityTracker, CustomHelper};
 use Illuminate\Support\Facades\DB;
 use OpenSpout\Common\Entity\Style\Style;
 use DateTime;
@@ -49,23 +49,11 @@ class EmployeeController extends Controller
             $login_user = $this->get_login_user_detail();
 
             $employee_detail = Employees::where('employee_id', $employee_id)->get()->toArray();
-                                                                                    
-            // Check if the employee exists and if emp_qr_svg is null
-            if (!empty($employee_detail) && $employee_detail[0]['emp_qr_svg'] === null) {
-                // Generate the QR code only if emp_qr_svg is null
-                $encrypted_employee = $employee_detail[0]['emp_unique_code'];
-                $qrCode = $this->generateQRCode($encrypted_employee);
 
-                // Retrieve the model to update the emp_qr_svg field
-                $employee = Employees::where('employee_id', $employee_id)->first();
-                $employee->emp_qr_svg = $qrCode; // Assuming $newQrCodeSvg contains the new SVG content for the QR code
-                $qr_url = 'https://ecard.ismailindustries.com.pk/view/' . $encrypted_employee; // Generate QR URL
-                $employee->emp_qr_value = $qr_url;
-                
-                // Save the updated employee record
-                $employee->save();                           
-            }                                                
-                        
+            if (!empty($employee_detail)) {
+                $employee_detail[0]['emp_qr_svg'] = $this->employee_qr_svg($employee_detail[0]['employee_id'], $employee_detail[0]['emp_unique_code']);
+            }
+
             $send_data = compact('title','login_user','employee_detail','employee_id');    
             return view('employee.business-cards', $send_data);
         }catch(\Exception $e){
@@ -83,28 +71,21 @@ class EmployeeController extends Controller
     
     public function generateAllQR()
     {
+        // generating every card is an HR / Admin job
+        if (!CustomHelper::has_role(session('user_session'), 'hr')) {
+            return response()->json(['status' => 'FALSE', 'msg' => 'You are not allowed to generate QR codes.'], 403);
+        }
+
         ini_set('max_execution_time', 0);
 
-        // Fetch all employees (or a specific set of employees) and loop through them
-        $employees = Employees::all(); // You can add any specific conditions here if needed
-
-        // Loop through each employee
-        foreach ($employees as $employee) {
-            // Check if emp_qr_svg is null
-            if ($employee->emp_qr_svg === null) {
-                // Generate the QR code only if emp_qr_svg is null
-                $encrypted_employee = $employee->emp_unique_code;
-                $qrCode = $this->generateQRCode($encrypted_employee);
-
-                // Update the emp_qr_svg and emp_qr_value fields
-                $employee->emp_qr_svg = $qrCode; // Assuming $qrCode is the generated SVG content for the QR code
-                $qr_url = env('ECARD_URL','https://ecard.ismailindustries.com.pk/view/') . $encrypted_employee; // Generate QR URL
-                $employee->emp_qr_value = $qr_url;
-
-                // Save the updated employee record
-                $employee->save();
-            }
-        }
+        // only employees without a QR code, a chunk at a time
+        Employees::whereNotIn('employee_id', EmployeeQrCode::select('employee_id'))
+            ->select(['employee_id', 'emp_unique_code'])
+            ->chunkById(500, function ($employees) {
+                foreach ($employees as $employee) {
+                    $this->employee_qr_svg($employee->employee_id, $employee->emp_unique_code);
+                }
+            }, 'employee_id');
 
         // Optionally return a response if needed
         return response()->json([
@@ -114,9 +95,20 @@ class EmployeeController extends Controller
 
     }
 
-    public function generateQRCode($employee_id) { 
+    // stored QR code of the employee's business card; generated and saved on first use
+    private function employee_qr_svg($employee_id, $emp_unique_code) {
+        $qr_svg = EmployeeQrCode::where('employee_id', $employee_id)->value('qr_svg');
+        if ($qr_svg === null && !empty($emp_unique_code)) {
+            $qr_svg = (string) $this->generateQRCode($emp_unique_code);
+            EmployeeQrCode::updateOrCreate(['employee_id' => $employee_id], ['qr_svg' => $qr_svg]);
+            Employees::where('employee_id', $employee_id)->update(['emp_qr_value' => CustomHelper::ecard_url($emp_unique_code)]);
+        }
+        return $qr_svg;
+    }
+
+    public function generateQRCode($employee_id) {
         // Define the URL you want to store in the QR code         
-        $url = "https://ecard.ismailindustries.com.pk/view/$employee_id";
+        $url = CustomHelper::ecard_url($employee_id);
         
         // Replace with the actual URL you want // Generate a QR code containing the URL 
         $qrCode = QrCode::size(300)->generate($url); 
@@ -150,37 +142,51 @@ class EmployeeController extends Controller
 
             if(!empty($request->input('business_unit')) && $request->input('business_unit') != 'All'){
 
-                $where_clause .= " and tbl_employees.business_unit= '".$request->input('business_unit')."'";
+                $where_clause .= " and tbl_employees.business_unit= ".\DB::getPdo()->quote((string) $request->input('business_unit'))."";
 
             }
 
             if(!empty($request->input('employee_department')) && $request->input('employee_department') != 'All'){
 
-                $where_clause .= " and tbl_employees.employee_department= '".$request->input('employee_department')."'";
+                $where_clause .= " and tbl_employees.employee_department= ".\DB::getPdo()->quote((string) $request->input('employee_department'))."";
 
             }
 
             if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'){
 
-                $where_clause .= " and tbl_employees.employee_group= '".$request->input('employee_group')."'";
+                $where_clause .= " and tbl_employees.employee_group= ".\DB::getPdo()->quote((string) $request->input('employee_group'))."";
 
             }
 
             // if(!empty($request->input('employee_status'))){
 
-            //     $where_clause .= " and employee_status= '".$request->input('employee_status')."'";
+            //     $where_clause .= " and employee_status= ".\DB::getPdo()->quote((string) $request->input('employee_status'))."";
 
             // }
 
-            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All' || !empty($request->is_active) || !empty($request->input('business_unit')) && $request->input('business_unit') != 'All' || !empty($request->input('employee_department')) && $request->input('employee_department') != 'All' ){
-                
-                $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+            // the list is always rendered on the server, page by page (filters and search included)
+            if(true){
+
+                $search = trim((string) $request->input('search'));
+                $pagination = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
                 ->whereRaw($where_clause)
+                ->when($search !== '', function($query) use($search){
+                    $query->where(function($query) use($search){
+                        $query->where('employee_name','like','%'.$search.'%')
+                            ->orWhere('employee_code','like','%'.$search.'%')
+                            ->orWhere('employee_new_code','like','%'.$search.'%')
+                            ->orWhere('employee_personal_email','like','%'.$search.'%')
+                            ->orWhere('department_name','like','%'.$search.'%')
+                            ->orWhere('designation_name','like','%'.$search.'%');
+                    });
+                })
                 ->orderBy('employee_code','ASC')
-                ->get(['employee_id','employee_code','employee_new_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit','group_name'])
-                ->toArray();
+                ->paginate(CustomHelper::per_page(), ['employee_id','employee_code','employee_new_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','business_unit','group_name'])
+                ->withQueryString();
+
+                $employees = $pagination->getCollection()->toArray();
 
                 $no_of_employees = HrmSetting::get(['no_of_employees'])->toArray();
 
@@ -192,7 +198,7 @@ class EmployeeController extends Controller
     
                 $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
     
-                $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status','employee_groups');
+                $send_data = compact('title','login_user','employees','no_of_employees','employee_active','employment_status','departments_status','employee_groups','pagination');
 
             }else{
 
@@ -785,7 +791,7 @@ class EmployeeController extends Controller
             DB::rollBack();
 
             $this->create_error_log('Add new employee', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -818,17 +824,30 @@ class EmployeeController extends Controller
             $where_clause = '1=1';
 
             if(!empty($request->employee_department)){
-                $where_clause .= ' AND employee_department = "'.$request->employee_department.'"';
+                $where_clause .= ' AND employee_department = '.\DB::getPdo()->quote((string) $request->employee_department).'';
             }
 
-            $employees = Employees::join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_employees.employee_department')
+            $search = trim((string) request()->input('search'));
+
+            $pagination = Employees::join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_employees.employee_department')
             ->join('tbl_designations', 'tbl_designations.designation_id', '=', 'tbl_employees.employee_designation')
             ->leftJoin('tbl_employees as emp_ra', 'emp_ra.employee_id', '=', 'tbl_employees.employee_senior_manager')
             ->leftJoin('tbl_employees as emp_ra2', 'emp_ra2.employee_id', '=', 'tbl_employees.employee_junior_manager')
             ->whereRaw($where_clause)->where('tbl_employees.employee_isactive', 1)
             ->where('tbl_employees.employee_isactive', 1)
-            ->get([
-                'tbl_employees.employee_id as employee_id',
+            
+            ->when($search !== '', function($query) use($search){
+                $query->where(function($query) use($search){
+                    $query->where('tbl_employees.employee_name','like','%'.$search.'%')
+                        ->orWhere('tbl_employees.employee_code','like','%'.$search.'%')
+                        ->orWhere('tbl_departments.department_name','like','%'.$search.'%')
+                        ->orWhere('tbl_designations.designation_name','like','%'.$search.'%');
+                });
+            })
+            ->orderBy('tbl_employees.employee_id')
+            ->paginate(CustomHelper::per_page(), [
+                // employees first, in id order: the optimizer otherwise sorts every employee to show one page
+                \DB::raw('STRAIGHT_JOIN tbl_employees.employee_id as employee_id'),
                 'tbl_employees.employee_code as employee_code',
                 'tbl_employees.employee_name as employee_name',
                 'emp_ra.employee_id as employee_ra_id',
@@ -840,16 +859,16 @@ class EmployeeController extends Controller
                 'tbl_departments.department_name as department_name',
                 'tbl_designations.designation_name as designation_name',
                 'tbl_employees.employee_is_manager as employee_is_manager'
-            ])
-            ->toArray();
+            ])->withQueryString();
 
-            $managers = Employees::where('employee_is_manager', 1)->where('employee_isactive', 1)->get(['employee_id','employee_code','employee_name'])->toArray();
+            $employees = $pagination->getCollection()->toArray();
 
-            $employee_ids = Employees::where('employee_isactive', 1)->pluck('employee_id')->toArray();
+            $managers = []; // the manager dropdowns search through /employee-search
+
 
             $departments = Department::get(['department_id','department_name'])->toArray();
 
-            $send_data = compact('title','login_user','employees','managers','departments');
+            $send_data = compact('title','login_user','employees','managers','departments','pagination');
 
             return view('employee.employee-managers', $send_data);
         }catch(\Exception $e){
@@ -891,7 +910,7 @@ class EmployeeController extends Controller
             $where_clause = '1=1';
 
             if(!empty($request->employee_department)){
-                $where_clause .= ' AND tbl_employees.employee_department = "'.$request->employee_department.'"';
+                $where_clause .= ' AND tbl_employees.employee_department = '.\DB::getPdo()->quote((string) $request->employee_department).'';
             }
 
             $employees = Employees::join('tbl_departments', 'tbl_departments.department_id', '=', 'tbl_employees.employee_department')
@@ -1169,7 +1188,7 @@ class EmployeeController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Edit Bulk Employees Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1979,7 +1998,7 @@ class EmployeeController extends Controller
             DB::rollBack();
             
             $this->create_error_log("Update Employee's Details", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2056,7 +2075,7 @@ class EmployeeController extends Controller
             DB::rollBack();
             
             $this->create_error_log("Update Employee Business Card", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2121,7 +2140,7 @@ class EmployeeController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Edit Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2440,7 +2459,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Store Employee Documents', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2528,7 +2547,7 @@ class EmployeeController extends Controller
             }  
         }catch(\Exception $e){
             $this->create_error_log('Update Employee Documents', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2627,7 +2646,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Store Employee personal Documents', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2694,7 +2713,7 @@ class EmployeeController extends Controller
 
             }catch(\Exception $e){
                 $this->create_error_log('Delete Employee Document', $e);
-                if(!env('APP_DEBUG')){
+                if(!config('app.debug')){
                     return response()->json([
                         'status' => 'FALSE',
                         'msg' => "Something went wrong. Please try again.",
@@ -2770,7 +2789,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Change Account Password', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -2805,10 +2824,10 @@ class EmployeeController extends Controller
 
         if(!empty($request->employee_location)){
 
-            $where_clause .= " AND employee_location = '".$request->employee_location."'";
+            $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request->employee_location)."";
         }
 
-        if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 34 || $login_user[0]['employee_department'] == 9){
+        if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
 
             $get_employees = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause)->get(['employee_id','employee_code','employee_name'])->toArray();
 
@@ -2951,7 +2970,7 @@ class EmployeeController extends Controller
         catch(\Exception $e){
 
             $this->create_error_log('Update Employee Salary', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3045,7 +3064,7 @@ class EmployeeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Edit OnBoard Employees', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3082,7 +3101,7 @@ class EmployeeController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Delete On Board Employee", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3223,7 +3242,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
              $this->create_error_log('On board employees modal at new employee creation', $e);
-             if(!env('APP_DEBUG')){
+             if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3278,7 +3297,7 @@ class EmployeeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Update Status Add New OnBoard Employees', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3317,7 +3336,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3350,7 +3369,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3460,7 +3479,7 @@ class EmployeeController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Employee Reporting Manager Updated', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3491,33 +3510,42 @@ class EmployeeController extends Controller
             $where_clause = '1=1';
 
             if(!empty($request->department_id) && $request->department_id != 'All'){
-                $where_clause .= ' AND employee_department = '.$request->department_id;
+                $where_clause .= ' AND employee_department = '.\DB::getPdo()->quote((string) $request->department_id);
             }
 
             if(!empty($request->business_unit) && $request->business_unit != 'All'){
-                $where_clause .= " AND business_unit = '".$request->business_unit."'";
+                $where_clause .= " AND business_unit = ".\DB::getPdo()->quote((string) $request->business_unit)."";
             }
 
             if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'){
 
-                $where_clause .= " and employee_group= '".$request->input('employee_group')."'";
+                $where_clause .= " and employee_group= ".\DB::getPdo()->quote((string) $request->input('employee_group'))."";
 
             }
 
-            if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'  || !empty($request->business_unit) && $request->business_unit != 'All' || !empty($request->department_id) && $request->department_id != 'All' || $request->download == "TRUE" ){
+            // the list is always rendered on the server, page by page
+            if(true){
 
-                $all_devices = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
+                $search = trim((string) $request->input('search'));
+                $pagination = EmployeeDevice::join('tbl_employees', 'tbl_employees_devices.device_employee_id', '=', 'tbl_employees.employee_id')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
                 ->where('device_status','!=','2')
                 ->whereRaw($where_clause)
-                ->get(['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name', 'group_name as Employee Group'])->toArray();
+                ->when($search !== '', function($query) use($search){
+                    $query->where(function($query) use($search){
+                        $query->where('employee_name','like','%'.$search.'%')->orWhere('employee_code','like','%'.$search.'%')->orWhere('device_name','like','%'.$search.'%');
+                    });
+                })
+                ->orderBy('device_id','desc')
+                ->paginate(CustomHelper::per_page(), ['device_id as Device ID','device_name as Device Name','department_name as Department Name','designation_name as Designation Name','device_token as Device Token','device_status as Device Status','device_created_at as Device Created At','device_updated_at as Deviced Updated At','employee_code as Employee Code','employee_name as Employee Name', 'group_name as Employee Group'])->withQueryString();
+                $all_devices = $pagination->getCollection()->toArray();
 
                 $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
 
                 $departments = Department::get(['department_id','department_name'])->toArray();
             
-                $send_data = compact('title','login_user','all_devices','departments','employee_groups');
+                $send_data = compact('title','login_user','all_devices','departments','employee_groups','pagination');
 
             }else{
 
@@ -3597,7 +3625,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Access Approve Employee Device Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3647,7 +3675,7 @@ class EmployeeController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Access Dis-Approve Employee Device Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3680,33 +3708,47 @@ class EmployeeController extends Controller
             $where_clause = '1=1';
 
             if(!empty($request->department_id) && $request->department_id != 'All'){
-                $where_clause .= ' AND employee_department = '.$request->department_id;
+                $where_clause .= ' AND employee_department = '.\DB::getPdo()->quote((string) $request->department_id);
             }
 
             if(!empty($request->business_unit) && $request->business_unit != 'All'){
-                $where_clause .= " AND business_unit = '".$request->business_unit."'";
+                $where_clause .= " AND business_unit = ".\DB::getPdo()->quote((string) $request->business_unit)."";
             }
 
             if(!empty($request->input('employee_group')) && $request->input('employee_group') != 'All'){
 
-                $where_clause .= " and employee_group= '".$request->input('employee_group')."'";
+                $where_clause .= " and employee_group= ".\DB::getPdo()->quote((string) $request->input('employee_group'))."";
 
             }
 
             $employee_groups = EmployeeGroup::get(['employee_group_id','group_name'])->toArray();
            
-            $all_mobile_access = MobileAccess::join('tbl_employees', 'tbl_mobile_access.mobile_employee_id', '=', 'tbl_employees.employee_id')
+            $search = trim((string) $request->input('search'));
+
+            $pagination = MobileAccess::join('tbl_employees', 'tbl_mobile_access.mobile_employee_id', '=', 'tbl_employees.employee_id')
             ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
             ->leftJoin('tbl_employee_groups','tbl_employees.employee_group','=','tbl_employee_groups.employee_group_id')
             ->where('employee_isactive',1)
             ->whereRaw($where_clause)
-            ->get(['employee_id','employee_code','employee_name', 'department_name', 'designation_name','mobile_access_id','mobile_employee_id','access_button_id','access_buttons'])->toArray();
+            ->when($search !== '', function($query) use($search){
+                $query->where(function($query) use($search){
+                    $query->where('employee_name','like','%'.$search.'%')
+                        ->orWhere('employee_code','like','%'.$search.'%')
+                        ->orWhere('department_name','like','%'.$search.'%')
+                        ->orWhere('designation_name','like','%'.$search.'%');
+                });
+            })
+            ->orderBy('mobile_access_id')
+            ->paginate(CustomHelper::per_page(), ['employee_id','employee_code','employee_name', 'department_name', 'designation_name','mobile_access_id','mobile_employee_id','access_button_id','access_buttons'])
+            ->withQueryString();
+
+            $all_mobile_access = $pagination->getCollection()->toArray();
 
             $all_employees = Employees::where('employee_isactive',1)->get(['employee_id','employee_name','employee_code'])->toArray();
 
             $departments = Department::get(['department_id','department_name'])->toArray();
         
-            $send_data = compact('title','login_user','all_mobile_access','departments','employee_groups','all_employees');
+            $send_data = compact('title','login_user','all_mobile_access','departments','employee_groups','all_employees','pagination');
 
            
             return view('employee.employee-mobile-access', $send_data);
@@ -3766,7 +3808,7 @@ class EmployeeController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Add mobile access button", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -3836,7 +3878,7 @@ class EmployeeController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Update mobile access button", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -4051,7 +4093,7 @@ class EmployeeController extends Controller
     //                         // $employee_personal_email =  $getData[2];
     //                         // $employee_nic =  $getData[3];
     //                         $employee_contact_no = '090078601' . $count_row;
-    //                         $employee_personal_email =  'test@ismailindustries.com' . $count_row;
+    //                         $employee_personal_email =  'test@example.com' . $count_row;
     //                         $employee_nic =  '42111-6352412-9' . $count_row;
     //                         // $employee_gender =  $getData[4];
     //                         $employee_gender =  'Male';
@@ -5837,8 +5879,7 @@ class EmployeeController extends Controller
     //                                                 '/companies',
     //                                                 '/funds',
     //                                                 '/employee-fund',
-    //                                                 '/employee-location',
-    //                                                 '/sap-attendance'
+    //                                                 '/employee-location'
     //                                             ];
 
     //                                             foreach($permissionRecords as $permissionRecord ){
@@ -6274,23 +6315,34 @@ class EmployeeController extends Controller
             $where_clause = '1=1' ;
 
             if(!empty($request->employee_location)){
-                $where_clause .= " AND location_id = '".$request->employee_location."'";
+                $where_clause .= " AND location_id = ".\DB::getPdo()->quote((string) $request->employee_location)."";
 
             }
            
-            if ($request->employee_location != null || $request->employee_location != '' || $request->download == 'TRUE') {
-                $employee_location_detail = Employees::where('employee_isactive', 1)
+            $columns = ['employee_code as Employee ID','employee_name as Employee Name', 'department_name as Department', 'designation_name as Designation', 'business_unit as Business unit', 'location_title as Location title', 'location_latitude as Location latitude', 'location_longitude as Location longitude'];
+            $search = trim((string) $request->input('search'));
+            $query = Employees::where('employee_isactive', 1)
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
                 ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->join('tbl_employees_location', 'tbl_employees.employee_id', '=', 'tbl_employees_location.emp_loc_employee_id')
                 ->join('tbl_office_locations', 'tbl_employees_location.emp_loc_loc_id', '=', 'tbl_office_locations.location_id')
                 ->whereRaw($where_clause)
-                ->get(['employee_code as Employee ID','employee_name as Employee Name', 'department_name as Department', 'designation_name as Designation', 'business_unit as Business unit', 'location_title as Location title', 'location_latitude as Location latitude', 'location_longitude as Location longitude'])->toArray();
-            
-                $send_data = compact('title','login_user','employee_location_detail','employee_locations');
+                ->when($search !== '', function($query) use($search){
+                    $query->where(function($query) use($search){
+                        $query->where('employee_name','like','%'.$search.'%')->orWhere('employee_code','like','%'.$search.'%')->orWhere('location_title','like','%'.$search.'%');
+                    });
+                })
+                ->orderBy('employee_code');
+
+            if($request->download == 'TRUE'){
+                // the download keeps the full list
+                $employee_location_detail = $query->get($columns)->toArray();
             }else{
-                $send_data = compact('title','login_user','employee_locations');
+                $pagination = $query->paginate(CustomHelper::per_page(), $columns)->withQueryString();
+                $employee_location_detail = $pagination->getCollection()->toArray();
             }
+
+            $send_data = compact('title','login_user','employee_location_detail','employee_locations') + ['pagination' => $pagination ?? null];
              
 
             if($request->download == 'TRUE'){
@@ -6334,19 +6386,37 @@ class EmployeeController extends Controller
             $where_clause = '1=1' ;
 
             if(!empty($request->emp_name)){
-                $where_clause .= ' AND employee_id = "'.$request->emp_name.'"';
+                $where_clause .= ' AND employee_id = '.(int) $request->emp_name;
             }
             if(!empty($request->employee_location)){
-                $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
+                $where_clause .= ' AND employee_location = '.(int) $request->employee_location;
 
             }
 
-            $employee_bank = Employees::where('employee_isactive','=',$status)
+            $employee_bank_query = Employees::where('employee_isactive','=',$status)
             ->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')
-            ->whereRaw($where_clause)
-            ->get(['employee_id','employee_code','employee_name','bankname','bankcode','accountno','accounttitle','ibannumber', 'employee_location'])->toArray();
+            ->whereRaw($where_clause);
+            $bank_columns = ['employee_id','employee_code','employee_name','bankname','bankcode','accountno','accounttitle','ibannumber', 'employee_location'];
 
-            $send_data = compact('title','login_user','employee_bank','employee_locations');
+            // on screen page by page; the PDF download lists everyone
+            $pagination = null;
+            if($request->input('download') == 'TRUE'){
+                $employee_bank = $employee_bank_query->get($bank_columns)->toArray();
+            }else{
+                $search = trim((string) $request->input('search'));
+                $pagination = $employee_bank_query
+                ->when($search !== '', function($query) use($search){
+                    $query->where(function($query) use($search){
+                        $query->where('employee_name','like','%'.$search.'%')->orWhere('employee_code','like','%'.$search.'%')
+                            ->orWhere('bankname','like','%'.$search.'%')->orWhere('accountno','like','%'.$search.'%');
+                    });
+                })
+                ->orderBy('employee_id')
+                ->paginate(CustomHelper::per_page(), $bank_columns)->withQueryString();
+                $employee_bank = $pagination->getCollection()->toArray();
+            }
+
+            $send_data = compact('title','login_user','employee_bank','employee_locations','pagination');
             
             if($request->input('download') == 'TRUE'){
                 $pdf = Pdf::loadView('employee.download-employee-bank-pdf', $send_data);
@@ -6401,10 +6471,10 @@ class EmployeeController extends Controller
             $where_clause = '1=1' ;
 
             if(!empty($request->emp_name)){
-                $where_clause .= ' AND employee_id = "'.$request->emp_name.'"';
+                $where_clause .= ' AND employee_id = '.\DB::getPdo()->quote((string) $request->emp_name).'';
             }
             if(!empty($request->employee_location)){
-                $where_clause .= ' AND employee_location = "'.$request->employee_location.'"';
+                $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).'';
 
             }
 
@@ -6504,7 +6574,7 @@ class EmployeeController extends Controller
         catch(\Exception $e){
 
             $this->create_error_log('Add Employment Status', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -6583,7 +6653,7 @@ class EmployeeController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Updated Employment Status', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -6651,7 +6721,7 @@ class EmployeeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Employment Status Deleted", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -6746,7 +6816,7 @@ class EmployeeController extends Controller
         catch(\Exception $e){
 
             $this->create_error_log('Add Employee Group', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -6825,7 +6895,7 @@ class EmployeeController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Updated Employee Group', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -6891,7 +6961,7 @@ class EmployeeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Employment Status Deleted", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -6961,7 +7031,7 @@ class EmployeeController extends Controller
                 'tbl_company.office_phone',                
                 'tbl_employees.employee_jobtitle',
                 'tbl_employees.emp_unique_code',
-                'tbl_employees.emp_qr_svg',
+                'tbl_employee_qr_codes.qr_svg as emp_qr_svg',
                 'tbl_employees.emp_qr_value',
                 'tbl_company.company_name',
                 'tbl_company.office_address',
@@ -6978,7 +7048,8 @@ class EmployeeController extends Controller
             )
             ->join('tbl_company', 'tbl_employees.employee_company', '=', 'tbl_company.company_id')
             ->join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')
-            ->where('tbl_employees.emp_unique_code', '=', $emp_unique_code) 
+            ->leftJoin('tbl_employee_qr_codes', 'tbl_employee_qr_codes.employee_id', '=', 'tbl_employees.employee_id')
+            ->where('tbl_employees.emp_unique_code', '=', $emp_unique_code)
             ->first(); 
         
         if ($employee_details) {

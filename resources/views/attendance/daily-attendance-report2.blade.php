@@ -84,7 +84,7 @@
                     <div class="card">
                         <div class="p-3">
                             <div class="text-gray-900 fw-bold fs-2" id="present">
-                                {{ collect($attendance)->where('att_check_overall_status', 'Present')->count(); }}
+                                {{ $status_counts['present'] ?? 0 }}
                             </div>
                             <div class="fw-semibold text-gray-400">On Time</div>
                         </div>
@@ -95,7 +95,7 @@
                     <div class="card">
                         <div class="p-3">
                             <div class="text-gray-900 fw-bold fs-2" id="lateComing">
-                                {{ collect($attendance)->whereIn('att_check_overall_status', ['Late Coming','Early out'])->count(); }}
+                                {{ $status_counts['late_early'] ?? 0 }}
                             </div>
                             <div class="fw-semibold text-gray-400">Late/Early</div>
                         </div>
@@ -106,7 +106,7 @@
                     <div class="card">
                         <div class="p-3">
                             <div class="text-gray-900 fw-bold fs-2" id="HalfDay">
-                                {{ collect($attendance)->where('att_check_overall_status', 'Half day')->count(); }}
+                                {{ $status_counts['half_day'] ?? 0 }}
                             </div>
                             <div class="fw-semibold text-gray-400">Half Day</div>
                         </div>
@@ -117,7 +117,7 @@
                     <div class="card">
                         <div class="p-3">
                             <div class="text-gray-900 fw-bold fs-2" id="absent">
-                                {{ collect($attendance)->where('att_check_overall_status', 'Absent')->count(); }}
+                                {{ $status_counts['absent'] ?? 0 }}
                             </div>
                             <div class="fw-semibold text-gray-400">Absent </div>
                         </div>
@@ -128,7 +128,7 @@
                     <div class="card">
                         <div class="p-3">
                             <div class="text-gray-900 fw-bold fs-2" id="offdays">
-                                {{ collect($attendance)->where('att_check_overall_status', 'Offdays')->count(); }}
+                                {{ $status_counts['off_days'] ?? 0 }}
                             </div>
                             <div class="fw-semibold text-gray-400">OffDay/Holiday</div>
                         </div>
@@ -207,14 +207,9 @@
                                                     <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
                                                     <option value="">Select Business Unit</option>
                                                     <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
-                                                    <option value="Candyland" @if (Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
-                                                    <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
-                                                    <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
-                                                    <option value="Hudson Pharma" @if (Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
-                                                    <option value="Astro" @if (Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
-                                                    <option value="Act Group" @if (Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
-                                                    <option value="Ismail Nutrition" @if (Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>
-                                                    <option value="Flour" @if (Request::get('business_unit') == 'Flour') selected @endif>Flour</option>
+                                                    @foreach (CustomHelper::business_units() as $business_unit)
+                                                        <option value="{{ $business_unit }}" @if (Request::get('business_unit') == $business_unit) selected @endif>{{ $business_unit }}</option>
+                                                    @endforeach
                                                 </select>
                                                 </div>
                                                 
@@ -282,7 +277,7 @@
                         
                         <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                             <div class="table-responsive popup-visible ">
-                                <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="tableDailyAttendance">
+                                <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="tableDailyAttendance" data-server-paginated="true">
                                                                     
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
@@ -294,7 +289,7 @@
                                             <th class="text-center">Check Out Time</th>
                                             <th class="text-center">Hours Worked</th>
                                             <th class="text-center">Status</th>
-                                            @if($login_user[0]['employee_department'] == '34')
+                                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                 <th class="text-center">Action</th>
                                             @endif
                                         </tr>
@@ -351,7 +346,7 @@
                                                             <p class="text-warning"><i class="fa-solid fa-umbrella-beach text-warning"></i> -- Off Day</p>
                                                         @endif
                                                     </td>
-                                                    @if($login_user[0]['employee_department'] == '34')
+                                                    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                                         <td class="text-center">
                                                             @if($attendances['att_check_in_status'] == '1' || $attendances['att_check_out_status'] == '1')
                                                                 <i class="fa-regular fa-circle-xmark delete_attendance_btn text-danger mx-2" data-value="LeadDisApprove" data-id="{{ $attendances['attendance_id'] }}" data-bs-toggle="tooltip" data-bs-placement="top" title="Delete Attendance" style="font-size: 20px;cursor: pointer;"></i>
@@ -369,6 +364,7 @@
                                     </tbody> 
 
                                 </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                             
                             </div>
                         
@@ -594,7 +590,7 @@
 
 @push('js-link')
 <script>
-var present_attendance = 0, absent_count_attendance = 0, late_coming_attendance = 0, early_out_attendance = 0, halfday_attendance = 0, total_offDays_holiday_attendance = 0;
+var present_attendance = {{ (int) ($status_counts['present'] ?? 0) }}, absent_count_attendance = {{ (int) ($status_counts['absent'] ?? 0) }}, late_coming_attendance = {{ (int) ($status_counts['late_early'] ?? 0) }}, early_out_attendance = 0, halfday_attendance = {{ (int) ($status_counts['half_day'] ?? 0) }}, total_offDays_holiday_attendance = {{ (int) ($status_counts['off_days'] ?? 0) }};
 </script>
-<script src="{{url('assets/js/attendance/daily-attendance-report.js?v=3')}}"></script>
+<script src="{{url('assets/js/attendance/daily-attendance-report.js?v=4')}}"></script>
 @endpush

@@ -1,11 +1,12 @@
+@php $payslipCompany = CustomHelper::hcm_default_settings(($download_button_show ?? true) == false ? 'pdf' : null); @endphp
 <!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
-    <title>Payslip || IIL</title>
+    <title>Payslip || {{ $payslipCompany['company_name'] ?? 'Nexora HCM' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://sourcecode.world/wp-content/uploads/2021/10/SourceCode-FavIcon.png"
+    <link rel="icon" href="{{ $payslipCompany['company_favicon'] ?? '' }}"
         type="image/x-icon" />
 
     {{-- <link href="{{ url('/portal_assets/css/bootstrap.min.css') }}" rel="stylesheet" > --}}
@@ -18,7 +19,7 @@
         }
 
         .content {
-            background: url('http://localhost/hrmanagement//portal_assets/images/placeholder.png') no-repeat !important;
+            background: url('{{ asset('portal_assets/images/placeholder.png') }}') no-repeat !important;
             background-position: center bottom !important;
             background-size: 100% !important;
         }
@@ -125,11 +126,11 @@
                 <div class="row pb-10" style="height:250px;">
                     <div class=" me-auto" style="width:25%  !important; float:left !important;">
                         @if ($download_button_show == false)
-                            <img src="{{ public_path('portal_assets/images/logo.png') }}" draggable="false"
-                                class="img-fluid w-100" alt="Source Code logo">
+                            <img src="{{ $payslipCompany['company_logo'] ?? '' }}" draggable="false"
+                                class="img-fluid w-100" alt="{{ $payslipCompany['company_name'] ?? 'Company' }} logo">
                         @else
-                            <img src="{{ url('/portal_assets/images/logo.png') }}" draggable="false"
-                                class="img-fluid w-100" alt="Source Code logo">
+                            <img src="{{ $payslipCompany['company_logo'] ?? '' }}" draggable="false"
+                                class="img-fluid w-100" alt="{{ $payslipCompany['company_name'] ?? 'Company' }} logo">
                         @endif
                     </div>
                     <div class=" ms-auto" style="width:25%  !important; float:right !important; padding-top:50px;">
@@ -430,10 +431,10 @@
                         <div class="col-lg-3">
                             @if ($download_button_show == false)
                                 <img src="{{ public_path('portal_assets/setting/images/'.$setting[0]['signature_on_payslip']) }}" draggable="false"
-                                    class="img-fluid" alt="Source Code logo" width="81" height="49">
+                                    class="img-fluid" alt="Signature" width="81" height="49">
                             @else
                                 <img src="{{ url('portal_assets/setting/images/'.$setting[0]['signature_on_payslip']) }}" draggable="false" class="img-fluid"
-                                    alt="Source Code logo" width="81" height="49">
+                                    alt="Signature" width="81" height="49">
                             @endif
                         </div>
                     </div>
@@ -469,7 +470,7 @@
 
 
         <p class="text-center mt-2">This is a computer generated pay slip and it doesn't require any stamp. <br> Any
-            enquiry regarding payroll, please contact Email: sourcecode.dhr@gmail.com</p>
+            enquiry regarding payroll, please contact {{ $payslipCompany['company_email'] ?? 'HR' }}</p>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -36,16 +37,16 @@ class RequisitionApiController extends Controller
 
 
                 if(!empty($request->requisition_department)){
-                    $where_clause .= ' AND requisition_department = "'.$request->requisition_department.'"';
+                    $where_clause .= ' AND requisition_department = '.\DB::getPdo()->quote((string) $request->requisition_department).'';
                 }
                 if(!empty($request->emp_name)){
-                    $where_clause .= ' AND requisition_added_by = "'.$request->emp_name.'"';
+                    $where_clause .= ' AND requisition_added_by = '.\DB::getPdo()->quote((string) $request->emp_name).'';
                 }
                 if(!empty($request->requisition_job_type)){
-                    $where_clause .= ' AND requisition_job_type = "'.$request->requisition_job_type.'"';
+                    $where_clause .= ' AND requisition_job_type = '.\DB::getPdo()->quote((string) $request->requisition_job_type).'';
                 }
                 if(!empty($request->requisition_status)){
-                    $where_clause .= ' AND requisition_status = "'.$request->requisition_status.'"';
+                    $where_clause .= ' AND requisition_status = '.\DB::getPdo()->quote((string) $request->requisition_status).'';
                 }
 
             }
@@ -54,7 +55,10 @@ class RequisitionApiController extends Controller
 
             $departments = Department::get(['department_id','department_name'])->toArray();
 
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            // neither HR nor a manager: nothing to list
+            $requisitions = []; $employees_data = [];
+
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
 
                 $employees_data = Employees::where('employee_isactive','=', $status)->get(['employee_id', 'employee_code','employee_name'])->toArray();
 
@@ -77,7 +81,7 @@ class RequisitionApiController extends Controller
                 ->get(['requisition_id','department_name','requisition_job_title','requisition_job_type','requisition_expected_salary','requisition_shift_time','requisition_shift_start_time','requisition_shift_end_time','requisition_date_needed','requisition_additional_info','requisition_added_by','create_at','requisition_status','main_interview_id','no_of_position'])->toArray();
 
             }
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 

@@ -21,10 +21,8 @@ var gl;
         $('#gl_div').html(gl);
         e.preventDefault();
 
-        var login_url = window.location.href.includes('sap-login') ? sap_url : url;
-
         $.ajax({
-            url: login_url + '/authenticate',
+            url: url + '/authenticate',
             
             type: 'POST',
             headers: {
@@ -43,17 +41,11 @@ var gl;
                     Toast.fire({
                         icon: 'success',
                         title: response.message,
-                        timer: 3000,
+                        timer: 1000,
                     })
-                    if (response['sap-login'] == true) {
-                        setTimeout(() => {
-                            window.location.href = sap_url; 
-                        }, 3000);
-                    }else{
-                        setTimeout(() => {
-                            window.location.href = url; 
-                        }, 3000);
-                    }    
+                    setTimeout(() => {
+                        window.location.href = url;
+                    }, 500);
 
                 } else {
                     Toast.fire({

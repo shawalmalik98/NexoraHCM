@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -25,7 +26,7 @@ class AttendanceRequestApiController extends Controller
       
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
             
-            $my_requests = AttendanceRequest::where('request_employee_id' , $login_user[0]['employee_id'])->orderBy('attendance_request_id', 'DESC')->get()->toArray();
+            $my_requests = AttendanceRequest::where('request_employee_id' , (string) $login_user[0]['employee_id'])->orderBy('attendance_request_id', 'DESC')->get()->toArray();
            
             $my_requests = AttendanceRequest::join('tbl_employees','tbl_attendance_requests.request_employee_id','=','tbl_employees.employee_id')
             ->leftJoin('tbl_attendance_request_time','tbl_attendance_requests.attendance_request_id','=','tbl_attendance_request_time.attendance_req_id')
@@ -37,7 +38,7 @@ class AttendanceRequestApiController extends Controller
                 });
                 $query->orWhere('attendance_req_id',null);
             })
-            ->where('request_employee_id' , $login_user[0]['employee_id'])
+            ->where('request_employee_id' , (string) $login_user[0]['employee_id'])
             ->orderBy('attendance_request_id','desc')
             ->get(['attendance_request_id','request_employee_id','request_attendance_date','request_attendance_status','request_attendance_message','request_approved_by_hr','request_approved_date_hr','request_submition_date','employee_id','employee_code','employee_name','employee_department','employee_senior_manager','employee_junior_manager','attendance_checkin_time','attendance_checkout_time','attendance_request_time_id'])->toArray();
 
@@ -106,7 +107,7 @@ class AttendanceRequestApiController extends Controller
                     
                         $request_attendance_date = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request->post('from_date'))));
 
-                        $checking_request = AttendanceRequest::where('request_employee_id', $login_user[0]['employee_id'])->whereIn('request_attendance_date',[$request_attendance_date])->get(['request_attendance_date'])->toArray();
+                        $checking_request = AttendanceRequest::where('request_employee_id', (string) $login_user[0]['employee_id'])->whereIn('request_attendance_date',[$request_attendance_date])->get(['request_attendance_date'])->toArray();
                         
                         $payroll_exists = $this->check_if_payroll_exist($request_attendance_date,$login_user[0]['employee_id'],$custom_message = NULL);
 
@@ -161,7 +162,7 @@ class AttendanceRequestApiController extends Controller
                   
                     $attendance_date = $request->post('attendance_date');
                    
-                    $checking_request = AttendanceRequest::where('request_employee_id', $login_user[0]['employee_id'])->where('request_attendance_date', $request->post('attendance_date'))->where('request_approved_by_hr', '!=', 3)->get('attendance_request_id')->toArray();   
+                    $checking_request = AttendanceRequest::where('request_employee_id', (string) $login_user[0]['employee_id'])->where('request_attendance_date', $request->post('attendance_date'))->where('request_approved_by_hr', '!=', 3)->get('attendance_request_id')->toArray();   
                     
                     if(!empty($request->post('attendance_type')) && $request->post('attendance_type') == 'On Time Check Out'){
                             
@@ -179,7 +180,7 @@ class AttendanceRequestApiController extends Controller
                         ->orwhereIn('att_check_overall_status',$manage_leaves);
                         
                         })
-                        ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = "'.$request->post('attendance_date').'"')
+                        ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = '.\DB::getPdo()->quote((string) $request->post('attendance_date')).'')
                         ->get(['attendance_id','att_check_overall_status'])->toArray();
 
                         if(!empty($get_attendances)){
@@ -202,7 +203,7 @@ class AttendanceRequestApiController extends Controller
                             $attendance_request = new AttendanceRequest();
                             $dates =  date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request->post('from_date'))));
                             
-                            $checking_request_dates = AttendanceRequest::where('request_employee_id', $login_user[0]['employee_id'])->where('request_attendance_date',$dates)->get(['request_attendance_date'])->toArray();
+                            $checking_request_dates = AttendanceRequest::where('request_employee_id', (string) $login_user[0]['employee_id'])->where('request_attendance_date',$dates)->get(['request_attendance_date'])->toArray();
 
                             if(!empty($request->post('attendance_type')) && $request->post('attendance_type') == 'On Time Check Out'){
 
@@ -360,7 +361,10 @@ class AttendanceRequestApiController extends Controller
                 $limit_query = '*';
             }
            
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            // neither HR nor a manager: nothing to list
+            $all_requests = []; $employees_data = []; $responsed_request = [];
+
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
                
                 $employees_data = Employees::where('employee_isactive', $status)->get(['employee_id','employee_code','employee_name'])->toArray();
 
@@ -369,17 +373,17 @@ class AttendanceRequestApiController extends Controller
                 if(!empty($request->get('emp_status')) || !empty($request->get('emp_name')) || !empty($request->get('request_for_date'))  || !empty($request->get('request_submited_date')) || !empty($request->get('req_status'))){
                   
                     if(!empty($request->get('emp_name'))){
-                        $where_query .= ' AND request_employee_id = "'.$request->get('emp_name').'"';
+                        $where_query .= ' AND request_employee_id = '.\DB::getPdo()->quote((string) $request->get('emp_name')).'';
                     }
                     if(!empty($request->get('request_for_date'))){
-                        $where_query .= ' AND request_attendance_date = "'.$request->get('request_for_date').'"';
+                        $where_query .= ' AND request_attendance_date = '.\DB::getPdo()->quote((string) $request->get('request_for_date')).'';
                     }
                     if(!empty($request->get('request_submited_date'))){
                         $submition_date = date("d F, Y", strtotime($request->get('request_submited_date')));
                         $where_query .= ' AND request_submition_date LIKE "%'.$submition_date.'%"';
                     }
                     if(!empty($request->get('req_status'))){
-                        $where_query .= ' AND request_approved_by_hr = '.$request->get('req_status').'';
+                        $where_query .= ' AND request_approved_by_hr = '.\DB::getPdo()->quote((string) $request->get('req_status')).'';
                     }
                 }
 
@@ -401,7 +405,7 @@ class AttendanceRequestApiController extends Controller
     
             }
            
-            elseif($login_user[0]['employee_department'] !== 2 && $login_user[0]['employee_department'] !== 1 &&  $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) &&  $login_user[0]['employee_is_manager'] == 1){
                
 
                 $login_employee_id = $login_user[0]['employee_id'];
@@ -415,11 +419,11 @@ class AttendanceRequestApiController extends Controller
                 if(!empty($request->get('emp_status')) || !empty($request->get('emp_name')) || !empty($request->get('req_status'))){
                   
                     if(!empty($request->get('emp_name'))){
-                        $where_query .= ' AND request_employee_id = "'.$request->get('emp_name').'"';
+                        $where_query .= ' AND request_employee_id = '.\DB::getPdo()->quote((string) $request->get('emp_name')).'';
                     }
 
                     if(!empty($request->get('req_status'))){
-                        $where_query .= ' AND request_approved_by_hr = '.$request->get('req_status').'';
+                        $where_query .= ' AND request_approved_by_hr = '.\DB::getPdo()->quote((string) $request->get('req_status')).'';
                     }
                 }
                 
@@ -521,7 +525,7 @@ class AttendanceRequestApiController extends Controller
                         ->orwhereIn('att_check_overall_status', $manage_leaves);
                         
                     })
-                    ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = "'.$request->post('edit_attendance_date').'"')
+                    ->whereRaw('CONCAT(att_for_year,"-",att_for_month,"-",att_for_date) = '.\DB::getPdo()->quote((string) $request->post('edit_attendance_date')).'')
                     ->get(['attendance_id','att_check_overall_status'])->toArray();
 
                     if(!empty($get_attendances)){
@@ -548,7 +552,7 @@ class AttendanceRequestApiController extends Controller
                 
                 if(empty($checking_request_responsed) && $attendance_update_request->request_approved_by_hr == 1){
 
-                    $checking_request =  AttendanceRequest::where('request_employee_id', $login_user[0]['employee_id'])->where('request_attendance_date',date('Y-m-d',strtotime($request->post('edit_attendance_date'))))->where('attendance_request_id','!=',$request->post('attendance_id'))->get(['request_attendance_date'])->toArray();
+                    $checking_request =  AttendanceRequest::where('request_employee_id', (string) $login_user[0]['employee_id'])->where('request_attendance_date',date('Y-m-d',strtotime($request->post('edit_attendance_date'))))->where('attendance_request_id','!=',$request->post('attendance_id'))->get(['request_attendance_date'])->toArray();
 
                     if(!empty($request->post('edit_attendance_type')) && $request->post('edit_attendance_type') == 'On Time Check Out'){
 

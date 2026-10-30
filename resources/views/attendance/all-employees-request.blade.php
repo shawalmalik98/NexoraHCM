@@ -68,7 +68,7 @@
             
                         <div class="d-flex align-items-center  on-check d-none">
                         
-                            @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
 
                                 <a href="javascript:void(0)"  class="attendnace_request text-white  btn btn-sm fw-bold btn-success" data-value="Approve" data-bs-toggle="tooltip" data-bs-placement="top" title="Approve Request" >Approve</a>
                                
@@ -148,13 +148,9 @@
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">By Name</label>
                                                 <div>
-                                                    <select class="form-select " data-kt-select2="true"  name="emp_name" id="company_emp_name">
-                                                        @if(!empty($employees_data))
+                                                    <select class="form-select " data-kt-select2="true"  name="emp_name" id="company_emp_name" data-employee-select data-scope="team">
                                                         <option value="">All Employees</option>
-                                                            @foreach($employees_data as $data)
-                                                                <option value="{{$data['employee_id']}}"@if(Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                            @endforeach
-                                                        @endif
+                                                        @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                     </select>
                                                 </div>
                                             </div>
@@ -171,7 +167,7 @@
                                                 </div>
                                             </div>
 
-                                            @if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department']== 2)
+                                            @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
 
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold">Request For Applied Date</label>
@@ -210,7 +206,7 @@
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
                         
-                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
                                                                                                             
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -232,7 +228,7 @@
                                         @foreach ($all_requests as $all_request)
                                             <tr @if(request()->get('employee_id') != '' && $all_request['request_employee_id'] == request()->get('employee_id') && in_array($all_request['request_attendance_date'],$dates)) style="background-color:bisque;" @endif >
                                                 <td>
-                                                    @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                                    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
 
                                                         @if($all_request['request_approved_by_hr'] != 1 )
                                                             <div class="form-check form-check-sm form-check-custom form-check-solid">
@@ -340,7 +336,7 @@
                                                
                                                
                                                 <td class="text-center">
-                                                    @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                                                    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
 
                                                         @if($all_request['request_approved_by_hr'] != 1 )
                                                             
@@ -392,6 +388,7 @@
                                 </tbody>
                             
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                     </div>  
                 </div>
@@ -424,7 +421,7 @@
 
                         <div class="modal-body pt-0">
                             <p class="pt-4 fs-6 msg">Are you sure to <b>Approve</b>  selected attendance request(s) ?</p>
-                            @if($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                            @if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                 <textarea class="form-control " rows="3" name="approvermessage" placeholder="Message" id="approvermessage" required></textarea>
                             @endif
                             </div>
@@ -463,7 +460,7 @@
 
                         <div class="modal-body pt-0 ">
                             <p class="pt-5 fs-6 msg">Are you sure to <b>Disapprove</b> selected attendance request(s) ?</p>
-                            @if($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1)
+                            @if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                                 <textarea class="form-control " rows="3" name="disapprovermessage" placeholder="Message" id="disapprovermessage" required></textarea>
                             @endif
                         </div>

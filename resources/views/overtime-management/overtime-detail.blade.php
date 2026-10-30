@@ -78,7 +78,7 @@ table.dataTable
                             </div>
                             <div class="d-flex align-items-center  on-check d-none">
                         
-                                {{-- @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1) --}}
+                                {{-- @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)) --}}
     
                                     <a href="javascript:void(0)" class="overtime_reibursment text-white  btn btn-sm fw-bold btn-success mx-2"  data-bs-toggle="tooltip" data-bs-placement="top" title="Approve Reimburesement" >Approve</a>
                                 

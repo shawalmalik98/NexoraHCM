@@ -775,16 +775,9 @@
                                     
                                     {{--begin::Input--}}
                                     <div class="position-relative d-flex align-items-center">
-                                        <select class="form-select mySelect3" data-control="select2" data-hide-search="true" name="interviewer_1"  required="required">
+                                        <select class="form-select mySelect3" data-control="select2" data-hide-search="true" name="interviewer_1"  required="required" data-employee-select data-scope="active">
                                             <option value="">Select Interviwer</option>
-                                                    @if (!empty($employees))
-                                                        @foreach ($employees as $employee)
-                                                            <option value="{{ $employee['employee_id'] }}"
-                                                                @if (!empty($interview[0]['interview_interviewer1']) && $interview[0]['interview_interviewer1'] == $employee['employee_id']) selected @endif>
-                                                                {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
+                                                    @include('include.employee-selected-options', ['selected' => $interview[0]['interview_interviewer1'] ?? null])
                                         </select>
                                     </div>
                                     {{--end::Input--}}
@@ -799,16 +792,9 @@
                                     
                                     {{--begin::Input--}}
                                     <div class="position-relative d-flex align-items-center">
-                                        <select class="form-select mySelect3" data-control="select2" data-hide-search="true" name="interviewer_2">
+                                        <select class="form-select mySelect3" data-control="select2" data-hide-search="true" name="interviewer_2" data-employee-select data-scope="active">
                                                 <option value="">No 2nd Interviewer</option>
-                                                        @if (!empty($employees))
-                                                            @foreach ($employees as $employee)
-                                                                <option value="{{ $employee['employee_id'] }}"
-                                                                    @if (!empty($interview[0]['interview_interviewer2']) && $interview[0]['interview_interviewer2'] == $employee['employee_id']) selected @endif>
-                                                                    {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                                </option>
-                                                            @endforeach
-                                                    @endif
+                                                        @include('include.employee-selected-options', ['selected' => $interview[0]['interview_interviewer2'] ?? null])
                                         </select>
                                     </div>
                                     {{--end::Input--}}
@@ -1226,16 +1212,9 @@
                                             <span class="required">Interviewer 1st </span>
                                         </label>
                                         <div class="position-relative d-flex align-items-center">
-                                            <select class="form-select requitionselect" data-control="select2" data-hide-search="false" name="interviewer_1"  required="required">
+                                            <select class="form-select requitionselect" data-control="select2" data-hide-search="false" name="interviewer_1"  required="required" data-employee-select data-scope="active">
                                                 <option value="">Select Interviwer</option>
-                                                    @if (!empty($employees))
-                                                        @foreach ($employees as $employee)
-                                                            <option value="{{ $employee['employee_id'] }}"
-                                                                @if (!empty($interview[0]['interview_interviewer1']) && $interview[0]['interview_interviewer1'] == $employee['employee_id']) selected @endif>
-                                                                {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
+                                                    @include('include.employee-selected-options', ['selected' => $interview[0]['interview_interviewer1'] ?? null])
                                             </select>
                                         </div>
                                     </div>
@@ -1245,16 +1224,9 @@
                                             <span> Interviewer 2nd </span>
                                         </label>
                                         <div class="position-relative d-flex align-items-center">
-                                            <select class="form-select requitionselect" data-control="select2" data-hide-search="false" name="interviewer_2">
+                                            <select class="form-select requitionselect" data-control="select2" data-hide-search="false" name="interviewer_2" data-employee-select data-scope="active">
                                                 <option value="">No 2nd Interviewer</option>
-                                                        @if (!empty($employees))
-                                                            @foreach ($employees as $employee)
-                                                                <option value="{{ $employee['employee_id'] }}"
-                                                                    @if (!empty($interview[0]['interview_interviewer2']) && $interview[0]['interview_interviewer2'] == $employee['employee_id']) selected @endif>
-                                                                    {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                                </option>
-                                                            @endforeach
-                                                        @endif
+                                                        @include('include.employee-selected-options', ['selected' => $interview[0]['interview_interviewer2'] ?? null])
                                             </select>
                                         </div>
                                     </div>

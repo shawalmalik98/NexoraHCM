@@ -164,12 +164,10 @@
                                             
                                             <label class="form-label fw-semibold"><span>By Name</span></label>
                                             <div>
-                                                <select class="form-select" data-kt-select2="true"  name="emp_name" id="company_emp_name">
+                                                <select class="form-select" data-kt-select2="true"  name="emp_name" id="company_emp_name" data-employee-select data-scope="active">
                                                     @if(!empty($all_employees))
                                                     <option value="">All Employees</option>
-                                                        @foreach($all_employees as $data)
-                                                            <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                        @endforeach
+                                                        @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                     @endif
                                                 </select>
                                             </div>
@@ -231,7 +229,7 @@
                         
                         <div id="tableloans_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer table-row-bordered">
                         <div class="table-responsive popup-visible ">
-                            <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable">
+                            <table class="table table-bordered align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true">
                                 				
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
@@ -317,6 +315,7 @@
                                 </tbody>
                             
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                     </div>
                     
@@ -357,13 +356,9 @@
                                         </label>
 
                                         <div class="position-relative d-flex align-items-center">
-                                            <select class="form-select selectemployee" data-control="select2" data-hide-search="false" data-placeholder="Select Employee" name="employee_code" required> 
+                                            <select class="form-select selectemployee" data-control="select2" data-hide-search="false" data-placeholder="Select Employee" name="employee_code" required data-employee-select data-scope="active"> 
                                                 <option value="">Select Employee</option>
-                                                @if(!empty($all_employees))
-                                                    @foreach($all_employees as $all_employee)
-                                                        <option value="{{ $all_employee['employee_id'] }}">{{ $all_employee['employee_name'] }} ({{ $all_employee['department_name'] }} - {{ $all_employee['designation_name'] }})</option>
-                                                    @endforeach
-                                                @endif
+                                                @include('include.employee-selected-options', ['selected' => null])
                                             </select>
                                         </div>
 

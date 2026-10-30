@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -36,13 +37,13 @@ class ResignationController extends Controller
                 $status = 1;
             }
            
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
 
                 $where_clause = '1=1';
                 $where_clause_to = '1=1';
                 if(!empty($request_data->employee_location)){
-                    $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                    $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                    $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                    $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                 }
                 if(!empty($request_data->emp_status)){
                     $where_clause .= ' AND employee_isactive = "'.$status.'"';
@@ -50,15 +51,15 @@ class ResignationController extends Controller
                 if(!empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
                     $limit_query = '';
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND resignation_employee = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND resignation_employee = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND resignation_status = '.$request_data->req_status.'';
+                        $where_clause .= ' AND resignation_status = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
                
                 $all_resignations = Resignation::join('tbl_employees', 'tbl_resignation_letters.resignation_employee', '=', 'tbl_employees.employee_id')
                 ->whereRaw($where_clause)
@@ -69,7 +70,7 @@ class ResignationController extends Controller
               
             }
            
-            elseif($login_user[0]['employee_department'] !== 2 && $login_user[0]['employee_department'] !== 1 &&   $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) &&   $login_user[0]['employee_is_manager'] == 1){
                
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -80,18 +81,18 @@ class ResignationController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                        $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                        $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                        $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= ' AND resignation_employee = "'.$request_data->emp_name.'"';
+                        $where_clause .= ' AND resignation_employee = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= ' AND resignation_status = '.$request_data->req_status.'';
+                        $where_clause .= ' AND resignation_status = '.\DB::getPdo()->quote((string) $request_data->req_status).'';
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
                 $all_resignations = Resignation::join('tbl_employees', 'tbl_resignation_letters.resignation_employee', '=', 'tbl_employees.employee_id')->whereIn('resignation_employee',$total_team_member)->whereRaw($where_clause)->orderBy('resignation_id','DESC')->get()->toArray();
 
@@ -279,7 +280,7 @@ class ResignationController extends Controller
             }    
         }catch(\Exception $e){
             $this->create_error_log('Apply Resignation', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -301,6 +302,12 @@ class ResignationController extends Controller
     protected function reject_resignation(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = Resignation::whereIn('resignation_id', explode(',', (string) $request->input('resignation_id')))->pluck('resignation_employee')->toArray();
+            if(!$this->can_respond_for($request_employees, ['hr'])){
+                return $this->not_allowed_response();
+            }
             $login_user = $this->get_login_user_detail();
 
             $resignation = Resignation::find($request->input('resignation_id'));
@@ -328,7 +335,7 @@ class ResignationController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Access Dis-Approve Resignation by HR Module', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -351,6 +358,12 @@ class ResignationController extends Controller
     protected function resignation_request_approval(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = Resignation::whereIn('resignation_id', explode(',', (string) $request->input('ids')))->pluck('resignation_employee')->toArray();
+            if(!$this->can_respond_for($request_employees, ['hr'])){
+                return $this->not_allowed_response();
+            }
 
             if($request['status'] == "Approve"){
                 
@@ -613,7 +626,7 @@ class ResignationController extends Controller
             
         }catch(\Exception $e){
             $this->create_error_log('Approved And Disapproved Resignation Letter by Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

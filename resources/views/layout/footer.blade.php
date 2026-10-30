@@ -12,7 +12,6 @@
       var user_id = "{{session('user_session');}}";
       var base_url = "{{url('/')}}";
       var gl;
-      var app_sc = "{{env('APP_SC')}}";
    
    </script>
    
@@ -22,10 +21,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-    {{-- <script src="{{ url('assets/js/firebase-notification.js') }}"></script> --}}
-    <script type="text/javascript" src="{{ url('assets/js/general_script.js') }}?js_v=2"></script>
+    <script type="text/javascript" src="{{ url('assets/js/general_script.js') }}?js_v=6"></script>
 
-    <script type="text/javascript" src="{{ url('assets/plugins/global/plugins.bundle.js') }}"></script>
+    {{-- plugins.bundle.js is loaded in the header --}}
 
     <script type="text/javascript" src="{{ url('assets/js/scripts.bundle.js') }}"></script>
 

@@ -42,7 +42,7 @@
                 {{-- begin::Notifications --}}
 
                 <div class="app-navbar-item ms-1 ms-lg-3">
-                    @if(strpos(url()->current(), 'sap-login') == false)
+                    
                         <div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-35px h-35px w-md-40px h-md-40px position-relative"
                             data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end"
                             >
@@ -65,7 +65,7 @@
                                     class="bullet bullet-dot bg-success h-9px w-9px position-absolute translate-middle top-0 start-50 animation-blink"></span>
                             @endif
                         </div>
-                    @endif    
+                        
                     @if (!empty($notifications['notification']))
                         <div class="menu menu-sub menu-sub-dropdown menu-column w-350px w-lg-375px" data-kt-menu="true">
                             <div class="d-flex flex-column bgi-no-repeat rounded-top"
@@ -84,7 +84,7 @@
                                             data-bs-toggle="tab" href="#topbar_notifications" aria-selected="true"
                                             role="tab">Notifications</a>
                                     </li>
-                                    @if ($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                    @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                         @if (
                                             $alerts['interviews'] > 0 ||
                                                 $alerts['meetings'] > 0 ||
@@ -169,7 +169,7 @@
                                     </div>
                                 @endif
 
-                                @if ($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2)
+                                @if (CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null))
                                     <div class="tab-pane fade" id="topbar_alerts" role="tabpanel">
 
                                         <div class="scroll-y mh-325px my-5 px-8 notification-refresher">
@@ -425,12 +425,7 @@
 
                             <div class="separator my-2"></div>
 
-                            @if(strpos(url()->current(), 'sap-login'))
-                                <div class="menu-item px-5">
-                                    <a href="{{ url('sap-login/sign-out') }}" onclick="localStorage.clear();" class="menu-link px-5">Sign Out</a>
-
-                                </div>  
-                            @else     
+                                 
                                 <div class="menu-item px-5">
                                     <a href="{{ url('personal-information') }}" class="menu-link px-5">Personal Information</a>
                                 </div>
@@ -448,7 +443,7 @@
                                 </div>
 
                                 @if (
-                                    (!empty($login_user[0]['employee_department']) && $login_user[0]['employee_department'] == 1) ||
+                                    (!empty($login_user[0]['employee_department']) && CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)) ||
                                         session('proxy_user') == 'TRUE')
                                     <div class="menu-item px-5">
                                         <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#proxy_user_model" class="menu-link px-5" onclick="proxy_employee_data_trigger()">Proxy User</a>
@@ -460,7 +455,7 @@
                                     <a href="{{ url('/sign-out') }}" onclick="localStorage.clear();" class="menu-link px-5">Sign Out</a>
                                     
                                 </div>
-                            @endif    
+                                
                         </div>
                         {{-- end::User account menu --}}
                         {{-- end::Menu wrapper --}}

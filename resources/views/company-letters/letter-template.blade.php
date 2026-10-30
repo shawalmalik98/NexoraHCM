@@ -166,13 +166,9 @@
                             <div class="modal-body scroll-y pt-0 pb-15"  >
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
                                     <label class="fs-6 fw-semibold mb-2">Employee</label>
-                                    <select class="form-select selectemployee" data-control="select2" data-hide-search="false" data-placeholder="Select Employee" name="employee_id" > 
+                                    <select class="form-select selectemployee" data-control="select2" data-hide-search="false" data-placeholder="Select Employee" name="employee_id"  data-employee-select data-scope="active"> 
                                         <option value="">Select Employee</option>
-                                        @if(!empty($employees))
-                                            @foreach($employees as $employee)
-                                                <option value="{{ $employee['employee_id'] }}">{{ $employee['employee_name'] }} ({{ $employee['department_name'] }} - {{ $employee['designation_name'] }})</option>
-                                            @endforeach
-                                        @endif
+                                        @include('include.employee-selected-options', ['selected' => null])
                                     </select>
                                 </div>
                                 <div id="formFied" >

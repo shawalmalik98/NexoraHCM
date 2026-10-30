@@ -236,29 +236,6 @@ class PersonalInformationController extends Controller
             $process = $submitInformation->save();
             if($process == 1){
               
-                // Syncing to the external system is best-effort: the information is already saved,
-                // so a missing/unreachable APP_SC_URL must not turn the save into an error for the user.
-                if(!empty(env('APP_SC_URL'))){
-                    try{
-                        Http::withHeaders([
-                            'access-token' => 'PoRtAlCrMkEy',
-
-                        ])->post(env('APP_SC_URL').'api/add-employee', [
-                            'employee_id'           => $employee_record[0]['employee_id'],
-                            'employee_code'         =>  $employee_record[0]['employee_code'],
-                            'employee_name'         =>  $employee_record[0]['employee_name'],
-                            'employee_contactno'    =>  $employee_record[0]['employee_contactno'],
-                            'employee_personal_email'        =>  $employee_record[0]['employee_personal_email'],
-                            'employee_department'   =>  $employee_record[0]['employee_department'],
-                            'employee_designation'  =>  $employee_record[0]['employee_designation'],
-                            'profile_avatar'        => $document_name,
-                            'employee_department_name' => 'Random Department',
-                            'employee_designation_name' => 'Random Designation',
-                        ]);
-                    }catch(\Exception $sync_exception){
-                        $this->create_error_log('Sync Personal Information To External System', $sync_exception);
-                    }
-                }
                
                 return response()->json([
                     'status' => 'TRUE',
@@ -275,7 +252,7 @@ class PersonalInformationController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Save Personal Information Record', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => SELF::SERVER_ERROR,

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
+use App\Models\LeaveDeduction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{Employees, Leave, EmployeeInformation, Attendance, Interview, Alert, AlertStatus, LateComers, ExpenseSheet, Meeting, MeetingUsers,HrmSetting,Department,LeaveRequest,WFH,InterviewStatus, Polling , PollingOption, PollingStatus,LeaveManagement};
@@ -44,31 +46,33 @@ class HomeController extends Controller
 
             $total_employees =  $active_employees + $deactive_employees;
 
-            $permanent_employees = Employees::where('employee_isactive', 1)->where('employee_status',3)->count();
+            $permanent_employees = Employees::where('employee_isactive', 1)->where('employee_status','3')->count();
 
-            $permanent_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status',3)->count();
+            $permanent_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status','3')->count();
 
-            $permanent_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status',3)->count();
+            $permanent_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status','3')->count();
            
-            $probation_employees = Employees::where('employee_isactive', 1)->where('employee_status',2)->count();
+            $probation_employees = Employees::where('employee_isactive', 1)->where('employee_status','2')->count();
 
-            $probation_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status',2)->count();
+            $probation_male_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Male')->where('employee_status','2')->count();
 
-            $probation_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status',2)->count();
+            $probation_female_employees = Employees::where('employee_isactive', 1)->where('employee_gender','Female')->where('employee_status','2')->count();
 
             $setting = HrmSetting::orderBy('setting_id','DESC')->get(['setting_id','linked_post1','linked_post2'])->toArray();
 
-            $leaves_entitiled = LeaveManagement::join('tbl_leave_entitlement','tbl_leave_management.leave_manage_id','=','tbl_leave_entitlement.leave_type_id')->WhereIN('leave_type_id',array(1,2,3))->where('leaves_employee_id', session('user_session'))->orderBy('leave_type_id','ASC')->get('leave_allotement')->toArray();
+            $leaves_entitiled = LeaveManagement::join('tbl_leave_entitlement','tbl_leave_management.leave_manage_id','=','tbl_leave_entitlement.leave_type_id')->WhereIN('leave_type_id',array(1,2,3))->where('leaves_employee_id', session('user_session'))->pluck('leave_allotement','leave_type_id');
+            // casual / sick / annual in that order; 0 when the employee has no entitlement of that type yet
+            $leaves_entitiled = [['leave_allotement' => $leaves_entitiled[1] ?? 0], ['leave_allotement' => $leaves_entitiled[2] ?? 0], ['leave_allotement' => $leaves_entitiled[3] ?? 0]];
 
-            $annual_used = Attendance::where('att_employee_id', session('user_session'))->where('att_check_overall_status','Annual Leave')->count();
+            $annual_used = Attendance::where('att_employee_id', session('user_session'))->where('att_check_overall_status','Annual Leave')->count() + LeaveDeduction::deducted_count_by_name(session('user_session'), 'Annual Leave');
 
-            $casual_used = Attendance::where('att_employee_id', session('user_session'))->where('att_check_overall_status','Casual Leave')->count();
+            $casual_used = Attendance::where('att_employee_id', session('user_session'))->where('att_check_overall_status','Casual Leave')->count() + LeaveDeduction::deducted_count_by_name(session('user_session'), 'Casual Leave');
 
             $sick_used = Attendance::where('att_employee_id', session('user_session'))->where('att_check_overall_status','Sick Leave')->count();
 
             $todays_interviews = Interview::where('interview_date',date('Y-m-d'))->count();
 
-            if($login_user[0]['employee_department'] == 1 || $login_user[0]['employee_department'] == 2){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null)){
                 $where_clause = "interview_date LIKE '%" . date("Y-m-d") . "%'";
             }else{
                 $where_clause = "interview_date LIKE  '%".date("Y-m-d")."%'  and ( interview_interviewer1 = ".session('user_session')." or interview_interviewer2 = ".session('user_session')." )";
@@ -102,15 +106,18 @@ class HomeController extends Controller
             // ->whereNotIn('alert_id', $alert_status)
             // ->limit(3)->get(['alert_id','title','message'])->toArray(); 
                         
-            $birthdays = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')
-            ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->where('employee_isactive',1)
-            ->whereNotNull('dob')
-            ->whereMonth('dob','=',date('m'))
-            ->orderByRaw('DAY(dob)')
-            ->get(['employee_id','department_name as employee_department','designation_name as employee_designation','dob'])
-            ->toArray();
+            // scans every employee and only changes with the date
+            $birthdays = \Cache::remember('dashboard_birthdays_'.date('Y-m-d'), 600, function(){
+                return Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=','tbl_personal_informations.employeeid')
+                ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
+                ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+                ->where('employee_isactive',1)
+                ->whereNotNull('dob')
+                ->whereMonth('dob','=',date('m'))
+                ->orderByRaw('DAY(dob)')
+                ->get(['employee_id','department_name as employee_department','designation_name as employee_designation','dob'])
+                ->toArray();
+            });
 
             $senior_manager = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')->where('employee_id','=',$login_user[0]['employee_senior_manager'])->get(['employee_name','profile_avatar'])->toArray();
                 
@@ -120,12 +127,15 @@ class HomeController extends Controller
 
             $total_team_member = $this->get_employee_hierarchy_unique($login_user[0]['employee_id'],1);
            
+            // the team card shows the first 50 members and the full count
+            $my_team_count = count(array_diff($total_team_member, [$login_user[0]['employee_id']]));
+
             if($login_user[0]['employee_is_manager'] == 1){
 
                 $my_team_mates = Employees::join('tbl_personal_informations', 'tbl_employees.employee_id', '=', 'tbl_personal_informations.employeeid')
                 ->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
                 ->where(function($query) use($login_user,$total_team_member) {
-                    $query->where('employee_id','!=',$login_user[0]['employee_id'])->whereIn('employee_id',array_slice($total_team_member, 0, 2000));
+                    $query->where('employee_id','!=',$login_user[0]['employee_id'])->whereIn('employee_id',array_slice(array_values(array_diff($total_team_member, [$login_user[0]['employee_id']])), 0, 50));
                 })->get(['employee_name','department_name as employee_department','designation_name as employee_designation','profile_avatar'])->toArray();
 
             }else{
@@ -238,11 +248,11 @@ class HomeController extends Controller
             //   $i++;
             // }
 
-            $probation_employees_detail = Employees::where('employee_isactive', 1)->where('employee_status',2)->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->get(['employee_id','employee_code','employee_name','employee_doj','department_name','designation_name'])->toArray();
+            $probation_employees_detail = Employees::where('employee_isactive', 1)->where('employee_status','2')->join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->orderBy('employee_doj')->orderBy('tbl_employees.employee_id')->limit(50)->get([\DB::raw('STRAIGHT_JOIN tbl_employees.employee_id'),'employee_code','employee_name','employee_doj','department_name','designation_name'])->toArray(); // longest on probation first (employees read in that order); the card shows the total
 
             $get_check_in_details = $this->get_latest_attendance_record();
     
-            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','probation_employees_detail','dynamic_years','get_check_in_details','employee_location');
+            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','my_team_count','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','probation_employees_detail','dynamic_years','get_check_in_details','employee_location');
             
             return view('dashboard.dashboard', $send_data);
 
@@ -513,7 +523,7 @@ class HomeController extends Controller
 
 
             $this->create_error_log('Leave Request Graph Dashboard', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -566,7 +576,7 @@ class HomeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Leave Request Graph Dashboard ', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -647,7 +657,7 @@ class HomeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Wfh Request Graph Dashboard', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -708,7 +718,7 @@ class HomeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('WFH Request Graph Dashboard ', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -755,7 +765,7 @@ class HomeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Interview Graph Dashboard Access', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -819,7 +829,7 @@ class HomeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Interview Graph Dashboard ', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -909,7 +919,7 @@ class HomeController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log('Employee Monthly Strength Graph Dashboard ', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -996,7 +1006,7 @@ class HomeController extends Controller
         
         
             $this->create_error_log('Employee Monthly  Strength Graph Dashboard ', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1030,7 +1040,7 @@ class HomeController extends Controller
         }catch(\Exception $e){
             
             $this->create_error_log('Procced to Dashboard', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

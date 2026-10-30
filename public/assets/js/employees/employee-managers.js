@@ -2,13 +2,7 @@ $(function () {
 
     $('[data-bs-toggle="tooltip"]').tooltip();
 
-    $('.myselect4,.myselect5').select2({
-        dropdownParent: $('#sm_modal')
-    })
-
-    $('.bulk_employee_select').select2({
-        dropdownParent: $('#employees_modal')
-    })
+    // the manager dropdowns are employee search selects (general_script.js), already bound to their modal
 
 });
 

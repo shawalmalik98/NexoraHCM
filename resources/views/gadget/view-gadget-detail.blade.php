@@ -416,23 +416,9 @@
 														
 														<input type="hidden" name="gadget_id" value="{{ $gadget_detail[0]['gadget_id'] }}">
 														
-														<select class="form-select  select-employee"  data-control="select2" name="employee_code" required="required">
+														<select class="form-select  select-employee"  data-control="select2" name="employee_code" required="required" data-employee-select data-scope="active">
 															<option value="">Select Employee</option>
-															@if (!empty($all_employees))
-																@foreach ($all_employees as $all_employee)
-																	<option value="{{ $all_employee['employee_id'] }}" 
-																		@if(!empty($gadget_allotment))
-																			@if($gadget_detail[0]['gadget_status'] == 1)
-																				@if ($all_employee['employee_id'] == $gadget_allotment[0]['allotment_employee_id']) 		
-																					selected 
-																				@endif
-																			@endif
-																		@endif>
-																		{{ $all_employee['employee_name'] }}
-																		({{ $all_employee['department_name'] }})
-																	</option>
-																@endforeach
-															@endif                                                   
+															@include('include.employee-selected-options', ['selected' => $gadget_allotment[0]['allotment_employee_id'] ?? null])                                                   
 														</select>
 													</div>
 													@if($gadget_detail[0]['gadget_status'] == 1)

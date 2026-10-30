@@ -51,7 +51,6 @@
 
 @push('js-link')
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
     <script src="https://code.jscharting.com/latest/jscharting.js"></script>
     <script type="text/javascript" src="https://code.jscharting.com/latest/modules/types.js"></script>
 
@@ -59,7 +58,7 @@
 
  const all_employees = {!! json_encode($filtered_employees) !!};
         
-    const mySelect = `[${all_employees.reduce((tmp, x, counter) => `${tmp}{ "x": "<b>${x.employee_name}</b> <br><br>${x.department_name} - ${x.designation_name}", "id": "${x.employee_id}",${parent_id(x)}"attributes_role": "Employee"},`, '')}]`;
+    const mySelect = `[${all_employees.reduce((tmp, x, counter) => `${tmp}{ "x": "<b>${x.employee_name}</b> <br><br>${x.department_name} - ${x.designation_name}${x.hidden_team ? `<br>+${x.hidden_team} team members` : ``}", "id": "${x.employee_id}",${parent_id(x)}"attributes_role": "Employee"},`, '')}]`;
 
     function parent_id(x){
         if(x.employee_id != x.parent_id){

@@ -51,7 +51,7 @@ class MarkAttendanceController extends Controller
 							$employee_shift_end = $this->get_employee_today_shift($employee_id,"out",date('Y-m-d'));
 							
 
-							$get_wfh_request = WFH::where('wfh_employee_id','=',$get_employee_decoded[0]['employee_id'])->where('wfh_request_date','=',date('Y-m-d'))->get(['wfh_request_approved_by_hr','wfh_request_id'])->toArray();
+							$get_wfh_request = WFH::where('wfh_employee_id','=',(string) $get_employee_decoded[0]['employee_id'])->where('wfh_request_date','=',date('Y-m-d'))->get(['wfh_request_approved_by_hr','wfh_request_id'])->toArray();
 
 							if(!empty($get_wfh_request) && $get_wfh_request[0]['wfh_request_approved_by_hr'] != 2){
 								$get_wfh_request = RequestApproval::where('request_module_id',3)
@@ -329,7 +329,7 @@ class MarkAttendanceController extends Controller
 			
 		}catch(\Exception $e){
             $this->create_error_log('Employees Attendance CheckIn', $e);
-			if(!env('APP_DEBUG')){
+			if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
 					'msg' => Self::SERVER_ERROR,
@@ -385,7 +385,7 @@ class MarkAttendanceController extends Controller
 									$date = date('Y-m-d',strtotime("-1 days"));
 								}
 								
-								$get_wfh_request = WFH::where('wfh_employee_id','=',$get_employee_decoded[0]['employee_id'])
+								$get_wfh_request = WFH::where('wfh_employee_id','=',(string) $get_employee_decoded[0]['employee_id'])
 								->where('wfh_request_date','=',$date)
 								->get(['wfh_request_id','wfh_request_approved_by_hr'])->toArray();
 
@@ -578,7 +578,7 @@ class MarkAttendanceController extends Controller
 			
 		}catch(\Exception $e){
             $this->create_error_log('Employees Attendance CheckOut', $e);
-			if(!env('APP_DEBUG')){
+			if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => Self::SERVER_ERROR,

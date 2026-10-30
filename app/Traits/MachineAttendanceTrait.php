@@ -573,8 +573,6 @@ trait MachineAttendanceTrait {
 								$check_out->att_co_lat = $attendance_lat;
 								$check_out->att_co_long = $attendance_long;
 								$check_out->att_co_marked_time = date('Y-m-d H:i:s');
-								$check_out->sap_co_flag = 0;
-								$check_out->sap_co_timestamp = NULL;
 								$check_out->save();
 							}	
 						}
@@ -645,8 +643,6 @@ trait MachineAttendanceTrait {
 								$check_out->att_co_lat = $attendance_lat;
 								$check_out->att_co_long = $attendance_long;
 								$check_out->att_co_marked_time = date('Y-m-d H:i:s');
-								$check_out->sap_co_flag = 0;
-								$check_out->sap_co_timestamp = NULL;
 								$check_out->save();
 								
 							// }

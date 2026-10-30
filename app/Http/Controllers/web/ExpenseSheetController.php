@@ -187,7 +187,7 @@ class ExpenseSheetController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Add Expense", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -293,7 +293,7 @@ class ExpenseSheetController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Update Expense", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -331,7 +331,7 @@ class ExpenseSheetController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -410,7 +410,7 @@ class ExpenseSheetController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Expense Month Locked", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

@@ -28,17 +28,17 @@ class InterviewsApiController extends Controller
             if(!empty($request->get('candidate_name')) || !empty($request->get('interview_date')) || !empty($request->get('interview_status')) || !empty($request->get('interview_type'))){
                
                 if(!empty($request->get('candidate_name'))){
-                    $where_clause .= 'AND candidate_id = "'.$request->get('candidate_name').'"';
+                    $where_clause .= 'AND candidate_id = '.\DB::getPdo()->quote((string) $request->get('candidate_name')).'';
                 }
                 if(!empty($request->get('interview_date'))){
                     $scheduled_time = date("Y-m-d", strtotime($request->get('interview_date')));
                     $where_clause .= 'AND interview_date LIKE "%'.  $scheduled_time.'%"';
                 }
                 if(!empty($request->get('interview_status'))){
-                    $where_clause .= ' AND interview_status_level = "'.$request->get('interview_status').'"';
+                    $where_clause .= ' AND interview_status_level = '.\DB::getPdo()->quote((string) $request->get('interview_status')).'';
                 }
                 if(!empty($request->get('interview_type'))){
-                    $where_clause .= ' AND interview_type = "'.$request->get('interview_type').'"';
+                    $where_clause .= ' AND interview_type = '.\DB::getPdo()->quote((string) $request->get('interview_type')).'';
                 }
             }
             

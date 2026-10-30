@@ -101,14 +101,9 @@
                                                     <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
                                                     <option value="">Select Business Unit</option>
                                                     <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
-                                                    <option value="Candyland" @if (Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
-                                                    <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
-                                                    <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
-                                                    <option value="Hudson Pharma" @if (Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
-                                                    <option value="Astro" @if (Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
-                                                    <option value="Act Group" @if (Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
-                                                    <option value="Ismail Nutrition" @if (Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>
-                                                    <option value="Flour" @if (Request::get('business_unit') == 'Flour') selected @endif>Flour</option>
+                                                    @foreach (CustomHelper::business_units() as $business_unit)
+                                                        <option value="{{ $business_unit }}" @if (Request::get('business_unit') == $business_unit) selected @endif>{{ $business_unit }}</option>
+                                                    @endforeach
                                                 </select>
                                                 </div>
                                                 
@@ -153,8 +148,8 @@
 
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive popup-visible ">
-                            @if (!empty(Request::get('business_unit')) || !empty(Request::get('department_id')) || !empty(Request::get('employee_group')))
-                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" aria-describedby="tableEmployee_info">
+                            
+                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="system_datatable" data-server-paginated="true" aria-describedby="tableEmployee_info">
 
                                     <thead>
                                         <tr class="fw-bold text-muted bg-light">
@@ -212,28 +207,9 @@
                                     </tbody>
 
                                 </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                            
-                            @else
-                                <table class="table align-middle gs-0 gy-4 dataTable no-footer table-row-bordered" id="employees_device_ajax" aria-describedby="tableEmployee_info">
-
-                                    <thead>
-                                        <tr class="fw-bold text-muted bg-light">
-                                            <th class="ps-4">Employee Name</th>
-                                            <th>Depart &amp; Desig</th>
-                                            <th>Device Name</th>
-                                            <th>Device Token</th>
-                                            <th>Device Status</th>
-                                            <th>Created at</th>
-                                            <th>Updated at</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="all_employees_devices">
-                                    
-                                    </tbody>
-
-                                </table>
-                            @endif    
+                                
                         </div>
 
                     </div>
@@ -331,109 +307,5 @@
 
 <script src="{{url('assets/js/employees/employee-devices.js')}}"></script>
 
-<script>
-
-    var location_main_url =  "{{ url('/employee-devices') }}";
-   
-    if (window.location.href == location_main_url) {
-
-       $('#all_employees_devices').html(`
-               <td class="text-center"></td>
-               <td class="text-center"></td> 
-               <td class="text-center"></td> 
-               <td class="preloader text-center">
-                   <div style="display: flex; flex-direction: column; align-items: center;">
-                       <div class="spinner-border text-primary" role="status"></div>
-                       <div class="text-muted fs-6 fw-semibold mt-3">Loading...</div>
-                   </div>
-               </td>
-           `);
-
-        $.ajax({
-            url: "{{ url('/get-all-employees-devices') }}",
-            type: 'GET',
-            success: function(response) {
-                // console.log(response);
-                if (response.status == true) {
-                    var emp_record = '';
-                    var employees_devices = response.data; 
-                  
-                    $.each(employees_devices, function (key, employee) {
-                        emp_record += `
-                            <tr>
-                                <td class="ps-4">${employee.employee_code} - ${employee.employee_name}</td>
-                            
-                                <td>
-                                    <p class="text-dark fw-bold mb-1 fs-6">${employee.department_name}</p>
-                                    <p class="text-muted fw-semibold text-muted fs-7">${employee.designation_name}</p>
-                                </td>
-
-                                <td> ${employee.device_name}</td>
-                                <td> ${employee.device_token}</td>
-                                <td>
-                                    ${employee.device_status !== '' && employee.device_status == 1 ?
-                                        `<span class="badge badge-light-success font-weight-bold">Active</span>` :
-                                        `<span class="badge badge-light-danger font-weight-bold">De-active</span>`}
-                                </td>
-                                <td> ${employee.device_created_at}</td>
-                                <td> ${employee.device_updated_at ?? '-'}</td>
-                                <td class="text-center">
-                                  ${employee.device_status == 1 ?
-                                        `<i class="fa-regular fa-circle-check  text-success mx-2" style="font-size: 20px; cursor: not-allowed;" disabled></i>` :
-                                        `<a href="#."  data-bs-toggle="modal" data-bs-target="#approverequest" onclick="deviceEditModel(${employee.device_id})">  <i class="fa-regular fa-circle-check  text-info mx-2" style="font-size: 20px; cursor: pointer;" data-bs-toggle="tooltip" data-bs-placement="top"  data-bs-title="Approve device" ></i></a>`}
-                                        
-                                    ${employee.device_status == 2 ?
-                                        `<i class="fa-regular fa-circle-xmark  text-danger mx-2" style="font-size: 20px; cursor: not-allowed;" disabled></i>` :
-                                        `<a href="#." data-bs-toggle="modal"  data-bs-target="#disapproverequest" onclick="deviceModel(${employee.device_id})"><i class="fa-regular fa-circle-xmark   text-warning mx-2" style="font-size: 20px;cursor: pointer;" data-bs-toggle="tooltip" data-bs-placement="top"  data-bs-title="Disapprove device"></i></a>`}
- 
-                                </td>
-                            </tr>`;
-                    });
-                    $('#all_employees_devices').html(emp_record);
-
-                    dataTable = $('#employees_device_ajax').DataTable({
-                        order: false,
-                        search: { regex: true },
-                        aLengthMenu: [
-                            [10, 25, 50, 100, -1],
-                            [10, 25, 50, 100, "All"]
-                        ],
-                        iDisplayLength: 100
-                    
-                    });
-                
-                } else {
-                    
-                    console.error('Failed to retrieve employees:', response.message);
-                }
-            },
-            error: function(jqXHR, textStatus) {
-                var errorStatus = jqXHR.status;
-                if (errorStatus == 0) {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Employee device records failed please try again',
-                        timer: 4000,
-                    });
-                    setTimeout(() => {
-                        location.reload();
-                    }, 4000);
-                } else {
-                    if (errorStatus == 419) {
-                        location.reload();
-                    } else {
-                        Toast.fire({
-                            icon: 'warning',
-                            title: 'Try Again. Error Code ' + errorStatus,
-                            timer: 3000,
-                        })
-                    }
-                }
-            }
-        });
-    }   
-
-
-</script>
 
 @endpush

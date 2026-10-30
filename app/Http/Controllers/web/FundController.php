@@ -80,7 +80,7 @@ class FundController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Add Fund", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -145,7 +145,7 @@ class FundController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Update Fund", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -201,7 +201,7 @@ class FundController extends Controller
             }         
         }catch(\Exception $e){
             $this->create_error_log('Delete Fund', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -286,7 +286,7 @@ class FundController extends Controller
     
             }catch(\Exception $e){
                 $this->create_error_log('Employee Funds Fetch', $e);
-                if(!env('APP_DEBUG')){
+                if(!config('app.debug')){
                     return response()->json([
                         'status' => 'FALSE',
                         'msg' => "Something went wrong. Please try again.",

@@ -43,7 +43,10 @@ class PushNotificationJob implements ShouldQueue
     {
         try {
             
-            $server_api_key = 'AAAAt4nPc8M:APA91bG0ul8qsNkufwrT3252M2bvArWu2Vthta5fCrNz8lK9DZSmGZf1QftyKjPUDip8UbTzmQwnvF_b31EZmTP7FZqtJIhTNSr1ULxdY0oJ-_Skv2ljnyOI9m1V9KZtGaPwfdSNXJyb';
+            $server_api_key = config('services.firebase.fcm_server_key');
+            if(empty($server_api_key) || empty($this->fcm_token)){
+                return;
+            }
 
             $data = [
                 "registration_ids" => [$this->fcm_token],
@@ -60,7 +63,7 @@ class PushNotificationJob implements ShouldQueue
 
         } catch (\Exception $e) {
             $this->create_error_log('Push Notification Mobile App', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

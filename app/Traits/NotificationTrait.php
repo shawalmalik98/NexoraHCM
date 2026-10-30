@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Helpers\CustomHelper;
 use App\Models\Notification;
 use App\Models\{Employees,HrmSetting};
 use App\Models\NotificationStatus;
@@ -60,7 +61,7 @@ trait NotificationTrait {
 			
 			if(!empty($login_user_detail)){
 
-				if($login_user_detail[0]['employee_department'] == 2 || $login_user_detail[0]['employee_department'] == 1){
+				if(CustomHelper::dept_has_role($login_user_detail[0]['employee_department'], 'hr', $login_user_detail[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user_detail[0]['employee_department'], 'admin', $login_user_detail[0]['employee_id'] ?? null)){
 					
 					// $wherquery = "CONVERT(DATE , notification_time, 100) >= '".$login_user_detail[0]['employee_doj']."'";
 

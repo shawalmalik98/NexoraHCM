@@ -5,16 +5,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Attendance Report</title>
 		
-	<meta name="description" content="More than five years back a group of few members started IIL Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
-
-
-	<meta itemprop="name" content="Portal || IIL">
-	<meta itemprop="description" content="More than five years back a group of few members started IIL Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
+<meta name="description" content="Attendance report">
 
 
 	<meta property="og:type" content="website">
-	<meta property="og:title" content="Portal || IIL">
-	<meta property="og:description" content="More than five years back a group of few members started IIL Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
     <link rel="icon" href="{{ url('portal_assets/images/hcm-img.png') }}" />
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" >
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -61,7 +55,7 @@
                 @if(!empty($companySetting['company_logo']))
                     <img src="{{$companySetting['company_logo']}}" draggable="false" alt="logo" class="logo" style="width:10%">
                 @else
-                    <img src="{{ url('/portal_assets/images/logo.png') }}" draggable="false" class="img-fluid" >
+                    <img src="{{ CustomHelper::hcm_default_settings()['company_logo'] ?? '' }}" draggable="false" class="img-fluid" >
                 @endif
                 
                 <h1 class="text-center" style="margin-top:1%">{{$companySetting['company_name']}}</h1>

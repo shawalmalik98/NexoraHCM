@@ -7,6 +7,9 @@ $(function () {
             [10, 25, 50, 100, 500, "All"]
         ],
         iDisplayLength: 500,
+        paging: $('#tableDailyAttendance').is('[data-server-paginated]') ? false : true,
+        info: $('#tableDailyAttendance').is('[data-server-paginated]') ? false : true,
+        searching: $('#tableDailyAttendance').is('[data-server-paginated]') ? false : true,
     });
 
     const present = present_attendance;

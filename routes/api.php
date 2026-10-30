@@ -76,9 +76,8 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
             // });
         });
         
-        // Route::get('my-attendance', [AttendanceController::class, 'personal_attendace']);
         Route::get('get-my-todays-attendance', [AttendanceController::class, 'get_todays_attendance']);
-        Route::get('my-attendance', [AttendanceController::class, 'personal_attendace_sap_api']);
+        Route::get('my-attendance', [AttendanceController::class, 'personal_attendace']);
         // attendance end
 
         // attendance request start
@@ -128,10 +127,6 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         Route::post('delete-wfh-request', [WFHController::class, 'delete_wfh_request']);
         Route::post('/wfh-approve-request-by-hr', [WFHController::class, 'approve_request']);
         Route::post('/wfh-disapprove-request-by-hr', [WFHController::class, 'disapprove_request']);
-        Route::post('/wfh-approve-request-by-lead', [WFHController::class, 'approve_request_by_lead']);
-        Route::post('/wfh-disapprove-request-by-lead', [WFHController::class, 'disapprove_request_by_lead']);
-        Route::post('/wfh-hard-approve-request', [WFHController::class, 'hard_approve_request_by_hr']);
-        Route::post('/wfh-hard-disapprove-request', [WFHController::class, 'hard_disapprove_request_by_hr']);
         Route::get('wfh-today', [WFHController::class, 'wfh_today']);
         //Wfh end
 
@@ -193,7 +188,6 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         //payroll start
         Route::get('/my-payroll', [PayrollController::class, 'my_payroll']);
         Route::post('/calculate-my-payroll', [PayrollController::class, 'calculate_my_payroll']);
-        Route::get('/individual-payroll-pdf/{payroll_id}',[PayrollController::class,'individual_payroll_pdf']);
         Route::post('/account-identification',[PayrollController::class,'account_identification']);
         //payroll end
 
@@ -227,7 +221,6 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         // meeting end
 
         // employee api start
-        Route::get('/get-all-employees', [EmployeeApiController::class, 'get_all_employees']);
         Route::get('/get-employee-detail', [EmployeeApiController::class, 'get_employee_detail']);
         Route::get('/employee-personal-documents', [EmployeeApiController::class, 'employee_personal_documents']);
         Route::get('/download-personal-document', [EmployeeApiController::class, 'download_personal_document']);

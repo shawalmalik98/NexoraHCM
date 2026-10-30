@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -37,7 +38,7 @@ class AdvanceSalaryController extends Controller
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
 
-            if($login_user[0]['employee_department'] == 3 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
                 
                 $limit_query = '500';
                 
@@ -50,11 +51,11 @@ class AdvanceSalaryController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->request_created_date) || !empty($request_data->req_status)){
                     
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
-                        $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
+                        $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location)." ";
+                        $where_clause_to   .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location)." "; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= " AND tbl_advance_salary_request.employee_id = '".$request_data->emp_name."' ";
+                        $where_clause .= " AND tbl_advance_salary_request.employee_id = ".\DB::getPdo()->quote((string) $request_data->emp_name)." ";
                     }
                     if(!empty($request_data->request_created_date)){
                         $created_date = date("d-m-Y", strtotime($request_data->request_created_date));
@@ -62,25 +63,32 @@ class AdvanceSalaryController extends Controller
                        
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= " AND tbl_advance_salary_request.request_approved_by_finance = '".$request_data->req_status."'";
+                        $where_clause .= " AND tbl_advance_salary_request.request_approved_by_finance = ".\DB::getPdo()->quote((string) $request_data->req_status)."";
                     }
                 
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-                $all_requests = AdvanceSalary::select(['advance_salary_request_id','tbl_advance_salary_request.employee_id','effective_payroll_period','advance_salary_amount','request_message','request_approved_by_finance','request_approved_date_finance','request_aprrover_message','request_status','request_created_at'])
+                $search = trim((string) request()->input('search'));
+                $pagination = AdvanceSalary::select(['advance_salary_request_id','tbl_advance_salary_request.employee_id','effective_payroll_period','advance_salary_amount','request_message','request_approved_by_finance','request_approved_date_finance','request_aprrover_message','request_status','request_created_at'])
                 ->join('tbl_employees', 'tbl_advance_salary_request.employee_id', '=', 'tbl_employees.employee_id')
                 ->whereRaw($where_clause)
                 ->orderBy('advance_salary_request_id', 'DESC')
-                ->limit($limit_query)
-                ->get()->toArray();
+                ->when($search !== '', function($query) use($search){
+                        $query->where(function($query) use($search){
+                            $query->where('employee_name','like','%'.$search.'%')
+                                ->orWhere('employee_code','like','%'.$search.'%');
+                        });
+                    })
+                    ->paginate(CustomHelper::per_page(), ['*'])->withQueryString();
+                $all_requests = $pagination->getCollection()->toArray();
 
                 $responsed_request = RequestApproval::where('request_module_id', 4)->pluck('request_id')->toArray();
     
             }
     
-            elseif($login_user[0]['employee_department'] != 3 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
               
                 $login_employee_id = $login_user[0]['employee_id'];
                 
@@ -91,25 +99,26 @@ class AdvanceSalaryController extends Controller
                 if(!empty($request_data->employee_location) || !empty($request_data->emp_status) || !empty($request_data->emp_name) || !empty($request_data->req_status)){
 
                     if(!empty($request_data->employee_location)){
-                        $where_clause .= " AND employee_location = '".$request_data->employee_location."' ";
-                        $where_clause_to   .= " AND employee_location = '".$request_data->employee_location."' "; 
+                        $where_clause .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location)." ";
+                        $where_clause_to   .= " AND employee_location = ".\DB::getPdo()->quote((string) $request_data->employee_location)." "; 
                     }
                     if(!empty($request_data->emp_name)){
-                        $where_clause .= " AND tbl_advance_salary_request.employee_id = '".$request_data->emp_name."' ";
+                        $where_clause .= " AND tbl_advance_salary_request.employee_id = ".\DB::getPdo()->quote((string) $request_data->emp_name)." ";
                     }
                     if(!empty($request_data->req_status)){
-                        $where_clause .= " AND tbl_advance_salary_request.request_approved_by_finance = '".$request_data->req_status."'";
+                        $where_clause .= " AND tbl_advance_salary_request.request_approved_by_finance = ".\DB::getPdo()->quote((string) $request_data->req_status)."";
                     }
                 }
 
-                $employees_data = Employees::where('employee_isactive','=',$status)->whereIn('employee_id', $total_team_member)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
                 
                 $all_requests = AdvanceSalary::join('tbl_employees', 'tbl_advance_salary_request.employee_id', '=', 'tbl_employees.employee_id')->whereIn('tbl_advance_salary_request.employee_id',$total_team_member)->whereRaw($where_clause)->orderBy('advance_salary_request_id','DESC')->get(['advance_salary_request_id','tbl_advance_salary_request.employee_id','effective_payroll_period','advance_salary_amount','request_message','request_approved_by_finance','request_approved_date_finance','request_aprrover_message','request_status','request_created_at'])->toArray();
               
                 $responsed_request = RequestApproval::where('request_module_id', 4)->where('request_approver_id',$login_user[0]['employee_id'])->pluck('request_id')->toArray();
             }
 
-            $send_data = compact('title','login_user','all_requests','employees_data','employee_locations','responsed_request');
+            $pagination = $pagination ?? null;
+            $send_data = compact('title','login_user','all_requests','employees_data','employee_locations','responsed_request','pagination');
             
             return view('advance-salary.all-advance-salary', $send_data);
 
@@ -254,7 +263,7 @@ class AdvanceSalaryController extends Controller
             }    
         }catch(\Exception $e){
             $this->create_error_log('Apply Advance Salary Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -276,6 +285,12 @@ class AdvanceSalaryController extends Controller
     protected function advance_salary_request_approval(Request $request){
 
         try{
+
+            // only the module's role holders, or the requester's own managers, may respond
+            $request_employees = AdvanceSalary::whereIn('advance_salary_request_id', explode(',', (string) $request->input('ids')))->pluck('employee_id')->toArray();
+            if(!$this->can_respond_for($request_employees, ['finance'])){
+                return $this->not_allowed_response();
+            }
 
             if($request['status'] == "Approve"){
 
@@ -590,7 +605,7 @@ class AdvanceSalaryController extends Controller
         
         }catch(\Exception $e){
             $this->create_error_log('Approved and Disapproved Advance Salary Request by Manager', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -720,7 +735,7 @@ class AdvanceSalaryController extends Controller
             }   
         }catch(\Exception $e){
             $this->create_error_log('Update Advance Salary Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -792,7 +807,7 @@ class AdvanceSalaryController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log('Delete Advance Salary Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

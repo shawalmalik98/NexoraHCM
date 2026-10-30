@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -26,9 +27,18 @@ class OfficeLocationsController extends Controller
             
             $login_user = $this->get_login_user_detail();
 
-            $locations = OfficeLocation::selectRaw('tbl_office_locations.*, COUNT(e.employee_id) as total_employees')
+            $search = trim((string) $request->input('search'));
+
+            $pagination = OfficeLocation::selectRaw('tbl_office_locations.*, COUNT(e.employee_id) as total_employees')
             ->leftJoin('tbl_employees_location as el', 'tbl_office_locations.location_id', '=', 'el.emp_loc_loc_id')
             ->leftJoin('tbl_employees as e', 'el.emp_loc_employee_id', '=', 'e.employee_id')
+            ->when($search !== '', function($query) use($search){
+                $query->where(function($query) use($search){
+                    $query->where('tbl_office_locations.location_title','like','%'.$search.'%')
+                        ->orWhere('tbl_office_locations.location_address','like','%'.$search.'%')
+                        ->orWhere('tbl_office_locations.distributor_code','like','%'.$search.'%');
+                });
+            })
             ->groupBy(
                 'tbl_office_locations.location_id', 'tbl_office_locations.location_title',
                 'tbl_office_locations.location_alt_id', 'tbl_office_locations.distributor_code',
@@ -40,14 +50,16 @@ class OfficeLocationsController extends Controller
                 // 'tbl_office_locations.last_updated_by'
             )
             ->orderByRaw('COUNT(e.employee_id) DESC')
-            ->get()
-            ->toArray();        
-            
+            ->orderBy('tbl_office_locations.location_id')
+            ->paginate(CustomHelper::per_page())->withQueryString();
+
+            $locations = $pagination->getCollection()->toArray();
+
             $get_employee_location_id = array_column($locations, 'location_id');
 
-            $employee_location_id = Employees::whereIn('employee_location', $get_employee_location_id)->pluck('employee_location')->toArray();
+            $employee_location_id = Employees::whereIn('employee_location', $get_employee_location_id)->distinct()->pluck('employee_location')->toArray();
 
-            $send_data = compact('title' , 'login_user', 'locations','employee_location_id','locations');
+            $send_data = compact('title' , 'login_user', 'locations','employee_location_id','locations','pagination');
 
             if($request->download == 'TRUE'){
 
@@ -141,7 +153,7 @@ class OfficeLocationsController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Add Location", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -213,7 +225,7 @@ class OfficeLocationsController extends Controller
              
         }catch(\Exception $e){
             $this->create_error_log("Update Location", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -264,7 +276,7 @@ class OfficeLocationsController extends Controller
             }         
         }catch(\Exception $e){
             $this->create_error_log('Delete Location Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -451,7 +463,7 @@ class OfficeLocationsController extends Controller
                     
                     return response()->json([
                         'status' => 'TRUE',
-                        'msg' => 'Upload Distributor Location record',
+                        'msg' => 'Upload Location record',
                         'error_logs' => $error_logs
                     ]);
                 // }

@@ -39,15 +39,6 @@
 
             @if(!empty($all_attendances))
             <div class="m-0">
-                <a href="{{ url('monthly-attendance/download-day-wise-attendance-report') }}?from_date={{$from_date}}&to_date={{$to_date}}" class="btn btn-sm btn-info" method="GET">
-                    <span class="svg-icon svg-icon-2">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect opacity="0.5" x="11.364" y="20.364" width="16" height="2" rx="1" transform="rotate(-90 11.364 20.364)" fill="currentColor"></rect>
-                            <rect x="4.36396" y="11.364" width="16" height="2" rx="1" fill="currentColor"></rect>
-                        </svg>
-                    </span>
-                    Download Day Wise Attendance Report
-                </a>
 
                 @if (!empty(Request::get('department_id')) || 
                     !empty(Request::get('business_unit')) || 
@@ -169,14 +160,9 @@
                                                 <select class="form-select " data-kt-select2="true" data-placeholder="Select Business Unit" name="business_unit">
                                                 <option value="">Select Business Unit</option>
                                                 <option value="All" @if (Request::get('business_unit') == 'All') selected @endif>All Business Units</option>
-                                                <option value="Candyland" @if (Request::get('business_unit') == 'Candyland') selected @endif>CandyLand</option>
-                                                <option value="Bisconni" @if (Request::get('business_unit') == 'Bisconni') selected @endif>Bisconni</option>
-                                                <option value="Snackcity" @if (Request::get('business_unit') == 'Snackcity') selected @endif>Snackcity</option>
-                                                <option value="Hudson Pharma" @if (Request::get('business_unit') == 'Hudson Pharma') selected @endif>Hudson Pharma</option>
-                                                <option value="Astro" @if (Request::get('business_unit') == 'Astro') selected @endif>Astro</option>  
-                                                <option value="Act Group" @if (Request::get('business_unit') == 'Act Group') selected @endif>Act Group</option>  
-                                                <option value="Ismail Nutrition" @if (Request::get('business_unit') == 'Ismail Nutrition') selected @endif>Ismail Nutrition</option>
-                                                <option value="Flour" @if (Request::get('business_unit') == 'Flour') selected @endif>Flour</option>
+                                                @foreach (CustomHelper::business_units() as $business_unit)
+                                                    <option value="{{ $business_unit }}" @if (Request::get('business_unit') == $business_unit) selected @endif>{{ $business_unit }}</option>
+                                                @endforeach
                                             </select>
                                             </div>
                                             
@@ -213,7 +199,7 @@
                 <div class="card-body">
                     <div id="tableEmployee_wrapper" class="dataTables_wrapper dt-bootstrap4 no-footer">
                         <div class="table-responsive">
-                            <table class="table gs-0 gy-4 dataTable table-row-bordered" id="tableAllEmployeeAttendance">
+                            <table class="table gs-0 gy-4 dataTable table-row-bordered" id="tableAllEmployeeAttendance" data-server-paginated="true">
                                 <thead>
                                     <tr class="fw-bold text-muted bg-light">
                                         <th class="ps-3">Employee Code & Name</th>
@@ -260,7 +246,7 @@
                                                 <td class="text-center">
 
                                                     @if(!empty(Request::get('from_date')) || !empty(Request::get('to_date')))
-                                                        <a href="{{ url('sap-attendance') }}?from_date={{ Request::get('from_date') }}&to_date={{ Request::get('to_date') }}&employee_id={{ $all_attendance['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Employee Attendance">
+                                                        <a href="{{ url('attendance/attendance-calender') }}?employee_id={{ $all_attendance['employee_id'] }}&month={{ date('m', strtotime(Request::get('from_date') ?: Request::get('to_date'))) }}&year={{ date('Y', strtotime(Request::get('from_date') ?: Request::get('to_date'))) }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Employee Attendance">
                                                             
                                                             <span class="svg-icon svg-icon-3">
                                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -270,7 +256,7 @@
                                                             </span>
                                                         </a>
                                                     @else   
-                                                        <a href="{{ url('sap-attendance') }}?from_date={{ $from_date }}&to_date={{ $to_date }}&employee_id={{ $all_attendance['employee_id'] }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Employee Attendance">
+                                                        <a href="{{ url('attendance/attendance-calender') }}?employee_id={{ $all_attendance['employee_id'] }}&month={{ date('m', strtotime($from_date)) }}&year={{ date('Y', strtotime($from_date)) }}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1 view_btn" data-bs-toggle="tooltip" title="Employee Attendance">
                                                                 
                                                             <span class="svg-icon svg-icon-3">
                                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -291,6 +277,7 @@
                                     @endif
                                 </tbody>
                             </table>
+                            @include('include.server-pagination', ['paginator' => $pagination ?? null])
                         </div>
                     </div>
                 </div>
@@ -410,6 +397,6 @@ $('#department_select').change(function (e) {
 });
 </script>
 
-<script src="{{url('assets/js/attendance/all-employee-manage-attendance.js')}}"></script>
+<script src="{{url('assets/js/attendance/all-employee-manage-attendance.js')}}?v=2"></script>
     
 @endpush

@@ -166,7 +166,7 @@
                             </div>
                         </div>
 
-                        @if($login_user[0]['employee_department'] == 1 || !empty($departments_hod))
+                        @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || !empty($departments_hod))
                             <div class="col-md-12 mb-8 mt-3 fv-row">
                                 <label class="fs-6 fw-semibold mb-2">Employee</label>
                                     

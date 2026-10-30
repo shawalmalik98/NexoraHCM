@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -35,34 +36,35 @@ class WFHApiController extends Controller
             $all_requests = array();
             $responsed_request = array();
 
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
 
                 $limit_query = '300';
                 $where_clause = '1=1 AND employee_isactive = "'.$status.'"';
                 if(!empty($request->emp_status) || !empty($request->emp_name) || !empty($request->request_for_date)  || !empty($request->request_submited_date) || !empty($request->req_status)){
                     $limit_query = '';
                     if(!empty($request->emp_name)){
-                        $where_clause .= ' AND wfh_employee_id = "'.$request->emp_name.'"';
+                        $where_clause .= ' AND wfh_employee_id = '.\DB::getPdo()->quote((string) $request->emp_name).'';
                     }
                     if(!empty($request->request_for_date)){
-                        $where_clause .= ' AND wfh_request_date = "'.$request->request_for_date.'"';
+                        $where_clause .= ' AND wfh_request_date = '.\DB::getPdo()->quote((string) $request->request_for_date).'';
                     }
                     if(!empty($request->request_submited_date)){
                         $submition_date = date("d-m-Y", strtotime($request->request_submited_date));
                         $where_clause .= ' AND wfh_request_submition_date LIKE "%'.$submition_date.'%"';
                     }
                     if(!empty($request->req_status)){
-                        $where_clause .= ' AND wfh_request_approved_by_hr = "'.$request->req_status.'"';
+                        $where_clause .= ' AND wfh_request_approved_by_hr = '.\DB::getPdo()->quote((string) $request->req_status).'';
                     }
                 }
 
                 $all_requests = WFH::join('tbl_employees', 'tbl_work_from_homes.wfh_employee_id', '=', 'tbl_employees.employee_id')
                 ->whereRaw($where_clause)
                 ->orderBy('wfh_request_id', 'DESC')
+                ->limit($limit_query)
                 ->get(['wfh_request_id','wfh_employee_id','employee_name', 'wfh_request_date','wfh_request_message','wfh_request_approved_by_hr','wfh_request_approved_date_hr','wfh_request_submition_date'])->toArray();
             }
 
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] !== 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -75,10 +77,10 @@ class WFHApiController extends Controller
                 if(!empty($request->emp_status) || !empty($request->emp_name) || !empty($request->req_status)){
 
                     if(!empty($request->emp_name)){
-                        $where_clause .= ' AND wfh_employee_id = "'.$request->emp_name.'"';
+                        $where_clause .= ' AND wfh_employee_id = '.\DB::getPdo()->quote((string) $request->emp_name).'';
                     }
                     if(!empty($request->req_status)){
-                        $where_clause .= ' AND wfh_request_approved_by_hr = "'.$request->req_status.'"';
+                        $where_clause .= ' AND wfh_request_approved_by_hr = '.\DB::getPdo()->quote((string) $request->req_status).'';
                     }
                 }
 
@@ -120,7 +122,7 @@ class WFHApiController extends Controller
 
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
-            $my_requests = WFH::where('wfh_employee_id' , $login_user[0]['employee_id'])->orderBy('wfh_request_id', 'DESC')->get()->toArray();
+            $my_requests = WFH::where('wfh_employee_id' , (string) $login_user[0]['employee_id'])->orderBy('wfh_request_id', 'DESC')->get()->toArray();
 
             $wfh_request_id = array_column($my_requests,'wfh_request_id');
 
@@ -182,7 +184,7 @@ class WFHApiController extends Controller
 
                         $request_date = date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request->post('from_date'))));
 
-                        $checking_request = WFH::where('wfh_employee_id', $login_user[0]['employee_id'])->whereIn('wfh_request_date',[$request_date])->get(['wfh_request_date'])->toArray();
+                        $checking_request = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])->whereIn('wfh_request_date',[$request_date])->get(['wfh_request_date'])->toArray();
 
                         foreach($checking_request as $request_date){
 
@@ -206,14 +208,14 @@ class WFHApiController extends Controller
                     }
 
                     $date = $request->post('request_date');
-                    $checking_request = WFH::where('wfh_employee_id', $login_user[0]['employee_id'])->where('wfh_request_date', $request->post('request_date'))->where('wfh_request_approved_by_hr', '!=', 3)->get()->toArray();
+                    $checking_request = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])->where('wfh_request_date', $request->post('request_date'))->where('wfh_request_approved_by_hr', '!=', 3)->get()->toArray();
 
                 }
 
                 $checking_request = [];
                 
                 if($request->post('days_assign') == 'single'){
-                    $checking_request = WFH::where('wfh_employee_id', $login_user[0]['employee_id'])->where('wfh_request_date',$request->post('request_date'))->get()->toArray();
+                    $checking_request = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])->where('wfh_request_date',$request->post('request_date'))->get()->toArray();
                 }
 
                 if(empty($checking_request)){
@@ -227,7 +229,7 @@ class WFHApiController extends Controller
 
                             $dates =  date('Y-m-d', strtotime('+'.$i.' day',  strtotime($request->post('from_date'))));
 
-                            $checking_request_dates = WFH::where('wfh_employee_id', $login_user[0]['employee_id'])->where('wfh_request_date',$dates)->get(['wfh_request_date'])->toArray();
+                            $checking_request_dates = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])->where('wfh_request_date',$dates)->get(['wfh_request_date'])->toArray();
 
                             if(empty($checking_request_dates)){
 
@@ -238,8 +240,8 @@ class WFHApiController extends Controller
                                 $wfh_request->wfh_request_submition_date = date('d-m-Y H:i:s');
                                 $process = $wfh_request->save();
 
-                                $month = date('m', strtotime($dates));
-                                $default_approved_wfh = WFH::where('wfh_employee_id', $login_user[0]['employee_id'])->whereMonth('wfh_request_date',$month)->count();
+                                $month = date('m', strtotime($dates)); $wfh_year = date('Y', strtotime($dates));
+                                $default_approved_wfh = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])->whereMonth('wfh_request_date',$month)->whereYear('wfh_request_date',$wfh_year)->count();
                                 
                                 if($default_approved_wfh == 1){
         
@@ -260,8 +262,8 @@ class WFHApiController extends Controller
                         $wfh_request->wfh_request_submition_date = date('d-m-Y H:i:s');
                         $process = $wfh_request->save();
 
-                        $month = date('m', strtotime($request->post('request_date')));
-                        $default_approved_wfh = WFH::where('wfh_employee_id', $login_user[0]['employee_id'])->whereMonth('wfh_request_date',$month)->count();
+                        $month = date('m', strtotime($request->post('request_date'))); $wfh_year = date('Y', strtotime($request->post('request_date')));
+                        $default_approved_wfh = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])->whereMonth('wfh_request_date',$month)->whereYear('wfh_request_date',$wfh_year)->count();
                         
                         if($default_approved_wfh == 1){
 
@@ -354,7 +356,7 @@ class WFHApiController extends Controller
 
                     if(empty($checking_request_responsed) && $wfh_update_request->wfh_request_approved_by_hr == 1){
 
-                        $checking_request = WFH::where('wfh_employee_id', $login_user[0]['employee_id'])->where('wfh_request_date',$request->post('request_date'))->where('wfh_request_id','!=',$request->post('request_id'))->get()->toArray();
+                        $checking_request = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])->where('wfh_request_date',$request->post('request_date'))->where('wfh_request_id','!=',$request->post('request_id'))->get()->toArray();
 
                         if(empty($checking_request)){
 
@@ -484,6 +486,9 @@ class WFHApiController extends Controller
 
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
             $get_wfh = WFH::find($request->post('wfh_request_id'));
+            if(empty($login_user) || empty($get_wfh) || !$this->can_respond_for([$get_wfh->wfh_employee_id], ['hr'], $login_user[0]['employee_id'])){
+                return $this->not_allowed_response();
+            }
 
             if(!empty($get_wfh)){
 
@@ -529,6 +534,9 @@ class WFHApiController extends Controller
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
             $get_wfh = WFH::find($request->post('wfh_request_id'));
+            if(empty($login_user) || empty($get_wfh) || !$this->can_respond_for([$get_wfh->wfh_employee_id], ['hr'], $login_user[0]['employee_id'])){
+                return $this->not_allowed_response();
+            }
 
             if(!empty($get_wfh)){
 
@@ -573,7 +581,7 @@ class WFHApiController extends Controller
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
            
             $get_wfh_request_today = WFH::select('*')
-                ->where('wfh_employee_id','=',$login_user[0]['employee_id'])
+                ->where('wfh_employee_id','=',(string) $login_user[0]['employee_id'])
                 ->where('wfh_request_date','=',date('Y-m-d'))
                 ->get()->toArray();
             

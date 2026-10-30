@@ -74,11 +74,13 @@ class MarkAttendanceApiController extends Controller
 					$employee_data = Employees::where('employee_id', $login_user[0]['employee_id'])->get(['employee_id','employee_shift_flexibilty'])->toArray();
 
 					if(!empty($employee_data)){
-						if(date('H') >= 13){
-							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In after 1 PM.","",500);
+						$check_in_until = config('attendance.mobile_check_in_until');
+						if($check_in_until !== null && $check_in_until !== '' && (int) date('H') >= (int) $check_in_until){
+							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In after ".date('g A', mktime((int) $check_in_until, 0)).".","",500);
 						}
-						if(date('H') < 07){
-							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In before 7 AM.","",500);
+						$check_in_from = config('attendance.mobile_check_in_from');
+						if($check_in_from !== null && $check_in_from !== '' && (int) date('H') < (int) $check_in_from){
+							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In before ".date('g A', mktime((int) $check_in_from, 0)).".","",500);
 						}
 						if($employee_data[0]['employee_shift_flexibilty'] != '1'){
 							$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
@@ -286,12 +288,14 @@ class MarkAttendanceApiController extends Controller
 					}else{
 
 						
-						if(date('H') >= 13){
-							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In after 1 PM.","",500);
+						$check_in_until = config('attendance.mobile_check_in_until');
+						if($check_in_until !== null && $check_in_until !== '' && (int) date('H') >= (int) $check_in_until){
+							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In after ".date('g A', mktime((int) $check_in_until, 0)).".","",500);
 						}
 					
-						if(date('H') < 07){
-							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In before 7 AM.","",500);
+						$check_in_from = config('attendance.mobile_check_in_from');
+						if($check_in_from !== null && $check_in_from !== '' && (int) date('H') < (int) $check_in_from){
+							return $this->api_response_json(FALSE,"Sorry ! According to policy you can't mark Check In before ".date('g A', mktime((int) $check_in_from, 0)).".","",500);
 						}
 
 						if($get_attendance[0]['att_check_in_status'] == '0' || date('H:i:s') <= $get_attendance[0]['att_check_in_time']){
@@ -393,8 +397,6 @@ class MarkAttendanceApiController extends Controller
 							$check_out->att_co_lat = $request->post('location_latitude');
 							$check_out->att_co_long = $request->post('location_longitude');
 							$check_out->att_co_marked_time = date('Y-m-d H:i:s');
-							$check_out->sap_co_flag = 0;
-							$check_out->sap_co_timestamp = NULL;
 							$check_out->save();
 							
 							return $this->api_response_json(TRUE,"Check Out Successfully","",200);
@@ -465,8 +467,6 @@ class MarkAttendanceApiController extends Controller
 									$check_out->att_co_lat = $request->post('location_latitude');
 									$check_out->att_co_long = $request->post('location_longitude');
 									$check_out->att_co_marked_time = date('Y-m-d H:i:s');
-									$check_out->sap_co_flag = 0;
-									$check_out->sap_co_timestamp = NULL;
 									$check_out->save();
 
 									return $this->api_response_json(TRUE,"Check Out Successfully","",200);

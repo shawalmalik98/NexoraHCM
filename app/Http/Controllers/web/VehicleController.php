@@ -176,7 +176,7 @@ class VehicleController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Create Vehicle', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -209,7 +209,7 @@ class VehicleController extends Controller
             $process = $document_upload->save();
         }catch (\Exception $e) {
             $this->create_error_log('Store Vehicle Images', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -286,7 +286,7 @@ class VehicleController extends Controller
             }
         } catch (\Exception $e) {
             $this->create_error_log('Update Vehicle Detail', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -389,7 +389,7 @@ class VehicleController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('create_maintenance', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -445,7 +445,7 @@ class VehicleController extends Controller
         catch(\Exception $e){
             $this->create_error_log('Update_maintenance', $e);
             $send_data = compact('title');
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -472,7 +472,7 @@ class VehicleController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Delete mentenance", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -564,7 +564,7 @@ class VehicleController extends Controller
         catch(\Exception $e){
             $this->create_error_log('create_allotment', $e);
             $send_data = compact('title');
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -636,7 +636,7 @@ class VehicleController extends Controller
         catch(\Exception $e){
             $this->create_error_log('Update_Allotment',$e);
             $send_data = compact('title');
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -663,7 +663,7 @@ class VehicleController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Delete Allotment", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -701,7 +701,7 @@ class VehicleController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

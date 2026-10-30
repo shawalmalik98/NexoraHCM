@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Models\LeaveDeduction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\{Attendance, Employees, Leave, OfficeLocation,LeaveManagement,LeaveRequest};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
-use App\Helpers\ActivityTracker;
+use App\Helpers\{ActivityTracker, CustomHelper};
+use Illuminate\Pagination\LengthAwarePaginator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -37,7 +39,7 @@ class LeavesController extends Controller
 
             $where_clause = '1=1';
             if(!empty($request->employee_location)){
-                $where_clause .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause .= ' AND employee_location = '.(int) $request->employee_location; 
             }
 
             $employee_locations = OfficeLocation::get(['location_id','location_title'])->toArray();
@@ -100,12 +102,14 @@ class LeavesController extends Controller
                     FROM tbl_employees e
                     INNER JOIN tbl_leave_entitlement le ON le.leaves_employee_id = e.employee_id
                     INNER JOIN tbl_leave_management l ON le.leave_type_id = l.leave_manage_id
+                    WHERE e.employee_isactive = ".(int) $status." AND $where_clause
                     GROUP BY e.employee_id, e.employee_code, e.employee_name, l.leave_name
                 ) e
                 LEFT JOIN 
                 (
                     SELECT att_employee_id, att_check_overall_status, COUNT(att_check_overall_status) AS count_leaves
                     FROM tbl_attendance
+                    WHERE att_check_overall_status IN (SELECT leave_name FROM tbl_leave_management)
                     GROUP BY att_employee_id, att_check_overall_status
                 ) a ON e.employee_id = a.att_employee_id AND e.leave_name = a.att_check_overall_status
                 GROUP BY e.employee_id, e.employee_code, e.employee_name
@@ -113,8 +117,24 @@ class LeavesController extends Controller
 
             $leaves_entitled = json_decode(json_encode($leaves_entitled), TRUE);
 
+            // leaves taken by payroll for late comings / half days count as availed
+            $deducted_by_employee = LeaveDeduction::whereNotNull('ld_leave_type_id')->selectRaw('ld_employee_id, COUNT(*) as total')->groupBy('ld_employee_id')->pluck('total','ld_employee_id')->toArray();
+            foreach($leaves_entitled as $key => $leave_row){
+                $leaves_entitled[$key]['used_get_availed_leaves'] = ($leave_row['used_get_availed_leaves'] ?? 0) + ($deducted_by_employee[$leave_row['employee_id']] ?? 0);
+            }
 
-            $send_data = compact('title','login_user','leaves_entitled','employee_locations');
+            $search = trim((string) $request->input('search'));
+            if($search !== ''){
+                $leaves_entitled = array_values(array_filter($leaves_entitled, function($row) use($search){
+                    return stripos($row['employee_name'], $search) !== false || stripos((string) $row['employee_code'], $search) !== false;
+                }));
+            }
+            $per_page = CustomHelper::per_page();
+            $current_page = LengthAwarePaginator::resolveCurrentPage();
+            $pagination = new LengthAwarePaginator(array_slice($leaves_entitled, ($current_page - 1) * $per_page, $per_page), count($leaves_entitled), $per_page, $current_page, ['path' => $request->url(), 'query' => $request->query()]);
+            $leaves_entitled = $pagination->items();
+
+            $send_data = compact('title','login_user','leaves_entitled','employee_locations','pagination');
             
             return view('leave.leaves-entitled',$send_data);
         }
@@ -158,7 +178,7 @@ class LeavesController extends Controller
 
             $where_clause = '1=1';
             if(!empty($request->employee_location)){
-                $where_clause .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
             }
 
             $all_employees = Employees::selectRaw('Sum(CAST(leave_allotement AS INT)) as total_alloted_leave,employee_id,employee_name,employee_code,employee_location,leaves_employee_id')->join('tbl_leave_entitlement', 'tbl_employees.employee_id', '=', 'tbl_leave_entitlement.leaves_employee_id')->join('tbl_leave_management', 'tbl_leave_entitlement.leave_type_id', '=', 'tbl_leave_management.leave_manage_id')->where('employee_isactive',$status)->whereRaw($where_clause)->groupBy('leaves_employee_id','employee_id','employee_name','employee_code','employee_location')->get()->toArray();
@@ -172,7 +192,7 @@ class LeavesController extends Controller
             foreach($all_employees as $employee){
 
 
-                $get_availed_total_leaves =  Attendance::selectRaw('Count(att_check_overall_status) as total_alloted_leave')->where('att_employee_id', $employee['leaves_employee_id'])->whereIn('att_check_overall_status',$leave_name)->count();
+                $get_availed_total_leaves =  Attendance::selectRaw('Count(att_check_overall_status) as total_alloted_leave')->where('att_employee_id', $employee['leaves_employee_id'])->whereIn('att_check_overall_status',$leave_name)->count() + LeaveDeduction::whereNotNull('ld_leave_type_id')->where('ld_employee_id', $employee['leaves_employee_id'])->count();
 
                 $all_availed_leaves = array('used_get_availed_leaves' => $get_availed_total_leaves);
 
@@ -222,7 +242,7 @@ class LeavesController extends Controller
             
             foreach($leaves_entitled as $leaves_entitled_employee){
                 
-                $get_availed_leaves =  Attendance::where('att_employee_id', $employee_id)->where('att_check_overall_status', $leaves_entitled_employee['leave_name'])->count();
+                $get_availed_leaves =  Attendance::where('att_employee_id', $employee_id)->where('att_check_overall_status', $leaves_entitled_employee['leave_name'])->count() + LeaveDeduction::deducted_count_by_name($employee_id, $leaves_entitled_employee['leave_name']);
                 $leaves_entitled[$i]['employee_availed_leaves'] = $get_availed_leaves;
                 
                 $i++;
@@ -262,7 +282,7 @@ class LeavesController extends Controller
             $i =0;
             
             foreach($leaves_entitled as $leaves_entitled_employee){
-                $get_availed_leaves =  Attendance::where('att_employee_id', $employee_id)->where('att_check_overall_status', $leaves_entitled_employee['leave_name'])->count();
+                $get_availed_leaves =  Attendance::where('att_employee_id', $employee_id)->where('att_check_overall_status', $leaves_entitled_employee['leave_name'])->count() + LeaveDeduction::deducted_count_by_name($employee_id, $leaves_entitled_employee['leave_name']);
                 $leaves_entitled[$i]['employee_availed_leaves'] = $get_availed_leaves;
                 $i++;
             }
@@ -343,7 +363,7 @@ class LeavesController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Update Leave Entitlement", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -463,7 +483,7 @@ class LeavesController extends Controller
         catch(\Exception $e){
 
             $this->create_error_log('Add Leave Management', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -562,7 +582,7 @@ class LeavesController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Update Leave Management", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -626,7 +646,7 @@ class LeavesController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log("Manage leave Deleted", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

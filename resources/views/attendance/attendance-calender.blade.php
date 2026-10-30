@@ -60,12 +60,9 @@
                                             <label class="form-label fw-semibold">Month</label>
                                             
                                             <select class="form-select " data-kt-select2="true" data-placeholder="Select Employee" name="employee_id"
-                                                required="required">
+                                                required="required" data-employee-select data-scope="team">
                                                 <option value="">Select Employee</option>
-                                                @foreach ($all_employees as $employees)
-                                                    <option value="{{$employees['employee_id']}}" @if ($employees['employee_id'] == Request::get('employee_id')) selected  @endif>{{$employees['employee_code']}} - {{$employees['employee_name']}}
-                                                    </option>
-                                                @endforeach
+                                                @include('include.employee-selected-options', ['selected' => Request::get('employee_id')])
                                             </select>
                                        
                                             

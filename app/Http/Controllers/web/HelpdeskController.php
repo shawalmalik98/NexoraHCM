@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -41,11 +42,11 @@ class HelpdeskController extends Controller
             if(!empty($request_data->employee_location) || !empty(is_numeric($request_data->emp_status)) || !empty(is_numeric($request_data->emp_name))  || !empty($request_data->request_submited_date)){
                 $limit_query = '';
                 if(!empty($request_data->employee_location)){
-                    $where_clause .= ' AND employee_location = "'.$request_data->employee_location.'"';
-                    $where_clause_to   .= ' AND employee_location = "'.$request_data->employee_location.'"'; 
+                    $where_clause .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).'';
+                    $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request_data->employee_location).''; 
                 }
                 if(!empty($request_data->emp_name)){
-                    $where_clause .= ' AND help_desk_loged_by = "'.$request_data->emp_name.'"';
+                    $where_clause .= ' AND help_desk_loged_by = '.\DB::getPdo()->quote((string) $request_data->emp_name).'';
                 }
                
                 if(!empty($request_data->request_submited_date)){
@@ -54,7 +55,7 @@ class HelpdeskController extends Controller
                 }
             }
 
-            $employees_data = Employees::where('employee_isactive','=',$status)->whereRaw($where_clause_to)->get(['employee_id','employee_code','employee_name'])->toArray();
+            $employees_data = []; // the name filter searches employees through /employee-search
 
             $get_my_help_desks = HelpDesk::join('tbl_employees', 'tbl_help_desk.help_desk_loged_by', '=', 'tbl_employees.employee_id')
             ->join('tbl_help_desk_ticket_status', 'tbl_help_desk.help_desk_id', '=', 'tbl_help_desk_ticket_status.help_desk_id')->whereIn('ticket_status_id',function ($query) {
@@ -245,7 +246,7 @@ class HelpdeskController extends Controller
             }    
         }catch(\Exception $e){
             $this->create_error_log("Add HelpDesk", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -380,7 +381,19 @@ class HelpdeskController extends Controller
             }
 
             $login_user = $this->get_login_user_detail();
-            
+
+            // only the ticket owner, the people / departments it is assigned to, or Admin may change its status
+            $ticket_owner = HelpDesk::where('help_desk_id', $request_data->hd_id)->value('help_desk_loged_by');
+            $involved = $ticket_owner == session('user_session')
+                || HelpDeskForEmployee::where('hd_id', $request_data->hd_id)->where('hdf_employee_id', session('user_session'))->exists()
+                || HelpDeskForDepartment::where('hd_id', $request_data->hd_id)->where('hdf_department_id', $login_user[0]['employee_department'] ?? 0)->exists()
+                || CustomHelper::has_role(session('user_session'), 'admin');
+            if(empty($ticket_owner) || !$involved){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'msg' => "You are not allowed to change this ticket.",
+                ]);
+            }
 
             $last_status = HelpDeskStatus::where('help_desk_id',$request_data->hd_id)->orderBy('ticket_status_id','DESC')->get(['ticket_status'])->toArray();
 
@@ -462,7 +475,7 @@ class HelpdeskController extends Controller
     
         }catch(\Exception $e){
             $this->create_error_log("Ticket Status Change HelpDesk Detail ", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -546,7 +559,7 @@ class HelpdeskController extends Controller
           
         }catch(\Exception $e){
             $this->create_error_log("Help Desk Employee Updated Detail", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -639,7 +652,7 @@ class HelpdeskController extends Controller
           
         }catch(\Exception $e){
             $this->create_error_log("Help Desk Department Updated Detail", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -663,17 +676,16 @@ class HelpdeskController extends Controller
     protected function help_desk_chat(Request $CreateChatRecord){
         $login_user = $this->get_login_user_detail();
 
-        $factory = (new Factory)
-            ->withServiceAccount(__DIR__.'/firebase-secretkey.json')
-            ->withDatabaseUri('https://sourcecode-apps-d94da-hcm.firebaseio.com/');
-
-        $database = $factory->createDatabase();
+        $database = CustomHelper::firebase_database();
+        if($database === null){
+            return response()->json(['status' => 'FALSE', 'msg' => 'Chat is not configured.']);
+        }
         $NewChatMessage = $database->getReference('chats/HelpDeskChat/')->push([
             'message' => $CreateChatRecord->message,
             'sender_id' => $login_user[0]['employee_id'],
             'help_desk_id' => $CreateChatRecord->input('hd_id'),
             'sender_name' => $login_user[0]['employee_name'],
-            'sender_avatar' => ($login_user[0]['profile_avatar']) ?? 'source-code.png',
+            'sender_avatar' => ($login_user[0]['profile_avatar']) ?? 'Avatar.jpg',
             'date' => date('d F, Y'),
             'time' => date('h:i A')
         ]);
@@ -753,7 +765,7 @@ class HelpdeskController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

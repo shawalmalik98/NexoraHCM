@@ -23,13 +23,13 @@ class LoanApiController extends Controller
 
             $title = Self::MAIN_TITLE2;
 
-            $all_loans = LoanRequest::where('request_employee_id', $login_user[0]['employee_id'])->orderBy('loan_request_id', 'DESC')->get()->toArray();
+            $all_loans = LoanRequest::where('request_employee_id', (string) $login_user[0]['employee_id'])->orderBy('loan_request_id', 'DESC')->get()->toArray();
 
             $loans_request_id = array_column($all_loans,'loan_request_id');
 
             $responsed_request = RequestApproval::where('request_module_id', 5)->whereIn('request_id', $loans_request_id)->pluck('request_id')->toArray();
 
-            $loan_given_amount = LoanRequest::selectRaw('sum(`loan_request_amount`) as total')->where('request_approved_by_finance', 2)->where('request_employee_id', $login_user[0]['employee_id'])->get()->toArray();
+            $loan_given_amount = LoanRequest::selectRaw('sum(`loan_request_amount`) as total')->where('request_approved_by_finance', 2)->where('request_employee_id', (string) $login_user[0]['employee_id'])->get()->toArray();
           
             $loan_return_amount = Loan::join('tbl_employees', 'tbl_employees.employee_id', '=', 'tbl_loans.employee_code')->join('tbl_loan_installments', 'tbl_loan_installments.loan_installment_loan_id', '=', 'tbl_loans.loan_id')->where('employee_id', $login_user[0]['employee_id'])->selectRaw('sum(`loan_installment_amount`) as total')->get()->toArray();
             
@@ -98,7 +98,7 @@ class LoanApiController extends Controller
                     $deduction_amount  = $request->post('deduction_percentage');
                 }
         
-                $checking_request = LoanRequest::where('request_employee_id', $login_user[0]['employee_id'])->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->get()->toArray();
+                $checking_request = LoanRequest::where('request_employee_id', (string) $login_user[0]['employee_id'])->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->get()->toArray();
 
                 if(empty($checking_request)){
                     $new_loan = new LoanRequest();
@@ -200,7 +200,7 @@ class LoanApiController extends Controller
                 
                     if(empty($checking_request_responsed) && $loan_update_request->request_approved_by_finance == 1){   
 
-                        $checking_request = LoanRequest::where('request_employee_id', $login_user[0]['employee_id'])->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->where('loan_request_id','!=',$request->post('request_id'))->get()->toArray();
+                        $checking_request = LoanRequest::where('request_employee_id', (string) $login_user[0]['employee_id'])->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->where('loan_request_id','!=',$request->post('request_id'))->get()->toArray();
 
                         if(empty($checking_request)){
 

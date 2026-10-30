@@ -13,7 +13,7 @@
 
     @include('include/response-by-manager-request-modal')
 
-    @if((!empty($login_user[0]['employee_department']) && $login_user[0]['employee_department'] == 1) || session('proxy_user') == "TRUE")
+    @if((!empty($login_user[0]['employee_department']) && CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)) || session('proxy_user') == "TRUE")
     @include('include/proxy-user')
     @endif
 

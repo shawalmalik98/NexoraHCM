@@ -20,8 +20,8 @@ class Systemsettings extends Seeder
             DB::table('tbl_hrm_settings')->insert([
                 'company_logo' => "hcm-img.png",
                 'company_name' => "Nexora HCM",
-                'company_email' => "shawaltelecart@gmail.com",
-                'company_address' => "17, Banglore Town, Main Sharah-e-Faisal, Karachi-75350, Pakistan.",
+                'company_email' => "admin@example.com",
+                'company_address' => "",
                 'company_email_permission' => 0,
                 'push_notification_permission' => 0,
                 'company_favicon' => "hcm-img.png",

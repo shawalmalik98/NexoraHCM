@@ -1,5 +1,5 @@
 
-@if(strpos(url()->current(), 'sap-login') == false)
+
     @if(CustomHelper::get_my_todays_attendance_status() === '0')
         <div class="modal fade" id="attendance_alert" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-top mw-600px">
@@ -22,5 +22,5 @@
             </div>
         </div>
     @endif
-@endif    
+    
 

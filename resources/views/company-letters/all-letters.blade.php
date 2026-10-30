@@ -113,15 +113,12 @@
 
                                             <div>
                                                 <select class="form-select " data-kt-select2="true"  name="emp_name"
-                                                id="company_emp_name">
+                                                id="company_emp_name" data-employee-select data-scope="active">
 
 
                                                     @if(!empty($employees))
                                                         <option value="">All Employees</option>
-                                                        @foreach($employees as $data)
-
-                                                            <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                        @endforeach
+                                                        @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                     @endif
 
                                                 </select>
@@ -230,16 +227,9 @@
                                 
                                 <div class="col-md-12 mb-8 mt-3 fv-row">
                                     <label class="fs-6 fw-semibold mb-2 required">Employees</label>
-                                    <select class="form-select  select" data-control="select2" data-hide-search="true" data-placeholder="Select Employee" name="employee" required="">
+                                    <select class="form-select  select" data-control="select2" data-hide-search="true" data-placeholder="Select Employee" name="employee" required="" data-employee-select data-scope="active">
                                         <option value="">Select Employee</option>
-                                        @if(!empty($employees))
-                                                @foreach($employees as $employee)
-                                                    <option value="{{ $employee['employee_id'] }}"
-                                                    @if ($employee['employee_code'] == '' || $employee['employee_code'] == 'N/A') disabled @endif>
-                                                    {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                    </option>
-                                                @endforeach
-                                        @endif
+                                        @include('include.employee-selected-options', ['selected' => null])
                                     </select>
                                 </div>
                                 <div id="file_div">
@@ -313,16 +303,9 @@
                                     <div class="col-md-12 mb-8 mt-3 fv-row">
                                         <label class="fs-6 fw-semibold mb-2 required">Employees</label>
                                         <input type="hidden" name="letter_id">
-                                        <select class="form-select  select-update" data-control="select2" data-hide-search="true"  name="employee" id="letterupdate" required="" disabled>
+                                        <select class="form-select  select-update" data-control="select2" data-hide-search="true"  name="employee" id="letterupdate" required="" disabled data-employee-select data-scope="active">
                                             <option value="">Select Employee</option>
-                                            @if(!empty($employees))
-                                                    @foreach($employees as $employee)
-                                                        <option value="{{ $employee['employee_id'] }}"
-                                                        @if ($employee['employee_code'] == '' || $employee['employee_code'] == 'N/A') disabled @endif>
-                                                        {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                        </option>
-                                                    @endforeach
-                                            @endif
+                                            @include('include.employee-selected-options', ['selected' => null])
                                         </select>
                                     </div>
 

@@ -5,26 +5,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Mark Attendance</title>
 		
-	<meta name="description" content="More than five years back a group of few members started SourceCode Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
-
-
-	<meta itemprop="name" content="Portal || SourceCode">
-	<meta itemprop="description" content="More than five years back a group of few members started SourceCode Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
-	{{-- <meta itemprop="image" content="http://localhostpublic/banner-sc.png"> --}}
-
-
-	<meta property="og:url" content="https://sourcecodeemployees.com">
+	@php $markAttendanceCompany = CustomHelper::hcm_default_settings(); @endphp
+	<meta name="description" content="Mark attendance - {{ $markAttendanceCompany['company_name'] ?? 'Nexora HCM' }}">
+	<meta property="og:title" content="Mark Attendance || {{ $markAttendanceCompany['company_name'] ?? 'Nexora HCM' }}">
 	<meta property="og:type" content="website">
-	<meta property="og:title" content="Portal || SourceCode">
-	<meta property="og:description" content="More than five years back a group of few members started SourceCode Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
-	{{-- <meta property="og:image" content="http://localhostpublic/banner-sc.png"> --}}
-
-
-	<meta name="twitter:card" content="summary_large_image">
-	<meta name="twitter:title" content="Portal || SourceCode">
-	<meta name="twitter:description" content="More than five years back a group of few members started SourceCode Aiming to provide website solutions and solutions to businesses through daily needed performing software like HRM/ERP to ease management businesses.">
-	{{-- <meta name="twitter:image" content="http://localhostpublic/banner-sc.png">
-	<link rel="canonical" href="http://localhost"> --}}
 	
 	<link rel="icon" href="{{ url('portal_assets/images/hcm-img.png') }}" />
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -55,7 +39,7 @@
 			<div class="col-lg-6 offset-lg-3">
 				<div class="sec1_box">
 					<div class="sec1_logo text-center">
-						<img src="{{ URL('portal_assets/attendance/images/logo.png') }}" alt="">
+						<img src="{{ CustomHelper::hcm_default_settings()['company_logo'] ?? '' }}" alt="">
 					</div>
 					<div class="sec1_form text-center text-white">
 						<h1>Welcome</h1>

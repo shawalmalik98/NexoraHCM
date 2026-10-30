@@ -23,8 +23,8 @@ class EmployeeSeeder extends Seeder
                 'employee_code' => 1000000,
                 'employee_name' => "Administrator Account",
                 'employee_contactno' => "0648-8439872",
-                'employee_personal_email' => "shawaltelecart@gmail.com",
-                'employee_work_email' => "shawaltelecart@gmail.com",
+                'employee_personal_email' => "admin@example.com",
+                'employee_work_email' => "admin@example.com",
                 'employee_cnic' => "44444-4444444-1",
                 'employee_gender' => "Male",
                 'employee_doj' => date('Y-m-d'),
@@ -190,7 +190,6 @@ class EmployeeSeeder extends Seeder
                 '/funds',
                 '/employee-fund',
                 '/employee-location',
-                '/sap-attendance',
                 '/attendance-adjustment'
             ];
             foreach($permissionRecords as $permission){

@@ -7,7 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    <img src="{{ public_path('portal_assets/images/logo.png') }}" draggable="false" class="img-fluid w-100" alt="Source Code logo">
+    <img src="{{ CustomHelper::hcm_default_settings('pdf')['company_logo'] ?? '' }}" draggable="false" class="img-fluid w-100" alt="Company logo">
     @if(!empty($body_html))
         {!!$body_html!!}
     @endif

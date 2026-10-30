@@ -46,7 +46,7 @@
             <div class="app-container">
                 
                 <div class="card mb-5 mb-xl-8">
-                    @if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1)
+                    @if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null))
                         <div class="card-header border-0 pt-5">
 
                             <div class="card-title">
@@ -83,13 +83,9 @@
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Interviewer Name</label>
                                                 <div>
-                                                    <select class="form-select" data-kt-select2="true" name="interview_name" id="company_emp_name">
+                                                    <select class="form-select" data-kt-select2="true" name="interview_name" id="company_emp_name" data-employee-select data-scope="active">
                                                         <option value="">Select Name</option>
-                                                        @if(!empty($employees))
-                                                            @foreach($employees as $data)
-                                                            <option value="{{$data['employee_id']}}"@if (Request::get('interview_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                            @endforeach
-                                                        @endif
+                                                        @include('include.employee-selected-options', ['selected' => Request::get('interview_name')])
                                                     </select>
                                                 </div>
                                                 
@@ -324,31 +320,17 @@
 
                                         <div class="col-md-6">
                                             <label class="required fs-6 fw-semibold mb-2">Interviewer 1st</label>
-                                            <select class="form-select select " data-control="select2" data-hide-search="true" data-placeholder="Select Interviewer" name="interviewer_1" id="requisition_interviewer" required="required">
+                                            <select class="form-select select " data-control="select2" data-hide-search="true" data-placeholder="Select Interviewer" name="interviewer_1" id="requisition_interviewer" required="required" data-employee-select data-scope="active">
                                                 <option value="">Select Interviwer</option>
-                                                @if(!empty($employees))
-                                                    @foreach($employees as $employee)
-                                                        <option value="{{ $employee['employee_id'] }}"
-                                                        @if ($employee['employee_code'] == '' || $employee['employee_code'] == 'N/A') disabled @endif>
-                                                        {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                        </option>
-                                                    @endforeach
-                                                @endif
+                                                @include('include.employee-selected-options', ['selected' => null])
                                             </select>
                                         </div>
         
                                         <div class="col-md-6">
                                             <label class="fs-6 fw-semibold mb-2">Interviewer 2nd</label>
-                                            <select class="form-select select" data-control="select2" data-hide-search="true"  name="interviewer_2">
+                                            <select class="form-select select" data-control="select2" data-hide-search="true"  name="interviewer_2" data-employee-select data-scope="active">
                                                 <option value="">No 2nd Interviewer</option>
-                                                @if(!empty($employees))
-                                                    @foreach($employees as $employee)
-                                                        <option value="{{ $employee['employee_id'] }}"
-                                                        @if ($employee['employee_code'] == '' || $employee['employee_code'] == 'N/A') disabled @endif>
-                                                        {{ $employee['employee_code'] . ' - ' . $employee['employee_name'] }}
-                                                        </option>
-                                                    @endforeach
-                                                @endif
+                                                @include('include.employee-selected-options', ['selected' => null])
                                             </select>
                                         </div>
 

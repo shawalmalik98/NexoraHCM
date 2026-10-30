@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{HrmSetting, MacAddress, EmailConfiguration,Employees,LeaveManagement, SalaryDivision, EmailEndPoint, EmailRecipient};
@@ -38,12 +39,12 @@ class HrmSettingController extends Controller
 
             $email_endpoints = EmailEndPoint::get()->toArray();
 
-            $operation_manager = Employees::where('employee_isactive',1)->get(['employee_id','employee_name'])->toArray();
+            $operation_manager = []; // recipient dropdowns search employees through /employee-search
 
             $email_recipient = EmailRecipient::join('tbl_email_endpoints','tbl_email_recipients.endpoint_id','=','tbl_email_endpoints.endpoints_id')->get(['endpoint_desc','receiever_id','recipients_created_by','recipient_id','recipients_created_at','recipient_type','endpoint_id'])->toArray();
-            $hr_employees = Employees::where('employee_isactive',1)->where('employee_department',2)->get(['employee_id','employee_name'])->toArray();
+            $hr_employees = Employees::whereIn('employee_id', CustomHelper::role_employee_ids('hr'))->get(['employee_id','employee_name'])->toArray();
           
-            $finance_employees = Employees::where('employee_isactive',1)->get(['employee_id','employee_name'])->toArray();
+            $finance_employees = Employees::where('employee_id', $setting[0]['name_on_payslip'] ?? 0)->get(['employee_id','employee_name'])->toArray(); // only the representative is shown
 
             if(!empty($setting) || !empty($mac_address) ){
                 $send_data = compact('title','login_user','setting','mac_address','email_config','get_leave_managements','salary_division','email_endpoints','operation_manager','email_recipient','hr_employees','finance_employees');
@@ -208,6 +209,11 @@ class HrmSettingController extends Controller
                 $add_hrm_setting->fiscal_date = $request->input('fiscal_date');
                 $add_hrm_setting->club_rule_apply = $this->checkbox_is_active($request->input('club_rule'));
                 $add_hrm_setting->tax_deduction_apply = $this->checkbox_is_active($request->input('tax_deduction'));
+                $add_hrm_setting->eobi_apply = $this->checkbox_is_active($request->input('eobi_apply'));
+                $add_hrm_setting->eobi_minimum_wage = is_numeric($request->input('eobi_minimum_wage')) ? max(0, $request->input('eobi_minimum_wage')) : 0;
+                $add_hrm_setting->eobi_employee_percentage = is_numeric($request->input('eobi_employee_percentage')) ? min(100, max(0, $request->input('eobi_employee_percentage'))) : 0;
+                $add_hrm_setting->pf_apply = $this->checkbox_is_active($request->input('pf_apply'));
+                $add_hrm_setting->pf_employee_percentage = is_numeric($request->input('pf_employee_percentage')) ? min(100, max(0, $request->input('pf_employee_percentage'))) : 0;
                 $add_hrm_setting->web_attendance = $request->input('web_attendance');
                 $add_hrm_setting->mobile_attendance = $request->input('mobile_attendance');
                 $add_hrm_setting->name_on_payslip = $request->input('name_on_payslip');
@@ -283,7 +289,7 @@ class HrmSettingController extends Controller
                         $email_config->save();
                     }
 
-                    $executive_employees = Employees::where('employee_isactive',1)->where('employee_department',1)->get('employee_id')->toArray();
+                    $executive_employees = Employees::whereIn('employee_id', CustomHelper::role_employee_ids('admin'))->get('employee_id')->toArray();
                     foreach($executive_employees as  $executive_employee){
 
                         $this->send_notification('System Setting Updated',''.$login_user[0]["employee_name"].' update system settings. Please click here to view.','system-settings',$executive_employee['employee_id'],NULL,NULL,'no');
@@ -304,7 +310,7 @@ class HrmSettingController extends Controller
         }catch(\Exception $e){
             $this->create_error_log('Add Hrm Settings', $e);
 
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -331,7 +337,7 @@ class HrmSettingController extends Controller
         }catch(\Exception $e){
             $this->create_error_log("Delete Salary Division", $e);
 
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -358,7 +364,7 @@ class HrmSettingController extends Controller
         }catch(\Exception $e){
             $this->create_error_log("Delete Mac Address", $e);
 
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -400,7 +406,7 @@ class HrmSettingController extends Controller
         }catch(\Exception $e){
             $this->create_error_log("Email Recipient Delete", $e);
 
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -602,13 +608,13 @@ class HrmSettingController extends Controller
 
             $email_endpoints = EmailEndPoint::get()->toArray();
 
-            $operation_manager = Employees::where('employee_isactive',1)->get(['employee_id','employee_name'])->toArray();
+            $operation_manager = []; // recipient dropdowns search employees through /employee-search
 
             $email_recipient = EmailRecipient::join('tbl_email_endpoints','tbl_email_recipients.endpoint_id','=','tbl_email_endpoints.endpoints_id')->join('tbl_employees','tbl_email_recipients.receiever_id','=','tbl_employees.employee_id')->get(['endpoint_desc','receiever_id','recipients_created_by','recipient_id','recipients_created_at','recipient_type','endpoint_id','employee_name'])->toArray();
 
-            $hr_employees = Employees::where('employee_isactive',1)->where('employee_department',2)->get(['employee_id','employee_name'])->toArray();
+            $hr_employees = Employees::whereIn('employee_id', CustomHelper::role_employee_ids('hr'))->get(['employee_id','employee_name'])->toArray();
           
-            $finance_employees = Employees::where('employee_isactive',1)->get(['employee_id','employee_name'])->toArray();
+            $finance_employees = Employees::where('employee_id', $setting[0]['name_on_payslip'] ?? 0)->get(['employee_id','employee_name'])->toArray(); // only the representative is shown
 
             if(!empty($setting) || !empty($mac_address) ){
                 $send_data = compact('title','login_user','setting','mac_address','email_config','get_leave_managements','salary_division','email_endpoints','operation_manager','email_recipient','hr_employees','finance_employees');

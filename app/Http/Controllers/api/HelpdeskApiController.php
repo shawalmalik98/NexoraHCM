@@ -472,7 +472,18 @@ class HelpdeskApiController extends Controller
             }
 
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
-            
+
+            // only the ticket owner, the people / departments it is assigned to, or Admin may change its status
+            $employee_id = $login_user[0]['employee_id'] ?? 0;
+            $ticket_owner = HelpDesk::where('help_desk_id', $request->post('hd_id'))->value('help_desk_loged_by');
+            $involved = $ticket_owner == $employee_id
+                || HelpDeskForEmployee::where('hd_id', $request->post('hd_id'))->where('hdf_employee_id', $employee_id)->exists()
+                || HelpDeskForDepartment::where('hd_id', $request->post('hd_id'))->where('hdf_department_id', $login_user[0]['employee_department'] ?? 0)->exists()
+                || \App\Helpers\CustomHelper::has_role($employee_id, 'admin');
+            if(empty($ticket_owner) || !$involved){
+                return $this->api_response_json(FALSE,"You are not allowed to change this ticket.","",200);
+            }
+
             $last_status = HelpDeskStatus::where('help_desk_id',$request->post('hd_id'))->orderBy('ticket_status_id','DESC')->get(['ticket_status'])->toArray();
 
             if(!empty($last_status) && $last_status[0]['ticket_status'] == $request->post('ticket_status')){

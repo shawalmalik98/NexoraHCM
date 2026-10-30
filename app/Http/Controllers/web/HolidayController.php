@@ -617,7 +617,7 @@ class HolidayController extends Controller
             DB::rollBack(); 
 
             $this->create_error_log("Add Holiday", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1030,7 +1030,7 @@ class HolidayController extends Controller
     //         }   
     //     }catch(\Exception $e){
     //         $this->create_error_log("Add Holiday", $e);
-    //         if(!env('APP_DEBUG')){
+    //         if(!config('app.debug')){
     //             return response()->json([
     //                 'status' => 'FALSE',
     //                 'msg' => "Something went wrong. Please try again.",

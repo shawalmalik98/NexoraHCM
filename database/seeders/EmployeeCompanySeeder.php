@@ -15,7 +15,7 @@ class EmployeeCompanySeeder extends Seeder
      */
     public function run()
     {
-        $all_companies = ['Nexora HCM','CandyLand','Bisconni','Snackcity','Hudson Pharma','Astro Films'];
+        $all_companies = ['My Company'];
         $companies = DB::select('SELECT * FROM tbl_company');
         if(empty($companies)){
             foreach($all_companies as $company){

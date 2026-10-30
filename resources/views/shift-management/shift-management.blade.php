@@ -150,13 +150,9 @@
                                                 <label class="form-label fw-semibold">By Name</label>
                                                 
                                                 <div>
-                                                    <select class="form-select" data-kt-select2="true" data-placeholder="Select Name" name="emp_name" id="company_emp_name" aria-required="true">
+                                                    <select class="form-select" data-kt-select2="true" data-placeholder="Select Name" name="emp_name" id="company_emp_name" aria-required="true" data-employee-select data-scope="active">
                                                         <option value="">Select Name</option>
-                                                        @if(!empty($employees))
-                                                            @foreach($employees as $data)
-                                                                <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                            @endforeach
-                                                        @endif
+                                                        @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                                     </select>
                                                 </div>
                                                 
@@ -179,7 +175,7 @@
             
                 <div class="card-body py-3">
                         
-                    <table class="table table-bordered  table-row-bordered" id="system_datatable">
+                    <table class="table table-bordered  table-row-bordered" id="system_datatable" data-server-paginated="true">
                         <thead>
                             <tr class="fw-bold text-muted bg-light">
                                 <th class="ps-4">S No.</th>
@@ -210,6 +206,7 @@
                             @endif
                         </tbody>
                     </table>
+                    @include('include.server-pagination', ['paginator' => $pagination ?? null])
                 </div>
             
             </div>

@@ -145,7 +145,7 @@ class AlertsController extends Controller
             }   
         }catch(\Exception $e){
             $this->create_error_log("Add alert", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -246,7 +246,7 @@ class AlertsController extends Controller
             }           
         }catch(\Exception $e){
             $this->create_error_log("Update Alert", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -298,7 +298,7 @@ class AlertsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Delete alert", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -341,7 +341,7 @@ class AlertsController extends Controller
         }   
         catch(\Exception $e){
             $this->create_error_log("alert remove", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -383,7 +383,7 @@ class AlertsController extends Controller
         }   
         catch(\Exception $e){
             $this->create_error_log("Mark as Read Alert View", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

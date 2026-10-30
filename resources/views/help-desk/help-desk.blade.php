@@ -94,13 +94,9 @@
                                         
                                         <div>
                                             <select class="form-select" data-kt-select2="true" data-placeholder="Select Name" name="emp_name"
-                                            id="company_emp_name" aria-required="true">
+                                            id="company_emp_name" aria-required="true" data-employee-select data-scope="team">
                                                 <option value="">Select Name</option>
-                                                @if(!empty($employees_data))
-                                                    @foreach($employees_data as $data)
-                                                        <option value="{{$data['employee_id']}}"@if (Request::get('emp_name') == $data['employee_id']) selected @endif>{{$data['employee_code']. ' - ' .$data['employee_name']}}</option>
-                                                    @endforeach
-                                                @endif
+                                                @include('include.employee-selected-options', ['selected' => Request::get('emp_name')])
                                             </select>
                                         </div>
                                         

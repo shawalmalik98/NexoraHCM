@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -53,21 +54,21 @@ class InterviewsController extends Controller
             if(!empty($request->interview_name) || !empty($request->interview_date) || !empty($request->interview_status) || !empty($request->interview_type) || !empty($request->interview_month)){
                
                 if(!empty($request->interview_name)){
-                    $where_clause .= 'AND (interview_interviewer1 = "'.$request->interview_name.'" OR interview_interviewer2 = "'.$request->interview_name.'")';
+                    $where_clause .= 'AND (interview_interviewer1 = '.\DB::getPdo()->quote((string) $request->interview_name).' OR interview_interviewer2 = '.\DB::getPdo()->quote((string) $request->interview_name).')';
                 }
                
                 if(!empty($request->interview_date)){
                     $scheduled_time = date("Y-m-d", strtotime($request->interview_date));
                     $where_clause .= 'AND interview_date LIKE "%'.  $scheduled_time.'%"';
                 }else{
-                    $where_clause .= 'AND interview_date LIKE "%'.  $request->interview_month.'%"';
+                    $where_clause .= 'AND interview_date LIKE '.\DB::getPdo()->quote('%'.$request->interview_month.'%').'';
                 }
 
                 if(!empty($request->interview_status)){
-                    $where_clause .= ' AND interview_status_level = "'.$request->interview_status.'"';
+                    $where_clause .= ' AND interview_status_level = '.\DB::getPdo()->quote((string) $request->interview_status).'';
                 }
                 if(!empty($request->interview_type)){
-                    $where_clause .= ' AND interview_type = "'.$request->interview_type.'"';
+                    $where_clause .= ' AND interview_type = '.\DB::getPdo()->quote((string) $request->interview_type).'';
                 }
               
             }else{
@@ -544,7 +545,7 @@ class InterviewsController extends Controller
 
         }catch(\Exception $e){
             $this->create_error_log("Schedule an Interview", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -680,17 +681,17 @@ class InterviewsController extends Controller
             if(!empty($request->candidate_name) || !empty($request->interview_date) || !empty($request->interview_status) || !empty($request->interview_type)){
                
                 if(!empty($request->candidate_name)){
-                    $where_clause .= 'AND candidate_id = "'.$request->candidate_name.'"';
+                    $where_clause .= 'AND candidate_id = '.\DB::getPdo()->quote((string) $request->candidate_name).'';
                 }
                 if(!empty($request->interview_date)){
                     $scheduled_time = date("Y-m-d", strtotime($request->interview_date));
                     $where_clause .= 'AND interview_date LIKE "%'.  $scheduled_time.'%"';
                 }
                 if(!empty($request->interview_status)){
-                    $where_clause .= ' AND interview_status_level = "'.$request->interview_status.'"';
+                    $where_clause .= ' AND interview_status_level = '.\DB::getPdo()->quote((string) $request->interview_status).'';
                 }
                 if(!empty($request->interview_type)){
-                    $where_clause .= ' AND interview_type = "'.$request->interview_type.'"';
+                    $where_clause .= ' AND interview_type = '.\DB::getPdo()->quote((string) $request->interview_type).'';
                 }
             }
 
@@ -954,7 +955,7 @@ class InterviewsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Update Interview Details", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1045,7 +1046,7 @@ class InterviewsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Change 2nd Interviewer", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1112,7 +1113,7 @@ class InterviewsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Submit Interviewer Remarks", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1189,7 +1190,7 @@ class InterviewsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log("Submit Interviewer Remarks", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1218,17 +1219,16 @@ class InterviewsController extends Controller
     
             $login_user = $this->get_login_user_detail();
     
-            $factory = (new Factory)
-                ->withServiceAccount(__DIR__.'/firebase-secretkey.json')
-                ->withDatabaseUri('https://sourcecode-apps-d94da-hcm.firebaseio.com/');
-    
-            $database = $factory->createDatabase();
+            $database = CustomHelper::firebase_database();
+            if($database === null){
+                return response()->json(['status' => 'FALSE', 'msg' => 'Chat is not configured.']);
+            }
             $NewChatMessage = $database->getReference('chats/InterviewsChat/')->push([
                 'message' => $request_data->message,
                 'sender_id' => $login_user[0]['employee_id'],
                 'interview_id' => $request_data->input('interview_id'),
                 'sender_name' => $login_user[0]['employee_name'],
-                'sender_avatar' => ($login_user[0]['profile_avatar']) ?? 'source-code.png',
+                'sender_avatar' => ($login_user[0]['profile_avatar']) ?? 'Avatar.jpg',
                 'date' => date('d F, Y'),
                 'time' => date('h:i A')
             ]);
@@ -1236,7 +1236,7 @@ class InterviewsController extends Controller
             return $NewChatMessage;
         }catch(\Exception $e){
             $this->create_error_log("Submit Interview Chat", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1329,7 +1329,7 @@ class InterviewsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Add New Employee OnBaording Process', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1412,7 +1412,7 @@ class InterviewsController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Interviewer Employee Status', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -1447,7 +1447,7 @@ class InterviewsController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log($request->title, $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

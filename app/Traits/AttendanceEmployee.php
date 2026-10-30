@@ -400,10 +400,11 @@ trait AttendanceEmployee {
 	public function hr_employees_activity_blocker($login_user_id,$serving_employee_id){
 	
 		$login_user_data = Employees::where('employee_id', $login_user_id)->get()->toArray();
-		if (!empty($login_user_data) && ($login_user_data[0]['employee_department'] == 34 || $login_user_data[0]['employee_department'] == 9)) {
-			$get_hr_hod = Department::whereIn('department_id', [34,9])->get()->toArray();
-			$hr_depart_employee = Employees::whereIn('employee_department', [34,9])->pluck('employee_id')->toArray();
-			if($get_hr_hod[0]['department_hod'] != $login_user_id && in_array($serving_employee_id,$hr_depart_employee)){
+		if (!empty($login_user_data) && (CustomHelper::dept_has_role($login_user_data[0]['employee_department'], 'hr', $login_user_data[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user_data[0]['employee_department'], 'hr', $login_user_data[0]['employee_id'] ?? null))) {
+			// HR staff requests are handled only by the head of that employee's department
+			$serving_department = Employees::where('employee_id', $serving_employee_id)->value('employee_department');
+			$serving_department_hod = Department::where('department_id', $serving_department)->value('department_hod');
+			if($serving_department_hod != $login_user_id && CustomHelper::has_role($serving_employee_id, 'hr')){
 				return [
 					'status' => FALSE,
 					'msg' => 'You can\'t update request kindly contact your HOD'
@@ -450,13 +451,13 @@ trait AttendanceEmployee {
 				DAY(LAST_DAY('".$lastDate."')) - ((SUM(att_check_overall_status = 'Present') + SUM(att_check_overall_status = 'Early out' OR att_check_overall_status = 'Late Coming') + SUM(att_check_overall_status LIKE '%Holiday%')
 				+ SUM(att_check_overall_status IN ($leave_name)) 
 				+ SUM(att_check_overall_status = 'Half day'))+ (SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) FROM tbl_attendance
-				WHERE att_for_year =  $year 
-				AND att_for_month = $month
+				WHERE att_for_year ".CustomHelper::sql_attendance_eq($year)." 
+				AND att_for_month ".CustomHelper::sql_attendance_eq($month)."
 				AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)),REPLACE(employee_offdays, ' ', '')))
 				- (SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) 
 				FROM tbl_attendance
-				WHERE att_for_year =  $year 
-				AND att_for_month = $month 
+				WHERE att_for_year ".CustomHelper::sql_attendance_eq($year)." 
+				AND att_for_month ".CustomHelper::sql_attendance_eq($month)." 
 				AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)), REPLACE(employee_offdays, ' ', '')) 
 				AND (att_check_overall_status IN ('Present','Half day','Early out','Late Coming',$leave_name)
 				OR att_check_overall_status LIKE '%Holiday%')
@@ -464,12 +465,12 @@ trait AttendanceEmployee {
 				) AS total_absent,
 			(  
 			(SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) FROM tbl_attendance
-			WHERE att_for_year =  $year
-				AND att_for_month = $month
+			WHERE att_for_year ".CustomHelper::sql_attendance_eq($year)."
+				AND att_for_month ".CustomHelper::sql_attendance_eq($month)."
 			AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)),REPLACE(employee_offdays, ' ', '')))-
 			(SELECT COUNT(DISTINCT DATE_FORMAT(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date), '%Y-%m-%d')) FROM tbl_attendance
-			WHERE  att_for_year =  $year
-				AND att_for_month = $month
+			WHERE  att_for_year ".CustomHelper::sql_attendance_eq($year)."
+				AND att_for_month ".CustomHelper::sql_attendance_eq($month)."
 			AND FIND_IN_SET(DAYNAME(CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)), REPLACE(employee_offdays, ' ', ''))
 			AND (att_check_overall_status IN ('Present','Half day','Early out','Late Coming',$leave_name)
 			OR att_check_overall_status LIKE '%Holiday%')
@@ -478,7 +479,7 @@ trait AttendanceEmployee {
 	
 		FROM tbl_attendance
 		INNER JOIN tbl_employees ON tbl_attendance.att_employee_id = tbl_employees.employee_id
-		WHERE att_for_month = $month AND att_for_year = $year
+		WHERE att_for_month ".CustomHelper::sql_attendance_eq($month)." AND att_for_year ".CustomHelper::sql_attendance_eq($year)."
 		AND employee_isactive = $employement_status
 		$where_clause_two
 		GROUP BY employee_id" );
@@ -489,13 +490,42 @@ trait AttendanceEmployee {
 
 	protected function get_monthly_attendance_all_employees($from_date , $to_date , $where_clause){
 
-		// numbers 0..999 used to walk the date range (replaces SQL Server master..spt_values)
-		$nums = "(SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones, (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens, (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds) AS nums";
+		// numbers 0..999 used to walk the date range (replaces SQL Server master..spt_values);
+		// every use filters number <= DATEDIFF(to_date, from_date), so larger numbers are dropped up front
+		$range_days = min(999, max(0, (int) round((strtotime($to_date) - strtotime($from_date)) / 86400)));
+		$nums = "(SELECT number FROM (SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS number FROM (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) ones, (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) tens, (SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9) hundreds) AS all_nums WHERE number <= $range_days) AS nums";
 		// first day counted for an employee: joining date when it falls inside the range
 		$emp_start = "(CASE WHEN e.employee_doj > '$from_date' THEN e.employee_doj ELSE '$from_date' END)";
 		$emp_start_ge = "(CASE WHEN e.employee_doj >= '$from_date' THEN e.employee_doj ELSE '$from_date' END)";
 		// the day (number days after $from_date) is an off day on which the employee still worked
-		$worked_on_offday = "EXISTS (SELECT 1 FROM tbl_attendance WHERE att_for_year = YEAR(DATE_ADD('$from_date', INTERVAL number DAY)) AND att_for_month = MONTH(DATE_ADD('$from_date', INTERVAL number DAY)) AND att_for_date = DAY(DATE_ADD('$from_date', INTERVAL number DAY)) AND (att_check_in_status = 1 OR att_check_out_status = 1) AND att_employee_id = e.employee_id) AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD('$from_date', INTERVAL number DAY)), '%')";
+		// Per employee off-day figures, read from tbl_attendance once (joined below as `oa`) instead of one
+		// correlated subquery per day and column:
+		//  worked_offdays   = off days in [from_date, to_date] with a check in or check out
+		//  attended_offdays = off days in [employee start, to_date] that have any attendance row (att_comp_date)
+		$att_day = "DATE(CONCAT(t.att_for_year, '-', t.att_for_month, '-', t.att_for_date))";
+		$oa_emp_start = "(CASE WHEN oe.employee_doj > '$from_date' THEN oe.employee_doj ELSE '$from_date' END)";
+		$offday_attendance = "
+			SELECT t.att_employee_id,
+				COUNT(DISTINCT CASE WHEN (t.att_check_in_status = 1 OR t.att_check_out_status = 1)
+					AND $att_day BETWEEN '$from_date' AND '$to_date'
+					AND oe.employee_offdays LIKE CONCAT('%', DAYNAME($att_day), '%')
+					THEN $att_day END) AS worked_offdays,
+				COUNT(DISTINCT CASE WHEN DATE(t.att_comp_date) BETWEEN $oa_emp_start AND '$to_date'
+					AND oe.employee_offdays LIKE CONCAT('%', DAYNAME(DATE(t.att_comp_date)), '%')
+					THEN DATE(t.att_comp_date) END) AS attended_offdays
+			FROM tbl_attendance t
+			INNER JOIN tbl_employees oe ON oe.employee_id = t.att_employee_id
+			WHERE oe.employee_isactive = 1
+				AND (t.att_comp_date BETWEEN '$from_date' AND '$to_date 23:59:59' OR t.att_comp_date IS NULL OR t.att_comp_date NOT LIKE '____-__-__%')
+			GROUP BY t.att_employee_id";
+		// off days in [employee start, to_date] without any attendance row
+		$absent_offdays = "(
+			(SELECT COUNT(*) FROM $nums
+				WHERE number BETWEEN 0 AND DATEDIFF('$to_date', $emp_start)
+					AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD($emp_start, INTERVAL number DAY)), '%'))
+			- IFNULL(oa.attended_offdays, 0)
+		)";
+		$worked_offdays = "IFNULL(oa.worked_offdays, 0)";
 
 		$all_attendances = DB::select("
 				SELECT
@@ -524,29 +554,14 @@ trait AttendanceEmployee {
 								THEN 1
 								ELSE 0
 							END) +
-							(
-								SELECT COUNT(*)
-								FROM $nums
-								WHERE number BETWEEN 0 AND DATEDIFF('$to_date', $emp_start)
-									AND NOT EXISTS (
-										SELECT 1 FROM tbl_attendance
-										WHERE att_comp_date = DATE_ADD($emp_start, INTERVAL number DAY)
-											AND att_employee_id = e.employee_id
-									)
-									AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD($emp_start, INTERVAL number DAY)), '%')
-							)
+							$absent_offdays
 						)
 					) AS 'absent',
 					(
 						SUM(CASE
 							WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1
 							ELSE 0
-						END) - (
-							SELECT COUNT(*)
-							FROM $nums
-							WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
-								AND $worked_on_offday
-						)
+						END) - $worked_offdays
 					) - IFNULL(Ex.Extraday, 0) AS 'DA',
 					(
 						DATEDIFF(
@@ -567,17 +582,7 @@ trait AttendanceEmployee {
 								THEN 1
 								ELSE 0
 							END) +
-							(
-								SELECT COUNT(*)
-								FROM $nums
-								WHERE number BETWEEN 0 AND DATEDIFF('$to_date', $emp_start)
-									AND NOT EXISTS (
-										SELECT 1 FROM tbl_attendance
-										WHERE att_comp_date = DATE_ADD($emp_start, INTERVAL number DAY)
-											AND att_employee_id = e.employee_id
-									)
-									AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD($emp_start, INTERVAL number DAY)), '%')
-							)
+							$absent_offdays
 						)
 					) AS salary_days,
 					SUM(CASE WHEN att_check_overall_status = 'leaves'
@@ -590,12 +595,7 @@ trait AttendanceEmployee {
 							AND e.employee_offdays LIKE CONCAT('%', DAYNAME(DATE_ADD($emp_start, INTERVAL number DAY)), '%')
 					) + IFNULL(Ex.HolidayCount, 0) as 'off_days_count',
 					(
-						SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - (
-							SELECT COUNT(*)
-							FROM $nums
-							WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
-								AND $worked_on_offday
-						)
+						SUM(CASE WHEN att_check_overall_status IN ('Present', 'Late Coming', 'Early out', 'Half day') THEN 1 ELSE 0 END) - $worked_offdays
 					) - IFNULL(Ex.Extraday, 0)  AS 'Patrol',
 					(
 						DATEDIFF(
@@ -606,12 +606,7 @@ trait AttendanceEmployee {
 							$emp_start_ge
 						) + 1
 					) AS 'month_days',
-					(
-						SELECT COUNT(*)
-						FROM $nums
-						WHERE number BETWEEN 0 AND DATEDIFF('$to_date', '$from_date')
-							AND $worked_on_offday
-					) + IFNULL(Ex.Extraday, 0) AS 'extra_working'
+					$worked_offdays + IFNULL(Ex.Extraday, 0) AS 'extra_working'
 				 
 			FROM tbl_employees e
 			LEFT JOIN tbl_attendance a ON e.employee_id = a.att_employee_id 
@@ -620,7 +615,8 @@ trait AttendanceEmployee {
 			LEFT JOIN tbl_departments dep ON e.employee_department = dep.department_id 
 			LEFT JOIN tbl_designations des ON e.employee_designation = des.designation_id 
 			LEFT JOIN tbl_employees rep ON e.employee_senior_manager = rep.employee_id
-			LEFT JOIN (					
+			LEFT JOIN ($offday_attendance) AS oa ON oa.att_employee_id = e.employee_id
+			LEFT JOIN (
 				SELECT employee_code,
 				COUNT(CASE WHEN a.att_check_overall_status NOT LIKE '%Holiday%' THEN holiday_date END) AS Extraday,
 				COUNT(holiday_date) AS HolidayCount
@@ -661,8 +657,10 @@ trait AttendanceEmployee {
 				rep.employee_name,
 				e.employee_doj,
 				Ex.Extraday,
-				Ex.HolidayCount
-			
+				Ex.HolidayCount,
+				oa.worked_offdays,
+				oa.attended_offdays
+
 			ORDER BY e.employee_code ASC
 		");
 
@@ -936,7 +934,7 @@ trait AttendanceEmployee {
 
 	protected function remote_work_request_attendance($employee_id,$date){
 		
-		$get_wfh_request = WFH::where('wfh_employee_id','=',$employee_id)->where('wfh_request_date','=',$date)->get(['wfh_request_id','wfh_request_approved_by_hr'])->toArray();
+		$get_wfh_request = WFH::where('wfh_employee_id','=',(string) $employee_id)->where('wfh_request_date','=',$date)->get(['wfh_request_id','wfh_request_approved_by_hr'])->toArray();
 	
 		if(!empty($get_wfh_request) && $get_wfh_request[0]['wfh_request_approved_by_hr'] != 2){
 			$get_wfh_request = RequestApproval::where('request_module_id',3)

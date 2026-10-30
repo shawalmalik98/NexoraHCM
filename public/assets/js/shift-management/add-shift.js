@@ -18,7 +18,7 @@ $('#department_all_calculate').click(function () {
 
         $('#employee_all_calculate').attr("disabled", true);
         $('#employee_all_calculate').prop('checked', false);
-        $('#employees option').prop('selected', false);
+        $('#employees').val(null).trigger('change.select2');
         $('#selectEmployeeCalculate').find('.select2-selection__rendered').html('');
         $('#selectEmployeeCalculate').find('.select2-search__field').attr('placeholder', 'Select Employees');
         $('#departments_all option').prop('selected', false);
@@ -35,11 +35,12 @@ $('#employee_all_calculate').click(function () {
     var checkbox = $('#employee_all_calculate').prop('checked');
 
     if (checkbox) {
-        $('#employees option').prop('selected', true);
+        // no employee picked = everyone in the selected departments (decided on the server)
+        $('#employees').val(null).trigger('change.select2');
         $('#selectEmployeeCalculate').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-employees-container-choice-5nle-Zain Shaikh">All Employees</span>');
         $('#selectEmployeeCalculate').find('.select2-search__field').attr('placeholder', '');
     } else {
-        $('#employees option').prop('selected', false);
+        $('#employees').val(null).trigger('change.select2');
         $('#selectEmployeeCalculate').find('.select2-selection__rendered').html('');
         $('#selectEmployeeCalculate').find('.select2-search__field').attr('placeholder', 'Select Employees');
         $('#selectEmployeeCalculate').find('.select2-search__field').css('width', '100%');
@@ -57,34 +58,13 @@ $('.departments_all').change(function (e) {
 
     e.preventDefault();
     $('#employee_all_calculate').removeAttr("disabled");
-    $('#employees').html('');
+    // the employee dropdown searches inside the picked departments; a new department choice starts it empty (= all of them)
+    $('#employees').val(null).trigger('change.select2');
     var dept = $('#departments_all').val();
     if (dept.length == 0) {
         $('#employee_all_calculate').attr("disabled", true);
         $('#employee_all_calculate').prop('checked', false);
     }
-    $.ajax({
-
-        url: base_url + '/get-employee-department',
-        type: 'GET',
-
-        data: {
-            department: dept
-        },
-        success: function (response) {
-            $('#employees').append(response);
-
-        },
-        error: function (jqXHR, textStatus) {
-            var errorStatus = jqXHR.status;
-            if (errorStatus == 0) {
-                alert("Internet Connection Problem");
-            } else {
-                alert("Try Again. Error Code " + errorStatus);
-            }
-
-        }
-    });
 });
 
 $('#shiftEmployeeForm').change(function (e) {

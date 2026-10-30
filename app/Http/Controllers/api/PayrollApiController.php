@@ -5,7 +5,7 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\{Payroll, AttendanceRule, HrmSetting, Employees, Attendance, EmployeeSalary, PayrollEarning, PayrollDeduction, LeaveManagement};
-use App\Traits\{LogGenerateTrait, LoginEmployee, ApiResponseTrait};
+use App\Traits\{LogGenerateTrait, LoginEmployee, ApiResponseTrait, PayrollCalculation};
 use App\Helpers\{ActivityTracker, CustomHelper};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\{Validator,Crypt};
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class PayrollApiController extends Controller
 {   
-    use LogGenerateTrait, LoginEmployee, ApiResponseTrait;
+    use LogGenerateTrait, LoginEmployee, ApiResponseTrait, PayrollCalculation;
 
     const SUB_TITLE = "My Payslip";
     const MONTH_COUNT = 0;
@@ -143,26 +143,19 @@ class PayrollApiController extends Controller
             // it will return all active and deactive (who's deactive in payroll period)
             $get_employee = $this->get_payroll_employee($date_from,$date_to,$request->input('department'),$request->input('employee_id'));
 
-            $fetch_late_rule = AttendanceRule::where('attendance_deduction_rule_type',1)->get(['attendance_deduction_rule_day_count','attendance_deduction_rule_deduction_count'])->toArray(); //type 1 for late
-            $fetch_half_rule = AttendanceRule::where('attendance_deduction_rule_type',2)->get(['attendance_deduction_rule_day_count','attendance_deduction_rule_deduction_count'])->toArray(); //type 2 for half
-
-
-            $late_rule = array_combine(array_column($fetch_late_rule, 'attendance_deduction_rule_day_count'),array_column($fetch_late_rule, 'attendance_deduction_rule_deduction_count'));
-            $half_rule = array_combine(array_column($fetch_half_rule, 'attendance_deduction_rule_day_count'),array_column($fetch_half_rule, 'attendance_deduction_rule_deduction_count'));
-
             foreach( $get_employee as $employee ){
-                
+
                 // get attendance record of system of employee
-                $attendance = $this->get_employee_attendance($date_from,$date_to,$get_employee[0]['employee_id']);
+                $attendance = $this->get_employee_attendance($date_from,$date_to,$employee['employee_id']);
 
                 $atts = array('attendance' => $attendance);
                 $employee_with_att = array_merge( $employee , $atts );
 
                 $attendance_count = $this->get_employee_complete_attendance_status($date_from,$date_to,$employee_with_att,$club_rule_is_applied);
 
-                $salary_of_employee = $this->calculate_salary_of_employee($date_from,$date_to,$attendance_count,$late_rule,$half_rule,$get_employee[0]['employee_id'],$period_count);  
+                $salary_of_employee = $this->calculate_salary_of_employee($date_from,$date_to,$attendance_count,$employee['employee_id'],$period_count);
 
-                $total_payroll += $salary_of_employee['net_salary'];
+                $total_payroll += $salary_of_employee['net_salary'] ?? 0;
                 
             }
 
@@ -266,369 +259,9 @@ class PayrollApiController extends Controller
         return $fetch_employee;
     }
 
-    protected function get_employee_attendance($date_from,$date_to,$employee_id){
 
-        $attendance = Attendance::where('att_employee_id',$employee_id)
-        ->whereRaw('STR_TO_DATE(CONCAT(att_for_year,"-",att_for_month,"-",att_for_date),"%Y-%m-%d") >= "'.$date_from.'"  and STR_TO_DATE(CONCAT(att_for_year,"-",att_for_month,"-",att_for_date),"%Y-%m-%d") <= "'.$date_to.'" ')
-        ->get()->toArray();
 
-        return $attendance;
 
-    }
-
-    // count attendance status of each employee
-    protected function get_employee_complete_attendance_status($date_from,$date_to,$attendances,$club_rule_is_applied){
-
-        $present_count = 0;
-        $absent_count =0;
-        $halfday_count = 0;
-        $late_count = 0;
-        $leave_count = 0;
-
-        $date_with_status = [];
-        $absent_dates = [];
-
-        $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-
-        $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[];
-
-
-        $join_date = strtotime($attendances['employee_doj']);
-        $deactive_date = strtotime($attendances['employee_deactivate_date']);
-
-        // complete date of given period
-        $date_to = new DateTime($date_to);
-        $date_to->modify('+1 day');
-        $period = new DatePeriod(
-            new DateTime($date_from),
-            new DateInterval('P1D'),
-            $date_to
-        );
-        $all_dates_of_periods = [];
-
-        foreach ($period as $dt) {
-
-            array_push($all_dates_of_periods, $dt->format('Y-m-d'));
-        }
-
-        foreach($all_dates_of_periods as $all_dates_of_period){
-
-            $date = $all_dates_of_period;
-            $nameOfDay = date('l', strtotime($date));
-            $absent = true;
-
-            if( $join_date >  strtotime($date) || (!empty($deactive_date) && $deactive_date <  strtotime($date) ) ){
-
-                $absent = false; 
-                $absent_count++;
-                array_push($absent_dates,$date);
-
-                $date_with_status[$date] = "Absent";
-            }else{
-
-                foreach($attendances['attendance'] as $key=>$atty){
-                    
-                    $att_for_date = $atty['att_for_year'].'-'.$atty['att_for_month'].'-'.$atty['att_for_date'];
-
-                    if($att_for_date == $date ){
-
-                        $absent = false; 
-
-                        if ($atty['att_check_overall_status'] == 'Present'){
-
-                            $present_count++;
-                            $date_with_status[$date] = "Present";
-
-                        }
-                        elseif($atty['att_check_overall_status'] == 'Absent'){
-
-                            $absent_count++;
-                            $date_with_status[$date] = "Absent";
-
-                        }elseif($atty['att_check_overall_status'] == 'Half day'){
-
-                            $halfday_count++;
-                            $date_with_status[$date] = "Half day";
-
-                        }elseif($atty['att_check_overall_status'] == 'Late Coming'){
-
-                            $late_count++;
-                            $date_with_status[$date] = "Late Coming";
-
-                        }elseif(in_array($atty['att_check_overall_status'] , $manage_leaves)){
-                     
-                            $leave_count++;
-                            $date_with_status[$date] = "Leave";
-
-                        }elseif($atty['att_check_overall_status'] == 'Early out'){
-
-                            $late_count++;
-                            $date_with_status[$date] = "Late Coming";
-
-                        }elseif(substr($atty['att_check_overall_status'] , 0, 7) == 'Holiday'){
-
-                            $date_with_status[$date] = "Holiday";
-
-                        }
-                    }
-                }
-            
-                $date_filter = $all_dates_of_period;
-                $nameOfDay = date('l' , strtotime($date_filter));
-
-                if($absent ){
-
-                    if(in_array($nameOfDay,$attendances['employee_offdays']) ){
-                        $date_with_status[$date] = "Off Day";
-
-                    }else{
-
-                     $absent_count++;
-                     array_push($absent_dates,$date);
-                     $date_with_status[$date] = "Absent";
-                     
-                    }
-                }
-            }
-        }
-
-        if($club_rule_is_applied == 1){
-
-            $club_rule_absent = $this->apply_club_rule($all_dates_of_periods,$attendances,$absent_dates,$date_with_status);
-            $date_with_status = $club_rule_absent['date_with_status'] ;
-            $club_rule_absent = $club_rule_absent['rule_absent'];
-
-        }else{
-
-            $club_rule_absent = 0;
-
-        }
-
-
-        return  [
-
-            'present_count' => $present_count,
-            'absent_count' => $absent_count+$club_rule_absent,
-            'halfday_count' => $halfday_count,
-            'late_count' => $late_count,
-            'leave_count' => $leave_count,
-            'days_in_period' => count($all_dates_of_periods),
-            'date_with_status' => $date_with_status
-
-        ];
-
-    }
-
-    protected function apply_club_rule($all_dates_of_periods,$attendances,$absent_dates,$date_with_status){
-
-        $rule_absent = 0;
-        $off_days = [];
-        $weekends = [];
-        $applied_club_rule_dates = [];
-        $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",",$attendances['employee_offdays']):[];
-
-        foreach($all_dates_of_periods as $all_dates_of_period){
-
-            $date_filter = $all_dates_of_period;
-            $nameOfDay = date('l' , strtotime($date_filter));
-
-            if(in_array($nameOfDay,$attendances['employee_offdays']) ){
-
-                array_push($weekends,$all_dates_of_period);
-                
-            }else{
-
-                if(count($weekends) > 0){
-
-                    array_push($off_days,$weekends);
-
-                    if(count($weekends)==1){
-
-                        $key = array_search($weekends[0], $all_dates_of_periods);
-    
-                        if( (($key-1) >0 && in_array($all_dates_of_periods[$key-1],$absent_dates)) && (($key-1) >0 && in_array($all_dates_of_periods[$key+1],$absent_dates)) && !in_array($all_dates_of_periods[$key],$absent_dates)  ){
-
-                            $rule_absent++;
-
-                            array_push($applied_club_rule_dates,$all_dates_of_periods[$key]);
-
-                            $date_with_status[$all_dates_of_periods[$key]] = "Absent Club";
-    
-                        }
-                        
-                    }else{
-    
-                        $key = array_search($weekends[0], $all_dates_of_periods);
-                        $key1 = array_search($weekends[1], $all_dates_of_periods);
-    
-                        if( (($key-1) >0 && in_array($all_dates_of_periods[$key-1],$absent_dates)) && (($key1-1) >0 && in_array($all_dates_of_periods[$key1+1],$absent_dates)) && !in_array($all_dates_of_periods[$key],$absent_dates) && !in_array($all_dates_of_periods[$key1],$absent_dates) ){
-    
-                            $rule_absent++;
-                            $rule_absent++;
-
-                            array_push($applied_club_rule_dates,$all_dates_of_periods[$key]);
-                            array_push($applied_club_rule_dates,$all_dates_of_periods[$key1]);
-
-                            $date_with_status[$all_dates_of_periods[$key]] = "Absent Club";
-                            $date_with_status[$all_dates_of_periods[$key1]] = "Absent Club";
-                        }
-                    }
-                }
-                $weekends = [];
-            }
-        }
-        return  [
-
-            'rule_absent'=>$rule_absent,
-            'date_with_status'=>$date_with_status,
-
-        ];
-    }
-
-    protected function calculate_salary_of_employee($date_from,$date_to,$attendance_count,$late_deduction_count,$half_deduction_count,$employee_id,$period_count){
-
-        if(Self::MONTH_COUNT == 30){
-
-            $period_count = 30;
-
-        }
-        
-        $date_with_status = $attendance_count['date_with_status'];
-
-        $salary_period = EmployeeSalary::where('salary_employee_id',$employee_id)->where('salary_effected_date','>=',$date_from)->where('salary_effected_date','<=',$date_to)->orderBy('salary_effected_date','ASC')->get()->toArray();
-
-        if(empty($salary_period)){
-            
-            $salary_period = EmployeeSalary::where('salary_employee_id',$employee_id)->orderBy('salary_effected_date','DESC')->limit(1)->get()->toArray();
-
-        }else{
-
-            $salary_period_last = EmployeeSalary::where('salary_employee_id',$employee_id)->where('salary_effected_date','<',$salary_period[0]['salary_effected_date'] )->orderBy('salary_effected_date','DESC')->limit(1)->get()->toArray();
-
-            $salary_period = array_merge($salary_period_last,$salary_period);
-        }
-
-        $salary_effected_date = array_combine(array_column($salary_period,'salary_effected_date'),array_column($salary_period,'salary_amount'));
-
-        $salary_chunk = [];
-        $salary_chunk_attendance_status = [];
-
-        $splite_count = 0;
-
-        if(count($salary_effected_date)>1){
-            foreach($salary_effected_date as $salary_effected=>$value){
-
-                $splite_date = array_search($salary_effected, array_keys($date_with_status));
-                
-                $salary_chunk[$splite_count] = array_slice(array_keys($date_with_status),$splite_date,count($date_with_status));
-
-                $salary_chunk_attendance_status[$splite_count] = array_slice(array_values($date_with_status),$splite_date,count($date_with_status));
-
-                $splite_count++;
-
-            }
-        }else{
-
-            $salary_chunk[0] = array_keys($date_with_status);
-            $salary_chunk_attendance_status[0] = array_values($date_with_status);
-
-        }
-
-        if(count($salary_effected_date)>1){
-            for($i=0;$i<count($salary_chunk)-1;$i++){
-    
-                $salary_chunk[$i] = array_diff($salary_chunk[$i],$salary_chunk[$i+1]);
-                $salary_chunk_attendance_status[$i] = array_slice($salary_chunk_attendance_status[$i],0,count($salary_chunk_attendance_status[$i])-count($salary_chunk_attendance_status[$i+1]));
-
-            }
-    
-        }
-
-        $salary_list = array_values($salary_effected_date);
-
-        $total_each_chunk_absent = 0;
-        $total_chunk_salary_net = 0;
-
-        $each_chunk_late = 0;
-        $each_chunk_half_day = 0;
-        $each_chunk_present = 0;
-        $each_chunk_offday = 0;
-        $each_chunk_leave = 0;
-        $each_chunk_holiday = 0;
-        $each_chunk_gross_salary = 0;
-
-        for($i=0;$i<count($salary_chunk_attendance_status);$i++){
-
-            $each_chunk_attendance_status = array_count_values($salary_chunk_attendance_status[$i]);
-
-            $each_chunk_late += $each_chunk_attendance_status['Late Coming'] ?? 0;
-            $each_chunk_late += $each_chunk_attendance_status['Early Out'] ?? 0;
-
-            $each_chunk_absent = $each_chunk_attendance_status['Absent'] ?? 0;
-            $each_chunk_absent += $each_chunk_attendance_status['Absent Club'] ?? 0;
-
-            $each_chunk_half_day += $each_chunk_attendance_status['Half day'] ?? 0;
-
-            $each_chunk_present += $each_chunk_attendance_status['Present'] ?? 0;
-
-            $each_chunk_offday += $each_chunk_attendance_status['Off Day'] ?? 0;
-
-            $each_chunk_leave += $each_chunk_attendance_status['Leave'] ?? 0;
-
-            $each_chunk_holiday += $each_chunk_attendance_status['Holiday'] ?? 0;
-
-            $each_chunk_salary =  $salary_list;
-
-            $each_chunk_salary_per_day = $each_chunk_salary[$i]/$period_count;
-
-            $each_chunk_salary_complete = $each_chunk_salary_per_day * count($salary_chunk_attendance_status[$i]) ;
-
-            // $each_chunk_salary_complete = $each_chunk_salary_per_day * $period_count ;
-
-            $each_chunk_gross_salary += $each_chunk_salary_complete;
-
-            $each_chunk_absent_total =  $each_chunk_salary_per_day * $each_chunk_absent;
-
-            $each_chunk_salary_net = $each_chunk_salary_complete  - $each_chunk_absent_total ;
-
-            $total_each_chunk_absent += $each_chunk_absent_total;
-
-            $total_chunk_salary_net += $each_chunk_salary_net;
-            
-            $latest_salary_per_day = $each_chunk_salary_per_day;
-
-        }
-
-        $deduction_of_late_count  = array_key_exists($each_chunk_late,$late_deduction_count)==1 ? $late_deduction_count[$each_chunk_late] : $each_chunk_late ;
-
-        $deduction_of_halfday_count  = array_key_exists($each_chunk_half_day,$half_deduction_count)==1 ? $half_deduction_count[$each_chunk_half_day] : $each_chunk_half_day;
-
-        $final_half_day_deduction = $latest_salary_per_day*$deduction_of_halfday_count;
-        $final_late_day_deduction = $latest_salary_per_day*$deduction_of_late_count;
-
-        $total_chunk_salary_net_after_late_half = $total_chunk_salary_net - $final_half_day_deduction - $final_late_day_deduction;
-
-        return  [
-
-            'net_salary'=>$total_chunk_salary_net_after_late_half,
-
-            'deduction_of_late'=>$final_late_day_deduction,
-            'deduction_of_halfday'=>$final_half_day_deduction,
-            'deduction_of_absent'=>$total_each_chunk_absent,
-
-            'total_days'=> count($date_with_status),
-            'each_chunk_late' => $each_chunk_late,
-            'each_chunk_half_day' => $each_chunk_half_day,
-            'each_chunk_present' => $each_chunk_present,
-            'each_chunk_offday' => $each_chunk_offday,
-            'each_chunk_absent' => $each_chunk_absent,
-            'each_chunk_leave' => $each_chunk_leave,
-            'each_chunk_holiday' => $each_chunk_holiday,
-            'each_chunk_gross_salary' => $each_chunk_gross_salary,
-            
-        ];
-
-    }
 
     protected function days_count_between_two_dates($date_from,$date_to){
         
@@ -689,7 +322,7 @@ class PayrollApiController extends Controller
 
             $this->create_error_log("Account Identification My Payroll", $e);
 
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

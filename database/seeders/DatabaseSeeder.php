@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             LocationSeeder::class,
             EmailConfiguration::class,
             SalarySeeder::class,
+            RoleSeeder::class,
           
         ]);
     }

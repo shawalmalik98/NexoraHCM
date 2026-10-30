@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\web;
 
+use App\Helpers\CustomHelper;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -34,19 +35,19 @@ class RequisitionController extends Controller
             if(!empty($request->employee_location) || !empty($request->requisition_department) || !empty($request->emp_status) || !empty($request->emp_name) || !empty($request->requisition_job_type) || !empty($request->requisition_status)){
 
                 if(!empty($request->employee_location)){
-                    $where_clause_to   .= ' AND employee_location = "'.$request->employee_location.'"'; 
+                    $where_clause_to   .= ' AND employee_location = '.\DB::getPdo()->quote((string) $request->employee_location).''; 
                 }
                 if(!empty($request->requisition_department)){
-                    $where_clause .= ' AND requisition_department = "'.$request->requisition_department.'"';
+                    $where_clause .= ' AND requisition_department = '.\DB::getPdo()->quote((string) $request->requisition_department).'';
                 }
                 if(!empty($request->emp_name)){
-                    $where_clause .= ' AND requisition_added_by = "'.$request->emp_name.'"';
+                    $where_clause .= ' AND requisition_added_by = '.\DB::getPdo()->quote((string) $request->emp_name).'';
                 }
                 if(!empty($request->requisition_job_type)){
-                    $where_clause .= ' AND requisition_job_type = "'.$request->requisition_job_type.'"';
+                    $where_clause .= ' AND requisition_job_type = '.\DB::getPdo()->quote((string) $request->requisition_job_type).'';
                 }
                 if(!empty($request->requisition_status)){
-                    $where_clause .= ' AND requisition_status = "'.$request->requisition_status.'"';
+                    $where_clause .= ' AND requisition_status = '.\DB::getPdo()->quote((string) $request->requisition_status).'';
                 }
 
             }
@@ -55,11 +56,11 @@ class RequisitionController extends Controller
 
             $departments = Department::get()->toArray();
 
-            if($login_user[0]['employee_department'] == 2 || $login_user[0]['employee_department'] == 1){
+            if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
 
-                $employees_data = Employees::where('employee_isactive','=', $status)->whereRaw($where_clause_to)->get(['employee_id', 'employee_code','employee_name','employee_location'])->toArray();
+                $employees_data = []; // the name filter searches employees through /employee-search
 
-                $employee_active = array_column($employees_data, 'employee_id');
+                $employee_active = Employees::select('employee_id')->where('employee_isactive','=', $status)->whereRaw($where_clause_to);
 
                 $requisitions = Requisition::join('tbl_departments','tbl_departments.department_id','=','tbl_requisition.requisition_department')
                 ->join('tbl_requisition_status','tbl_requisition_status.main_requisition_id','tbl_requisition.requisition_id')
@@ -78,7 +79,7 @@ class RequisitionController extends Controller
                 ->get(['requisition_id','department_name','requisition_job_title','requisition_job_type','requisition_expected_salary','requisition_shift_time','requisition_shift_start_time','requisition_shift_end_time','requisition_date_needed','requisition_additional_info','requisition_added_by','create_at','requisition_status','main_interview_id','no_of_position'])->toArray();
 
             }
-            elseif($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1 && $login_user[0]['employee_is_manager'] == 1){
+            elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) && $login_user[0]['employee_is_manager'] == 1){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -137,7 +138,7 @@ class RequisitionController extends Controller
 
             $requistion_check = [''];
 
-            if($login_user[0]['employee_department'] != 2 && $login_user[0]['employee_department'] != 1){
+            if(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){
 
                 $login_employee_id = $login_user[0]['employee_id'];
 
@@ -383,7 +384,7 @@ class RequisitionController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Add Requisition", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -487,7 +488,7 @@ class RequisitionController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log("Updated Requisition", $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -555,7 +556,7 @@ class RequisitionController extends Controller
             }
         }catch(\Exception $e){
             $this->create_error_log('Delete Requisition Request', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -595,6 +596,14 @@ class RequisitionController extends Controller
                 }
             }else {
 
+                // the requisition workflow is run by HR (Admin always)
+                if(!CustomHelper::has_role(session('user_session'), 'hr')){
+                    return response()->json([
+                        'status' => 'FALSE',
+                        'msg' => 'You are not allowed to change the requisition status.',
+                    ]);
+                }
+
                 $check_requisition_status = Requisition::where('requisition_id', $request_data->input('requisition_id'))->get(['requisition_id'])->toarray();
 
                 if(empty($check_requisition_status)){
@@ -609,7 +618,7 @@ class RequisitionController extends Controller
                 $requisition_status = new RequisitionStatus();
                 $requisition_status->requisition_status = $request_data->input('requisition_status');
                 $requisition_status->main_requisition_id = $request_data->input('requisition_id');
-                $requisition_status->requisition_status_created_by = $request_data->input('employee_id');
+                $requisition_status->requisition_status_created_by = session('user_session');
                 $requisition_status->requisition_status_created_at =  date('d-m-Y H:i:s');
 
                 $process = $requisition_status->save();
@@ -633,7 +642,7 @@ class RequisitionController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Requisition Status', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

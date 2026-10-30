@@ -190,7 +190,7 @@ class NotificationsController extends Controller
             // ->whereRaw('date_format(employee_doj,"%d") = '.date('d'))
             ->get(['employee_id','employee_code','department_name','designation_name','employee_doj'])->toArray();
           
-            $probation_completion = Employees::where('employee_isactive', 1)->where('employee_status', 2)
+            $probation_completion = Employees::where('employee_isactive', 1)->where('employee_status','2')
             // ->whereRaw('DATE_ADD(employee_doj, INTERVAL +3 MONTH) = "'.date('Y-m-d').'"')
             ->whereRaw('DATE_ADD(employee_doj, INTERVAL 3 MONTH) = NOW()')
             ->get(['employee_id','employee_code','employee_name','employee_doj'])->toArray();

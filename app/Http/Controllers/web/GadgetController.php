@@ -123,7 +123,7 @@ class GadgetController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Add Gadget Inventory ', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -237,7 +237,7 @@ class GadgetController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Update Gadget Details', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",
@@ -328,7 +328,7 @@ class GadgetController extends Controller
         }
         catch(\Exception $e){
             $this->create_error_log('Assign Gadgets', $e);
-            if(!env('APP_DEBUG')){
+            if(!config('app.debug')){
                 return response()->json([
                     'status' => 'FALSE',
                     'msg' => "Something went wrong. Please try again.",

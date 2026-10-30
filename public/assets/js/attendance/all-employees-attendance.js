@@ -28,6 +28,7 @@ $(function () {
             [10, 25, 50, 100, 500, "All"]
         ],
         iDisplayLength: 500,
+        paging: $('#tableAllEmployeeAttendance').is('[data-server-paginated]') ? false : true,
 
         dom: 'B',
         buttons: [
@@ -301,7 +302,8 @@ $('#department_all').click(function () {
         $('#departments_all option').prop('selected', true);
         $('#selectedepartment').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-departments_all-container-choice-5nle-Human Resource">All Departments</span>');
         $('#selectedepartment').find('.select2-search__field').attr('placeholder', '');
-        $('#select_all_employee option').prop('selected', true);
+        // no employee picked = everyone in the selected departments (decided on the server)
+        $('#select_all_employee').val(null).trigger('change');
         $('#selectedemployees').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-select_all_employee-container-choice-5nle">All Employees</span>');
         $('#selectedemployees').find('.select2-search__field').attr('placeholder', '');
 
@@ -310,7 +312,7 @@ $('#department_all').click(function () {
         $('#selectedepartment').find('.select2-selection__rendered').html('');
         $('#selectedepartment').find('.select2-search__field').attr('placeholder', 'Select Department');
         $('#selectedepartment').find('.select2-search__field').css('width', '100%');
-        $('#select_all_employee option').prop('selected', false);
+        $('#select_all_employee').val(null).trigger('change');
         $('#selectedemployees').find('.select2-selection__rendered').html('<span class="select2-selection__choice__display" id="select2-select_all_employee-container-choice-5nle"></span>');
         $('#selectedemployees').find('.select2-search__field').attr('placeholder', 'Select Employee');
         $('#selectedemployees').find('.select2-search__field').css('width', '100%');
@@ -325,46 +327,10 @@ $('#departments_all').change(function () {
     var departments = $('#departments_all').val();
     var all_length = length_count;
 
-    $('#select_all_employee').html('');
+    // the employee dropdown searches inside the picked departments; a new department choice starts it empty (= all of them)
+    $('#select_all_employee').val(null).trigger('change');
 
-    $.ajax({
-
-        url: base_url + '/get-employee-department',
-        type: 'GET',
-
-        data: {
-            department: departments
-        },
-
-        success: function (response) {
-            $('#select_all_employee').append(response);
-
-
-        },
-        error: function (jqXHR, textStatus) {
-            var errorStatus = jqXHR.status;
-            if (errorStatus == 0) {
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'Internet Connection Problem',
-                    timer: 3000,
-                })
-            } else {
-                if (errorStatus == 419) {
-                    location.reload();
-                } else {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Try Again. Error Code ' + errorStatus,
-                        timer: 3000,
-                    })
-                }
-            }
-
-        }
-    });
-
-    if (departments.length == all_length) {
+    if ((departments || []).length == all_length) {
         $('#department_all').prop('checked', true);
 
     } else {

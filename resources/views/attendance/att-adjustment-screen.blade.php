@@ -67,13 +67,9 @@
                                     <span>Select Employee</span>
                                 </label>
                                 <div>
-                                    <select class="form-select" data-kt-select2="true" name="employee_id" data-placeholder="Select employees" required>
+                                    <select class="form-select" data-kt-select2="true" name="employee_id" data-placeholder="Select employees" required data-employee-select data-scope="active">
                                         <option value="">Select Employee</option>
-                                        @if(!empty($all_employees))
-                                            @foreach ($all_employees as $employees)
-                                                <option value="{{ $employees['employee_id'] }}" @if (Request::get('employee_id') == $employees['employee_id']) selected @endif>{{$employees['employee_code']. ' - ' .$employees['employee_name']}} </option>
-                                            @endforeach
-                                        @endif                                                             
+                                        @include('include.employee-selected-options', ['selected' => Request::get('employee_id')])                                                             
                                     </select>
                                     
                                 </div>
