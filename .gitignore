@@ -2,3 +2,5 @@
 vendor/
 # Firebase secret key
 /app/Http/Controllers/web/firebase-secretkey.json
+# Mobile app build (copied from the Flutter dist folder, too big for git)
+/public/app/hrms.apk
