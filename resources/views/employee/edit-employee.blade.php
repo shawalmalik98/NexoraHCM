@@ -605,15 +605,6 @@
                                     
                                 </div> --}}
                                 
-                                {{-- <div class="col-md-6 ">
-                                    <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
-                                    <select class="form-select " data-control="select2" data-hide-search="false"   name="earning_type">
-                                        <option value="">Select Employee Earning Type</option>
-                                        <option value="1" @if ($employee_detail[0]['employee_earning_type'] == 1) selected @endif>Monthly</option>
-                                        <option value="2" @if ($employee_detail[0]['employee_earning_type'] == 2) selected @endif>Daily Wages</option>                                                                                                                                         
-                                    
-                                    </select>
-                                </div> --}}
 
                             </div>
                         @endif    
@@ -940,7 +931,7 @@
                                         <td class="ps-8">{{ $key + 1 }}</td>
                                         <td>{{$salary['employee_name']}}</td>
                                         <td>{{number_format($salary['salary_amount'])}}</td>
-                                        <td>{{($salary['salary_earning_type'] == 1) ? 'Monthly' : 'Daily Wages'}}</td>
+                                        <td>Monthly</td>
                                         <td>{{date('d-M-Y',strtotime($salary['salary_effected_date'])) ?? 'N\A'}}</td>
                                         <td>{{date('d-M-Y',strtotime($salary['salary_created_date'])) ?? 'N\A'}}</td>
                                     </tr>

@@ -19,7 +19,7 @@ class IncentiveExport implements FromCollection, WithHeadings, WithStyles
         $this->incentivePeriod = $incentivePeriod;
     }
 
-    public function collection()
+    public function collection(): \Illuminate\Support\Enumerable
     {
         return collect(DB::table('tbl_incentive') // Use DB facade to query the table
             ->where('incentive_period', $this->incentivePeriod)
@@ -38,7 +38,7 @@ class IncentiveExport implements FromCollection, WithHeadings, WithStyles
         ];
     }
 
-    public function styles(Worksheet $sheet)
+    public function styles(Worksheet $sheet): ?array
     {
         // Apply styles to the header row
         $sheet->getStyle('A1:F1')->getFont()->setBold(true); // Bold header row

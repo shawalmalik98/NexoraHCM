@@ -4,10 +4,10 @@ namespace App\Http\Controllers\web;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\{Http, Validator};
 use App\Models\{Employees, EmployeeInformation, Bank};
 use App\Traits\{LoginEmployee, LogGenerateTrait};
-use App\Helpers\ActivityTracker;
+use App\Helpers\{ActivityTracker, CustomHelper};
 use PDF;
 
 
@@ -59,6 +59,11 @@ class PersonalInformationController extends Controller
         try{
           
             $title = '';
+            // someone else's form (bank, CNIC, address): only HR / Admin
+            if(!$this->can_see_information_form($employee_id)){
+                return response()->view('errors.404', ['title' => ''], 404);
+            }
+
 
             $employee_data = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')->where('employee_id',  $employee_id)->get()->toArray();
     
@@ -91,6 +96,11 @@ class PersonalInformationController extends Controller
         try{
 
             $title = '';
+            // someone else's form (bank, CNIC, address): only HR / Admin
+            if(!$this->can_see_information_form($employee_id)){
+                return response()->view('errors.404', ['title' => ''], 404);
+            }
+
             $employee_data = Employees::where('employee_id',  $employee_id)->get()->toArray();
             
             $information_data = EmployeeInformation::where('employeeid',$employee_id)->get()->toArray();
@@ -120,13 +130,34 @@ class PersonalInformationController extends Controller
 		
 	}
 
+    // own form, or HR / Admin
+    protected function can_see_information_form($employee_id){
+        $me = (int) session('user_session');
+        return $me === (int) $employee_id || CustomHelper::has_role($me, 'hr') || CustomHelper::has_role($me, 'admin');
+    }
+
     protected function submit_information(Request $informationData){
 
         try{
-            $employee_record = Employees::where('employee_id',$informationData->input('employeeid'))->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','employee_designation','employee_contactno'])->toArray();
-            
-            $submitInformation = EmployeeInformation::find($informationData->input('information_id'));
-            $submitInformation->employeeid = $informationData->input('employeeid');
+            // an employee saves only their own form: the employee comes from the login, not from the posted ids
+            $employee_id = (int) session('user_session');
+            if(empty($employee_id) || !Employees::where('employee_id', $employee_id)->exists()){
+                return response()->json(['status' => 'FALSE', 'msg' => 'Please log in again.']);
+            }
+
+            if($informationData->hasFile('profile_picture')){
+                $validator = Validator::make($informationData->all(), [
+                    'profile_picture' => 'image|mimes:jpg,jpeg,png,webp|max:4096',
+                ], [
+                    'profile_picture.*' => 'Profile picture must be a jpg, png or webp image up to 4 MB.',
+                ]);
+                if($validator->fails()){
+                    return response()->json(['status' => 'FALSE', 'msg' => $validator->errors()->first()]);
+                }
+            }
+
+            $submitInformation = EmployeeInformation::where('employeeid', $employee_id)->first() ?? new EmployeeInformation();
+            $submitInformation->employeeid = $employee_id;
             $submitInformation->fathername = $informationData->input('fathersname');
             $submitInformation->dob = $informationData->input('birthdate');
             $submitInformation->gender = $informationData->input('gender');
@@ -226,8 +257,9 @@ class PersonalInformationController extends Controller
             $document_name = NULL;
             if($informationData->hasFile('profile_picture')){
 
+                // own file name per employee (two people uploading "photo.jpg" must not overwrite each other)
                 $document = $informationData->file('profile_picture');
-                $document_name = $document->getClientOriginalName();
+                $document_name = 'employee_'.$employee_id.'_'.time().'.'.strtolower($document->getClientOriginalExtension());
                 $document->move(public_path('portal_assets/profile_pictures/'), $document_name);
     
                 $submitInformation->profile_avatar = $document_name;

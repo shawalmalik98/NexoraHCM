@@ -83,6 +83,11 @@ class MachineAttendanceController extends Controller
             $error = $e->getMessage() .' On line no : '. $e->getLine() .' file name : '.$e->getFile();
             $machine_id = ($request->input('machine_id') == 1) ? 1:2;
             $this->machine_logs(2 , $error ,$machine_id);
+            return response([
+                'message' => 'Attendance insertion failed.',
+                'status' => FALSE,
+                'data' => ''
+            ], 500);
         }
     }
 

@@ -177,6 +177,8 @@
                                                     <td>
                                                         @if( $all_device['Device Status'] == 1)
                                                             <span class="badge badge-light-success font-weight-bold">Active</span>
+                                                        @elseif( $all_device['Device Status'] == 0)
+                                                            <span class="badge badge-light-warning font-weight-bold" title="The employee tried to login from this phone; approving it blocks the old phone">Pending approval</span>
                                                         @else
                                                             <span class="badge badge-light-danger font-weight-bold">De-active</span>
 

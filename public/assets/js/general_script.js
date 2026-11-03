@@ -200,13 +200,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-$('.notification-open').click(function () {
-    var notificationid = $(this).data('notificationid');
+// unread notification clicked: show it read (dark grey, no bisque) at once, save it as read, then open its page
+// (opening the page first could cancel the save, leaving it unread)
+$(document).on('click', '.notification-open', function (e) {
+    var link = $(this);
+    var notificationid = link.data('notificationid');
+    var href = link.attr('href');
+    e.preventDefault();
+    link.removeClass('text-dark notification-open notification-unread').addClass('text-gray-600 notification-read');
+    link.find('i.fa-clock').css('color', '');
+    var opened = false;
+    var open = function () {
+        if (!opened) {
+            opened = true;
+            window.location = href;
+        }
+    };
     $.ajax({
         url: base_url + '/read-notification',
         type: 'GET',
         data: { notificationid: notificationid },
+        complete: open,
     });
+    setTimeout(open, 1500);
 });
 
 $('.clickable-row').click(function () {

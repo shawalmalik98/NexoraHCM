@@ -80,8 +80,6 @@ class HrmSettingController extends Controller
                 'check_in_grace_time'=>'required|min:0|numeric',
                 'check_out_grace_time'=>'required|min:0|numeric',
                 'mac_address' => 'required',
-                'daily_wages_late_deduction' => 'min:0|max:100|integer|nullable',
-                'daily_wages_half_deduction' => 'min:0|max:100|integer|nullable',
                 'email' => 'required_with:password,mailer,host,email_port,email_encryption,from_address,from_name',
                 'password' => 'required_with:email,mailer,host,email_port,email_encryption,from_address,from_name',
                 'mailer' => 'required_with:email,password,host,email_port,email_encryption,from_address,from_name',
@@ -109,6 +107,15 @@ class HrmSettingController extends Controller
             }else{
 
                 $login_user = $this->get_login_user_detail();
+
+                // Income Tax Ordinance 2001, Sixth Schedule Part I rule 2(c): in a recognised provident fund the company
+                // may not contribute more than the employee
+                if(is_numeric($request->input('pf_company_percentage')) && is_numeric($request->input('pf_employee_percentage')) && $request->input('pf_company_percentage') > $request->input('pf_employee_percentage')){
+                    return response()->json([
+                        'msg' => "PF company share can't be more than the employee share (recognised provident fund rule). Pakistan practice: 8.33% each.",
+                        'status' => 'FALSE'
+                    ]);
+                }
 
                 $salary_divisions = array_sum($request->input('salary_division_percentage'));
 
@@ -214,15 +221,16 @@ class HrmSettingController extends Controller
                 $add_hrm_setting->eobi_employee_percentage = is_numeric($request->input('eobi_employee_percentage')) ? min(100, max(0, $request->input('eobi_employee_percentage'))) : 0;
                 $add_hrm_setting->pf_apply = $this->checkbox_is_active($request->input('pf_apply'));
                 $add_hrm_setting->pf_employee_percentage = is_numeric($request->input('pf_employee_percentage')) ? min(100, max(0, $request->input('pf_employee_percentage'))) : 0;
+                $add_hrm_setting->pf_company_percentage = is_numeric($request->input('pf_company_percentage')) ? min(100, max(0, $request->input('pf_company_percentage'))) : $add_hrm_setting->pf_employee_percentage;
                 $add_hrm_setting->web_attendance = $request->input('web_attendance');
                 $add_hrm_setting->mobile_attendance = $request->input('mobile_attendance');
                 $add_hrm_setting->name_on_payslip = $request->input('name_on_payslip');
-                $add_hrm_setting->daily_wages_late_deduction = (!empty($request->input('daily_wages_late_deduction'))) ? $request->input('daily_wages_late_deduction')/100 : '';
-                $add_hrm_setting->daily_wages_half_deduction = (!empty($request->input('daily_wages_half_deduction'))) ? $request->input('daily_wages_half_deduction')/100 : '';
                 $add_hrm_setting->annual_leave_display = $this->checkbox_is_active($request->input('annual_leave_allow'));
                 $add_hrm_setting->total_leave_all_leaves_visibility = $this->checkbox_is_active($request->input('all_leave_visibilty_allow'));
                 $add_hrm_setting->onboarding_email_name = $request->input('onboarding_email_name');
                 $add_hrm_setting->system_currency = $request->input('system_currency');
+                // allowed mobile app versions, comma separated (empty = all)
+                $add_hrm_setting->mobile_app_version = implode(',', array_filter(array_map('trim', explode(',', (string) $request->input('mobile_app_version'))))) ?: null;
                 $add_hrm_setting->gross_salary_ratio = $request->input('gross_salary_ratio');
                 $process = $add_hrm_setting->save();
                 

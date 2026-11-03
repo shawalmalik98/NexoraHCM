@@ -40,10 +40,11 @@
                         $mz_can = function ($url) {
                             return CustomHelper::can_access($url);
                         };
+                        // [permission module, label, icon, page (when it is not the module url)]
                         $mz_links = [
                             ['/my-attendance', 'My Attendance', 'fa-fingerprint'],
                             ['/my-leaves', 'My Leaves', 'fa-umbrella-beach'],
-                            ['/payslip', 'Payslip', 'fa-file-invoice-dollar'],
+                            ['/payslip', 'Payslip', 'fa-file-invoice-dollar', '/my-payroll'],
                             ['/my-loan', 'My Loan', 'fa-hand-holding-dollar'],
                             ['/my-tickets', 'Tickets', 'fa-ticket'],
                         ];
@@ -57,7 +58,7 @@
                         <div class="mz-hero-actions">
                             @foreach($mz_links as $mz_link)
                                 @if($mz_can($mz_link[0]))
-                                    <a href="{{ url($mz_link[0]) }}" class="mz-quick">
+                                    <a href="{{ url($mz_link[3] ?? $mz_link[0]) }}" class="mz-quick">
                                         <span class="mz-quick-icon"><i class="fa-solid {{ $mz_link[2] }}"></i></span>
                                         <span>{{ $mz_link[1] }}</span>
                                     </a>
@@ -73,7 +74,7 @@
                         @if(!empty($pollings))
                             @foreach($pollings as $polling)
 
-                                <div class="col-md-12 mb-xl-10" id="polling_div_{{$polling['polling_id']}}">
+                                <div class="col-md-12 mb-xl-10" id="polling_div_{{$polling['polling_id']}}" data-poll-ends-in="{{ max(0, strtotime($polling['polling_duration']) - time()) }}">
                                     <div class="card wrapper">
                                         <div class="row">
                                             <input type="hidden" name="poll" value="{{ $polling['polling_id'] }}">
@@ -272,7 +273,7 @@
                         @endif
                     </div>
 
-                    {{-- @if(!empty($alerts))
+                    @if(!empty($alerts))
                         @foreach($alerts as $alert)
                             <div class="alert alert-primary d-flex align-items-center p-5 mb-10" id="alert_div{{ $alert['alert_id'] }}">
                                 <span class="svg-icon svg-icon-2hx svg-icon-primary me-4">
@@ -295,7 +296,7 @@
                                 </button>
                             </div>
                         @endforeach
-                    @endif --}}
+                    @endif
 
                     @if(!empty($total_count))
 
@@ -1754,6 +1755,16 @@
 @push('js-link')
 
 <script src="{{url('assets/js/dashboard/dashboard.js')}}"></script>
+
+<script>
+    // a poll leaves the dashboard at its end time, also when the page stays open (seconds counted by the server clock)
+    document.querySelectorAll('[data-poll-ends-in]').forEach(function (poll) {
+        var seconds = parseInt(poll.getAttribute('data-poll-ends-in'), 10);
+        if (!isNaN(seconds) && seconds < 2147483) {
+            setTimeout(function () { poll.remove(); }, seconds * 1000);
+        }
+    });
+</script>
 
 <script src="{{url('assets/js/widgets.bundle.js')}}"></script>
 <script src="{{url('assets/js/custom/widgets.js')}}"></script>

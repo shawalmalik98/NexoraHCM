@@ -449,26 +449,26 @@ class LeavesRequestController extends Controller
                             if($process == 1){
                 
         
-                                // if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
-                                //     $to_mngr1 = $login_user[0]['employee_senior_manager'];
-                                // }
-                                // if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
-                                //     $to_mngr2 = $login_user[0]['employee_junior_manager'];
-                                // }
+                                if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                    $to_mngr1 = $login_user[0]['employee_senior_manager'];
+                                }
+                                if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                    $to_mngr2 = $login_user[0]['employee_junior_manager'];
+                                }
 
-                                // if(!empty($leave_data->input('from_date')) && !empty($leave_data->input('to_date'))){
+                                if(!empty($leave_data->input('from_date')) && !empty($leave_data->input('to_date'))){
 
-                                //     $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request(s) as ('. $leave_name[0]['leave_name'] .') from '. $leave_data->input('from_date').' to '.$leave_data->input('to_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&from_date='.$leave_data->input('from_date').'&to_date='.$leave_data->input('to_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+                                    $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request(s) as ('. $leave_name[0]['leave_name'] .') from '. $leave_data->input('from_date').' to '.$leave_data->input('to_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&from_date='.$leave_data->input('from_date').'&to_date='.$leave_data->input('to_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
 
-                                //     $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request(s) and has been forwarded to your reporting authorities.');
+                                    $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request(s) and has been forwarded to your reporting authorities.');
 
         
-                                // }else{
-                                //     $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $leave_data->input('leave_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$leave_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+                                }else{
+                                    $this->send_notification('New Leave Request ', '' . $login_user[0]['employee_name']. ' applied for leave request as ('. $leave_name[0]['leave_name'] .') for the date of '. $leave_data->input('leave_date').'. Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$leave_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
 
-                                //     $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request and has been forwarded to your reporting authorities.');
+                                    $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Leave Request','You\'ve successfully applied leave request and has been forwarded to your reporting authorities.');
 
-                                // }
+                                }
                 
                                 return response()->json([
                                     'status' => 'TRUE',
@@ -589,9 +589,9 @@ class LeavesRequestController extends Controller
                                     $leave_approval->request_approval_time = date('h:i A d M, Y');
                                     $leave_approval->save();
                         
-                                    // $this->send_notification('Leave Request Disapproval ', ' HR disapproved your leave request(s) for '.$update_leave['leave_applied_for_date'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
+                                    $this->send_notification('Leave Request Disapproval ', 'Your leave request for '.$update_leave['leave_applied_for_date'].' was disapproved by '.$login_user[0]['employee_name'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
 
-                                    // $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request has been disapproved by HR.');
+                                    $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your leave request has been disapproved by '.$login_user[0]['employee_name'].'.');
                                 
                                 }else{
                                     return response()->json([
@@ -774,9 +774,9 @@ class LeavesRequestController extends Controller
                                     $leave_approval->request_approval_time = date('h:i A d M, Y');
                                     $leave_approval->save();
 
-                                    // $this->send_notification('Leave Request Approval ', ' HR approved your leave request(s) for '.$update_leave['leave_applied_for_date'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
+                                    $this->send_notification('Leave Request Approval ', 'Your leave request for '.$update_leave['leave_applied_for_date'].' was approved by '.$login_user[0]['employee_name'].'. Please click here to view.','my-leaves?request-id='. $update_leave->leave_applied_id .'', $update_leave['leave_applied_by'],NULL,NULL,'no');
                                     
-                                    // $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your Leave request has been approved by HR.');
+                                    $this->send_push_notification_mobile_app($update_leave['leave_applied_by'], 'Leave Request','Your leave request has been approved by '.$login_user[0]['employee_name'].'.');
 
                                 }else{
                                     return response()->json([
@@ -1293,16 +1293,16 @@ class LeavesRequestController extends Controller
     
                                     if($process == 1){
 
-                                        // if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
-                                        //     $to_mngr1 = $login_user[0]['employee_senior_manager'];
-                                        // }
-                                        // if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
-                                        //     $to_mngr2 = $login_user[0]['employee_junior_manager'];
-                                        // }
+                                        if(!empty($login_user[0]['employee_senior_manager']) || $login_user[0]['employee_senior_manager'] != ''){
+                                            $to_mngr1 = $login_user[0]['employee_senior_manager'];
+                                        }
+                                        if(!empty($login_user[0]['employee_junior_manager']) || $login_user[0]['employee_junior_manager'] != ''){
+                                            $to_mngr2 = $login_user[0]['employee_junior_manager'];
+                                        }
                         
-                                        // $this->send_notification('Update Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request as ('.  $leave_name[0]['leave_name'] .') for the date of '. $request_data->input('leave_date').' Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$request_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
+                                        $this->send_notification('Update Leave Request ', '' . $login_user[0]['employee_name']. '  update an leave request as ('.  $leave_name[0]['leave_name'] .') for the date of '. $request_data->input('leave_date').' Please click here to view.','employees-leaves?employee_id='.session('user_session').'&date='.$request_data->input('leave_date').'',NULL,$to_mngr1= $to_mngr1 ?? NULL,$to_mngr2=$to_mngr2 ?? NULL,'yes');
                                       
-                                        // $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Update Leave Request','Your leave request has been updated.');
+                                        $this->send_push_notification_mobile_app($login_user[0]['employee_id'], 'Update Leave Request','Your leave request has been updated.');
                                     
                                         return response()->json([
                                             'status' => 'TRUE',
@@ -1473,14 +1473,14 @@ class LeavesRequestController extends Controller
         try{
             if(!empty($request->path)){
                 
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
-                return response()->download(storage_path('app/portal_documents/'.$request->path));
+                return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
             }else{
                 return redirect('/');
             }

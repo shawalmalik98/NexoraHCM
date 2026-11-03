@@ -118,7 +118,7 @@ class LeavesController extends Controller
             $leaves_entitled = json_decode(json_encode($leaves_entitled), TRUE);
 
             // leaves taken by payroll for late comings / half days count as availed
-            $deducted_by_employee = LeaveDeduction::whereNotNull('ld_leave_type_id')->selectRaw('ld_employee_id, COUNT(*) as total')->groupBy('ld_employee_id')->pluck('total','ld_employee_id')->toArray();
+            $deducted_by_employee = LeaveDeduction::whereNotNull('ld_leave_type_id')->selectRaw('ld_employee_id, SUM(ld_days) as total')->groupBy('ld_employee_id')->pluck('total','ld_employee_id')->toArray();
             foreach($leaves_entitled as $key => $leave_row){
                 $leaves_entitled[$key]['used_get_availed_leaves'] = ($leave_row['used_get_availed_leaves'] ?? 0) + ($deducted_by_employee[$leave_row['employee_id']] ?? 0);
             }

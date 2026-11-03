@@ -80,7 +80,7 @@
                             @foreach($all_cash_history as $cash)
                                 <tr>
                                     <td class="text-center td-border">{{$cash['petty_cash_id'] }}</td>
-                                    <td class="text-center td-border">{{ $cash['petty_cash_amount'] }}</td>
+                                    <td class="text-center td-border">{{ number_format((float) $cash['petty_cash_amount']) }}</td>
                                     <td class="text-center td-border">{{ $cash['petty_cash_for_month_and_year'] }}</td>
                                     <td class="text-center td-border">{{ $cash['petty_cash_source'] }}</td>
                                     <td class="text-center td-border">{{$cash['employee_code']}} - {{$cash['employee_name']}}</td>

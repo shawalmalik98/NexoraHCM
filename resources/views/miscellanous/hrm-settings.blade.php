@@ -188,6 +188,12 @@
                                                     </div>
 
                                                     <div class="mb-4">
+                                                        <label class="form-label">Mobile App Version(s)</label>
+                                                        <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Mobile app versions allowed to use the server, comma separated (e.g. 1.0.0,1.0.5). Leave empty to allow every version."></i>
+                                                        <input type="text" class="form-control" name="mobile_app_version" value="{{ $setting[0]['mobile_app_version'] ?? '' }}" placeholder="e.g. 1.0.0,1.0.5 (empty = all versions)" maxlength="255" />
+                                                    </div>
+
+                                                    <div class="mb-4">
                                                         <label class="form-label required">System Currency</label>
                                                         <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="This currency format will show"></i>
                                                         <select class="form-select" data-control="select2" data-hide-search="false" data-placeholder="Select System Currency" name="system_currency" data-close-on-select="true" >
@@ -326,24 +332,6 @@
                                                         </div>
                                                     </div>
 
-                                                    <div class="row">
-                                                        <div class="col-md-6 mb-4">
-                                                            <label class="required form-label">Late Deduction Rate</label>
-                                                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Late Deduction Rate (Daily Wages)"></i>
-                                                            <div class="input-group" >    
-                                                                <input type="number" class="form-control" name="daily_wages_late_deduction" value="{{ (!empty($setting[0]['daily_wages_late_deduction'])) ? $setting[0]['daily_wages_late_deduction']*100 : ''}}" value="" min="0" max="100" />
-                                                                <span class="input-group-text">%</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6 mb-6">
-                                                            <label class="required form-label">Half Day Deduction Rate</label>
-                                                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Half Day Deduction Rate (Daily Wages)"></i>
-                                                            <div class="input-group" > 
-                                                                <input type="number" class="form-control" name="daily_wages_half_deduction" value="{{!empty($setting[0]['daily_wages_half_deduction']) ? $setting[0]['daily_wages_half_deduction']*100  : ''}}" value="" min="0" max="100" />
-                                                                <span class="input-group-text">%</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
                                                     
                 
                                                     <div class="mb-4">
@@ -394,6 +382,14 @@
                                                             <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Employee contribution as % of basic salary, deducted every payslip"></i>
                                                             <div class="input-group">
                                                                 <input type="number" class="form-control" name="pf_employee_percentage" value="{{ $setting[0]['pf_employee_percentage'] ?? 8.33 }}" min="0" max="100" step="0.01" />
+                                                                <span class="input-group-text">% of basic</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6 mb-4">
+                                                            <label class="form-label">PF Company Share</label>
+                                                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Company contribution as % of basic salary, added to the employee's fund every payslip (not part of the salary)"></i>
+                                                            <div class="input-group">
+                                                                <input type="number" class="form-control" name="pf_company_percentage" value="{{ $setting[0]['pf_company_percentage'] ?? 8.33 }}" min="0" max="100" step="0.01" />
                                                                 <span class="input-group-text">% of basic</span>
                                                             </div>
                                                         </div>

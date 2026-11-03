@@ -64,15 +64,13 @@ jQuery('#personal_information_form').validate({
     },
 
     submitHandler: function(form) {
-        $('#personal_information_form').submit(function(e) {
             $('.submit-btn-form').prop('disabled', true);
             $('.submit-btn-form').html('Please Wait . . .');
             $('.submit-btn-form').css('cursor', 'not-allowed');
-            e.preventDefault();
             $.ajax({
-                url: '/savemypersonalinformation',
+                url: (typeof base_url !== 'undefined' ? base_url : '') + '/savemypersonalinformation',
                 type: 'POST',
-                data: new FormData(this),
+                data: new FormData(form),
                 contentType: false,
                 cache: false,
                 processData: false,
@@ -114,9 +112,12 @@ jQuery('#personal_information_form').validate({
                             timer: 8000,
                         });
                     }
+                    $('.submit-btn-form').prop('disabled', false);
+                    $('.submit-btn-form').html('SAVE INFORMATION');
+                    $('.submit-btn-form').css('cursor', 'pointer');
                 }
             });
-        });
+            return false;
     }
 
 });

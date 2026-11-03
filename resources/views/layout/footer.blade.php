@@ -21,7 +21,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
-    <script type="text/javascript" src="{{ url('assets/js/general_script.js') }}?js_v=6"></script>
+    <script type="text/javascript" src="{{ url('assets/js/general_script.js') }}?js_v=8"></script>
 
     {{-- plugins.bundle.js is loaded in the header --}}
 

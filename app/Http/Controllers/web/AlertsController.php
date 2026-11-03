@@ -368,7 +368,7 @@ class AlertsController extends Controller
          
             if(!empty($alert_employees)){
             
-                $employees =  Employees::selectRaw('CONVERT(NVARCHAR(50), created_at, 106) as created_at,employee_code,employee_name')->join('tbl_alert_status', 'tbl_employees.employee_id', '=', 'tbl_alert_status.alert_status_employee_id')->where('alert_status_alert_id',$request->alert_id)->whereIn('employee_id',$alert_employees)->get()->toArray();
+                $employees =  Employees::selectRaw("DATE_FORMAT(tbl_alert_status.created_at, '%d %b %Y') as created_at,employee_code,employee_name")->join('tbl_alert_status', 'tbl_employees.employee_id', '=', 'tbl_alert_status.alert_status_employee_id')->where('alert_status_alert_id',$request->alert_id)->whereIn('employee_id',$alert_employees)->get()->toArray();
                
                 return response()->json([
                     'data' => $employees,

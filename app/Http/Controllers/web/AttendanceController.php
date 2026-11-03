@@ -373,29 +373,11 @@ class AttendanceController extends Controller
                         
                         $where_clause = '1=1';
                     
-                        if (!empty($employee_id)) {
+                        // only an employee the logged in user may adjust
+                        $all_employees = $this->adjustment_employees($login_user, $status);
 
-                            $request_employee = Employees::whereIn('employee_designation', [400,453,478])
-                            ->where('employee_id',$request->input('employee_id'))
-                            ->where('employee_isactive', '=', $status)
-                            ->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
-
-                            if(!empty($request_employee)){
-                                $where_clause .= " AND att_employee_id = '" . $request_employee[0]['employee_id'] . "' ";
-                            }else{
-                                return view('errors.attendance-restriction');
-                            }    
-                        } 
-                        else{
-
-                            $request_employee = Employees::whereIn('employee_designation', [400,453,478])
-                            ->where('employee_id', $login_user[0]['employee_id'])
-                            ->where('employee_isactive', '=', $status)
-                            ->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
-
-                            if(!empty($request_employee)){
-                                $where_clause .= " AND att_employee_id = '" .  $login_user[0]['employee_id']. "' ";
-                            }
+                        if(!in_array((int) $employee_id, array_map('intval', array_column($all_employees, 'employee_id')), true)){
+                            return view('errors.attendance-restriction');
                         }
                         
                         $month_count = 0;
@@ -419,7 +401,7 @@ class AttendanceController extends Controller
                             $month_days = date('t', strtotime($request->input('from_date')));
                         }
 
-                        $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', !empty($employee_id) ? $employee_id : $login_user[0]['employee_id'] )->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
+                        $employee_data = Employees::where('employee_isactive','=', $status)->where('employee_id', $employee_id)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
 
                         if(!empty($employee_data)){
                             $att_login_employee =  $employee_data[0]['employee_id'];
@@ -451,9 +433,9 @@ class AttendanceController extends Controller
                                     SELECT DATE_ADD('$from_date', INTERVAL n DAY) AS date_between
                                     FROM (
                                         SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-                                        FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-                                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-                                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                                        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) ones,
+                                            (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens,
+                                            (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) hundreds
                                     ) AS numbers
                                     WHERE DATE_ADD('$from_date', INTERVAL n DAY) BETWEEN '$from_date' AND '$to_date'
                                 ) AS dates
@@ -467,21 +449,6 @@ class AttendanceController extends Controller
                             $attendance = [];
                         }    
 
-                        if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::has_role($login_user[0]['employee_id'], 'admin')){
-                            // dd('123');
-                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
-
-                        }
-                        elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::has_role($login_user[0]['employee_id'], 'admin') && $login_user[0]['employee_is_manager'] == 1){
-                            // dd('321');
-
-                            $login_employee_id = $login_user[0]['employee_id'];
-
-                            $total_team_member = $this->get_employee_hierarchy_unique($login_employee_id, $status);
-
-                            $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
-
-                        }    
 
                     }else{
 
@@ -494,17 +461,10 @@ class AttendanceController extends Controller
             else{
                 $all_employees = [];
                 if(empty($request->from_date) && empty($request->to_date)){
-                    if(date('d') >= '21'){
-                        $from_date = date('Y-m-') . '21';
-                        $to_date = date('Y-m-d');
-                    }
-                    else{
-                        $today = new DateTime();
-                        $today->modify('first day of previous month');
-                        $today->modify('+20 days');
-                        $from_date = $today->format('Y-m-d');
-                        $to_date = date('Y-m-d');
-                    }
+                    // current payroll period so far (it starts on the payroll start day from the settings)
+                    $cycle_day = (int) (HrmSetting::value('payroll_start_date') ?: 1);
+                    $from_date = ((int) date('d') >= $cycle_day) ? date('Y-m-').sprintf('%02d', $cycle_day) : date('Y-m-', strtotime('first day of previous month')).sprintf('%02d', $cycle_day);
+                    $to_date = date('Y-m-d');
                 }
                 
                 $month_count = 0;
@@ -527,20 +487,10 @@ class AttendanceController extends Controller
                 if($month_days == 0){
                     $month_days = date('t', strtotime($request->input('from_date'))); 
                 }
-                if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::has_role($login_user[0]['employee_id'], 'admin')){
-                
-                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
-                }
-                elseif(!CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) && !CustomHelper::has_role($login_user[0]['employee_id'], 'admin') && $login_user[0]['employee_is_manager'] == 1){
-                                
-                    $login_employee_id = $login_user[0]['employee_id'];
+                $all_employees = $this->adjustment_employees($login_user, $status);
 
-                    $total_team_member = $this->get_employee_hierarchy_unique($login_employee_id, $status);
-
-                    $all_employees = Employees::whereIn('employee_designation', [400,453,478])->whereIn('employee_id',$total_team_member)->where('employee_isactive', '=', $status)->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
-                }
-                
-                $employee_data = Employees::whereIn('employee_designation', [400,453,478])->where('employee_isactive','=', $status)->where('employee_id', $login_user[0]['employee_id'])->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
+                // nothing is listed until an employee is picked in the filter (no adjusting your own attendance)
+                $employee_data = [];
 
                 if (!empty($employee_data)) {
 
@@ -573,9 +523,9 @@ class AttendanceController extends Controller
                     SELECT DATE_ADD('$from_date', INTERVAL n DAY) AS date_between
                     FROM (
                         SELECT ones.n + tens.n * 10 + hundreds.n * 100 AS n
-                        FROM (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) ones(n),
-                            (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) tens(n),
-                                (VALUES (0),(1),(2),(3),(4),(5),(6),(7),(8),(9)) hundreds(n)
+                        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) ones,
+                            (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) tens,
+                                (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) hundreds
                         ) AS numbers
                         WHERE DATE_ADD('$from_date', INTERVAL n DAY) BETWEEN '$from_date' AND '$to_date'
                     ) AS dates
@@ -601,6 +551,18 @@ class AttendanceController extends Controller
         }finally{
             ActivityTracker::track_activity('View all Attendance adjustment');
         }
+    }
+
+    // employees whose absent days the logged in user may adjust: everyone for HR / admin, the team for a manager
+    protected function adjustment_employees($login_user, $status = 1){
+        $query = Employees::where('employee_isactive', '=', $status)->where('employee_id', '!=', $login_user[0]['employee_id']);
+        if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::has_role($login_user[0]['employee_id'], 'admin')){
+            return $query->orderBy('employee_name')->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
+        }
+        if($login_user[0]['employee_is_manager'] == 1){
+            return $query->whereIn('employee_id', $this->get_employee_hierarchy_unique($login_user[0]['employee_id'], $status))->orderBy('employee_name')->get(['employee_id','employee_name','employee_code','employee_new_code'])->toArray();
+        }
+        return [];
     }
 
     protected function update_attendance_adjustment(Request $request_data){
@@ -636,6 +598,13 @@ class AttendanceController extends Controller
                         $employee_code = $data['employee_code'];
                         $attendance_remarks = $data['attendance_remarks'];
                         
+                        if(!in_array((int) $employee_code, array_map('intval', array_column($this->adjustment_employees($this->get_login_user_detail(), 1), 'employee_id')), true)){
+                            return response()->json([
+                                'msg' => 'You can\'t adjust the attendance of this employee.',
+                                'status' => 'FALSE'
+                            ]);
+                        }
+
                         $get_employee_decoded = Employees::where('employee_id',$employee_code)->first();
 
                         $doj  = strtotime($get_employee_decoded->employee_doj);
@@ -699,7 +668,7 @@ class AttendanceController extends Controller
                             $create_attendance->att_request_approval = 3;
                             $create_attendance->att_updated_by = session('user_session');
                             $create_attendance->att_updated_remarks = $attendance_remarks;
-                            $create_attendance->adjustment_updated = date('Y-m-d H:i:s');
+                            $create_attendance->att_updated_at = date('Y-m-d H:i:s');
                             $process = $create_attendance->save();
                             
                         } else {
@@ -3496,47 +3465,30 @@ class AttendanceController extends Controller
             }
         
             $get_attendance_data = Attendance::join('tbl_employees', 'tbl_attendance.att_employee_id', '=', 'tbl_employees.employee_id')
-            ->whereBetween(
-                DB::raw("CONCAT(att_for_year, '-', att_for_month, '-', att_for_date)"),
-                [$from_date, $to_date]
-            )
+            ->whereBetween('att_comp_date', [$from_date, $to_date])
             ->whereIn('employee_group', (array) $emp_group)
-            ->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_for_date','att_for_month','att_for_year','tbl_employees.employee_code','tbl_employees.employee_group'])
+            ->orderBy('att_comp_date')
+            ->get(['att_check_in_time','att_check_out_time','att_check_in_status','att_check_out_status','att_comp_date','tbl_employees.employee_code','tbl_employees.employee_group'])
             ->toArray();
-                
+
             if(!empty($get_attendance_data)) {
-                
-                $filename = "attendancelist.dat";
 
-                $file = fopen($filename, "w");
-
-                if ($file) {
-
-                    foreach($get_attendance_data as $attendance_date){
-                        if($attendance_date['att_check_in_status'] == '1'){
-                            $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_in_time'])).'0001000'.$attendance_date['employee_code'] .'0063'. "\n";
-                            fwrite($file, $record);
-                        }
-                    
-                        if($attendance_date['att_check_out_status'] == '1'){
-                            $record = '31'.$attendance_date['att_for_year'].$attendance_date['att_for_month'].$attendance_date['att_for_date'].date("Hi", strtotime($attendance_date['att_check_out_time'])).'0002000'.$attendance_date['employee_code'] .'0063'. "\n";
-                            fwrite($file, $record);
-                        }
+                // built in memory and sent as a download (no temporary file in the public folder)
+                $records = '';
+                foreach($get_attendance_data as $attendance_date){
+                    $day = date('Ymd', strtotime($attendance_date['att_comp_date']));
+                    if($attendance_date['att_check_in_status'] == '1'){
+                        $records .= '31'.$day.date("Hi", strtotime($attendance_date['att_check_in_time'])).'0001000'.$attendance_date['employee_code'] .'0063'. "\n";
                     }
-
-                    fclose($file);
-
-                    header('Content-Type: application/octet-stream');
-                    header('Content-Disposition: attachment; filename="' . $filename . '"');
-                    header('Content-Length: ' . filesize($filename));
-                
-                    readfile($filename);
-
-                    File::delete($filename);
-                    
-                } else {
-                    echo "Unable to open $filename for writing.";
+                    if($attendance_date['att_check_out_status'] == '1'){
+                        $records .= '31'.$day.date("Hi", strtotime($attendance_date['att_check_out_time'])).'0002000'.$attendance_date['employee_code'] .'0063'. "\n";
+                    }
                 }
+
+                return response($records, 200, [
+                    'Content-Type' => 'application/octet-stream',
+                    'Content-Disposition' => 'attachment; filename="attendancelist.dat"',
+                ]);
             } else {
                 return response()->json([
                     'msg' => 'No Records Found',

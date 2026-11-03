@@ -5,11 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AppFlowDetail extends Model
+class ProvidentFund extends Model
 {
     use HasFactory;
-
-    protected $table = 'tbl_approval_flow_details';
-    protected $primaryKey = 'appflow_detail_id';
+    protected $table = 'tbl_provident_fund';
+    protected $primaryKey = 'pf_id';
     public $timestamps = false;
 }

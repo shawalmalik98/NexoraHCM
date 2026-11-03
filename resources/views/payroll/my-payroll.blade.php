@@ -12,7 +12,6 @@
                 <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">My Payslips</h1>
             </div>
             <div class="d-flex align-items-center gap-2 gap-lg-3">
-                @if(!empty($login_user) && $login_user[0]['employee_earning_type'] == 1)
                 <div class="m-0">
                     <a href="javascript:void(0)" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#calculatePayrollAmount">
                         <span class="svg-icon svg-icon-2">
@@ -23,18 +22,6 @@
                         </span>
                         Calculate Payroll </a>
                 </div>
-                @else
-                <div class="m-0">
-                    <a href="javascript:void(0)" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#calculateMyWageAmount">
-                        <span class="svg-icon svg-icon-2">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path opacity="0.3" d="M3 3V17H7V21H15V9H20V3H3Z" fill="currentColor"/>
-                                <path d="M20 22H3C2.4 22 2 21.6 2 21V3C2 2.4 2.4 2 3 2H20C20.6 2 21 2.4 21 3V21C21 21.6 20.6 22 20 22ZM19 4H4V8H19V4ZM6 18H4V20H6V18ZM6 14H4V16H6V14ZM6 10H4V12H6V10ZM10 18H8V20H10V18ZM10 14H8V16H10V14ZM10 10H8V12H10V10ZM14 18H12V20H14V18ZM14 14H12V16H14V14ZM14 10H12V12H14V10ZM19 14H17V20H19V14ZM19 10H17V12H19V10Z" fill="currentColor"/>
-                            </svg>
-                        </span>
-                        Calculate Wage(s) </a>
-                </div>
-                @endif
             </div>
             
         </div>
@@ -106,28 +93,6 @@
                                             </tr>
                                         @endforeach
                                     @endif
-                                    @if(!empty($fetch_employee_wages))
-                                        @foreach ($fetch_employee_wages as $employee_wage)
-                                            <tr @if(request()->get('slip-id') != '' && $employee_wage['dw_id'] == request()->get('slip-id')) style="background-color:bisque;" @endif >
-                                                <td class="ps-8">{{ $employee_wage['dw_id'] }}</td>
-                                                <td>{{ date('M-Y',strtotime($employee_wage['dw_of_date'])) }} </td>
-                                                <td>{{ number_format($employee_wage['dw_employee_gross_daily_wages'],2) }}</td>
-                                                <td>{{ number_format($employee_wage['dw_employee_extra_daily_wages'],2) }}</td>
-                                                <td>{{ number_format($employee_wage['dw_employee_deduction'],2) }}</td>
-                                                <td>{{ number_format($employee_wage['dw_employee_net_daily_wages'],2) }}</td>
-                                                <td>{{ date('d-M-Y',strtotime($employee_wage['dw_created_at'])) }}</td>
-                                                <td>
-                                                    <span class="badge badge-light-primary font-weight-bold">Daily</span>
-                                                    <span class="badge badge-light-success font-weight-bold">{{ $employee_wage['wage_count'] }}</span>
-                                                </td>
-                                                <td>
-                                                    <a  href="{{ url('my-wages?m='.date('m',strtotime($employee_wage['dw_of_date'])).'&y='.date('Y',strtotime($employee_wage['dw_of_date'])))}}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" data-bs-toggle="tooltip" title="View Payslip(s)" > 
-                                                        <i class="fas fa-eye" aria-hidden="true"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endif
                                 </tbody>
                             
                             </table>
@@ -141,7 +106,6 @@
         </div>
     </div>
 </div>
-@if(!empty($login_user) && $login_user[0]['employee_earning_type'] == 1)
 <form id="calculateMyPayrollAmountForm" class="form">
     @csrf
     <div class="modal fade" id="calculatePayrollAmount" tabindex="-1" aria-hidden="true">
@@ -189,110 +153,12 @@
     </div>
     {{--end::Modal - New Target--}}
 </form>
-@else
-<form id="calculateMyWageAmountForm" class="form">
-    @csrf
-    <div class="modal fade" id="calculateMyWageAmount" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable mw-650px">
-            <div class="modal-content rounded">
-                <div class="modal-header">
-                    <h4 class="modal-title pl-4">Calculate Wages Amount</h4>
-                    <button type="button" class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal" aria-label="Close">
-                        <span class="svg-icon svg-icon-1">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
-                                <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
-                            </svg>
-                        </span>
-                    </button>
-                </div>
-                <div class="modal-body scroll-y pt-0 pb-15" >
-                    <div class="row mt-5" >
-                        <div class="col-md-12 fv-row">
-                            <label class="required fs-6 fw-semibold mb-2">Daily Wages Day(s)</label>
-                            <select class="form-select " data-control="select2" data-hide-search="true" data-placeholder="Select Attendance Days" name="days_assign" id="days_assign_calculate" required>
-                                <option value="single">Single Day </option>
-                                <option value="multiple">Multiple Days </option>
-                                <option value="till">Till {{date('d-M-Y',strtotime('-2 days'))}}</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="from_to_date_input_calculate row mt-5 d-none" >
-                        <div class="col-md-6 fv-row">
-                            <label class="fs-6 fw-semibold mb-2 required">From Date </label>
-                            <input type="date" class="date-control-calculate form-control" name="from_date"
-                                placeholder=""  max="{{date('Y-m-d',strtotime('-2 days'))}}" >
-                        </div>
-                        <div class="col-md-6 fv-row">
-                            <label class="fs-6 fw-semibold mb-2 required">To Date</label>
-                            <input type="date" class="date-control-calculate form-control" name="to_date"
-                                placeholder=""  max="{{date('Y-m-d',strtotime('-2 days'))}}" >
-                        </div>
-                    </div>
-
-                    <div class="only_date_input_calculate row mt-5" >
-                        <div class="col-md-12 fv-row">
-                            <label class="required fs-6 fw-semibold mb-2">Select Wage Date</label>
-                            <div class="position-relative d-flex align-items-center">
-                                <input type="date" class="form-control" name="wage_date" id="wage_date_calculate" max="{{ date('Y-m-d') }}" required/>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="till_note_calculate row mt-5 d-none" >
-                        <div class="col-md-12 fv-row">
-                            <p><b>Note* </b> Dues remaining from DOJ till {{date('d-M-Y',strtotime('-2 days'))}}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary submit_btn">
-                        <span class="indicator-label">Submit</span>
-                        <span class="indicator-progress">Please wait
-                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    {{--end::Modal - New Target--}}
-</form>
-@endif
 @endsection
 
 @push('js-link')
 <script>
 
-    $("#days_assign_calculate").change(function(){
-        var value = $(this).children("option:selected").val();
-        if(value == "single"){
-            $('.only_date_input_calculate').removeClass('d-none');
-            $('.from_to_date_input_calculate').addClass('d-none');
-            $('.till_note_calculate').addClass('d-none');
-            $('.date-control-calculate').val('');
-            $("#wage_date_calculate").prop('required',true);
-            $(".date-control-calculate").prop('required',false);
-        }else if(value == "multiple"){
-            $('#wage_date_calculate').val('');
-            $('.only_date_input_calculate').addClass('d-none');
-            $('.from_to_date_input_calculate').removeClass('d-none');
-            $('.till_note_calculate').addClass('d-none');
-            $(".date-control-calculate").prop('required',true);
-            $("#wage_date_calculate").prop('required',false);
-        }else{
-            $('#wage_date_calculate').val('');
-            $('.date-control-calculate').val('');
-            $('.only_date_input_calculate').addClass('d-none');
-            $('.from_to_date_input_calculate').addClass('d-none');
-            $('.till_note_calculate').removeClass('d-none');
-            $(".date-control-calculate").prop('required',false);
-            $("#wage_date_calculate").prop('required',false);
-        }
-    });
 
-    @if(!empty($login_user) && $login_user[0]['employee_earning_type'] == 1)
     $('#calculateMyPayrollAmountForm').submit(function(e) {
 
         e.preventDefault();
@@ -404,117 +270,6 @@
             })
         });
     })
-    @else
-    $('#calculateMyWageAmountForm').submit(function(e) {
-
-        e.preventDefault();
-
-        var url = "{{url('/calculate-my-wages')}}";
-
-
-        $('.submit_btn').prop('disabled', true);
-        $('.submit_btn').attr('data-kt-indicator', 'on');
-        $('.submit_btn').css('cursor', 'not-allowed');
-
-        let form_data = new FormData(this);
-
-        body_data = {
-    
-            // Adding method type
-            method: 'POST',
-
-            // Adding body or contents to send
-            // body: JSON.stringify({form_data}),
-            body : form_data,
-        
-            // Adding headers to the request
-            headers: {
-
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        }
-
-        fetch(url,body_data)
-        // Converting to JSON
-        .then(response =>{
-            // response.json()
-            if (response.ok) {
-                return response.json();
-            }
-
-            return Promise.reject(response);
-        })
-        // Displaying results to console
-        .then(json =>{
-        if (json.status == 'TRUE') {
-
-            $('.submit_btn').prop('disabled', false);
-            $('.submit_btn').removeAttr('data-kt-indicator');
-            $('.submit_btn').css('cursor', 'pointer');
-
-            Swal.fire({
-            title: json.title,
-            text: json.text,
-            icon: json.icon,
-            buttonsStyling: false,
-            confirmButtonText: "Thanks",
-            customClass: {
-            confirmButton: "btn btn-primary"
-            }
-
-            }).then(function(result) {
-                if (result.value) {
-                    // location.reload();
-                }
-            });
-
-
-        } else {
-
-
-            Swal.fire({
-            title: json.title,
-            text: json.text,
-            icon: json.icon,
-            buttonsStyling: false,
-            confirmButtonText: "Thanks",
-            customClass: {
-                confirmButton: "btn btn-primary"
-                }
-            });
-
-            $('.submit_btn').prop('disabled', false);
-            $('.submit_btn').removeAttr('data-kt-indicator');
-            $('.submit_btn').css('cursor', 'pointer');
-
-            if (json.reload == 'TRUE') {
-                setTimeout(() => {
-                    location.reload();
-                }, 3000);
-            }
-
-        }
-
-        }).catch(response => {
-
-            $('.submit_btn').prop('disabled', false);
-            $('.submit_btn').removeAttr('data-kt-indicator');
-            $('.submit_btn').css('cursor', 'pointer');
-
-            Swal.fire({
-                icon: 'warning',
-                title: response.statusText,
-                buttonsStyling: false,
-                confirmButtonText: "Thanks",
-                customClass: {
-                confirmButton: "btn btn-primary"
-                }
-                
-            })
-
-        });
-    })
-    @endif
 </script>
 
 

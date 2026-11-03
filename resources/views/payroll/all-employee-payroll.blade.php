@@ -121,29 +121,29 @@
                                         <select class="form-select " data-kt-select2="true" data-placeholder="Select Month"name="m"
                                             required="required">
                                             <option value="">Select Month</option>
-                                            <option value="01" @if (!empty(Request::get('m')) && Request::get('m') == '01') selected @elseif (empty(Request::get('m')) && date('m') == '01') selected @endif>January
+                                            <option value="01" @if ((int) $month == 1) selected @endif>January
                                             </option>
-                                            <option value="02" @if (!empty(Request::get('m')) && Request::get('m') == '02') selected @elseif (empty(Request::get('m')) && date('m') == '02') selected @endif>February
+                                            <option value="02" @if ((int) $month == 2) selected @endif>February
                                             </option>
-                                            <option value="03" @if (!empty(Request::get('m')) && Request::get('m') == '03') selected @elseif (empty(Request::get('m')) && date('m') == '03') selected @endif>March
+                                            <option value="03" @if ((int) $month == 3) selected @endif>March
                                             </option>
-                                            <option value="04" @if (!empty(Request::get('m')) && Request::get('m') == '04') selected @elseif (empty(Request::get('m')) && date('m') == '04') selected @endif>April
+                                            <option value="04" @if ((int) $month == 4) selected @endif>April
                                             </option>
-                                            <option value="05" @if (!empty(Request::get('m')) && Request::get('m') == '05') selected @elseif (empty(Request::get('m')) && date('m') == '05') selected @endif>May
+                                            <option value="05" @if ((int) $month == 5) selected @endif>May
                                             </option>
-                                            <option value="06" @if (!empty(Request::get('m')) && Request::get('m') == '06') selected @elseif (empty(Request::get('m')) && date('m') == '06') selected @endif>June
+                                            <option value="06" @if ((int) $month == 6) selected @endif>June
                                             </option>
-                                            <option value="07" @if (!empty(Request::get('m')) && Request::get('m') == '07') selected @elseif (empty(Request::get('m')) && date('m') == '07') selected @endif>July
+                                            <option value="07" @if ((int) $month == 7) selected @endif>July
                                             </option>
-                                            <option value="08" @if (!empty(Request::get('m')) && Request::get('m') == '08') selected @elseif (empty(Request::get('m')) && date('m') == '08') selected @endif>August
+                                            <option value="08" @if ((int) $month == 8) selected @endif>August
                                             </option>
-                                            <option value="09" @if (!empty(Request::get('m')) && Request::get('m') == '09') selected @elseif (empty(Request::get('m')) && date('m') == '09') selected @endif>September
+                                            <option value="09" @if ((int) $month == 9) selected @endif>September
                                             </option>
-                                            <option value="10" @if (!empty(Request::get('m')) && Request::get('m') == '10') selected @elseif (empty(Request::get('m')) && date('m') == '10') selected @endif>October
+                                            <option value="10" @if ((int) $month == 10) selected @endif>October
                                             </option>
-                                            <option value="11" @if (!empty(Request::get('m')) && Request::get('m') == '11') selected @elseif (empty(Request::get('m')) && date('m') == '11') selected @endif>November
+                                            <option value="11" @if ((int) $month == 11) selected @endif>November
                                             </option>
-                                            <option value="12" @if (!empty(Request::get('m')) && Request::get('m') == '12') selected @elseif (empty(Request::get('m')) && date('m') == '12') selected @endif>December
+                                            <option value="12" @if ((int) $month == 12) selected @endif>December
                                             </option>
                                         </select>
                                     </div>
@@ -156,7 +156,7 @@
                                             <option value="">Select Year</option>
                                             @if(!empty($dynamic_years))
                                                 @foreach ($dynamic_years as $year_list)
-                                                    <option value="{{$year_list}}" @if (!empty(Request::get('y')) && Request::get('y') == $year_list) selected @elseif(empty(Request::get('y')) && date('Y') == $year_list) selected  @endif>{{$year_list}}
+                                                    <option value="{{$year_list}}" @if ((int) $year == (int) $year_list) selected @endif>{{$year_list}}
                                                     </option>
                                                 @endforeach
                                             @endif
@@ -237,8 +237,16 @@
                                                 <td>{!! CustomHelper::getEmpProfileDiv($employee_payroll['pc_employee_id']) !!}</td>
                                                 <td>{{ date('M-Y',strtotime($employee_payroll['pc_year'].'-'.$employee_payroll['pc_month'].'-'.'01')) }} </td>
                                                 <td>{{ number_format($employee_payroll['pc_employee_gross_salary'],2) }}</td>
-                                                <td>{{ number_format($employee_payroll['pc_employee_extra_salary'],2) }}</td>
-                                                <td>{{ number_format($employee_payroll['pc_employee_deduction'],2) }}</td>
+                                                <td>{{ number_format($employee_payroll['pc_employee_extra_salary'],2) }}
+                                                    @if(!empty($earning_breakdown[$employee_payroll['pc_id']]))
+                                                        <div class="text-muted fs-8 lh-sm mt-1">@foreach($earning_breakdown[$employee_payroll['pc_id']] as $part_label => $part_amount)<div>{{ $part_label }}: {{ number_format($part_amount, 2) }}</div>@endforeach</div>
+                                                    @endif
+                                                </td>
+                                                <td>{{ number_format($employee_payroll['pc_employee_deduction'],2) }}
+                                                    @if(!empty($deduction_breakdown[$employee_payroll['pc_id']]))
+                                                        <div class="text-muted fs-8 lh-sm mt-1">@foreach($deduction_breakdown[$employee_payroll['pc_id']] as $part_label => $part_amount)<div>{{ $part_label }}: {{ number_format($part_amount, 2) }}</div>@endforeach</div>
+                                                    @endif
+                                                </td>
                                                 <td>{{ number_format($employee_payroll['pc_employee_net_salary'],2) }}</td>
                                                 <td>{{ date('d-M-Y',strtotime($employee_payroll['pc_created_at'])) }}</td>
                                                 <td>{{ !empty($employee_payroll['pc_updated_at']) ? date('d-M-Y',strtotime($employee_payroll['pc_updated_at'])) : ''}}</td>
@@ -574,7 +582,7 @@
                         <div class="col-md-12 fv-row">
                             <label class="fs-6 fw-semibold mb-2 required">Payroll Month </label>
                             <input type="month" class="form-control " name="payroll_month"
-                                placeholder="" required="" max="{{date('Y-m',strtotime('+1 month'))}}" min="{{date('Y-m',strtotime('-1 month'))}}">
+                                placeholder="" required="" max="{{date('Y-m')}}" min="{{date('Y-m',strtotime('-1 month'))}}">
                         </div>
                     </div>
                     <div class="row mt-5" >

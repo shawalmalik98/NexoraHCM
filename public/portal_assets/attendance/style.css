@@ -13,7 +13,7 @@ body {
 }
 
 .sc_section1 {
-    background: linear-gradient(0deg, #005794, #00ABBC);
+    background: linear-gradient(0deg, #0b1533, #0f766e);
     width: 100%;
     overflow: hidden;
     padding: 0;
@@ -61,11 +61,11 @@ body {
 }
 
 .sc_section1 .checkin_btn {
-    background: #6BCB77;
+    background: #0d9488;
 }
 
 .sc_section1 .checkout_btn {
-    background: #FF6B6B;
+    background: #f1416c;
 }
 
 .sc_section1 .sec1_logo {
@@ -130,11 +130,11 @@ body {
 @keyframes zoom {
     from {
         transform: scale(.5);
-        box-shadow: 0 0 0 0 #95d9e1;
+        box-shadow: 0 0 0 0 #99f6e4;
     }
     to {
         transform: scale(1);
-        box-shadow: 0 0 50px 10px #95d9e1;
+        box-shadow: 0 0 50px 10px #99f6e4;
     }
 }
 
@@ -204,15 +204,15 @@ body {
 }
 
 .checkin_modal_box h3 {
-    color: #6BCB77;
+    color: #0d9488;
 }
 
 .checkout_modal_box h3 {
-    color: #FF6B6B;
+    color: #f1416c;
 }
 
 .close_modal_box h3 {
-    color: red;
+    color: #f1416c;
 }
 
 

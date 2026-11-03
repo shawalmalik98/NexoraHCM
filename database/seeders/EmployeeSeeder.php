@@ -178,7 +178,6 @@ class EmployeeSeeder extends Seeder
                 '/shift-time-request',
                 '/employee-bank',
                 '/monthly-attendance',
-                '/daily-wages-payroll',
                 '/employment-status',
                 '/attendance-devices',
                 '/reports',

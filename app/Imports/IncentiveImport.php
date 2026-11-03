@@ -14,7 +14,7 @@ class IncentiveImport implements ToCollection
         $this->period = $period;
     }
 
-    public function collection(Collection $rows)
+    public function collection(Collection $rows): void
     {
         $brandsRow = $rows[0];      // First row with brand names
         $criteriaRow = $rows[1];    // Second row with productive criteria

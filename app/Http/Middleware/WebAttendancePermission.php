@@ -31,6 +31,11 @@ class WebAttendancePermission
 
         $employee_data = Employees::where('employee_code', $request->input('employee_id'))->get(['employee_id'])->toArray();
 
+        // unknown / empty employee code: the controller answers "Wrong employee id entered"
+        if(empty($employee_data)){
+            return $next($request);
+        }
+
         $work_from_home_employee = Employees::where('employee_jobtype', '=', 'Home')->where('employee_id', $employee_data[0]['employee_id'])->get(['employee_id'])->toArray();
 
         $date = date('Y-m-d');

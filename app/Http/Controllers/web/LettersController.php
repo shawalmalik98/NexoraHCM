@@ -287,9 +287,9 @@ class LettersController extends Controller
     protected function download_employee_letter(Request $request){
         try{
             if(!empty($request->path)){
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
@@ -319,10 +319,15 @@ class LettersController extends Controller
 
     protected function download_personal_letter(Request $request){
         try{
+            // only a letter given to the logged in employee
+            $path = str_replace('\\', '/', (string) $request->path);
+            if(!empty($path) && (!str_starts_with($path, 'letter/') || !\App\Models\Letter::where('letter_employee_id', session('user_session'))->where('document_name', substr($path, strlen('letter/')))->exists())){
+                return response()->view('errors.404', [], 404);
+            }
             if(!empty($request->path)){
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
@@ -645,6 +650,12 @@ class LettersController extends Controller
             $login_user = $this->get_login_user_detail();
             $all_employee_letter = LetterTemplateEmployee::join('tbl_letter_template','tbl_letter_template.letter_template_id','tbl_letter_template_employee.temp_emp_letter_id')->where('temp_emp_id',$request->input('letter_id'))->get()->toArray();
             
+            if(empty($all_employee_letter)){
+                return response()->json([
+                    'msg' => 'Letter not found.',
+                    'status' => 'FALSE'
+                ]);
+            }
             if(!empty($all_employee_letter) && empty($all_employee_letter[0]['temp_emp_employee_id'])){
                 return response()->json([
                     'msg' => 'Their is no employee set for submit letter',

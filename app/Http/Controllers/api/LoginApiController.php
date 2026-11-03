@@ -141,15 +141,29 @@ class LoginApiController extends Controller
                                                 return $this->api_response_json(TRUE,"Login Successfully",$filter_user,200,['token' => $bearer_token_value ]);
 
                                             }else{
-                                                
-                                                $message = 'You ('.$filter_user[0]['employee_code'].') can login from '.$employee_device[0]['device_name'].' device';
-                                                return $this->api_response_json(FALSE,$message,"",200);
+
+                                                // one phone at a time: this phone becomes a pending request; Admin approves it in Employee Devices
+                                                // (approving blocks the old phone), then the employee logs in again from the new phone
+                                                $pending_device = EmployeeDevice::where('device_employee_id', $filter_user[0]['employee_id'])->where('device_token', $request->post('device_token'))->first();
+                                                if(empty($pending_device)){
+                                                    $pending_device = new EmployeeDevice();
+                                                    $pending_device->device_employee_id = $filter_user[0]['employee_id'];
+                                                    $pending_device->device_token = $request->post('device_token');
+                                                    $pending_device->device_created_at = date('Y-m-d H:i:s');
+                                                }
+                                                $pending_device->device_name = $request->post('device_name');
+                                                $pending_device->device_status = 0;
+                                                $pending_device->device_updated_at = date('Y-m-d H:i:s');
+                                                $pending_device->save();
+
+                                                $message = 'You ('.$filter_user[0]['employee_code'].') can login from '.$employee_device[0]['device_name'].' device. A request to use '.$request->post('device_name').' has been sent to HR / Admin for approval.';
+                                                return $this->api_response_json(FALSE,$message,['device_status' => 'pending', 'registered_device' => $employee_device[0]['device_name']],200);
 
                                             }
                                         }
                                     }else{
-                                        $message = 'You can\'t login from this device. It\'s already in use by another user and device token is '.$employee_device_exits[0]['device_token'].'';
-                                        return $this->api_response_json(FALSE,$message,"",200);
+                                        $message = 'You can\'t login from this device. It\'s already registered for another employee.';
+                                        return $this->api_response_json(FALSE,$message,['device_status' => 'in_use'],200);
                                     }
         
                                 }else{
@@ -186,6 +200,31 @@ class LoginApiController extends Controller
         unset($filter_user[0]['employee_bank_name'] , $filter_user[0]['employee_iban'] , $filter_user[0]['employee_account_number'] , $filter_user[0]['employee_shift_flexibilty'] , $filter_user[0]['employee_jobtitle'] , $filter_user[0]['employee_status'] , $filter_user[0]['employee_location'] , $filter_user[0]['employee_earning_type'] , $filter_user[0]['employee_cnic'] , $filter_user[0]['employee_deactivation_type']);
 
         return $filter_user;
+    }
+
+    // the phone registered for the logged in employee (one at a time) and a pending request for another phone, if any
+    protected function my_device(Request $request){
+
+        try{
+
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
+            $devices = EmployeeDevice::where('device_employee_id', $login_user[0]['employee_id'])->whereIn('device_status', [0, 1])->orderByDesc('device_id')->get(['device_name','device_token','device_status','device_created_at','device_updated_at']);
+            $registered = $devices->firstWhere('device_status', 1);
+            $pending = $devices->firstWhere('device_status', 0);
+
+            $data = [
+                'registered_device' => $registered ? ['device_name' => $registered->device_name, 'device_token' => $registered->device_token, 'registered_at' => $registered->device_created_at] : null,
+                'pending_request' => $pending ? ['device_name' => $pending->device_name, 'device_token' => $pending->device_token, 'requested_at' => $pending->device_updated_at ?? $pending->device_created_at] : null,
+                'this_device' => !empty($request->header('Device-Token')) && $registered && $registered->device_token === $request->header('Device-Token'),
+            ];
+
+            return $this->api_response_json(TRUE,"My Device",$data,200);
+
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('My Device API', $e, $request->header('Bearer-Token'));
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+        }
     }
 
     protected function deactivate_previous_logins($employee_id , $employee_login_token){

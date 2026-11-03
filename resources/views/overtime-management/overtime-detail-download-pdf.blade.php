@@ -119,7 +119,7 @@
                                                 <td class="text-center td-border" >  {{  $employee_shift_times }}</td>
                                                 <td class="text-center td-border" >  {{$atty['att_check_in_time']}}</td>
                                                 <td class="text-center td-border" >  {{$atty['att_check_out_time']}}</td>
-                                                <td class="text-center td-border" >  {{ $extra_hours}}</td>
+                                                <td class="text-center td-border" >  {{ $extra_hours}} (paid {{ CustomHelper::overtime_counted_hours($extra_hours) + 0 }} h)</td>
                                                 <td class="text-center td-border" >  {{date('d-F-Y', strtotime($atty['att_for_year'].'-'.$atty['att_for_month'].'-'.$atty['att_for_date'] ))}}</td>
                                                 <td class="text-center td-border" >  RS : {{ $salary_overtime}}</td>
                                                 <td class="text-center td-border" > 

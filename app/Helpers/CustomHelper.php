@@ -125,6 +125,39 @@ class CustomHelper
         return isset($map[$module_url]) && $map[$module_url]['permission_status'] == 1 && $map[$module_url]['module_accessibility'] == 1;
     }
 
+    // A file under storage/app/portal_documents named by a request (?path=letter/x.pdf), or null.
+    // Only files inside that folder: "..", absolute paths and anything resolving outside it are refused
+    // (a path like ../../../.env used to download the app's .env).
+    public static function portal_document($path){
+        $path = str_replace('\\', '/', (string) $path);
+        if($path === '' || str_contains($path, "\0") || str_contains($path, '..') || str_starts_with($path, '/') || preg_match('#^[a-zA-Z]:#', $path)){
+            return null;
+        }
+        $base = realpath(storage_path('app/portal_documents'));
+        $full = $base ? realpath($base.DIRECTORY_SEPARATOR.$path) : false;
+        if($full === false || !str_starts_with($full, $base.DIRECTORY_SEPARATOR) || !is_file($full)){
+            return null;
+        }
+        return $full;
+    }
+
+    // Clear name of a payslip earning / deduction line for display (the stored title stays as it is: edit / delete use it)
+    public static function payroll_line_label($title){
+        $labels = [
+            'employee expense reimbursement' => 'Expense Claim (Reimbursed)',
+            'over-time' => 'Overtime',
+            'advance salary deduction' => 'Advance Salary Recovery',
+            'loan deduction' => 'Loan Installment',
+            'income tax deduction' => 'Income Tax',
+            'eobi contribution' => 'EOBI',
+            'provident fund' => 'Provident Fund',
+            'absent' => 'Absent Days',
+            'late' => 'Late Coming',
+            'half day' => 'Half Days',
+        ];
+        return $labels[strtolower(trim((string) $title))] ?? $title;
+    }
+
     // Firebase realtime database for the chat screens, or null when Firebase is not configured
     public static function firebase_database(){
         $credentials = config('services.firebase.credentials');
@@ -638,17 +671,18 @@ class CustomHelper
             $human = '';
             $start_date = \Carbon\Carbon::parse($employee_doj);
             $end_date = \Carbon\Carbon::parse($end);
-            $years = $end_date->diffInYears($start_date);
+            // Carbon 3: whole units, counted forward from the start date
+            $years = (int) $start_date->diffInYears($end_date);
             if ($years > 0) {
                 $human = $human.$years.' years ';
                 $start_date = $start_date->addYears($years);
             }
-            $months = $end_date->diffInMonths($start_date);
+            $months = (int) $start_date->diffInMonths($end_date);
             if ($months > 0) {
                 $human = $human.$months.' months ';
                 $start_date = $start_date->addMonths($months);
             }
-            $days = $end_date->diffInDays($start_date);
+            $days = (int) $start_date->diffInDays($end_date);
             if ($days > 0) {
                 $human = $human.$days.' days ';
                 $start_date = $start_date->addDays($days);
@@ -1015,34 +1049,36 @@ class CustomHelper
 
     }
 
+    // Overtime pay of one day, hour wise: hourly rate = monthly salary / 30 days / 9 hours (same 30 day basis as the
+    // payroll, whatever the month length); only whole half hours count: 100 min -> 1.5 hours, 55 min -> 0.5 hour,
+    // under 30 min -> nothing. Pay = hourly rate x counted hours.
+    // $shift_time is kept for the callers; the hourly rate always uses the 9 hour working day.
+    const OVERTIME_DAYS_PER_MONTH = 30;
+    const OVERTIME_HOURS_PER_DAY = 9;
+
+    public static function overtime_hourly_rate($monthly_salary){
+        return $monthly_salary / self::OVERTIME_DAYS_PER_MONTH / self::OVERTIME_HOURS_PER_DAY;
+    }
+
+    // extra time "hh:mm[:ss]" -> paid hours in whole half hours (100 min -> 1.5, 55 min -> 0.5, 29 min -> 0)
+    public static function overtime_counted_hours($extra_hours){
+        $parts = explode(':', (string) $extra_hours);
+        $minutes = (int) ($parts[0] ?? 0) * 60 + (int) ($parts[1] ?? 0);
+        return floor(max(0, $minutes) / 30) * 0.5;
+    }
+
     public static function calculate_total_overtime_salary($employee_id,$date,$shift_time,$extra_hours){
         try{
-         
+
             $total_salray = 0;
-            $month = date("m", strtotime($date));
-            $year = date("Y", strtotime($date));
-            $salary_amount = EmployeeSalary::where('salary_employee_id',$employee_id)->where('salary_effected_date','<=',$date)->orderBy('salary_effected_date','ASC')->get('salary_amount')->toArray();
-        
-            if(empty($salary_amount)){
-                $salary_amount = EmployeeSalary::where('salary_employee_id',$employee_id)->whereNull('salary_effected_date')->orderBy('salary_effected_date','ASC')->get('salary_amount')->toArray();
-            }
-            $no_of_days = cal_days_in_month(CAL_GREGORIAN,$month,$year);
-            //Shift Time
-            $shifttime = explode(':',$shift_time);
-            $hours = $shifttime[0];
-            $minutes = $shifttime[1];
-            foreach($salary_amount as $salary){
-                $per_day_salary =  $salary['salary_amount']/$no_of_days;
-                $hours_to_miutes = ($hours * 60)+$minutes;
-                $per_minutes_slaray_shift = $per_day_salary/$hours_to_miutes;
+
+            // salary in effect on the overtime date
+            $monthly_salary = EmployeeSalary::where('salary_employee_id',$employee_id)->where('salary_effected_date','<=',$date)->orderBy('salary_effected_date','DESC')->value('salary_amount');
+            if($monthly_salary === null){
+                $monthly_salary = EmployeeSalary::where('salary_employee_id',$employee_id)->whereNull('salary_effected_date')->value('salary_amount');
             }
 
-            // Extra hours
-            $extrahours = explode(':',$extra_hours);
-            $ex_hours = $extrahours[0];
-            $ex_minutes = $extrahours[1];
-            $extra_hours_to_miutes = ($ex_hours * 60)+$ex_minutes;
-            $total_salray = $per_minutes_slaray_shift * $extra_hours_to_miutes;
+            $total_salray = self::overtime_hourly_rate((float) $monthly_salary) * self::overtime_counted_hours($extra_hours);
 
 
         }catch(\Exception $e){
@@ -1152,12 +1188,10 @@ class CustomHelper
                 'notice_period_ending' => $notice_period_ending,
                 'onboard_employees' => $onboard_employees
             );
+            return $notification_alerts;
         }catch(\Exception $e){
             LogGenerateTrait::create_error_log('Total Alerts Notification Records', $e);
-
-        }
-        finally{
-            // return $notification_alerts;
+            return ['interviews' => 0, 'meetings' => 0, 'birthdays' => 0, 'employee_work_Ceremony' => 0, 'probation_completion' => 0, 'notice_period_ending' => 0, 'onboard_employees' => 0];
         }
     }
 

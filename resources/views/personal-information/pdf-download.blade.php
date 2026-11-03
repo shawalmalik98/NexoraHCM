@@ -104,7 +104,7 @@
 
                 <tr>
                     <td width="20%">CNIC#</td>
-                    <td width="30%">{{ $information_data[0]['cnic'] }}</td>
+                    <td width="30%">{{ $employee_data[0]['employee_cnic'] ?? '' }}</td>
                     <td width="20%">Date of expiry</td>
                     <td width="30%">{{ $information_data[0]['dateofexpiry'] }}</td>
                 </tr>

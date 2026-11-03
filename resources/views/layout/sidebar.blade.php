@@ -231,14 +231,15 @@
 
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
 
-                                    {{-- <div class="menu-item search-item">
-                                        <a class="menu-link nav-link @if($title == 'mark-attendance') active @endif" href="{{ url('mark-attendance') }}" target="blank">
+                                    {{-- web check in / check out page (employee code + password), opens in a new tab --}}
+                                    <div class="menu-item search-item">
+                                        <a class="menu-link nav-link" href="{{ url('mark-attendance') }}" target="_blank" rel="noopener">
                                             <span class="menu-icon">
                                                 <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Mark Attendance.png') }}" />
                                             </span>
                                             <span class="menu-title">Mark Attendance</span>
                                         </a>
-                                    </div> --}}
+                                    </div>
                                 
                                     @if(!empty($permission) && $permission_map['/monthly-attendance']['module_accessibility'] == 1 && $permission_map['/monthly-attendance']['permission_status'] == 1)
 
@@ -666,9 +667,9 @@
 
                         @endif
 
-                        @if(!empty($permission) && ($permission_map['/payroll']['permission_status'] == 1 || $permission_map['/payslip']['permission_status'] == 1 || $permission_map['/my-salary-request']['permission_status'] == 1 || $permission_map['/all-salary-request']['permission_status'] == 1 || $permission_map['/tax-slab']['permission_status'] == 1 || $permission_map['/tax-collection']['permission_status'] == 1 || $permission_map['/petty-cash']['permission_status'] == 1 || $permission_map['/daily-expense']['permission_status'] == 1 || $permission_map['/employee-expense']['permission_status'] == 1 || $permission_map['/my-expense']['permission_status'] == 1|| $permission_map['/daily-wages-payroll']['permission_status'] == 1 || $permission_map['/deduction-policy']['permission_status'] == 1 || $permission_map['/employee-fund']['permission_status'] == 1  ) && ($permission_map['/payroll']['module_accessibility'] == 1 || $permission_map['/payslip']['module_accessibility'] == 1 || $permission_map['/my-salary-request']['module_accessibility'] == 1 || $permission_map['/all-salary-request']['module_accessibility'] == 1 || $permission_map['/tax-slab']['module_accessibility'] == 1 || $permission_map['/tax-collection']['module_accessibility'] == 1 || $permission_map['/petty-cash']['module_accessibility'] == 1 || $permission_map['/daily-expense']['module_accessibility'] == 1 || $permission_map['/employee-expense']['module_accessibility'] == 1 || $permission_map['/my-expense']['module_accessibility'] == 1 || $permission_map['/daily-wages-payroll']['module_accessibility'] == 1 || $permission_map['/deduction-policy']['module_accessibility'] == 1 || $permission_map['/employee-fund']['module_accessibility'] == 1))
+                        @if(!empty($permission) && ($permission_map['/payroll']['permission_status'] == 1 || $permission_map['/payslip']['permission_status'] == 1 || $permission_map['/my-salary-request']['permission_status'] == 1 || $permission_map['/all-salary-request']['permission_status'] == 1 || $permission_map['/tax-slab']['permission_status'] == 1 || $permission_map['/tax-collection']['permission_status'] == 1 || $permission_map['/petty-cash']['permission_status'] == 1 || $permission_map['/daily-expense']['permission_status'] == 1 || $permission_map['/employee-expense']['permission_status'] == 1 || $permission_map['/my-expense']['permission_status'] == 1|| $permission_map['/deduction-policy']['permission_status'] == 1 || $permission_map['/employee-fund']['permission_status'] == 1  ) && ($permission_map['/payroll']['module_accessibility'] == 1 || $permission_map['/payslip']['module_accessibility'] == 1 || $permission_map['/my-salary-request']['module_accessibility'] == 1 || $permission_map['/all-salary-request']['module_accessibility'] == 1 || $permission_map['/tax-slab']['module_accessibility'] == 1 || $permission_map['/tax-collection']['module_accessibility'] == 1 || $permission_map['/petty-cash']['module_accessibility'] == 1 || $permission_map['/daily-expense']['module_accessibility'] == 1 || $permission_map['/employee-expense']['module_accessibility'] == 1 || $permission_map['/my-expense']['module_accessibility'] == 1 || $permission_map['/deduction-policy']['module_accessibility'] == 1 || $permission_map['/employee-fund']['module_accessibility'] == 1))
                         
-                            <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'my-payroll' || $title == 'all-salary-request' || $title == 'my-salary-request' || $title == 'Tax Slab' || $title == 'Tax Collection' || $title == 'cash' || $title == 'expense' || $title == 'employee-expense' || $title == 'my-expense' || $title == 'My Payslip' || $title == 'daily-wages' || $title == 'deduction policy' || $title == 'employee_funds') show @endif">
+                            <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'my-payroll' || $title == 'all-salary-request' || $title == 'my-salary-request' || $title == 'Tax Slab' || $title == 'Tax Collection' || $title == 'cash' || $title == 'expense' || $title == 'employee-expense' || $title == 'my-expense' || $title == 'My Payslip' || $title == 'deduction policy' || $title == 'employee_funds') show @endif">
 
                                 <span class="menu-link">
                                     <span class="menu-icon">
@@ -679,7 +680,7 @@
 
                                     <div class="menu-sub menu-sub-accordion menu-active-bg">
                                         @if(!empty($permission) && $permission_map['/payroll']['module_accessibility'] == 1 && $permission_map['/payroll']['permission_status'] == 1)
-                                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @if($title == 'Payroll' || $title == 'Add Payroll' || $title == 'daily-wages') show @endif">
+                                        <div data-kt-menu-trigger="click" class="menu-item menu-accordion @if($title == 'Payroll' || $title == 'Add Payroll') show @endif">
                                             <span class="menu-link">
                                                 <span class="menu-icon">
                                                     <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Manage Payslips.png') }}" />
@@ -695,16 +696,6 @@
                                                             <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Manage Payslips.png') }}" />
                                                         </span>
                                                         <span class="menu-title">Monthly Payroll</span>
-                                                    </a>
-                                                </div>
-                                                @endif
-                                                @if(!empty($permission) && $permission_map['/daily-wages-payroll']['module_accessibility'] == 1 && $permission_map['/daily-wages-payroll']['permission_status'] == 1)
-                                                <div class="menu-item">
-                                                    <a class="menu-link nav-link @if($title == 'daily-wages') active @endif" href="{{url('daily-wages-payroll')}}">
-                                                        <span class="menu-icon">
-                                                            <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/Manage Payslips.png') }}" />
-                                                        </span>
-                                                        <span class="menu-title">Daily Wages</span>
                                                     </a>
                                                 </div>
                                                 @endif
@@ -919,7 +910,7 @@
                                                 
                         @if(!empty($permission) && ($permission_map['/departments']['permission_status'] == 1 || $permission_map['/designations']['permission_status'] == 1 || $permission_map['/rooms']['permission_status'] == 1 || $permission_map['/locations']['permission_status'] == 1 || $permission_map['/system-settings']['permission_status'] == 1 ) && ($permission_map['/departments']['module_accessibility'] == 1 || $permission_map['/designations']['module_accessibility'] == 1 || $permission_map['/rooms']['module_accessibility'] == 1 || $permission_map['/locations']['module_accessibility'] == 1 || $permission_map['/system-settings']['module_accessibility'] == 1 ))
                             
-                            <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-rooms' || $title == 'manage-locations' || $title == 'system-settings' || $title == 'manage-companies' || $title == 'appflow-detail') show @endif">
+                            <div data-kt-menu-trigger="click" class="menu-item search-item menu-accordion main-menu-employee @if($title == 'manage-departments' || $title == 'manage-designations' || $title == 'manage-rooms' || $title == 'manage-locations' || $title == 'system-settings' || $title == 'manage-companies') show @endif">
 
                                 <span class="menu-link">
                                     <span class="menu-icon">
@@ -1017,18 +1008,7 @@
                                         </div>
                                     @endif
 
-                                    {{-- @if(!empty($permission)  && $permission_map['/system-settings']['module_accessibility'] == 1 && $permission_map['/system-settings']['permission_status'] == 1) --}}
-
-                                        <div class="menu-item search-item">
-                                            <a class="menu-link @if($title == 'appflow' || $title == 'appflow-detail') active @endif" href="{{url('appflow')}}">
-                                                <span class="menu-icon">
-                                                    <img class="sidebar-icon" src="{{ asset('portal_assets/sidebar_icons/System Settings.png') }}" />
-                                                </span>
-                                                <span class="menu-title">Approval Flow</span>
-                                            </a>
-                                        </div>
-
-                                    {{-- @endif --}}
+                                    
                                     
                                 </div>
                             </div>

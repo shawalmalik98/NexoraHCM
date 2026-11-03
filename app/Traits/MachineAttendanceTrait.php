@@ -331,7 +331,7 @@ trait MachineAttendanceTrait {
 				$employee_shift_end = $this->get_employee_today_shift($employee_id,"out",date('Y-m-d',strtotime($check_in)));
 	
 				if(empty($get_attendance) || (!empty($get_attendance) && strpos($get_attendance[0]['att_check_overall_status'], 'Holiday') !== false)){
-					if(date('H',strtotime($check_in)) < 13 && date('H',strtotime($check_in)) >= 07){
+					if(/* date('H',strtotime($check_in)) < 13 && */ date('H',strtotime($check_in)) >= 07){ // 1 PM limit switched off for now
 						if($employee_data[0]['employee_shift_flexibilty'] != '1'){
 							$employee_shift_start_hour = date("H", strtotime($employee_shift_start));
 							$employee_shift_start_minute = date("i", strtotime($employee_shift_start));
@@ -481,7 +481,7 @@ trait MachineAttendanceTrait {
 						}
 					}
 				}else{
-					if(date('H',strtotime($check_in)) < 13 && date('H',strtotime($check_in)) >= 07){
+					if(/* date('H',strtotime($check_in)) < 13 && */ date('H',strtotime($check_in)) >= 07){ // 1 PM limit switched off for now
 						$time = date('H:i:s', strtotime($check_in));
 						if(date('H:i:s', strtotime($check_in)) < $get_attendance[0]['att_check_in_time'] || $get_attendance[0]['att_check_in_time'] == '00:00:00'){
 							$check_in = Attendance::find($get_attendance[0]['attendance_id']);

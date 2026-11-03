@@ -88,6 +88,24 @@ class HomeController extends Controller
             ->where('emp_loc_employee_id', $login_user[0]['employee_id'])
             ->get(['location_id'])->toArray();
            
+            // HR alerts on the dashboard: started, not ended, for the employee's department and office location (or everyone),
+            // not closed by the employee (closing one stores an AlertStatus row)
+            $location_ids = array_column($employee_location, 'location_id');
+            $alerts = Alert::where('scheduled_time', '<=', date('Y-m-d H:i:s'))
+                ->where('valid_dates', '>', date('Y-m-d H:i:s'))
+                ->where(function($query) use($login_user){
+                    $query->where('department', '*')->orWhereRaw('FIND_IN_SET(?, department)', [(string) $login_user[0]['employee_department']]);
+                })
+                ->where(function($query) use($location_ids){
+                    $query->whereNull('location')->orWhereIn('location', ['', '*', 'NULL']);
+                    foreach($location_ids as $location_id){
+                        $query->orWhereRaw('FIND_IN_SET(?, location)', [(string) $location_id]);
+                    }
+                })
+                ->whereNotIn('alert_id', $alert_status ?: [0])
+                ->orderByDesc('alert_id')->limit(3)
+                ->get(['alert_id','title','message'])->toArray();
+
             // $alerts = Alert::whereRaw("CONVERT(DATETIME, scheduled_time, 120) < '" . date('Y-m-d H:i:s') . "' and CONVERT(DATETIME, valid_dates, 120) > '" . date('Y-m-d H:i:s') . "'")
             // ->where(function($query) use ($login_user)  {
             //     $query->where('department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('department', 'LIKE', '%*%');
@@ -165,7 +183,32 @@ class HomeController extends Controller
             $polling_option_pluck = PollingStatus::where('polling_employee_id', $login_user[0]['employee_id'])->pluck('polling_option_id')->toArray();
 
             $employee_voting = PollingOption::whereIn('polling_option_id', $polling_option_pluck)->pluck('polling_id')->toArray();
-           
+
+            // running polls for the employee's department (or everyone): started, not ended, newest first, with each option's
+            // votes / percentage (the dashboard shows the options, or the result once the employee has voted)
+            $now = date('Y-m-d H:i:s');
+            $pollings = Polling::where('polling_status', 1)
+                ->where('created_at', '<=', $now)
+                ->where('polling_duration', '>', $now)
+                ->where(function($query) use($login_user){
+                    $query->where('polling_department', '*')->orWhereRaw('FIND_IN_SET(?, polling_department)', [(string) $login_user[0]['employee_department']]);
+                })
+                ->orderByDesc('polling_id')->limit(3)
+                ->get(['polling_id', 'polling_title', 'polling_duration'])->toArray();
+            foreach($pollings as $i => $polling){
+                $polling_options = PollingOption::leftJoin('tbl_polling_status', 'tbl_polling_status.polling_option_id', '=', 'tbl_polling_options.polling_option_id')
+                    ->where('tbl_polling_options.polling_id', $polling['polling_id'])
+                    ->groupBy('tbl_polling_options.polling_option_id', 'tbl_polling_options.polling_options')
+                    ->orderBy('tbl_polling_options.polling_option_id')
+                    ->selectRaw('tbl_polling_options.polling_option_id, tbl_polling_options.polling_options, COUNT(tbl_polling_status.polling_status_id) as vote')
+                    ->get()->toArray();
+                $total_votes = array_sum(array_column($polling_options, 'vote'));
+                foreach($polling_options as $j => $option){
+                    $polling_options[$j]['percentage'] = $total_votes > 0 ? round($option['vote'] / $total_votes * 100) : 0;
+                }
+                $pollings[$i]['polling_options'] = $polling_options;
+            }
+
             // $pollings = Polling::whereRaw("CONVERT(DATETIME, created_at, 120) < '" . date('Y-m-d H:i:s') . "' and CONVERT(DATETIME, polling_duration, 120) > '" . date('Y-m-d H:i:s') . "'")
             // ->where(function($query) use($login_user) {
             //     $query->where('polling_department', 'LIKE', '%' .$login_user[0]['employee_department']. '%')->orWhere('polling_department', 'LIKE', '%*%');
@@ -252,7 +295,7 @@ class HomeController extends Controller
 
             $get_check_in_details = $this->get_latest_attendance_record();
     
-            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','my_team_count','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','probation_employees_detail','dynamic_years','get_check_in_details','employee_location');
+            $send_data = compact('title','login_user','active_employees','deactive_employees','leaves_entitiled','annual_used','casual_used','sick_used','todays_interviews', 'birthdays','senior_manager','junior_manager','interviews','bad_attendance_employees','permanent_employees','probation_employees','total_employees','my_team_mates','my_team_count','total_count','active_male_employees','active_female_employees','deactive_male_employees','deactive_female_employees','permanent_male_employees','permanent_female_employees','probation_male_employees','probation_female_employees','setting','departments','probation_employees_detail','dynamic_years','get_check_in_details','employee_location','pollings','employee_voting','alerts');
             
             return view('dashboard.dashboard', $send_data);
 

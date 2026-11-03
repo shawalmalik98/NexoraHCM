@@ -280,3 +280,15 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination .page-item.active .
 
 /* ---------- Scrollbar ---------- */
 ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 8px; }
+
+/* topbar notifications: unread in the same colour as the record it opens (bisque), dark grey once read */
+.notification-unread {
+    display: block;
+    background-color: bisque;
+    border-radius: 8px;
+    padding: 8px 12px;
+}
+.notification-read {
+    display: block;
+    padding: 8px 12px;
+}

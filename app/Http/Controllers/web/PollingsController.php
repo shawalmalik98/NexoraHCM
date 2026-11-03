@@ -136,7 +136,8 @@ class PollingsController extends Controller
 
                     if($department_check[0] == '*' || in_array($login_user[0]['employee_department'], $department_check)){
 
-                        $pollings = Polling::whereRaw('STR_TO_DATE(created_at, "%Y-%m-%d %H:%i:%s") < "'.date('Y-m-d H:i:s').'" and STR_TO_DATE(polling_duration, "%Y-%m-%d %H:%i:%s") >  "'.date('Y-m-d H:i:s').'" ')
+                        // running: started (a vote in the same second as the poll counts) and not ended
+                        $pollings = Polling::where('created_at', '<=', date('Y-m-d H:i:s'))->where('polling_duration', '>', date('Y-m-d H:i:s'))
                         ->where('polling_id', $request->polling_id)
                         ->get('polling_id')->toArray();
 

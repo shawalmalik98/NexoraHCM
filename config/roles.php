@@ -58,7 +58,7 @@ return [
             'description' => 'Payroll, salary, loans, expenses and tax of every employee',
             'modules' => [
                 '/payroll', '/petty-cash', '/daily-expense', '/loans', '/all-salary-request', '/all-loan-request', '/tax-slab', '/tax-collection',
-                '/employee-expense', '/overtime-management', '/employee-bank', '/daily-wages-payroll', '/deduction-policy', '/funds', '/employee-fund',
+                '/employee-expense', '/overtime-management', '/employee-bank', '/deduction-policy', '/funds', '/employee-fund',
             ],
         ],
 

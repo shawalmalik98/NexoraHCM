@@ -203,7 +203,7 @@
                                         @foreach($all_cash_history as $cash)
                                             <tr>
                                                 <td class="ps-8">{{ $cash['petty_cash_id'] }}</td>
-                                                <td>{{ $cash['petty_cash_amount'] }}</td>
+                                                <td>{{ number_format((float) $cash['petty_cash_amount']) }}</td>
                                                 <td>{{ $cash['petty_cash_for_month_and_year'] }}</td>
                                                 <td>{{ $cash['petty_cash_source'] }}</td>
                                                 <td class="ps-20">

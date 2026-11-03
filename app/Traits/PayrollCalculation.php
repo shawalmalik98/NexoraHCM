@@ -10,17 +10,16 @@ use DateTime;
 /**
  * Monthly payroll calculation shared by the web and API payroll controllers.
  *
- * Late comings / half days: the first LATE_ALLOWED late comings (early outs count as late)
- * and the first HALFDAY_ALLOWED half days of a payroll period are free. Every further one
- * takes one leave from the balance, Casual Leave first, then Annual Leave; when neither is
- * left that day is deducted from salary.
+ * Leave policy: an absent day takes 1 leave; the first 2 late comings (early outs count as late) and the first
+ * half day of a payroll period are free and every further one takes half a leave. Leaves are taken Annual first,
+ * then Casual, then Sick; with no leave left the day (absent) or half a day (late / half day) is deducted from salary.
  */
 trait PayrollCalculation
 {
     protected $payroll_late_allowed = 2;
     protected $payroll_halfday_allowed = 1;
-    // leave types used for late / half day deductions, in order
-    protected $payroll_deduction_leave_names = ['Casual Leave', 'Annual Leave'];
+    // order in which payroll takes leaves (absent / extra late / half day): Annual, then Casual, then Sick
+    protected $payroll_deduction_leave_names = ['Annual Leave', 'Casual Leave', 'Sick Leave'];
 
     // sandwich (club) rule for this run: the generate form's toggle when sent, otherwise the system setting
     protected function payroll_club_rule_applied($request, $fetch_system_setting)
@@ -52,7 +51,7 @@ trait PayrollCalculation
 
         $date_with_status = [];
         $absent_dates = [];
-        // days before joining / after deactivation: counted absent, and paid nothing on the 30 day basis
+        // days before joining / after deactivation: not absent, just not paid (gross is the employed days only)
         $not_employed_dates = [];
 
         $attendances['employee_offdays'] = (!empty($attendances['employee_offdays'])) ? explode(",", $attendances['employee_offdays']) : [];
@@ -78,10 +77,8 @@ trait PayrollCalculation
 
             if ($join_date > strtotime($date) || (!empty($deactive_date) && $deactive_date < strtotime($date))) {
 
-                $absent_count++;
-                $absent_dates[] = $date;
                 $not_employed_dates[] = $date;
-                $date_with_status[$date] = "Absent";
+                $date_with_status[$date] = "Not Employed";
                 continue;
             }
 
@@ -199,8 +196,11 @@ trait PayrollCalculation
         return (float) $allotment - $availed - $pending - LeaveDeduction::deducted_count($employee_id, $leave_type_id);
     }
 
-    // Which late comings / half days beyond the allowance take a leave and which fall on salary.
-    // Returns one entry per deduction: ['date', 'reason', 'leave_type_id' (null = salary)].
+    // Leave policy of the payroll, applied in date order:
+    //  - an absent day takes 1 leave (Annual, then Casual, then Sick); with no leave left the day's salary is deducted
+    //  - 2 late comings and 1 half day a month are free; each extra one takes half a leave (two make one leave);
+    //    with no leave left, half a day's salary is deducted
+    // Returns one entry per day: ['date', 'reason', 'days' (leave taken: 1 or 0.5), 'leave_type_id' (null = salary)].
     protected function payroll_late_halfday_deductions($employee_id, $date_with_status)
     {
         $late_dates = array_keys($date_with_status, 'Late Coming', true);
@@ -209,11 +209,16 @@ trait PayrollCalculation
         sort($halfday_dates);
 
         $chargeable = [];
+        foreach ($date_with_status as $date => $status) {
+            if ($status == 'Absent' || $status == 'Absent Club') {
+                $chargeable[] = ['date' => $date, 'reason' => 'Absent', 'days' => 1];
+            }
+        }
         foreach (array_slice($late_dates, $this->payroll_late_allowed) as $date) {
-            $chargeable[] = ['date' => $date, 'reason' => 'Late Coming'];
+            $chargeable[] = ['date' => $date, 'reason' => 'Late Coming', 'days' => 0.5];
         }
         foreach (array_slice($halfday_dates, $this->payroll_halfday_allowed) as $date) {
-            $chargeable[] = ['date' => $date, 'reason' => 'Half day'];
+            $chargeable[] = ['date' => $date, 'reason' => 'Half day', 'days' => 0.5];
         }
         if (empty($chargeable)) {
             return [];
@@ -234,9 +239,9 @@ trait PayrollCalculation
         foreach ($chargeable as $item) {
             $item['leave_type_id'] = null;
             foreach ($balances as $leave_type_id => $balance) {
-                if ($balance >= 1) {
+                if ($balance >= $item['days']) {
                     $item['leave_type_id'] = $leave_type_id;
-                    $balances[$leave_type_id]--;
+                    $balances[$leave_type_id] -= $item['days'];
                     break;
                 }
             }
@@ -254,6 +259,7 @@ trait PayrollCalculation
                 'ld_leave_type_id' => $deduction['leave_type_id'],
                 'ld_date' => $deduction['date'],
                 'ld_reason' => $deduction['reason'],
+                'ld_days' => $deduction['days'] ?? 1,
                 'ld_payroll_id' => $payroll_id,
             ]);
         }
@@ -272,16 +278,41 @@ trait PayrollCalculation
             }
         }
 
-        if (!empty($setting['pf_apply']) && $setting['pf_apply'] == 1) {
-            $basic_percentage = SalaryDivision::whereRaw('LOWER(salary_division_title) LIKE ?', ['%basic%'])->value('salary_division_percentage');
-            $basic_salary = $basic_percentage !== null ? $gross_salary * $basic_percentage / 100 : $gross_salary;
-            $pf = round($basic_salary * ($setting['pf_employee_percentage'] ?? 0) / 100, 2);
-            if ($pf > 0) {
-                $deductions['Provident Fund'] = $pf;
-            }
+        $pf = $this->provident_fund_shares($gross_salary, $setting);
+        if ($pf['member'] > 0) {
+            $deductions['Provident Fund'] = $pf['member'];
         }
 
         return $deductions;
+    }
+
+    // Provident fund of one payslip: employee share (deducted from salary) and company share (paid by the company
+    // into the fund, not into the salary), each a % of basic salary — Pakistan practice 8.33% each.
+    protected function provident_fund_shares($gross_salary, $setting)
+    {
+        if (empty($setting['pf_apply']) || $setting['pf_apply'] != 1) {
+            return ['member' => 0, 'company' => 0];
+        }
+
+        $basic_percentage = SalaryDivision::whereRaw('LOWER(salary_division_title) LIKE ?', ['%basic%'])->value('salary_division_percentage');
+        $basic_salary = $basic_percentage !== null ? $gross_salary * $basic_percentage / 100 : $gross_salary;
+        $company_percentage = isset($setting['pf_company_percentage']) && $setting['pf_company_percentage'] !== null && $setting['pf_company_percentage'] !== '' ? $setting['pf_company_percentage'] : ($setting['pf_employee_percentage'] ?? 0);
+
+        return [
+            'member' => round($basic_salary * ($setting['pf_employee_percentage'] ?? 0) / 100, 2),
+            'company' => round($basic_salary * $company_percentage / 100, 2),
+        ];
+    }
+
+    // Income Tax Ordinance 2001, Sixth Schedule Part I rule 3(a): the company's yearly contribution to a recognised
+    // provident fund above one-tenth of the salary or Rs 150,000 (whichever is lower) is the employee's taxable income.
+    // Returns that excess per month, to add to the monthly salary the tax is worked out on.
+    protected function provident_fund_taxable_excess($monthly_salary, $setting)
+    {
+        $company_yearly = $this->provident_fund_shares($monthly_salary, $setting)['company'] * 12;
+        $tax_free = min($monthly_salary * 12 / 10, 150000);
+
+        return round(max(0, $company_yearly - $tax_free) / 12, 2);
     }
 
     // Gross / net salary of the period. Returns null when the employee has no monthly salary record.
@@ -342,8 +373,20 @@ trait PayrollCalculation
         $each_chunk_leave = 0;
         $each_chunk_holiday = 0;
         $each_chunk_gross_salary = 0;
+        // income tax base: the monthly gross salary (salary rate of the period, a mid period change pro rata by days);
+        // absent days and joining / leaving in the month do not change it
+        $tax_salary = 0;
         $total_absent_days = 0;
         $latest_salary_per_day = 0;
+
+        // leave policy (absent / extra late / extra half day -> leave first, then salary)
+        $late_halfday_deductions = $this->payroll_late_halfday_deductions($employee_id, $date_with_status);
+        $absent_on_leave = [];
+        foreach ($late_halfday_deductions as $deduction) {
+            if ($deduction['reason'] == 'Absent' && $deduction['leave_type_id'] !== null) {
+                $absent_on_leave[$deduction['date']] = true;
+            }
+        }
 
         for ($i = 0; $i < count($salary_chunk_attendance_status); $i++) {
 
@@ -366,36 +409,37 @@ trait PayrollCalculation
 
             // this salary's share of the month (the whole salary when it applies to the whole period)
             $each_chunk_salary_complete = $salary_list[$i] * $chunk_days / $period_count;
-            $each_chunk_gross_salary += $each_chunk_salary_complete;
+            $tax_salary += $each_chunk_salary_complete;
 
             // fixed day rate
             $each_chunk_salary_per_day = $salary_list[$i] / $this->payroll_days_per_month;
 
-            // not employed part of the month: pay only the employed days at the day rate (never more than the share)
+            // joined / left in the month: the gross is only the employed days at the day rate (never more than the share);
+            // the days before joining / after leaving are not absent, they are simply not part of the gross
             $payable = $each_chunk_salary_complete;
             if ($chunk_not_employed > 0) {
                 $payable = min($each_chunk_salary_complete, $each_chunk_salary_per_day * ($chunk_days - $chunk_not_employed));
             }
+            $each_chunk_gross_salary += $payable;
 
-            // absent days while employed, at the day rate; the deduction never exceeds the share
-            $each_chunk_absent_total = ($each_chunk_salary_complete - $payable) + $each_chunk_salary_per_day * max(0, $each_chunk_absent - $chunk_not_employed);
-            $each_chunk_absent_total = min($each_chunk_absent_total, $each_chunk_salary_complete);
+            // absent days while employed and not covered by a leave, at the day rate; the deduction never exceeds the gross
+            $chunk_absent_on_leave = count(array_intersect_key(array_flip(array_values($salary_chunk[$i])), $absent_on_leave));
+            $each_chunk_absent_total = min($each_chunk_salary_per_day * max(0, $each_chunk_absent - $chunk_absent_on_leave), $payable);
             $total_each_chunk_absent += $each_chunk_absent_total;
-            $total_chunk_salary_net += $each_chunk_salary_complete - $each_chunk_absent_total;
+            $total_chunk_salary_net += $payable - $each_chunk_absent_total;
 
             $latest_salary_per_day = $each_chunk_salary_per_day;
         }
 
-        // late comings / half days beyond the allowance: a leave when available, otherwise salary
-        $late_halfday_deductions = $this->payroll_late_halfday_deductions($employee_id, $date_with_status);
+        // extra late comings / half days with no leave left: half a day's salary each
         $late_salary_days = 0;
         $halfday_salary_days = 0;
         foreach ($late_halfday_deductions as $deduction) {
             if ($deduction['leave_type_id'] === null) {
                 if ($deduction['reason'] == 'Late Coming') {
-                    $late_salary_days++;
-                } else {
-                    $halfday_salary_days++;
+                    $late_salary_days += $deduction['days'];
+                } elseif ($deduction['reason'] == 'Half day') {
+                    $halfday_salary_days += $deduction['days'];
                 }
             }
         }
@@ -420,6 +464,7 @@ trait PayrollCalculation
             'each_chunk_leave' => $each_chunk_leave,
             'each_chunk_holiday' => $each_chunk_holiday,
             'each_chunk_gross_salary' => $each_chunk_gross_salary,
+            'tax_salary' => $tax_salary,
         ];
     }
 }

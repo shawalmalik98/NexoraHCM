@@ -752,14 +752,14 @@ class HelpdeskController extends Controller
         try{
             if(!empty($request->path)){
                 
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
-                return response()->download(storage_path('app/portal_documents/'.$request->path));
+                return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
             }else{
                 return redirect('/');
             }
@@ -789,14 +789,14 @@ class HelpdeskController extends Controller
         try{
             if(!empty($request->path)){
                 
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
-                return response()->download(storage_path('app/portal_documents/'.$request->path));
+                return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
             }else{
                 return redirect('/');
             }

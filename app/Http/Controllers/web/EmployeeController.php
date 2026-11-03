@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use OpenSpout\Common\Entity\Style\Style;
 use DateTime;
 use Endroid\QrCode\Writer\PngWriter;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Endroid\QrCode\Writer\SvgWriter;
 use Illuminate\Support\Facades\Response;
 use Endroid\QrCode\Builder\Builder;
 
@@ -111,7 +111,7 @@ class EmployeeController extends Controller
         $url = CustomHelper::ecard_url($employee_id);
         
         // Replace with the actual URL you want // Generate a QR code containing the URL 
-        $qrCode = QrCode::size(300)->generate($url); 
+        $qrCode = (new Builder(writer: new SvgWriter(), data: $url, size: 300, margin: 0))->build()->getString();
     
         // Pass the QR code to the view 
         return $qrCode;
@@ -786,7 +786,7 @@ class EmployeeController extends Controller
                 }
             }
 
-        }catch(\Exception $e){
+        }catch(\Throwable $e){
 
             DB::rollBack();
 
@@ -1717,7 +1717,12 @@ class EmployeeController extends Controller
                         }
                     }    
 
-                    $updateInformation = EmployeeInformation::find($employee_data->input('information_id'));
+                    // the edited employee's own personal information row (created if it is missing)
+                    $updateInformation = EmployeeInformation::where('employeeid', $employee_data->input('employee_id'))->first();
+                    if(empty($updateInformation)){
+                        $updateInformation = new EmployeeInformation();
+                        $updateInformation->employeeid = $employee_data->input('employee_id');
+                    }
                     $updateInformation->bankname = $employee_data->input('bank_name');
                     $updateInformation->bankcode = $employee_data->input('bank_code');
                     $updateInformation->accounttitle = $employee_data->input('account_title');
@@ -1993,7 +1998,7 @@ class EmployeeController extends Controller
 
 
         }
-        catch(\Exception $e){
+        catch(\Throwable $e){
 
             DB::rollBack();
             
@@ -3321,12 +3326,12 @@ class EmployeeController extends Controller
     protected function download_employee_document(Request $request){
         try{
             if(!empty($request->path)){
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
                     if($request->action == 'view'){
-                        return response()->file(storage_path('app/portal_documents/'.$request->path));
+                        return response()->file(\App\Helpers\CustomHelper::portal_document($request->path));
                     }else{
-                        return response()->download(storage_path('app/portal_documents/'.$request->path));
+                        return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                     }
                 }else{
                     return view('errors.404');
@@ -3357,10 +3362,15 @@ class EmployeeController extends Controller
 
     protected function download_personal_document(Request $request){
         try{
+            // only files in the logged in employee's own folder
+            $path = str_replace('\\', '/', (string) $request->path);
+            if(!empty($path) && !str_starts_with($path, 'employee_docs/'.(int) session('user_session').'/')){
+                return response()->view('errors.404', [], 404);
+            }
             if(!empty($request->path)){
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
@@ -6190,7 +6200,7 @@ class EmployeeController extends Controller
 
                                         if($process == 1){
 
-                                            // $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
+                                            $this->send_notification('Welcome To The Team', 'Dear employee, We warmly welcome you in our team. Kindly fill employee detail form by clicking on this notification','personal-information', $employee_registration_id,NULL,NULL,'no');
 
                                             $submitInformation = new EmployeeInformation();
                                             $submitInformation->employeeid = $employee_registration_id;
@@ -6751,9 +6761,11 @@ class EmployeeController extends Controller
 
             $get_employee_groups = EmployeeGroup::
             select('employee_group_id','group_name','created_at', DB::raw('COUNT(employee_id) as total_employees'))
-            ->leftJoin('tbl_employees','tbl_employee_groups.employee_group_id','=','tbl_employees.employee_group')
-            ->groupBy('employee_group_id','group_name','created_at')
-            ->where('employee_isactive', 1)
+            ->leftJoin('tbl_employees', function($join){
+                // keep groups that have no active employees yet
+                $join->on('tbl_employee_groups.employee_group_id','=','tbl_employees.employee_group')->where('tbl_employees.employee_isactive', 1);
+            })
+            ->groupBy('employee_group_id','group_name','tbl_employee_groups.created_at')
             ->get()
             ->toArray();
 
@@ -7098,12 +7110,7 @@ class EmployeeController extends Controller
         // ]);
 
         // Build the QR code
-        $result = Builder::create()
-            ->writer(new PngWriter())
-            ->data($url)
-            ->size(500)
-            ->margin(10)
-            ->build();
+        $result = (new Builder(writer: new PngWriter(), data: $url, size: 500, margin: 10))->build();
 
         // Convert the generated QR code to a string for response
         $pngData = $result->getString();

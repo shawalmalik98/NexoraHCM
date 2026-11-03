@@ -2,32 +2,33 @@
     "name": "nexora/nexorahcm",
     "type": "project",
     "description": "NexoraHCM - Human Capital Management",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
-        "php": "^8.0.2",
-        "barryvdh/laravel-dompdf": "^2.0",
-        "doctrine/dbal": "^3.6",
-        "endroid/qr-code": "^5.0",
-        "guzzlehttp/guzzle": "^7.7",
-        "kreait/laravel-firebase": "^4.2",
-        "laravel/framework": "^9.19",
-        "laravel/sanctum": "^3.0",
-        "laravel/tinker": "^2.7",
-        "maatwebsite/excel": "^3.1",
-        "rap2hpoutre/fast-excel": "^5.2",
-        "simplesoftwareio/simple-qrcode": "^4.2",
-        "symfony/http-client": "^6.2",
-        "symfony/mailgun-mailer": "^6.2"
+        "php": "^8.4",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "endroid/qr-code": "^6.0",
+        "guzzlehttp/guzzle": "^7.8",
+        "kreait/laravel-firebase": "^7.0",
+        "laravel/framework": "^13.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^3.0",
+        "maatwebsite/excel": "^4.0",
+        "rap2hpoutre/fast-excel": "^5.18",
+        "symfony/http-client": "^7.4|^8.0",
+        "symfony/mailgun-mailer": "^7.4|^8.0"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.9.1",
-        "laravel/pint": "^1.0",
-        "laravel/sail": "^1.0.1",
-        "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^6.1",
-        "phpunit/phpunit": "^9.5.10",
-        "spatie/laravel-ignition": "^1.0"
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.20",
+        "laravel/sail": "^1.41",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.6",
+        "phpunit/phpunit": "^12.0",
+        "spatie/laravel-ignition": "^2.9"
     },
     "autoload": {
         "psr-4": {

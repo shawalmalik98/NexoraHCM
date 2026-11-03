@@ -28,6 +28,14 @@ class DeviceVerification
                 'status' => FALSE,
             ], 401);
         }
+
+        // when the app sends the phone's id, the token works only from that approved phone
+        if(!empty($request->header('Device-Token')) && !EmployeeDevice::where('device_employee_id', $employee_device[0]['employee_token_emp_id'])->where('device_token', $request->header('Device-Token'))->where('device_status', 1)->exists()){
+            return response()->json([
+                'message' => 'This phone is not approved for your account. Please login again.',
+                'status' => FALSE,
+            ], 401);
+        }
         return $next($request);
     }
 }

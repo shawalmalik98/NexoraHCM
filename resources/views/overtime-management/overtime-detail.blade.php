@@ -161,7 +161,7 @@ table.dataTable
                                                                 <td class="ps-6">  {{  $employee_shift_times }}</td>
                                                                 <td class="ps-6">  {{$atty['att_check_in_time']}}</td>
                                                                 <td class="ps-6">  {{$atty['att_check_out_time']}}</td>
-                                                                <td class="text-center">  {{ $extra_hours}}</td>
+                                                                <td class="text-center">  {{ $extra_hours}} <span class="text-muted fs-8 d-block">paid {{ CustomHelper::overtime_counted_hours($extra_hours) + 0 }} h</span></td>
                                                                 <td class="ps-6">  {{date('d-F-Y', strtotime($atty['att_for_year'].'-'.$atty['att_for_month'].'-'.$atty['att_for_date'] ))}}</td>
                                                                 <td class="ps-6">  {{ $salary_overtime.' '.$currency[0]['system_currency']}} </td>
                                                                 <td class="ps-6"> 

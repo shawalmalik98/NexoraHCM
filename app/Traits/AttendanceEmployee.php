@@ -8,7 +8,6 @@ use App\Models\HrmSetting;
 use App\Models\ShiftManagement;
 use App\Models\Payroll;
 use App\Models\Department;
-use App\Models\DailyWages;
 use App\Models\AttendanceLocker;
 use App\Models\WFH;
 use App\Models\RequestApproval;
@@ -371,9 +370,7 @@ trait AttendanceEmployee {
        
 		$get_employee_payroll = Payroll::where('pc_employee_id',$employee_id)->where('pc_date_from','<=',$attendance_date)->where('pc_date_to','>=',$attendance_date)->get()->toArray();
 		
-		$get_employee_daily_payroll = DailyWages::where('dw_employee_id',$employee_id)->where('dw_of_date','=',$attendance_date)->get()->toArray();
-
-		if(!empty($get_employee_payroll) || !empty($get_employee_daily_payroll)){
+		if(!empty($get_employee_payroll)){
 
             $employee_detail = Employees::where('employee_id', $employee_id)->get(['employee_name'])->toArray();
 			
@@ -930,6 +927,57 @@ trait AttendanceEmployee {
 		// ");
 
 		return $all_attendances;
+	}
+
+	// Mobile check in / out location rule, checked on the server (the app's own check can be bypassed).
+	// Applies when geofencing is on for the employee, the job type is not Home and there is no approved remote work for
+	// the day: the phone must be within the attendance radius of one of the employee's office locations.
+	// Returns null when allowed, otherwise the message for the app. Locations without coordinates (0 / empty) are not checked.
+	protected function mobile_attendance_location_error($employee_id, $latitude, $longitude, $date){
+
+		$employee = Employees::where('employee_id', $employee_id)->first(['employee_geofencing_enability','employee_jobtype']);
+
+		if(empty($employee) || $employee->employee_geofencing_enability != 1 || $employee->employee_jobtype == 'Home' || $this->remote_work_request_attendance($employee_id, $date) == 1){
+			return null;
+		}
+
+		$locations = DB::table('tbl_employees_location')
+			->join('tbl_office_locations', 'tbl_office_locations.location_id', '=', 'tbl_employees_location.emp_loc_loc_id')
+			->where('emp_loc_employee_id', $employee_id)
+			->get(['location_title','location_latitude','location_longitude','location_attendance_radius'])
+			->filter(fn($location) => is_numeric($location->location_latitude) && is_numeric($location->location_longitude) && ((float) $location->location_latitude != 0 || (float) $location->location_longitude != 0));
+
+		if($locations->isEmpty()){
+			return null;
+		}
+
+		if(!is_numeric($latitude) || !is_numeric($longitude) || ((float) $latitude == 0 && (float) $longitude == 0)){
+			return "Your location is required to mark attendance. Please turn on location and try again.";
+		}
+
+		$nearest = null;
+		foreach($locations as $location){
+			$distance = $this->distance_in_meters($latitude, $longitude, $location->location_latitude, $location->location_longitude);
+			if($distance <= (float) $location->location_attendance_radius){
+				return null;
+			}
+			if($nearest === null || $distance < $nearest['distance']){
+				$nearest = ['distance' => $distance, 'title' => $location->location_title, 'radius' => (float) $location->location_attendance_radius];
+			}
+		}
+
+		return "You are ".number_format($nearest['distance'])." m away from ".$nearest['title'].". Attendance can be marked within ".number_format($nearest['radius'])." m of your office.";
+	}
+
+	// distance between two points on earth (haversine), in meters
+	protected function distance_in_meters($latitude_from, $longitude_from, $latitude_to, $longitude_to){
+
+		$earth_radius = 6371000;
+		$latitude_delta = deg2rad((float) $latitude_to - (float) $latitude_from);
+		$longitude_delta = deg2rad((float) $longitude_to - (float) $longitude_from);
+		$a = sin($latitude_delta / 2) ** 2 + cos(deg2rad((float) $latitude_from)) * cos(deg2rad((float) $latitude_to)) * sin($longitude_delta / 2) ** 2;
+
+		return $earth_radius * 2 * atan2(sqrt($a), sqrt(1 - $a));
 	}
 
 	protected function remote_work_request_attendance($employee_id,$date){

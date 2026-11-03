@@ -379,7 +379,7 @@ class LoanController extends Controller
                 'loan_other_reason' => ($loan_data->input('loan_type') == 'Other' ) ? 'required' : '' ,
                 'deduction_type' => 'required|numeric', 
                 'loan_amount' => 'required|min:'.$loans[0]['loan_given_amount'].'|max:'.$loans[0]['loan_given_amount'].'|numeric',
-                'employee_code' => ["required" , "max:255", 'in: '.$loans[0]['employee_code'].' '],  
+                'employee_code' => ["required" , "max:255", 'in:'.$loans[0]['employee_code']],  
                 'deduction_start' => 'required|date_format:Y-m|before:'. date('Y-m',strtotime('+2 month')).'|after:'. date('Y-m',strtotime('-1 month')).'',
                 'loan_type' => 'required',
             ]);
@@ -893,7 +893,7 @@ class LoanController extends Controller
                     'loan_amount' => 'required|min:1|max:'.$checking_loan_amout[0]['loan_request_amount'].'|numeric',
                     'deduction_amount' => ($request->input('deduction_type') == 1 ) ? 'required|min:1|max:'.($request->input('loan_amount') ?? 0).'|numeric' : '' ,
                     'deduction_percentage' => ($request->input('deduction_type') == 2 ) ? 'required|min:1|max:100|numeric' : '' ,
-                    'deduction_type' => 'required|in:'.$checking_loan_amout[0]['loan_deduction_type'].' ', 
+                    'deduction_type' => 'required|in:'.$checking_loan_amout[0]['loan_deduction_type'],
                     'approvermsg' => 'required',
                 ]);
     

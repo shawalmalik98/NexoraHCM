@@ -101,7 +101,9 @@
                                                 <td> {{ $polling['polling_duration'] }} </td>
                                                 <td> {{ $polling['created_at'] }} </td>
                                                 <td> 
-                                                    @if( $polling['polling_status'] == 1)
+                                                    @if(!empty($polling['polling_duration']) && strtotime($polling['polling_duration']) <= time())
+                                                        <span class="badge badge-light-secondary font-weight-bold" title="End time passed, not shown on the dashboard">Ended</span>
+                                                    @elseif( $polling['polling_status'] == 1)
                                                         <span class="badge badge-light-success font-weight-bold">Active</span>
                                                     @else
                                                         <span class="badge badge-light-danger font-weight-bold">Deactive</span>

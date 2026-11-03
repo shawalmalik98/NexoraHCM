@@ -372,7 +372,7 @@ class TaxSlabController extends Controller
                 $fetch_employee_tax[$i]['pc_employee_deduction'] = $fetch_employee_tax[$i]['pc_employee_deduction'] + $deduction[0]['total'];
                 $fetch_employee_tax[$i]['pc_employee_gross_salary'] = $fetch_employee_tax[$i]['pc_employee_gross_salary'] + $earning[0]['total'];
 
-                $fetch_employee_tax[$i]['pc_employee_net_salary'] = $fetch_employee_tax[$i]['pc_employee_gross_salary'] -$fetch_employee_tax[$i]['pc_employee_deduction'];
+                $fetch_employee_tax[$i]['pc_employee_net_salary'] = max(0, $fetch_employee_tax[$i]['pc_employee_gross_salary'] -$fetch_employee_tax[$i]['pc_employee_deduction']);
 
                 $i++;
 
@@ -426,7 +426,7 @@ class TaxSlabController extends Controller
                 $fetch_employee_tax[$i]['pc_employee_deduction'] = $fetch_employee_tax[$i]['pc_employee_deduction'] + $deduction[0]['total'];
                 $fetch_employee_tax[$i]['pc_employee_gross_salary'] = $fetch_employee_tax[$i]['pc_employee_gross_salary'] + $earning[0]['total'];
 
-                $fetch_employee_tax[$i]['pc_employee_net_salary'] = $fetch_employee_tax[$i]['pc_employee_gross_salary'] -$fetch_employee_tax[$i]['pc_employee_deduction'];
+                $fetch_employee_tax[$i]['pc_employee_net_salary'] = max(0, $fetch_employee_tax[$i]['pc_employee_gross_salary'] -$fetch_employee_tax[$i]['pc_employee_deduction']);
 
                 $i++;
 

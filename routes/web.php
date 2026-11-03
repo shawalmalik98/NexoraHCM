@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController,AppFlowController, SalaryController, GeneralController};
+use App\Http\Controllers\web\{LoginController, EmployeeController, HomeController, GadgetController, AttendanceController, MarkAttendanceController, AttendanceRequestController, WFHController, LeavesController, LeavesRequestController, InterviewsController, HolidayController, DepartmentController, DesignationController, VehicleController, LoanController, PersonalInformationController, NotificationController, VehicleAllotmentController, MeetingsController, HelpdeskController, HrmSettingController, ExpenseSheetController, NotificationsController, PettyCashController, ErrorLogController, CustomController, ResignationController, AlertsController, LettersController, RequisitionController, CommandController, PayrollController, AdvanceSalaryController, RoomScreenController, OfficeLocationsController, CredentialsController, OvertimeController, ShiftController, OrganogramController, MachineAttendanceController, TaxSlabController, EmployeeExpenseController, ReportsController, PollingsController, AttendanceDeviceController, LeavesPolicyControlller,RplController, CompanyController, FundController, SalaryController, GeneralController};
 
 
 
@@ -732,24 +732,6 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
 
       });
 
-      Route::group(['prefix' => 'daily-wages-payroll','middleware' => ['payrollVerification']], function() {
-
-        Route::get('',[PayrollController::class, 'daily_wages_payroll']);
-        Route::get('/employee',[PayrollController::class, 'daily_wages_employee']);
-        Route::post('individual-generate-daily-wages',[PayrollController::class, 'individual_generate_daily_wages']);
-        Route::post('get-employee-daily-wages',[PayrollController::class, 'get_employee_daily_wages']);
-        Route::post('delete-daily-wages',[PayrollController::class, 'delete_daily_wages']);
-        Route::get('edit-daily-wages/{wage_id}',[PayrollController::class, 'edit_daily_wages']);
-        Route::post('update-daily-wages',[PayrollController::class, 'update_daily_wages']);
-        Route::post('wages-disbursement',[PayrollController::class, 'wages_disbursement']);
-        Route::post('wages-delete-by-department',[PayrollController::class, 'wages_delete_by_department']);
-        Route::post('delete-selected-daily-wages',[PayrollController::class, 'delete_selected_daily_wages']);
-        Route::get('download-daily-wages-pdf',[PayrollController::class,'download_daily_wages_pdf']);
-        Route::post('calculate-daily-wages',[PayrollController::class,'calculate_daily_wages']);
-        
-
-      });
-
       Route::withoutMiddleware(['userPermission'])->group(function () {
 
           Route::post('authenticate', [LoginController::class, 'login_process'])->withoutMiddleware('userAuthentication');
@@ -888,15 +870,12 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
 
           Route::get('/fetch-firebase-configuration', [CredentialsController::class , 'firebase_config']);
 
-          // payroll and daily wages
+          // payroll
           Route::get('/my-payroll',[PayrollController::class,'my_payroll']);
           Route::post('/account-identification',[PayrollController::class,'account_identification']);
           Route::post('/payroll-identification',[PayrollController::class,'payroll_identification']);
           Route::get('/individual-payroll-pdf/{payroll_id}',[PayrollController::class,'individual_payroll_pdf']);
           Route::post('/calculate-my-payroll',[PayrollController::class,'calculate_my_payroll']);
-          Route::post('/calculate-my-wages',[PayrollController::class,'calculate_my_wages']);
-          Route::get('/my-wages',[PayrollController::class,'my_wages']);
-          Route::get('pdf-daily-wages/{wage_id}',[PayrollController::class, 'pdf_daily_wages']);
 
 
           // employee expense
@@ -990,13 +969,6 @@ use App\Http\Controllers\web\{LoginController, EmployeeController, HomeControlle
     
   });
 
-  Route::prefix('/appflow')->middleware(['userAuthentication', 'access:role,admin'])->group(function () {
-
-    Route::get('/', [AppFlowController::class, 'appflow_modules']);
-    Route::get('/detail/{id}', [AppFlowController::class, 'appflow_detail']);
-    Route::post('/update-appflow', [AppFlowController::class, 'update_appflow_detail']);
-    // Route::post('/update-deduction-policy', [PayrollController::class, 'update_deduction_policy']);
-  });
 
   
 

@@ -66,6 +66,7 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         
         Route::get('request-manager-status', [CustomController::class, 'request_manager_status']);
         Route::post('store-employee-fcm-token', [LoginController::class, 'store_employee_fcm_token']);
+        Route::get('my-device', [LoginController::class, 'my_device']);
 
         // attendance start
         Route::middleware(['MobileAttendanceBarrier'])->group(function (){

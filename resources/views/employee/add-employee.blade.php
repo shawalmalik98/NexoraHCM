@@ -570,14 +570,6 @@
                                     @endforeach
                                 
                                 
-                                {{-- <div class="col-md-6 fv-row">
-                                    <label class="fs-6 fw-semibold mb-2 required">Employee Earning Type</label>
-                                    <select class="form-select" data-control="select2" data-hide-search="false"   name="earning_type" required>
-                                        <option value="">Select Employee Earning Type</option>
-                                        <option value="1" selected>Monthly</option>
-                                        <option value="2">Daily Wages</option>
-                                    </select>
-                                </div> --}}
                                 
                             </div>
                         @endif    

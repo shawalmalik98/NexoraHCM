@@ -21,10 +21,10 @@ class VerifyAppVersion
         if(!empty($request->header('apk-version'))){
             if(Schema::hasTable('tbl_hrm_settings')){
                 if (Schema::hasColumn('tbl_hrm_settings', 'mobile_app_version')) {
-                    $get_app_version = HrmSetting::get(['mobile_app_version'])->toArray();
-                    if(!empty($get_app_version) || $get_app_version[0]['mobile_app_version'] != '' || $get_app_version[0]['mobile_app_version'] != NULL){
-                        $apk_version = explode(",",$get_app_version[0]['mobile_app_version']);
-                        if(!in_array($request->header('apk-version'), $apk_version)){
+                    // allowed versions from System Settings (comma separated); an empty list allows every version
+                    $allowed_versions = array_values(array_filter(array_map('trim', explode(',', (string) HrmSetting::value('mobile_app_version')))));
+                    if(!empty($allowed_versions)){
+                        if(!in_array(trim($request->header('apk-version')), $allowed_versions)){
                             return response()->json([
                                 'msg' => 'Your current application version doesn\'t support this operation. Please update the mobile app.',
                                 'status' => FALSE,

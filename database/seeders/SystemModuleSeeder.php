@@ -91,7 +91,6 @@ class SystemModuleSeeder extends Seeder
                 ('Shift Time Request', '/shift-time-request', '1',1),
                 ('Employee Bank Detail', '/employee-bank', '1',1),
                 ('Monthly Attendance', '/monthly-attendance', '1',1),
-                ('Daily Wage', '/daily-wages-payroll', '1',1),
                 ('Employment Status', '/employment-status', '1',1),
                 ('Attendance Device', '/attendance-devices', '1',1),
                 ('Employee Report', '/reports', '1',1),

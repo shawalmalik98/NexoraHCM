@@ -25,20 +25,11 @@ class PettyCashController extends Controller
             $where_clause = '1=1 ';
             $where_clause_to = '1=1 ';
 
-            if (!empty($request->expense_period)) {
-                $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause .= " AND DATE_FORMAT(petty_cash_for_month_and_year, '%Y-%m-%d %H:%i:%s') LIKE '%" . $expense_period . "%'";
-            } else {
-                $where_clause .= " AND DATE_FORMAT(petty_cash_for_month_and_year, '%Y-%m-%d %H:%i:%s') LIKE '%" . date("Y-m") . "%'";
-            }
-            
-
-            if (!empty($request->expense_period)) {
-                $expense_period = date("Y-m", strtotime($request->expense_period));
-                $where_clause_to .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . $expense_period . "%'";
-            } else {
-                $where_clause_to .= " AND DATE_FORMAT(expense_date, '%Y-%m-%d %H:%i:%s') LIKE '%" . date("Y-m") . "%'";
-            }
+            // both columns are text: petty cash month "2026-10", expense date "2026-10-13" (DATE_FORMAT on "2026-10" gave
+            // NULL, so the petty cash list was always empty)
+            $expense_period = !empty($request->expense_period) ? date("Y-m", strtotime($request->expense_period)) : date("Y-m");
+            $where_clause .= " AND petty_cash_for_month_and_year LIKE ".\DB::getPdo()->quote($expense_period.'%');
+            $where_clause_to .= " AND expense_date LIKE ".\DB::getPdo()->quote($expense_period.'%');
 
             $all_cash_history = PettyCash::whereRaw($where_clause)->get()->toArray();
 
@@ -307,14 +298,14 @@ class PettyCashController extends Controller
         try{
             if(!empty($request->path)){
                 
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
-                return response()->download(storage_path('app/portal_documents/'.$request->path));
+                return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
             }else{
                 return redirect('/');
             }

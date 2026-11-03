@@ -224,19 +224,6 @@
                             <td class="table-data " >{{date('Y-m-d', strtotime('+1 year -1 day', strtotime($setting[0]['fiscal_date'])) )}}</td>
                         </tr>
                         <tr>
-                            <td class="table-data col-3" >Late Deduction Rate</td>
-                            <td class="table-data " >
-                                {{!empty($setting[0]['daily_wages_late_deduction']) ? $setting[0]['daily_wages_late_deduction']*100  : ''}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-data col-3" >Half Day Deduction Rate</td>
-                            <td class="table-data " >
-                                {{!empty($setting[0]['daily_wages_half_deduction']) ? $setting[0]['daily_wages_half_deduction']*100  : ''}} 
-                               
-                            </td>
-                        </tr>
-                        <tr>
                             <td class="table-data col-3" >Club Rule Implentation on Payroll</td>
                             <td class="table-data " >
                                 @if(!empty($setting[0]['club_rule_apply']) && $setting[0]['club_rule_apply'] == 1) Yes @else No  @endif

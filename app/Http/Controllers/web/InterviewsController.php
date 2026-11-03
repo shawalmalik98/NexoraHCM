@@ -1369,11 +1369,12 @@ class InterviewsController extends Controller
                 $check_interview_status = InterviewStatus::where('main_interview_id',$request_data->input('interview_id'))->orderBy('interview_status_id','DESC')->get('interview_status_level_id')->toArray();
                 
               
-                if($check_interview_status[0]['interview_status_level_id'] != $request_data->input('interviewer_status')){
+                // a first status is fine (no earlier one); the same status twice is refused
+                if(empty($check_interview_status) || $check_interview_status[0]['interview_status_level_id'] != $request_data->input('interviewer_status')){
                     $interview_employee = new InterviewStatus();    
                     $interview_employee->interview_status_level_id = $request_data->input('interviewer_status');
                     $interview_employee->main_interview_id = $request_data->input('interview_id');
-                    $interview_employee->interview_status_created_by = $request_data->input('employee_id');
+                    $interview_employee->interview_status_created_by = session('user_session');
                     $interview_employee->interview_status_created_at =  date('d-m-Y H:i:s');
     
                     $process = $interview_employee->save();
@@ -1383,7 +1384,7 @@ class InterviewsController extends Controller
                     $update_requisition_status = new RequisitionStatus();
                     $update_requisition_status->main_requisition_id =  $request_data->input("requisition_reference_id");
                     $update_requisition_status->requisition_status = $requisition_status[0]['interview_status_level'];
-                    $update_requisition_status->requisition_status_created_by = $request_data->input('employee_id');
+                    $update_requisition_status->requisition_status_created_by = session('user_session');
                     $update_requisition_status->requisition_status_created_at = date('d-m-Y H:i:s');
                     $process = $update_requisition_status->save();
                    
@@ -1435,13 +1436,13 @@ class InterviewsController extends Controller
     protected function download_candidate_cv(Request $request){
         try{
             if(!empty($request->path)){
-                $check_if_file_exists = file_exists(storage_path('app/portal_documents/'.$request->path));
+                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->path));
                 if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(storage_path('app/portal_documents/'.$request->path));
+                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
                 }else{
                     return view('errors.404');
                 }
-                return response()->download(storage_path('app/portal_documents/'.$request->path));
+                return response()->download(\App\Helpers\CustomHelper::portal_document($request->path));
             }else{
                 return redirect('/');
             }

@@ -19,13 +19,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://unpkg.com/sweetalert2@11"></script>
+    {{-- Nexora theme for this form (after bootstrap so it wins) --}}
+    <link href="{{ url('assets/css/personal-form-theme.css') }}?v={{ @filemtime(public_path('assets/css/personal-form-theme.css')) }}" rel="stylesheet" type="text/css" />
    
     
 </head>
-<body>
-    
-</body>
-</html>
+<body class="pi-page">
 
     @php
         $companySetting = CustomHelper::hcm_default_settings();
@@ -80,7 +79,7 @@
 </section>
 
 <form id="personal_information_form">
-    <input type="hidden" name="_token" value="GR7zdr6LIVB0PpYOlMuJmYAvQLSN3uA03YAjkELH">        
+    @csrf        
     <div class="container mt-3">
         <div class="row sec2">
             <div class="col-md-2">
@@ -153,7 +152,7 @@
                                 <img src="{{asset('portal_assets/form/img/profile.png')}}"  id="upload-img">
                             @else
 
-                                @if(file_exists('portal_assets/profile_pictures/'.$information_data[0]['profile_avatar']))
+                                @if(file_exists(public_path('portal_assets/profile_pictures/'.$information_data[0]['profile_avatar'])))
                                     <img src="{{asset('portal_assets/profile_pictures'). '/' . $information_data[0]['profile_avatar'] }}"
                                     id="upload-img">
                                 @else
@@ -729,7 +728,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.2/jquery.validate.min.js"></script>
 
     <script src="{{ url('portal_assets/form/js/main.js') }}"></script>
-    <script src="{{ url('portal_assets/form/js/form-validation.js') }}"></script>
+    <script src="{{ url('portal_assets/form/js/form-validation.js') }}?v=2"></script>
     <script src="{{ url('portal_assets/form/js/jquery-latest.min.js') }}"></script>
 
     <script>
@@ -738,5 +737,5 @@
     </script>
 
     <script src="{{url('assets/js/personal-information/form.js')}}"></script>
-
-
+</body>
+</html>

@@ -48,10 +48,8 @@ class NotificationsController extends Controller
       
             $user_id = session('user_session');
             if(!empty($user_id) && !empty($notification)){
-                $view_notification = new NotificationStatus();
-                $view_notification->viewed_notification = $notification;
-                $view_notification->viewed_by = $user_id;
-                $view_notification->save();
+                // once per employee and notification
+                NotificationStatus::firstOrCreate(['viewed_notification' => (int) $notification, 'viewed_by' => (int) $user_id]);
             }else{
                 return redirect('');
             }
@@ -75,7 +73,7 @@ class NotificationsController extends Controller
             if(!empty($notifications['notification'])){
                 $unread_count = 0;
                 foreach($notifications['notification'] as $mynotifications){
-                    $nots[] = '<a href="'.$mynotifications['notification_url'].'" class="dropdown-item '.(($mynotifications['viewer_history'])?'':"notification-dark notification-open").'" '.(($mynotifications['viewer_history'])?'':"data-notificationid='".$mynotifications['notification_id']."'").'><div class="media notification-count-div" data-total_notifications="'.count($send_data['notifications']).'"><div class="media-body"><h5 class="" style="margin-bottom:0px;">'. $mynotifications['notification_title'] .'</h5><p class="text-sm">'. $mynotifications['notification_message'] .'</p><p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> '. $mynotifications['notification_time'] .'</p></div></div></a><div class="dropdown-divider"></div>';
+                    $nots[] = '<a href="'.$mynotifications['notification_url'].'" class="dropdown-item '.(($mynotifications['viewer_history'])?'':"notification-dark notification-open").'" '.(($mynotifications['viewer_history'])?'':"data-notificationid='".$mynotifications['notification_id']."'").'><div class="media notification-count-div" data-total_notifications="'.count($notifications['notification']).'"><div class="media-body"><h5 class="" style="margin-bottom:0px;">'. $mynotifications['notification_title'] .'</h5><p class="text-sm">'. $mynotifications['notification_message'] .'</p><p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> '. $mynotifications['notification_time'] .'</p></div></div></a><div class="dropdown-divider"></div>';
                     
                     if(empty($mynotifications['viewer_history'])){
                         $unread_count += 1;
@@ -118,18 +116,12 @@ class NotificationsController extends Controller
 
         try{
 
-            $notifications =  $this->get_all_notifications();
-
-            if(!empty($notifications['notification'])){
-                
-                foreach($notifications['notification'] as $mynotifications){
-                    if(empty($mynotifications['viewer_history'])){
-                        $view_notification = new NotificationStatus();
-                        $view_notification->viewed_notification = $mynotifications['notification_id'];
-                        $view_notification->viewed_by = session('user_session');
-                        $view_notification->save();
-                    }
-                }
+            // every unread notification of the employee, not only the 100 listed
+            $employee_id = (int) session('user_session');
+            foreach(array_chunk($this->unread_notification_ids($employee_id), 1000) as $ids){
+                NotificationStatus::insert(array_map(function($id) use ($employee_id){
+                    return ['viewed_notification' => $id, 'viewed_by' => $employee_id];
+                }, $ids));
             }
 
         }catch(\Exception $e){

@@ -297,7 +297,10 @@
 												@else
 													<a href="{{ url('individual-payroll-pdf/'.$installment_detail['loan_installment_payroll_id'])}}" target="_blank" > <span class="badge badge-light-success font-weight-bold">From Payroll</span> </a>
 												@endif
-												<span class="text-gray-500 fw-bold my-2">{{ $installment_detail['loan_installment_amount'] }}.00 {{ $currency[0]['system_currency']}}</span>
+												<span class="text-gray-500 fw-bold my-2">{{ number_format((float) $installment_detail['loan_installment_amount'], 2) }} {{ $currency[0]['system_currency']}}</span>
+													@if(!empty($installment_detail['loan_installment_carried']) && $installment_detail['loan_installment_carried'] > 0)
+														<span class="badge badge-light-warning font-weight-bold" title="Salary was not enough; added to the next payroll">{{ number_format((float) $installment_detail['loan_installment_carried'], 2) }} carried to next month</span>
+													@endif
 												
 												@if(!empty($installment_detail['loan_installment_source']) || !empty($installment_detail['loan_installment_source_remarks']))
 													<div class="" style="margin-left:10px">

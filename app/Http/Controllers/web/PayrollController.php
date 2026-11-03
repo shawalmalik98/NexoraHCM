@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Validator,Crypt};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Rap2hpoutre\FastExcel\FastExcel;
-use App\Models\{Employees, Attendance, AttendanceRule, EmployeeSalary, Payroll, PayrollDeduction, PayrollEarning, Department, Loan, LoanInstallment, AdvanceSalary, TaxSlab, HrmSetting, EmployeeExpense, OverTime, EmployeeDevice, DailyWages, LeaveManagement, SalaryDivision, PayrollAttempts,EmploymentStatus};
+use App\Models\{Employees, Attendance, AttendanceRule, EmployeeSalary, Payroll, PayrollDeduction, PayrollEarning, Department, Loan, LoanInstallment, AdvanceSalary, TaxSlab, HrmSetting, EmployeeExpense, OverTime, EmployeeDevice, LeaveManagement, SalaryDivision, PayrollAttempts,EmploymentStatus, ProvidentFund};
 use App\Traits\{LoginEmployee, LogGenerateTrait, NotificationTrait, ApiResponseTrait, PayrollCalculation};
 use App\Models\{LeaveDeduction, Resignation};
 use App\Helpers\{ActivityTracker,CustomHelper};
@@ -26,7 +26,6 @@ class PayrollController extends Controller
     const ADD_TITLE = "Add Payroll";
     const INDIVIDUAL_PDF_TITLE = "Payslip";
     const SUB_TITLE = "My Payslip";
-    const MAIN_TITLE_DAILY = "daily-wages";
     const verification_code = '123789';
     const DEDUCTION_TITLE = 'deduction policy';
 
@@ -48,18 +47,27 @@ class PayrollController extends Controller
 
             if(!empty($request->input('m')) && !empty($request->input('y'))){
 
-                $month = $request->input('m');
-                $year = $request->input('y');
+                $month = (int) $request->input('m');
+                $year = (int) $request->input('y');
 
             }else{
 
-                $month = date('m');
-                $year = date('Y');
+                $month = (int) date('m');
+                $year = (int) date('Y');
+
+                // nothing generated for this month yet: show the latest generated payroll instead of an empty table
+                if(!Payroll::where('pc_month', $month)->where('pc_year', $year)->exists()){
+                    $latest = Payroll::orderByDesc('pc_year')->orderByDesc('pc_month')->first(['pc_month','pc_year']);
+                    if(!empty($latest)){
+                        $month = (int) $latest->pc_month;
+                        $year = (int) $latest->pc_year;
+                    }
+                }
             }
 
             $all_department = Department::get(['department_id','department_name'])->toArray();
 
-            $fetch_employee_payroll = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`,`disburse`,pc_year,pc_month,pc_created_at FROM `tbl_payroll_calculation` 
+            $fetch_employee_payroll = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , GREATEST(0, ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`,`disburse`,pc_year,pc_month,pc_created_at FROM `tbl_payroll_calculation` 
                 left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 1 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_payroll_calculation.pc_id 
                 left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 1 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_payroll_calculation.pc_id 
                 where pc_month = '".$month."'
@@ -68,7 +76,29 @@ class PayrollController extends Controller
 
             $fetch_employee_payroll = json_decode(json_encode($fetch_employee_payroll), true);
 
-            // $fetch_employee_payroll = Payroll::selectRaw('( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary) as pc_employee_gross_salary  , ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`, `pc_month`, `pc_year`, `pc_date_from`, `pc_date_to`, `pc_employee_designation`, `pc_employee_department`, `pc_employee_job_title`, `pc_employee_bank_name`, `pc_employee_bank_account`, `pc_employee_bank_iban`, `pc_total_working_days`, `pc_present`, `pc_absent`, `pc_off_day`, `pc_leave`, `pc_holiday`, `pc_late_early`, `pc_half_day`, `pc_absent_deduction`, `pc_late_early_deduction`, `pc_half_day_deduction`, `pc_batch`, `pc_created_at`, `pc_updated_at` , disburse')
+            // what each total is made of, shown under the totals: absent / late / half day, tax, EOBI, PF, loan, advance ... and overtime, expense ...
+            $payroll_ids = array_column($fetch_employee_payroll, 'pc_id');
+            $deduction_breakdown = [];
+            $earning_breakdown = [];
+            if(!empty($payroll_ids)){
+                foreach(Payroll::whereIn('pc_id', $payroll_ids)->get(['pc_id','pc_absent_deduction','pc_late_early_deduction','pc_half_day_deduction']) as $row){
+                    foreach(['Absent' => $row->pc_absent_deduction, 'Late' => $row->pc_late_early_deduction, 'Half Day' => $row->pc_half_day_deduction] as $label => $amount){
+                        if($amount > 0){
+                            $deduction_breakdown[$row->pc_id][CustomHelper::payroll_line_label($label)] = $amount;
+                        }
+                    }
+                }
+                foreach(PayrollDeduction::whereIn('pc_deduction_pc_id', $payroll_ids)->where('pc_deduction_type', 1)->groupBy('pc_deduction_pc_id','pc_deduction_title')->selectRaw('pc_deduction_pc_id, pc_deduction_title, SUM(pc_deduction_amount) as amount')->get() as $row){
+                    $label = CustomHelper::payroll_line_label($row->pc_deduction_title);
+                    $deduction_breakdown[$row->pc_deduction_pc_id][$label] = ($deduction_breakdown[$row->pc_deduction_pc_id][$label] ?? 0) + $row->amount;
+                }
+                foreach(PayrollEarning::whereIn('pc_earning_pc_id', $payroll_ids)->where('pc_earning_type', 1)->groupBy('pc_earning_pc_id','pc_earning_title')->selectRaw('pc_earning_pc_id, pc_earning_title, SUM(pc_earning_amount) as amount')->get() as $row){
+                    $label = CustomHelper::payroll_line_label($row->pc_earning_title);
+                    $earning_breakdown[$row->pc_earning_pc_id][$label] = ($earning_breakdown[$row->pc_earning_pc_id][$label] ?? 0) + $row->amount;
+                }
+            }
+
+            // $fetch_employee_payroll = Payroll::selectRaw('( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary) as pc_employee_gross_salary  , ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , GREATEST(0, ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`, `pc_month`, `pc_year`, `pc_date_from`, `pc_date_to`, `pc_employee_designation`, `pc_employee_department`, `pc_employee_job_title`, `pc_employee_bank_name`, `pc_employee_bank_account`, `pc_employee_bank_iban`, `pc_total_working_days`, `pc_present`, `pc_absent`, `pc_off_day`, `pc_leave`, `pc_holiday`, `pc_late_early`, `pc_half_day`, `pc_absent_deduction`, `pc_late_early_deduction`, `pc_half_day_deduction`, `pc_batch`, `pc_created_at`, `pc_updated_at` , disburse')
             // ->leftJoin(
             //     PayrollEarning::selectRaw('pc_earning_pc_id,  sum (pc_earning_amount) as sum_pc_earning_amount')
             //     ->groupBy('pc_earning_pc_id')->fromRaw('tbl_payroll_calculation_earning as payroll_earning') , function($join) {
@@ -95,7 +125,7 @@ class PayrollController extends Controller
             
             $tax_system_setting = HrmSetting::get(['tax_deduction_apply','club_rule_apply'])->toArray();
 
-            $send_data = compact('title','login_user','fetch_employee_payroll','all_department','month','year','fetch_employee_disburse','tax_system_setting','dynamic_years');
+            $send_data = compact('title','login_user','fetch_employee_payroll','all_department','month','year','fetch_employee_disburse','tax_system_setting','dynamic_years','deduction_breakdown','earning_breakdown');
             
             return view('payroll.all-employee-payroll', $send_data);
 
@@ -120,7 +150,7 @@ class PayrollController extends Controller
         
             $login_user = $this->get_login_user_detail();
             
-            // $fetch_employee_payroll = DB::select("SELECT sum(IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`,`disburse`,pc_year,pc_month,pc_created_at FROM `tbl_payroll_calculation` 
+            // $fetch_employee_payroll = DB::select("SELECT sum(IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , GREATEST(0, ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`,`disburse`,pc_year,pc_month,pc_created_at FROM `tbl_payroll_calculation` 
             //     left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 1 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_payroll_calculation.pc_id 
             //     left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 1 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_payroll_calculation.pc_id 
             //     where pc_employee_id = ".session('user_session')." AND disburse = '2' group by pc_id ,pc_deduction_pc_id,pc_earning_pc_id ");
@@ -130,7 +160,7 @@ class PayrollController extends Controller
                     DB::raw('CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END as pc_employee_extra_salary'),
                     'pc_employee_gross_salary',
                     DB::raw('(CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction) as pc_employee_deduction'),
-                    DB::raw('((CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END + pc_employee_gross_salary) - (CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_net_salary'),
+                    DB::raw('GREATEST(0, (CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END + pc_employee_gross_salary) - (CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_net_salary'),
                     'pc_id',
                     'pc_employee_id',
                     'disburse',
@@ -161,40 +191,12 @@ class PayrollController extends Controller
 
                 // dd($fetch_employee_payroll);
 
-            // $fetch_employee_wages = DB::select("SELECT sum(( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ))) as dw_employee_extra_daily_wages  ,sum(dw_employee_gross_daily_wages) as dw_employee_gross_daily_wages, sum( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as dw_employee_deduction , sum((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as dw_employee_net_daily_wages,`dw_id`, `dw_employee_id`,`dw_disburse`,dw_of_date,dw_created_at, count(dw_id) as wage_count FROM `tbl_daily_wages` 
-            //     left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-            //     left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-            //     where dw_employee_id = ".session('user_session')." AND dw_disburse = '2' group by dw_employee_id, date_format(dw_of_date,'%m-%Y')");
-
-            $fetch_employee_wages = DB::table('tbl_daily_wages')
-            ->selectRaw('
-                SUM(CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END) AS dw_employee_extra_daily_wages,
-                SUM(dw_employee_gross_daily_wages) AS dw_employee_gross_daily_wages,
-                SUM(CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction) AS dw_employee_deduction,
-                SUM(CASE WHEN payroll_earning.sum_pc_earning_amount > 0 THEN payroll_earning.sum_pc_earning_amount ELSE 0 END + dw_employee_gross_daily_wages) - SUM(CASE WHEN payroll_deduction.sum_pc_deduction_amount > 0 THEN payroll_deduction.sum_pc_deduction_amount ELSE 0 END + dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction) AS dw_employee_net_daily_wages,
-                dw_id,
-                dw_employee_id,
-                dw_disburse,
-                dw_of_date,
-                dw_created_at,
-                COUNT(dw_id) AS wage_count
-            ')
-            ->leftJoin(DB::raw('(SELECT pc_earning_pc_id, SUM(pc_earning_amount) AS sum_pc_earning_amount FROM tbl_payroll_calculation_earning WHERE pc_earning_type = 2 GROUP BY pc_earning_pc_id) AS payroll_earning'), 'payroll_earning.pc_earning_pc_id', '=', 'tbl_daily_wages.dw_id')
-            ->leftJoin(DB::raw('(SELECT pc_deduction_pc_id, SUM(pc_deduction_amount) AS sum_pc_deduction_amount FROM tbl_payroll_calculation_deduction WHERE pc_deduction_type = 2 GROUP BY pc_deduction_pc_id) AS payroll_deduction'), 'payroll_deduction.pc_deduction_pc_id', '=', 'tbl_daily_wages.dw_id')
-            ->where('dw_employee_id', session('user_session'))
-            ->where('dw_disburse', '2')
-            ->groupBy('dw_employee_id','tbl_daily_wages.dw_id','tbl_daily_wages.dw_disburse','tbl_daily_wages.dw_of_date','tbl_daily_wages.dw_created_at' ,DB::raw("FORMAT(dw_of_date, '%m-%Y')"))
-            ->get()->toArray();
-
-
-            $fetch_employee_wages = json_decode(json_encode($fetch_employee_wages), true);
-
             $fetch_employee_payroll = json_decode(json_encode($fetch_employee_payroll), true);
             
             $current_calculate_option = Payroll::where('disburse',2)->where('pc_employee_id',$login_user[0]['employee_id'])->where('pc_month',date('m'))->where('pc_year',date('Y'))->get()->toArray();
             $pervious_calculate_option = Payroll::where('disburse',2)->where('pc_employee_id',$login_user[0]['employee_id'])->where('pc_month',date('m',strtotime('-1 month')))->where('pc_year',date('Y',strtotime('-1 month')))->get()->toArray();
             
-            $send_data = compact('title','login_user','fetch_employee_payroll','current_calculate_option','pervious_calculate_option','fetch_employee_wages');
+            $send_data = compact('title','login_user','fetch_employee_payroll','current_calculate_option','pervious_calculate_option');
             
             if(session('my_payroll') == "allow"){
 
@@ -224,62 +226,6 @@ class PayrollController extends Controller
         
             }
 
-        }
-
-    }
-
-    protected function my_wages(Request $request){
-
-        try{
-
-            $title = Self::SUB_TITLE;
-        
-            $login_user = $this->get_login_user_detail();
-
-            if(!empty($request->input('m')) && !empty($request->input('y'))){
-                $month = $request->input('m');
-                $year = $request->input('y');
-            }else{
-                $month = date('m');
-                $year = date('Y');
-            }
-
-            $fetch_employee_wages = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,dw_employee_gross_daily_wages, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as dw_employee_net_daily_wages,`dw_id`, `dw_employee_id`,`dw_disburse`,dw_of_date,dw_created_at FROM `tbl_daily_wages` 
-            left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-            left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-            where dw_employee_id = ".session('user_session')." AND dw_disburse = '2' AND date_format(dw_of_date,'%m') = ".$month." AND date_format(dw_of_date,'%Y') = ".$year." group by dw_id ,pc_deduction_pc_id,pc_earning_pc_id ");
-
-            $fetch_employee_wages = json_decode(json_encode($fetch_employee_wages), true);
-
-            $send_data = compact('title','login_user','fetch_employee_wages','month','year');
-
-            if(session('my_payroll') == "allow"){
-
-                return view('payroll.my-wages', $send_data);
-
-            }else{
-
-                return view('include.payslip-password-verification', $send_data);
-
-            }
-
-        }catch(\Exception $e){
-
-            $this->create_error_log('View My Wage', $e);
-            $send_data = compact('title','login_user');
-            return view('errors.500');
-
-        }finally{
-            
-            if(session('my_payroll') == "allow"){
-
-                ActivityTracker::track_activity('View My Wage');
-            
-            }else{
-
-                ActivityTracker::track_activity('View My Wage Direct Url');
-
-            }
         }
 
     }
@@ -474,6 +420,7 @@ class PayrollController extends Controller
             $payroll = Payroll::join('tbl_employees','tbl_employees.employee_id','=','tbl_payroll_calculation.pc_employee_id')
             ->join('tbl_employement_status', 'tbl_employees.employee_status', '=', 'tbl_employement_status.employement_status_id')
             ->leftjoin('tbl_personal_informations','tbl_personal_informations.employeeid','=','tbl_employees.employee_id')
+            ->leftjoin('tbl_office_locations','tbl_office_locations.location_id','=','tbl_employees.employee_location')
             ->where('pc_id','=',$payroll_id)->get()->toArray();
 
             // deleted / unknown payslip (old link)
@@ -486,6 +433,9 @@ class PayrollController extends Controller
 
             $extra_deduction = PayrollDeduction::where('pc_deduction_pc_id','=',$payroll_id)->where('pc_deduction_type',1)->get()->toArray();
 
+            $extra_earning = $this->merge_payslip_lines($extra_earning, 'pc_earning_title', 'pc_earning_amount');
+            $extra_deduction = $this->merge_payslip_lines($extra_deduction, 'pc_deduction_title', 'pc_deduction_amount');
+
             $max_loop = max([count($extra_earning),count($extra_deduction)]);
 
             $extra_earning_amount = array_sum(array_column($extra_earning, 'pc_earning_amount'));
@@ -495,7 +445,8 @@ class PayrollController extends Controller
             $total_earning = $extra_earning_amount + $payroll[0]['pc_employee_gross_salary'];
             $total_deduction = $extra_deduction_amount + $payroll[0]['pc_late_early_deduction'] + $payroll[0]['pc_absent_deduction'] + $payroll[0]['pc_half_day_deduction'];
 
-            $payroll[0]['pc_employee_net_salary'] = $payroll[0]['pc_employee_net_salary'] + $extra_earning_amount - $extra_deduction_amount;
+            // net never goes below zero (deductions more than the earnings: nothing is paid)
+            $payroll[0]['pc_employee_net_salary'] = max(0, $payroll[0]['pc_employee_net_salary'] + $extra_earning_amount - $extra_deduction_amount);
 
             $payroll_create_by = Employees::where('employee_id',$payroll[0]['pc_created_by'])->get(['employee_name','employee_code'])->toArray();
             
@@ -521,14 +472,94 @@ class PayrollController extends Controller
                 $download_button_show = false;
             }
 
-            // leaves taken for late comings / half days in this payroll (leave_name null = deducted from salary)
+            // leaves taken by this payroll for absent days / extra late comings / half days (leave_name null = deducted from salary):
+            // total = number of days, leave_days = leave taken (1 per absent day, 0.5 per late / half day)
             $leave_deductions = LeaveDeduction::leftJoin('tbl_leave_management','tbl_leave_management.leave_manage_id','=','tbl_leave_deductions.ld_leave_type_id')
             ->where('ld_payroll_id',$payroll_id)
-            ->selectRaw('leave_name, ld_reason, COUNT(*) as total')
+            ->selectRaw('leave_name, ld_reason, COUNT(*) as total, SUM(ld_days) as leave_days')
             ->groupBy('leave_name','ld_reason')
             ->get()->toArray();
 
-            $send_data = compact('login_user','payroll','extra_earning','extra_deduction','max_loop','download_button_show','payroll_create_by','payroll_disburse_by','setting','total_deduction','total_earning','salary_division','finance_name','leave_deductions');
+            // loan installment the salary could not cover this month (taken in the next payroll)
+            $loan_carried = (float) LoanInstallment::where('loan_installment_payroll_id', $payroll_id)->sum('loan_installment_carried');
+
+            $slip = $payroll[0];
+
+            // earnings: gross split into the salary divisions (Basic / House Rent / Utilities ...) + overtime, expense claims ...
+            $earning_lines = [];
+            foreach($salary_division as $division){
+                $earning_lines[] = ['title' => $division['salary_division_title'], 'amount' => round($slip['pc_employee_gross_salary'] * $division['salary_division_percentage'], 2)];
+            }
+            foreach($extra_earning as $earning){
+                $earning_lines[] = ['title' => CustomHelper::payroll_line_label($earning['pc_earning_title']), 'amount' => (float) $earning['pc_earning_amount']];
+            }
+
+            // deductions: income tax, EOBI, provident fund first, then loan / advance ..., then absent / late / half days
+            $first_deductions = ['income tax deduction' => 1, 'eobi contribution' => 2, 'provident fund' => 3];
+            usort($extra_deduction, function($a, $b) use($first_deductions){
+                return ($first_deductions[strtolower(trim($a['pc_deduction_title']))] ?? 9) <=> ($first_deductions[strtolower(trim($b['pc_deduction_title']))] ?? 9);
+            });
+            $deduction_lines = [];
+            foreach($extra_deduction as $deduction){
+                $deduction_lines[] = ['title' => CustomHelper::payroll_line_label($deduction['pc_deduction_title']), 'amount' => (float) $deduction['pc_deduction_amount']];
+            }
+            foreach(['pc_absent_deduction' => 'Absent Days', 'pc_late_early_deduction' => 'Late Coming', 'pc_half_day_deduction' => 'Half Days'] as $column => $label){
+                if((float) $slip[$column] > 0){
+                    $deduction_lines[] = ['title' => $label, 'amount' => (float) $slip[$column]];
+                }
+            }
+
+            // income tax details: yearly taxable income, slab, yearly tax, tax deducted earlier in this fiscal year, this month
+            $tax_details = null;
+            if($slip['pc_tax_taxable_income'] !== null){
+                $fiscal_date = HrmSetting::value('fiscal_date');
+                $fiscal_month_day = !empty($fiscal_date) ? date('m-d', strtotime($fiscal_date)) : '07-01';
+                $fiscal_start = date('Y', strtotime($slip['pc_date_to'])).'-'.$fiscal_month_day;
+                if($fiscal_start > $slip['pc_date_to']){
+                    $fiscal_start = date('Y-m-d', strtotime($fiscal_start.' -1 year'));
+                }
+                $tax_this_month = (float) PayrollDeduction::where('pc_deduction_pc_id', $payroll_id)->where('pc_deduction_title', 'Income Tax Deduction')->sum('pc_deduction_amount');
+                $tax_deducted_before = (float) PayrollDeduction::join('tbl_payroll_calculation', 'tbl_payroll_calculation.pc_id', '=', 'tbl_payroll_calculation_deduction.pc_deduction_pc_id')
+                    ->where('pc_employee_id', $slip['pc_employee_id'])->where('pc_deduction_title', 'Income Tax Deduction')
+                    ->where('pc_date_to', '>=', $fiscal_start)->where('pc_date_to', '<', $slip['pc_date_to'])
+                    ->sum('pc_deduction_amount');
+                $tax_details = [
+                    'taxable_income' => (float) $slip['pc_tax_taxable_income'],
+                    'slab_percentage' => (float) $slip['pc_tax_slab_percentage'],
+                    'tax_credit' => 0,
+                    'tax_chargeable' => (float) $slip['pc_tax_yearly'],
+                    'tax_deducted' => $tax_deducted_before,
+                    'tax_payable' => $tax_this_month,
+                ];
+            }
+
+            // provident fund up to this payslip (contributions, profit, withdrawals)
+            $pf_rows = ProvidentFund::where('pf_employee_id', $slip['pc_employee_id'])->where('pf_date', '<=', $slip['pc_date_to'])
+                ->selectRaw('pf_type, SUM(pf_member_amount) as member, SUM(pf_company_amount) as company')->groupBy('pf_type')->get()->keyBy('pf_type');
+            $pf_summary = null;
+            if($pf_rows->isNotEmpty()){
+                $pf_sum = fn($type, $column) => (float) ($pf_rows[$type]->$column ?? 0);
+                $pf_summary = [
+                    'member_contribution' => $pf_sum('contribution', 'member'),
+                    'company_contribution' => $pf_sum('contribution', 'company'),
+                    'member_profit' => $pf_sum('profit', 'member'),
+                    'company_profit' => $pf_sum('profit', 'company'),
+                    'permanent_withdrawals' => $pf_sum('permanent_withdrawal', 'member') + $pf_sum('permanent_withdrawal', 'company'),
+                    'temporary_withdrawals' => $pf_sum('temporary_withdrawal', 'member') + $pf_sum('temporary_withdrawal', 'company'),
+                    'withdrawal_recovery' => $pf_sum('withdrawal_recovery', 'member') + $pf_sum('withdrawal_recovery', 'company'),
+                ];
+                $pf_summary['available'] = $pf_summary['member_contribution'] + $pf_summary['company_contribution'] + $pf_summary['member_profit'] + $pf_summary['company_profit']
+                    - $pf_summary['permanent_withdrawals'] - $pf_summary['temporary_withdrawals'] + $pf_summary['withdrawal_recovery'];
+            }
+
+            // service period: joining date to the end of this pay period
+            $service_period = '-';
+            if(!empty($slip['employee_doj'])){
+                $service = date_diff(date_create($slip['employee_doj']), date_create($slip['pc_date_to']));
+                $service_period = $service->y.' Year(s), '.$service->m.' Month(s), '.$service->d.' Day(s)';
+            }
+
+            $send_data = compact('login_user','payroll','extra_earning','extra_deduction','max_loop','download_button_show','payroll_create_by','payroll_disburse_by','setting','total_deduction','total_earning','salary_division','finance_name','leave_deductions','loan_carried','earning_lines','deduction_lines','tax_details','pf_summary','service_period');
 
             if(!empty($payroll) && ( ($payroll[0]['pc_employee_id'] == session('user_session') && $payroll[0]['disburse'] == 2) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) )){
 
@@ -561,6 +592,20 @@ class PayrollController extends Controller
            
         }
     }
+    // one payslip line per name: rows shown under the same name (e.g. installments of two loans) are added together
+    protected function merge_payslip_lines(array $rows, $title_key, $amount_key){
+        $merged = [];
+        foreach($rows as $row){
+            $label = CustomHelper::payroll_line_label($row[$title_key]);
+            if(isset($merged[$label])){
+                $merged[$label][$amount_key] += $row[$amount_key];
+            }else{
+                $merged[$label] = $row;
+            }
+        }
+        return array_values($merged);
+    }
+
     protected function payslip_pdf(Request $request){
 
         try{
@@ -592,11 +637,15 @@ class PayrollController extends Controller
                     $payroll_id = $request->input('pc_id');
                     $payroll = Payroll::join('tbl_employees','tbl_employees.employee_id','=','tbl_payroll_calculation.pc_employee_id')
                     ->leftjoin('tbl_personal_informations','tbl_personal_informations.employeeid','=','tbl_employees.employee_id')
+                    ->leftjoin('tbl_office_locations','tbl_office_locations.location_id','=','tbl_employees.employee_location')
                     ->where('pc_id','=',$payroll_id)->get()->toArray();
 
                     $extra_earning = PayrollEarning::where('pc_earning_pc_id','=',$payroll_id)->where('pc_earning_type',1)->get()->toArray();
 
                     $extra_deduction = PayrollDeduction::where('pc_deduction_pc_id','=',$payroll_id)->where('pc_deduction_type',1)->get()->toArray();
+
+                    $extra_earning = $this->merge_payslip_lines($extra_earning, 'pc_earning_title', 'pc_earning_amount');
+                    $extra_deduction = $this->merge_payslip_lines($extra_deduction, 'pc_deduction_title', 'pc_deduction_amount');
 
                     $max_loop = max([count($extra_earning),count($extra_deduction)]);
 
@@ -604,10 +653,11 @@ class PayrollController extends Controller
 
                     $extra_deduction_amount = array_sum(array_column($extra_deduction, 'pc_deduction_amount'));
 
-                    $payroll[0]['pc_employee_net_salary'] = $payroll[0]['pc_employee_net_salary'] + $extra_earning_amount - $extra_deduction_amount;
-
                     $total_earning = $extra_earning_amount + $payroll[0]['pc_employee_gross_salary'];
                     $total_deduction = $extra_deduction_amount + $payroll[0]['pc_late_early_deduction'] + $payroll[0]['pc_absent_deduction'] + $payroll[0]['pc_half_day_deduction'];
+
+                    // net never goes below zero (deductions more than the earnings: nothing is paid)
+                    $payroll[0]['pc_employee_net_salary'] = max(0, $payroll[0]['pc_employee_net_salary'] + $extra_earning_amount - $extra_deduction_amount);
 
                     $payroll_create_by = Employees::where('employee_id',$payroll[0]['pc_created_by'])->get(['employee_name','employee_code'])->toArray();
                     
@@ -684,7 +734,7 @@ class PayrollController extends Controller
                 and pc_year = '".$year."'
                 group by pc_id ,pc_deduction_pc_id,pc_earning_pc_id ");
             }else{
-                $fetch_employee_payroll = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`, `pc_month`, `pc_year`, `pc_date_from`, `pc_date_to`, `pc_employee_designation`, `pc_employee_department`, `pc_employee_job_title`, `pc_employee_bank_name`, `pc_employee_bank_account`, `pc_employee_bank_iban`, `pc_total_working_days`, `pc_present`, `pc_absent`, `pc_off_day`, `pc_leave`, `pc_holiday`, `pc_late_early`, `pc_half_day`, `pc_absent_deduction`, `pc_late_early_deduction`, `pc_half_day_deduction`, `pc_batch`, `pc_created_at`, `pc_updated_at` , disburse, employee_name, employee_code FROM `tbl_payroll_calculation` 
+                $fetch_employee_payroll = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,pc_employee_gross_salary, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)) as pc_employee_deduction , GREATEST(0, ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + pc_employee_gross_salary)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (pc_absent_deduction + pc_late_early_deduction + pc_half_day_deduction)))) as pc_employee_net_salary,`pc_id`, `pc_employee_id`, `pc_month`, `pc_year`, `pc_date_from`, `pc_date_to`, `pc_employee_designation`, `pc_employee_department`, `pc_employee_job_title`, `pc_employee_bank_name`, `pc_employee_bank_account`, `pc_employee_bank_iban`, `pc_total_working_days`, `pc_present`, `pc_absent`, `pc_off_day`, `pc_leave`, `pc_holiday`, `pc_late_early`, `pc_half_day`, `pc_absent_deduction`, `pc_late_early_deduction`, `pc_half_day_deduction`, `pc_batch`, `pc_created_at`, `pc_updated_at` , disburse, employee_name, employee_code FROM `tbl_payroll_calculation` 
                 left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 1 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_payroll_calculation.pc_id 
                 left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 1 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_payroll_calculation.pc_id 
                 join tbl_employees on tbl_employees.employee_id = tbl_payroll_calculation.pc_employee_id
@@ -787,6 +837,16 @@ class PayrollController extends Controller
                 }
             }
 
+            // calculate / generate only up to the current month (no future month payroll)
+            if(date('Y-m', strtotime($request->input('payroll_month'))) > date('Y-m')){
+                return response()->json([
+                    'status' => 'FALSE',
+                    'title' => "Can't Calculate A Future Month",
+                    'text' => "Choose ".date('F Y')." or an earlier month.",
+                    'icon' => "warning"
+                ]);
+            }
+
             if($request->input('calculatePayrollAmountForm')){
                 
                 $payroll_month = date('m',strtotime($request->input('payroll_month')));
@@ -809,7 +869,7 @@ class PayrollController extends Controller
 
             // mark all attendance half day if check out not mark
             
-            $fetch_system_setting = HrmSetting::get(['payroll_start_date','tax_deduction_apply','club_rule_apply','eobi_apply','eobi_minimum_wage','eobi_employee_percentage','pf_apply','pf_employee_percentage'])->toArray();
+            $fetch_system_setting = HrmSetting::get(['payroll_start_date','tax_deduction_apply','club_rule_apply','eobi_apply','eobi_minimum_wage','eobi_employee_percentage','pf_apply','pf_employee_percentage','pf_company_percentage'])->toArray();
 
             if((!empty($fetch_system_setting) && empty($fetch_system_setting[0]['payroll_start_date']) )){
 
@@ -841,6 +901,7 @@ class PayrollController extends Controller
                 $date_to = date('Y-m-d',strtotime($date_to.' -1 days' ));
 
                 $period_count = $this->days_count_between_two_dates($date_from,$date_to);
+                $period_end = $date_to;
 
                 if(!empty($date_to_update) && strtotime($date_to_update) < strtotime($date_to) ){
 
@@ -855,6 +916,7 @@ class PayrollController extends Controller
                 $date_from = date('Y-m-01',strtotime($date_to));
 
                 $period_count = $this->days_count_between_two_dates($date_from,$date_to);
+                $period_end = $date_to;
 
                 if(!empty($date_to_update) && strtotime($date_to_update) < strtotime($date_to) ){
 
@@ -865,14 +927,14 @@ class PayrollController extends Controller
             }
 
 
-            // return response if date not complete of payroll
-            if( time() < strtotime($date_to.'+2 days') &&  empty($request->input('calculatePayrollAmountForm')) ){
+            // the period locks on its last day (e.g. 24th); payroll can be generated from the next day (25th)
+            if( time() < strtotime($date_to.'+1 day') &&  empty($request->input('calculatePayrollAmountForm')) ){
 
                 return response()->json([
 
                 'status' => 'FALSE',
-                'title' => "Can't Generate Payroll",
-                'text' => "You can generate payroll until ".date('d-M-Y',strtotime($date_to.'+2 days')),
+                'title' => "Can't Generate Payroll Yet",
+                'text' => "This payroll period (".date('d-M-Y',strtotime($date_from))." to ".date('d-M-Y',strtotime($date_to)).") is not complete. You can generate it from ".date('d-M-Y',strtotime($date_to.'+1 day')).". Use Calculate to see an estimate now.",
                 'icon' => "warning"
 
                 ]);
@@ -1007,6 +1069,8 @@ class PayrollController extends Controller
                 if($attendance_count['present_count'] == 0 && $attendance_count['halfday_count'] == 0 && $attendance_count['late_count'] == 0 && $attendance_count['leave_count'] == 0){
                     $salary_of_employee['deduction_of_absent'] = $salary_of_employee['deduction_of_absent'] + $salary_of_employee['net_salary'] ;
                     $salary_of_employee['net_salary'] = '0';
+                    // nothing is paid, so no leave is taken either
+                    $salary_of_employee['late_halfday_deductions'] = [];
                 }
 
                 // one employee's payroll, leave deductions, loan / advance / expense / overtime / tax rows are saved together
@@ -1054,14 +1118,17 @@ class PayrollController extends Controller
 
                     $this->record_late_halfday_deductions($employee['employee_id'],$add_payroll->pc_id,$salary_of_employee['late_halfday_deductions']);
 
-                    $this->laon_deduction_from_salary($payroll_month,$payroll_year,$employee['employee_id'],$add_payroll->pc_id);
                     $this->advance_salary_deduction_from_salary($payroll_month,$payroll_year,$employee['employee_id'],$add_payroll->pc_id);
                     $this->employee_expense_reimburse($date_to,$employee['employee_id'],$add_payroll->pc_id);
                     $this->overtime_reimbursement($date_to,$employee['employee_id'],$add_payroll->pc_id);
 
                     if($tax_is_applied == 1 && $request->input('tax_deduction') == "yes"){
 
-                        $this->tax_deduction_from_salary($date_from,$date_to,$employee['employee_id'],$add_payroll->pc_id,$salary_of_employee['each_chunk_gross_salary'],$final_fiscal_year_in_slab);
+                        // tax on the monthly gross salary, not on what this month pays (absent days / joining do not change it)
+                        // + the company's provident fund contribution above the tax free limit (Sixth Schedule rule 3(a))
+                        $tax_salary = $salary_of_employee['tax_salary'] ?? $salary_of_employee['each_chunk_gross_salary'];
+                        $tax_salary += $this->provident_fund_taxable_excess($tax_salary, $fetch_system_setting[0] ?? []);
+                        $this->tax_deduction_from_salary($date_from,$date_to,$employee['employee_id'],$add_payroll->pc_id,$tax_salary,$final_fiscal_year_in_slab);
 
                     }
 
@@ -1074,7 +1141,25 @@ class PayrollController extends Controller
                             $add_payroll_deduction->pc_deduction_amount = $deduction_amount;
                             $add_payroll_deduction->save();
                         }
+
+                        // provident fund: employee share (deducted above) + the company's equal share go into the employee's fund
+                        $provident_fund = $this->provident_fund_shares($salary_of_employee['each_chunk_gross_salary'],$fetch_system_setting[0] ?? []);
+                        if($provident_fund['member'] > 0 || $provident_fund['company'] > 0){
+                            $add_provident_fund = new ProvidentFund();
+                            $add_provident_fund->pf_employee_id = $employee['employee_id'];
+                            $add_provident_fund->pf_payroll_id = $add_payroll->pc_id;
+                            $add_provident_fund->pf_type = 'contribution';
+                            $add_provident_fund->pf_member_amount = $provident_fund['member'];
+                            $add_provident_fund->pf_company_amount = $provident_fund['company'];
+                            $add_provident_fund->pf_date = $date_to;
+                            $add_provident_fund->pf_created_by = session('user_session');
+                            $add_provident_fund->pf_created_at = date('Y-m-d H:i:s');
+                            $add_provident_fund->save();
+                        }
                     }
+
+                    // loan installments last: only from the pay that is left, the rest is carried to next month
+                    $this->laon_deduction_from_salary($payroll_month,$payroll_year,$employee['employee_id'],$add_payroll->pc_id,$salary_of_employee['net_salary']);
                 });
 
                 $generated_payroll++;
@@ -1095,7 +1180,10 @@ class PayrollController extends Controller
 
             if($is_estimate){
 
-                $title = "Payroll Estimate Amount .<br> Total Payroll = ".round($total_payroll,2).' '.$currency[0]['system_currency']  .$skipped_text;
+                $title = "Payroll Estimate (not saved).<br> Total Payroll = ".round($total_payroll,2).' '.$currency[0]['system_currency']  .$skipped_text;
+                if($date_to < $period_end){
+                    $title .= "<br><span class='text-muted fs-6'>Period ".date('d-M-Y',strtotime($date_from))." to ".date('d-M-Y',strtotime($period_end))." is still running: counted up to today. It can be generated from ".date('d-M-Y',strtotime($period_end.'+1 day')).".</span>";
+                }
                 $icon = 'info';
             
             }else{
@@ -1185,12 +1273,33 @@ class PayrollController extends Controller
 
 
 
-    protected function laon_deduction_from_salary($month,$year,$employee_id,$payroll_id){
+    // what was not deducted in the last payroll of a loan (salary not enough), less cash installments paid after it
+    protected function loan_carried_forward($loan_id){
+
+        $last_payroll_installment = LoanInstallment::where('loan_installment_loan_id', $loan_id)->whereNotNull('loan_installment_payroll_id')->orderByDesc('loan_installment_id')->first();
+
+        if(empty($last_payroll_installment) || $last_payroll_installment->loan_installment_carried <= 0){
+            return 0;
+        }
+
+        $paid_after = LoanInstallment::where('loan_installment_loan_id', $loan_id)->whereNull('loan_installment_payroll_id')->where('loan_installment_id', '>', $last_payroll_installment->loan_installment_id)->sum('loan_installment_amount');
+
+        return max(0, $last_payroll_installment->loan_installment_carried - $paid_after);
+    }
+
+    // $net_salary: this month's pay before loans. A loan takes only what is left after the other deductions;
+    // the part it could not take is carried and added to the next month's installment.
+    protected function laon_deduction_from_salary($month,$year,$employee_id,$payroll_id,$net_salary = null){
 
 
         $loan_amount = 0;
-    
-        $get_loan_records = Loan::where('employee_code',$employee_id)->where('loan_status','!=','4')->whereRaw('STR_TO_DATE(CONCAT(loan_deduction_start,"-01"),"%Y-%m-%d") <= "'.$year.'-'.$month.'-01"')->get()->toArray();
+
+        $available = null;
+        if($net_salary !== null){
+            $available = max(0, (float) $net_salary + PayrollEarning::where('pc_earning_pc_id', $payroll_id)->sum('pc_earning_amount') - PayrollDeduction::where('pc_deduction_pc_id', $payroll_id)->sum('pc_deduction_amount'));
+        }
+
+        $get_loan_records = Loan::where('employee_code',$employee_id)->where('loan_status','!=','4')->whereRaw('STR_TO_DATE(CONCAT(loan_deduction_start,"-01"),"%Y-%m-%d") <= "'.$year.'-'.$month.'-01"')->orderBy('loan_id')->get()->toArray();
 
         foreach($get_loan_records as $get_loan_record){
 
@@ -1229,20 +1338,36 @@ class PayrollController extends Controller
 
             }
 
-            // insert and update the record
+            // this month's installment plus what earlier months could not take, never more than the loan left
+            $loan_due = round(min((float) $get_loan_record['loan_remaining_amount'], $loan_amount + $this->loan_carried_forward($get_loan_record['loan_id'])), 2);
+
+            if($loan_due <= 0){
+                continue;
+            }
+
+            // only what the salary can still cover
+            $loan_amount = ($available === null) ? $loan_due : round(min($loan_due, $available), 2);
+            $loan_carried = round($loan_due - $loan_amount, 2);
+            if($available !== null){
+                $available -= $loan_amount;
+            }
+
+            // insert and update the record (also when nothing could be taken, so the shortfall is carried)
+
+            $add_installment = new LoanInstallment();
+            $add_installment->loan_installment_loan_id = $get_loan_record['loan_id'];
+            $add_installment->loan_installment_amount = $loan_amount;
+            $add_installment->loan_installment_due = $loan_due;
+            $add_installment->loan_installment_carried = $loan_carried;
+            $add_installment->loan_installment_date = date('Y-m-d H:i:s');
+            $add_installment->loan_installment_payroll_id = $payroll_id;
+            $add_installment->save();
 
             if($loan_amount>0){
 
-                $add_installment = new LoanInstallment();
-                $add_installment->loan_installment_loan_id = $get_loan_record['loan_id'];
-                $add_installment->loan_installment_amount = $loan_amount;
-                $add_installment->loan_installment_date = date('Y-m-d H:i:s');
-                $add_installment->loan_installment_payroll_id = $payroll_id;
-                $add_installment->save();
+                $loan_remaining_amount = round($get_loan_record['loan_remaining_amount']-$loan_amount, 2);
 
-                $loan_remaining_amount = $get_loan_record['loan_remaining_amount']-$loan_amount;
-
-                if($loan_remaining_amount == 0){
+                if($loan_remaining_amount <= 0){
 
                     $upadate_loan_row = [
                         'loan_remaining_amount'=>$loan_remaining_amount,
@@ -1530,7 +1655,11 @@ class PayrollController extends Controller
                     // slabs follow each other (next starts at highest + 1): a yearly income with paise between two slabs belongs to the upper one
                     if($tax_slab['ts_lowest_yearly_income'] - 1 < $gross_salary_of_year && $tax_slab['ts_highest_yearly_income'] >= $gross_salary_of_year ){
         
-                        $total_tax_of_year = ($gross_salary_of_year - $tax_slab['ts_lowest_yearly_income']) * ($tax_slab['ts_deduction_percentage']/100) + $tax_slab['ts_deduction_amount'] ;
+                        // rate applies to the income exceeding the previous slab (slab 1,200,001 - ... -> income above 1,200,000)
+                        $total_tax_of_year = ($gross_salary_of_year - max(0, $tax_slab['ts_lowest_yearly_income'] - 1)) * ($tax_slab['ts_deduction_percentage']/100) + $tax_slab['ts_deduction_amount'] ;
+
+                        // kept for the payslip's income tax details
+                        Payroll::where('pc_id',$payroll_id)->update(['pc_tax_taxable_income' => round($gross_salary_of_year,2), 'pc_tax_slab_percentage' => $tax_slab['ts_deduction_percentage'], 'pc_tax_yearly' => round(max(0,$total_tax_of_year),2)]);
 
                         if($total_tax_of_year>0){
         
@@ -1574,7 +1703,11 @@ class PayrollController extends Controller
                     // slabs follow each other (next starts at highest + 1): a yearly income with paise between two slabs belongs to the upper one
                     if($tax_slab['ts_lowest_yearly_income'] - 1 < $gross_salary_of_year && $tax_slab['ts_highest_yearly_income'] >= $gross_salary_of_year ){
         
-                        $total_tax_of_year = ($gross_salary_of_year - $tax_slab['ts_lowest_yearly_income']) * ($tax_slab['ts_deduction_percentage']/100) + $tax_slab['ts_deduction_amount'] ;
+                        // rate applies to the income exceeding the previous slab (slab 1,200,001 - ... -> income above 1,200,000)
+                        $total_tax_of_year = ($gross_salary_of_year - max(0, $tax_slab['ts_lowest_yearly_income'] - 1)) * ($tax_slab['ts_deduction_percentage']/100) + $tax_slab['ts_deduction_amount'] ;
+
+                        // kept for the payslip's income tax details
+                        Payroll::where('pc_id',$payroll_id)->update(['pc_tax_taxable_income' => round($gross_salary_of_year,2), 'pc_tax_slab_percentage' => $tax_slab['ts_deduction_percentage'], 'pc_tax_yearly' => round(max(0,$total_tax_of_year),2)]);
                         
                         if($total_tax_of_year>0){
         
@@ -2041,7 +2174,7 @@ class PayrollController extends Controller
             }else{
                 return response()->json([
                     'status' => 'FALSE',
-                    'title' => "You have not calculate your's monthly payroll, because your earning type is daily wage.",
+                    'title' => "Your payroll can't be calculated: no monthly salary is set for you.",
                     'icon' => "warning",
                     'reload' => "TRUE",
                 ]);
@@ -2147,6 +2280,9 @@ class PayrollController extends Controller
                 // leaves taken for late comings / half days go back to the employee's balance
                 LeaveDeduction::where('ld_payroll_id',$delete_payroll_id)->delete();
 
+                // this payroll's provident fund contribution leaves the fund
+                ProvidentFund::where('pf_payroll_id',$delete_payroll_id)->delete();
+
                 $delete_deduction = PayrollDeduction::where('pc_deduction_pc_id',$delete_payroll_id)->where('pc_deduction_type',1)->delete();
                 $delete_earning = PayrollEarning::where('pc_earning_pc_id',$delete_payroll_id)->where('pc_earning_type',1)->delete();
 
@@ -2181,1428 +2317,6 @@ class PayrollController extends Controller
 
         return $any_deleted;
 
-    }
-
-    // daily wages work start
-
-    protected function daily_wages_payroll(Request $request){
-        try{
-
-            $title = Self::MAIN_TITLE_DAILY;
-
-            $login_user = $this->get_login_user_detail();
-            
-            $dynamic_years = $this->dynamic_year_drop_down();
-
-            if(!empty($request->input('m')) && !empty($request->input('y'))){
-                $month = $request->input('m');
-                $year = $request->input('y');
-            }else{
-                $month = date('m');
-                $year = date('Y');
-            }
-
-            $all_department = Department::get(['department_id','department_name'])->toArray();
-
-            // $daily_wages = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as dw_employee_extra_daily_wages  ,dw_employee_gross_daily_wages, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as dw_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as dw_employee_net_daily_wages,`dw_id`, `dw_employee_id`,`dw_disburse`,dw_of_date,dw_created_at FROM `tbl_daily_wages` 
-            // left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-            // left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-            // where date_format(dw_of_date,'%m') = ".$month."
-            // and date_format(dw_of_date,'%Y') = ".$year."
-            // group by dw_id ,pc_deduction_pc_id,pc_earning_pc_id");
-
-            $daily_wages = DB::select("SELECT sum(( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ))) as dw_employee_extra_daily_wages  ,sum(dw_employee_gross_daily_wages) as dw_employee_gross_daily_wages, sum( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as dw_employee_deduction , sum((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as dw_employee_net_daily_wages,`dw_id`, `dw_employee_id`,`dw_disburse`,dw_of_date,dw_created_at,count(dw_id) as wage_count FROM `tbl_daily_wages` 
-            left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-            left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-            where date_format(dw_of_date,'%m') = ".$month."
-            and date_format(dw_of_date,'%Y') = ".$year."
-            group by dw_employee_id;");
-            
-            $daily_wages = json_decode(json_encode($daily_wages), true);
-            
-            $daily_wages_employee = Employees::
-            where('employee_earning_type',2) //daily earning type
-            ->where('employee_isactive',1) //active employee
-            ->get(['employee_id','employee_code','employee_name'])->toArray();
-
-            $fetch_employee_disburse = DailyWages::join('tbl_employees','tbl_employees.employee_id','=','tbl_daily_wages.dw_employee_id')
-            ->whereRaw("date_format(dw_of_date,'%m') = ".$month)
-            ->whereRaw("date_format(dw_of_date,'%Y') = ".$year)
-            ->where('dw_disburse', 1)
-            ->get(['dw_id','employee_name','employee_code','dw_of_date'])->toArray();
-
-            $send_data = compact('title','login_user','daily_wages_employee','daily_wages','month','year','fetch_employee_disburse','all_department','dynamic_years');
-            
-            return view('payroll.daily-wages-payroll', $send_data);
-
-        }catch(\Exception $e){
-
-            $this->create_error_log('Daily Wages', $e);
-            $send_data = compact('title','login_user');
-            return view('errors.500');
-
-        }finally{
-
-            ActivityTracker::track_activity('Daily Wages');
-          
-        }
-    }
-
-    protected function individual_generate_daily_wages(Request $request){
-
-    try{
-        $currency = CustomHelper::hcm_system_currency();
-
-        $validator = Validator::make($request->all(), [
-            'days_assign' => 'required|in:multiple,single,till',
-            'wage_date' => ($request->input('days_assign') == 'single' ) ? 'required|date_format:Y-m-d|before_or_equal:'.date('Y-m-d',strtotime('-2 days')) : '',
-            'from_date' => ($request->input('days_assign') == 'multiple' ) ? 'required|date_format:Y-m-d|before:to_date' : '',
-            'to_date' => ($request->input('days_assign') == 'multiple' ) ? 'required|date_format:Y-m-d|before_or_equal:'.date('Y-m-d',strtotime('-2 days')) : '',
-            'employee_id' => 'required_without:department',
-            'department' => 'array'
-        ]);
-        
-        if($validator->fails()) {
-            foreach($validator->errors()->all() as $error){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'title' => $error,
-                    'text' => "",
-                    'icon' => "warning"
-                ]);
-            }
-        }
-        $setting = HrmSetting::orderBy('setting_id','DESC')->get(['daily_wages_late_deduction','daily_wages_half_deduction'])->toArray();
-        $login_user = $this->get_login_user_detail();
-
-        if($request->input('days_assign') == 'multiple'){
-            $to_date = new DateTime($request->input('to_date'));
-            $to_date->modify('+1 day');
-            $period = new DatePeriod(
-                new DateTime($request->input('from_date')),
-                new DateInterval('P1D'),
-                $to_date
-            );
-            $dates_array = [];
-            foreach ($period as $date) {
-                array_push($dates_array,$date->format('Y-m-d'));
-            }
-        }elseif($request->input('days_assign') == 'till'){
-
-            if(empty($request->input('department'))){
-                $employee_doj = Employees::where('employee_id',$request->input('employee_id'))->get(['employee_doj'])->toArray();
-
-                $to_date = new DateTime(date('Y-m-d',strtotime('-2 days')));
-                $to_date->modify('+1 day');
-                $period = new DatePeriod(
-                    new DateTime($employee_doj[0]['employee_doj']),
-                    new DateInterval('P1D'),
-                    $to_date
-                );
-                $dates_array = [];
-                foreach ($period as $date) {
-                    array_push($dates_array,$date->format('Y-m-d'));
-                }
-            }else{
-
-                $employee_doj = Employees::whereIn('employee_department',$request->input('department'))->where('employee_earning_type',2)->orderBy('employee_doj','asc')->pluck('employee_doj')->toArray();
-
-                $to_date = new DateTime(date('Y-m-d',strtotime('-2 days')));
-                $to_date->modify('+1 day');
-                $period = new DatePeriod(
-                    new DateTime($employee_doj[0]),
-                    new DateInterval('P1D'),
-                    $to_date
-                );
-                $dates_array = [];
-                foreach ($period as $date) {
-                    array_push($dates_array,$date->format('Y-m-d'));
-                }
-
-            }
-
-        }else{
-            $dates_array = [$request->input('wage_date')];
-        }   
-        
-        if(!empty($request->input('employee_id'))){
-            $employee_array = [$request->input('employee_id')];
-        }else{
-            $employee_array = Employees::whereIn('employee_department',$request->input('department'))->where('employee_earning_type',2)->pluck('employee_id')->toArray();
-        }
-        $get_employees = Employees::
-        join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-        ->join('tbl_personal_informations','tbl_personal_informations.employeeid','tbl_employees.employee_id')
-        ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-        ->where('employee_earning_type',2) //monthly earning time
-        ->whereIn('employee_id',$employee_array) 
-        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
-
-        if($request->input('days_assign') == 'single' && !empty($request->input('employee_id'))){
-            foreach($get_employees as $employee){
-
-                $off_days_array = [];
-                
-                if(!empty($employee) && !empty($employee['employee_offdays'])){
-                    $off_days_array = explode(",",$employee['employee_offdays']);
-                }
-                
-                foreach($dates_array as $date){
-
-                    $check_wages_excite = DailyWages::where('dw_employee_id',$employee['employee_id'])->where('dw_of_date',$date)->get(['dw_employee_id'])->toArray();
-
-                    if(empty($check_wages_excite)){
-                        $att_of_employee = $this->employee_attendance_by_date($employee['employee_id'],$date,$off_days_array);
-
-                        if($att_of_employee != "Absent"){
-
-                            $wage_of_date = $this->wage_of_date($employee['employee_id'],$date);
-                        
-                            if(!empty($wage_of_date)){
-
-                                if( strtotime($employee['employee_doj']) <=  strtotime($date) ){
-
-                                }else{
-                                    return response()->json([
-                                        'status' => 'FALSE',
-                                        'title' => "The date of join of employee is greater than ".date('d-M-Y',strtotime($date)),
-                                        'text' => "",
-                                        'icon' => "warning"
-                                    ]);
-                                }
-                            }else{
-                                return response()->json([
-                                    'status' => 'FALSE',
-                                    'title' => "Daily wage of employee is not set of ".date('d-M-Y',strtotime($date)),
-                                    'text' => "",
-                                    'icon' => "warning"
-                                ]);
-                            }
-                        }else{
-                            return response()->json([
-                                'status' => 'FALSE',
-                                'title' => "The employee is absent on ".date('d-M-Y',strtotime($date)),
-                                'text' => "",
-                                'icon' => "warning"
-                            ]);
-                        }
-                    }else{
-
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'title' => "Wage already exist on ".date('d-M-Y',strtotime($date)),
-                            'text' => "",
-                            'icon' => "warning"
-                        ]);
-                    }
-                }
-            }
-        }
-
-        $any_record = 0;
-
-        foreach($get_employees as $employee){
-
-            $off_days_array = [];
-            
-            if(!empty($employee) && !empty($employee['employee_offdays'])){
-                $off_days_array = explode(",",$employee['employee_offdays']);
-            }
-            $entry = 0;
-            $total_wages = 0;
-            foreach($dates_array as $date){
-
-                $check_wages_excite = DailyWages::where('dw_employee_id',$employee['employee_id'])->where('dw_of_date',$date)->get()->toArray();
-
-                if(empty($check_wages_excite)){
-                    $att_of_employee = $this->employee_attendance_by_date($employee['employee_id'],$date,$off_days_array);
-
-                    if($att_of_employee != "Absent"){
-
-                        $wage_of_date = $this->wage_of_date($employee['employee_id'],$date);
-                    
-                        if(!empty($wage_of_date)){
-
-                            if( strtotime($employee['employee_doj']) <=  strtotime($date) ){
-
-                                $employee_gross_daily_wages = $wage_of_date[0]['salary_amount'];
-                                $deduction_amount = $wage_of_date[0]['salary_amount'] * $this->rate_by_attendance($att_of_employee,$setting);
-                                $employee_net_daily_wages = $wage_of_date[0]['salary_amount']  - $wage_of_date[0]['salary_amount'] * $this->rate_by_attendance($att_of_employee,$setting);
-
-                                $add_daily_wages = new DailyWages();
-                                $add_daily_wages->dw_employee_id = $employee['employee_id'];
-                                $add_daily_wages->dw_of_date = $date;
-                                $add_daily_wages->dw_created_by = $login_user[0]['employee_id'];
-                                $add_daily_wages->dw_employee_designation = $employee['designation_name'];
-                                $add_daily_wages->dw_employee_department = $employee['department_name'];
-                                $add_daily_wages->dw_employee_job_title = $employee['employee_jobtitle'];
-                                $add_daily_wages->dw_employee_net_daily_wages = $employee_net_daily_wages;
-                                $add_daily_wages->dw_employee_gross_daily_wages = $employee_gross_daily_wages;
-                                $add_daily_wages->dw_employee_bank_name = $employee['bankname'];
-                                $add_daily_wages->dw_employee_bank_account = $employee['accountno'];
-                                $add_daily_wages->dw_employee_bank_iban = $employee['accountno'];
-                                $add_daily_wages->dw_present = ($att_of_employee == "Present") ? 1 : 0;
-                                $add_daily_wages->dw_absent = ($att_of_employee == "Absent") ? 1 : 0;
-                                $add_daily_wages->dw_off_day = ($att_of_employee == "Off Day") ? 1 : 0;
-                                $add_daily_wages->dw_leave = ($att_of_employee == "Leave") ? 1 : 0;
-                                $add_daily_wages->dw_holiday = ($att_of_employee == "Holiday") ? 1 : 0;
-                                $add_daily_wages->dw_late_early = ($att_of_employee == "Early out" || $att_of_employee == "Late Coming" ) ? 1 : 0;
-                                $add_daily_wages->dw_half_day = ($att_of_employee == "Half day") ? 1 : 0;
-                                $add_daily_wages->dw_absent_deduction = ($att_of_employee == "Absent") ? $deduction_amount : 0;
-                                $add_daily_wages->dw_late_early_deduction = ($att_of_employee == "Early out" || $att_of_employee == "Late Coming" ) ? $deduction_amount : 0;
-                                $add_daily_wages->dw_half_day_deduction = ($att_of_employee == "Half day") ? $deduction_amount : 0;
-                                $add_daily_wages->dw_disburse = 1;
-                                $add_daily_wages->dw_created_at = date('Y-m-d H:i:s');
-                                $add_daily_wages->save();
-                                if($entry == 0){
-                                    $id = $add_daily_wages->dw_id;
-                                }
-                                $add_daily_wages->dw_batch = $id;
-                                $add_daily_wages->save();
-                                $entry++;
-                                $any_record++;
-                                $total_wages += $employee_net_daily_wages;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-       
-        if($any_record > 0){
-
-            return response()->json([
-                'status' => 'TRUE',
-                'title' => "Daily wages of employee created successfully",
-                'text' => "Daily wages amount total wages = ".number_format($total_wages).' '.$currency[0]['system_currency'],
-                'icon' => "success",
-                'link' => "daily-wages-payroll?m=".date('m',strtotime($dates_array[0]))."&y=".date('Y',strtotime($dates_array[0]))
-            ]);
-
-        }else{
-            return response()->json([
-                'status' => 'FALSE',
-                'title' => "There's no employee or ungenerated wages employee.",
-                'icon' => "warning"
-            ]);
-        }
-        
-        }catch(\Exception $e){
-            $this->create_error_log('Daily Wages Payroll', $e);
-
-            if(!config('app.debug')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'title' => "Something went wrong. Please try again.",
-                    'icon' => "warning"
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'title' => "Something went wrong. Please try again.",
-                    'icon' => "warning",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-            }
-        }finally{
-            ActivityTracker::track_activity('Daily Wages Payroll');
-        }
-    }
-
-    protected function calculate_daily_wages(Request $request){
-
-        try{
-            $currency = CustomHelper::hcm_system_currency();
-
-            $validator = Validator::make($request->all(), [
-                'days_assign' => 'required|in:multiple,single,till',
-                'wage_date' => ($request->input('days_assign') == 'single' ) ? 'required|date_format:Y-m-d|before_or_equal:'.date('Y-m-d',strtotime('-2 days')) : '',
-                'from_date' => ($request->input('days_assign') == 'multiple' ) ? 'required|date_format:Y-m-d|before:to_date' : '',
-                'to_date' => ($request->input('days_assign') == 'multiple' ) ? 'required|date_format:Y-m-d|before_or_equal:'.date('Y-m-d',strtotime('-2 days')) : '',
-                'employee_id' => 'required_without:department',
-                'department' => 'array'
-            ]);
-    
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'title' => $error,
-                        'text' => "",
-                        'icon' => "warning"
-                    ]);
-                }
-            }
-            $setting = HrmSetting::orderBy('setting_id','DESC')->get(['daily_wages_late_deduction','daily_wages_half_deduction'])->toArray();
-            $login_user = $this->get_login_user_detail();
-    
-            if($request->input('days_assign') == 'multiple'){
-                $to_date = new DateTime($request->input('to_date'));
-                $to_date->modify('+1 day');
-                $period = new DatePeriod(
-                    new DateTime($request->input('from_date')),
-                    new DateInterval('P1D'),
-                    $to_date
-                );
-                $dates_array = [];
-                foreach ($period as $date) {
-                    array_push($dates_array,$date->format('Y-m-d'));
-                }
-            }elseif($request->input('days_assign') == 'till'){
-    
-                if(empty($request->input('department'))){
-                    $employee_doj = Employees::where('employee_id',$request->input('employee_id'))->get(['employee_doj'])->toArray();
-    
-                    $to_date = new DateTime(date('Y-m-d',strtotime('-2 days')));
-                    $to_date->modify('+1 day');
-                    $period = new DatePeriod(
-                        new DateTime($employee_doj[0]['employee_doj']),
-                        new DateInterval('P1D'),
-                        $to_date
-                    );
-                    $dates_array = [];
-                    foreach ($period as $date) {
-                        array_push($dates_array,$date->format('Y-m-d'));
-                    }
-                }else{
-    
-                    $employee_doj = Employees::whereIn('employee_department',$request->input('department'))->where('employee_earning_type',2)->orderBy('employee_doj','asc')->pluck('employee_doj')->toArray();
-    
-                    $to_date = new DateTime(date('Y-m-d',strtotime('-2 days')));
-                    $to_date->modify('+1 day');
-                    $period = new DatePeriod(
-                        new DateTime($employee_doj[0]),
-                        new DateInterval('P1D'),
-                        $to_date
-                    );
-                    $dates_array = [];
-                    foreach ($period as $date) {
-                        array_push($dates_array,$date->format('Y-m-d'));
-                    }
-    
-                }
-    
-            }else{
-                $dates_array = [$request->input('wage_date')];
-            }   
-            
-            if(!empty($request->input('employee_id'))){
-                $employee_array = [$request->input('employee_id')];
-            }else{
-                $employee_array = Employees::whereIn('employee_department',$request->input('department'))->where('employee_earning_type',2)->pluck('employee_id')->toArray();
-            }
-            $get_employees = Employees::
-            join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-            ->join('tbl_personal_informations','tbl_personal_informations.employeeid','tbl_employees.employee_id')
-            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->where('employee_earning_type',2) //monthly earning time
-            ->whereIn('employee_id',$employee_array) 
-            ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
-    
-            $any_record = 0;
-    
-            foreach($get_employees as $employee){
-    
-                $off_days_array = [];
-                
-                if(!empty($employee) && !empty($employee['employee_offdays'])){
-                    $off_days_array = explode(",",$employee['employee_offdays']);
-                }
-                $total_wages = 0 ;
-                foreach($dates_array as $date){
-    
-                    $check_wages_excite = DailyWages::where('dw_employee_id',$employee['employee_id'])->where('dw_of_date',$date)->get()->toArray();
-    
-                    if(empty($check_wages_excite)){
-                        $att_of_employee = $this->employee_attendance_by_date($employee['employee_id'],$date,$off_days_array);
-    
-                        if($att_of_employee != "Absent"){
-    
-                            $wage_of_date = $this->wage_of_date($employee['employee_id'],$date);
-                        
-                            if(!empty($wage_of_date)){
-    
-                                if( strtotime($employee['employee_doj']) <=  strtotime($date) ){
-    
-                                    $employee_net_daily_wages = $wage_of_date[0]['salary_amount']  - $wage_of_date[0]['salary_amount'] * $this->rate_by_attendance($att_of_employee,$setting);
-                                    $total_wages += $employee_net_daily_wages;
-                                    $any_record++;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-           
-            if($any_record > 0){
-    
-                return response()->json([
-                    'status' => 'TRUE',
-                    'title' => "Daily wages estimate amount <br> Total Wages = ".number_format($total_wages).' '.$currency[0]['system_currency'],
-                    'text' => "",
-                    'icon' => "success"
-                ]);
-    
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'title' => "There's no employee or ungenerated wages employee.",
-                    'icon' => "warning"
-                ]);
-            }
-            
-            }catch(\Exception $e){
-                $this->create_error_log('Calculate Daily Wages Payroll', $e);
-
-                if(!config('app.debug')){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'title' => "Something went wrong. Please try again.",
-                        'icon' => "warning",
-                    ]);
-                }else{
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'title' => "Something went wrong. Please try again.",
-                        'icon' => "warning",
-                        'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                    ]);
-                }
-
-            }finally{
-                ActivityTracker::track_activity('Calculate Daily Wages Payroll');
-            }
-        }
-
-    protected function get_employee_daily_wages(Request $request){
-        
-        $date  = $request->input('wage_date');
-        $get_employees = Employees::
-        join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-        ->join('tbl_personal_informations','tbl_personal_informations.employeeid','tbl_employees.employee_id')
-        ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-        ->where('employee_earning_type',2) //monthly earning time 
-        ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
-
-
-        if( $date != "multiple"){
-            $get_payroll_generated_employee = DailyWages::where('dw_of_date',$date)->pluck('dw_employee_id')->toArray();
-        }else{
-            $get_payroll_generated_employee = [];
-        }
-
-
-        $result[] = '<option value="">Select Name</option>';
-        if(!empty($get_employees)){
-
-            foreach($get_employees as $employee){
-                if($date != "multiple"){
-                    if( strtotime($employee['employee_doj']) >  strtotime($date) ){
-                        continue;
-                    }
-                }
-                if(!in_array($employee['employee_id'],$get_payroll_generated_employee)){
-                    $result[] .= '<option value="'.$employee['employee_id'].'">'.$employee['employee_code']. ' - '. $employee['employee_name'].'</option>';
-                }
-            }
-        }
-        return response()->json([
-
-            'status' => "TRUE",
-            'get_employees' => $result
-        
-        ]);
-
-    }
-
-    protected function employee_attendance_by_date($employee_id,$date,$off_days_array){
-        
-        $attendance_of_date = Attendance::where('att_employee_id',$employee_id)->where('att_for_date',date('d',strtotime($date)))->where('att_for_month',date('m',strtotime($date)))->where('att_for_year',date('Y',strtotime($date)))->get(['att_check_overall_status'])->toArray();
-        
-        $manage_leaves = LeaveManagement::pluck('leave_name')->toArray();
-
-        if(!empty($attendance_of_date)){
-            if (substr($attendance_of_date[0]['att_check_overall_status'] , 0, 7) == 'Holiday'){
-                
-                $att_of_employee = 'Holiday';
-
-            }elseif(in_array($attendance_of_date[0]['att_check_overall_status'],$manage_leaves)){
-
-                $att_of_employee =  "Leave";
-
-            }else{
-                $att_of_employee = $attendance_of_date[0]['att_check_overall_status'];
-            }
-        }else{
-            
-            $days = date('l',strtotime($date));
-
-            if(in_array($days,$off_days_array)){
-                $att_of_employee = "Off Day";
-            }else{
-                $att_of_employee = "Absent";
-            }
-        }
-        return $att_of_employee ;
-    }
-
-    protected function wage_of_date($employee,$date){
-
-        $salary_period = EmployeeSalary::where('salary_employee_id',$employee)
-        ->where('salary_earning_type',2)
-        ->where('salary_effected_date','<=',$date)
-        ->orderBy('salary_effected_date','DESC')->limit(1)->get()->toArray();
-
-        return $salary_period;
-    }    
-
-    protected function rate_by_attendance($att_of_employee,$setting){
-
-        $late_deduction_rate = $setting[0]['daily_wages_late_deduction'];
-        $half_deduction_rate = $setting[0]['daily_wages_half_deduction'];
-        $absent_deduction_rate = 1;
-        
-        if($att_of_employee == "Early out" ||  $att_of_employee == "Late Coming"){
-            return $late_deduction_rate;
-        }elseif($att_of_employee == "Absent"){
-            return $absent_deduction_rate;
-        }elseif($att_of_employee == "Half day"){
-            return $half_deduction_rate;
-        }else{
-            return 0;
-        }
-
-    }
-
-    protected function delete_daily_wages(Request $request){
-
-        try{
-            $validator = Validator::make($request->all(), [
-                'daily_wage_id' => 'required',
-            ]);
-
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => $error,
-                    ]);
-                }
-            }
-            $daily_wages = DailyWages::where('dw_id',$request->input('daily_wage_id'))->get(['dw_disburse'])->toArray();
-            if(!empty($daily_wages)){
-                if($daily_wages[0]['dw_disburse'] == 1){
-
-
-                    $delete_wage = $this->delete_daily_wages_main($request->input('daily_wage_id')); 
-                    
-                    if($delete_wage == 1){
-                        return response()->json([
-                            'status' => 'TRUE',
-                            'msg' =>  "Wage deleted successfully.",
-                        ]);
-                    }else{
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "Something went wrong. Please try again.",
-                        ]);
-                    }
-                }else{
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => "Wage disbursed, you can't delete this wage.",
-                    ]);
-                }
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Wage already deleted.",
-                ]);
-            }
-        
-        }catch(\Exception $e){
-
-            $this->create_error_log("Delete Daily Wage", $e);
-
-            if(!config('app.debug')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-            }
-
-        }finally{
-
-            ActivityTracker::track_activity('Delete Daily Wage');
-
-        }
-    }
-
-    protected function pdf_daily_wages(Request $request){
-
-        try{
-
-            $login_user = $this->get_login_user_detail();
-
-            $all_dw_id = DailyWages::where('dw_id',$request->wage_id)->get(['dw_batch'])->toArray();   
-
-            $daily_wages = DailyWages::join('tbl_employees','tbl_employees.employee_id','=','tbl_daily_wages.dw_employee_id')->where('dw_batch',$all_dw_id[0]['dw_batch'])->get()->toArray(); 
-            
-            $download_button_show = true;  
-            if($request->input('download')=="TRUE"){
-                $download_button_show = false;
-            }
-            if(!empty($daily_wages)){
-
-                $all_dw_id = array_column($daily_wages,'dw_id');
-
-                $extra_earning = PayrollEarning::whereIn('pc_earning_pc_id',$all_dw_id)->where('pc_earning_type',2)->get()->toArray();
-        
-                $extra_deduction = PayrollDeduction::whereIn('pc_deduction_pc_id',$all_dw_id)->where('pc_deduction_type',2)->get()->toArray();
-            
-            }
-            $max_loop = max([count($extra_earning),count($extra_deduction)]);
-
-            $extra_earning_amount = array_sum(array_column($extra_earning, 'pc_earning_amount'));
-
-            $extra_deduction_amount = array_sum(array_column($extra_deduction, 'pc_deduction_amount'));
-
-            $total_earning = $extra_earning_amount + array_sum(array_column($daily_wages,'dw_employee_gross_daily_wages'));
-            $total_deduction = $extra_deduction_amount + array_sum(array_column($daily_wages,'dw_late_early_deduction')) + array_sum(array_column($daily_wages,'dw_absent_deduction')) + array_sum(array_column($daily_wages,'dw_half_day_deduction'));
-
-        
-            $setting = HrmSetting::orderBy('setting_id','DESC')->get(['name_on_payslip','signature_on_payslip'])->toArray();
-
-            $finance_name = '';
-            if(!empty($setting) && !empty($setting[0]['name_on_payslip'])){
-                $finance_name = Employees::join('tbl_departments','tbl_departments.department_id','=','employee_department')->join('tbl_designations','tbl_designations.designation_id','=','employee_designation')->where('employee_id',$setting[0]['name_on_payslip'])->get(['employee_name','designation_name','department_name'])->toArray(); 
-            }
-
-
-            $send_data = compact('daily_wages','download_button_show','total_earning','total_deduction','setting','max_loop','extra_earning','extra_deduction','finance_name');
-           
-            if(!empty($daily_wages) && ( ($daily_wages[0]['dw_employee_id'] == session('user_session') && $daily_wages[0]['dw_disburse'] == 2) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) )){
-
-                if($request->input('download')=="TRUE"){
-
-                    $pdf = Pdf::loadView('payroll.pdf-daily-wages', $send_data);
-                    return $pdf->setPaper('a3', 'potrait')->download('Payslip-'.$daily_wages[0]['employee_code'].'-'.$daily_wages[0]['employee_name'].'-'.date("d-M-Y", strtotime($daily_wages[0]['dw_of_date'])).'.pdf');
-                    
-                }
-
-                return view('payroll.pdf-daily-wages', $send_data);
-                
-            }else{
-
-                return abort(404);
-
-            }
-        }catch(\Exception $e){
-
-            $this->create_error_log('Daily Wage PDF', $e);
-
-            $send_data = compact('title');
-
-            return view('errors.500');
-
-        }finally{
-
-            ActivityTracker::track_activity('Daily Wage PDF');
-
-           
-
-        }
-    }
-
-    protected function edit_daily_wages(Request $request){
-
-        try{
-            $title = Self::MAIN_TITLE_DAILY;
-        
-            $login_user = $this->get_login_user_detail();
-
-            $daily_wages = DailyWages::join('tbl_employees','tbl_employees.employee_id','=','tbl_daily_wages.dw_employee_id')->where('dw_id',$request->wage_id)->get()->toArray(); 
-
-            if(!empty($daily_wages)){
-
-                $fetch_extra_earning = PayrollEarning::where('pc_earning_pc_id',$daily_wages[0]['dw_id'])->where('pc_earning_type',2)->get()->toArray();
-            
-                $fetch_extra_deduction = PayrollDeduction::where('pc_deduction_pc_id',$daily_wages[0]['dw_id'])->where('pc_deduction_type',2)->get()->toArray();
-
-            }
-            
-
-            $send_data = compact('login_user','title','daily_wages','fetch_extra_earning','fetch_extra_deduction');
-
-        }catch(\Exception $e){
-
-            $this->create_error_log('Edit daily dages', $e);
-            $send_data = compact('title');
-
-        }finally{
-
-            ActivityTracker::track_activity('Edit daily dages');
-            return view('payroll.edit-daily-wages-payroll', $send_data); 
-        }
-
-    }
-
-    protected function update_daily_wages(Request $request){
-
-        try{
-
-            $validator = Validator::make($request->all(), [
-                'dw_id' => 'required',
-                'extra_earning_title' => 'array',
-                'extra_earning_title.*' => 'required',
-                'extra_deduction_title' => 'array',
-                'extra_deduction_title.*' => 'required',
-                'extra_earning_amount' => 'array',
-                'extra_earning_amount.*' => 'required|min:1|max:999999|numeric',
-                'extra_deduction_amount' => 'array',
-                'extra_deduction_amount.*' => 'required|min:1|max:999999|numeric',
-            
-            ]);
-            
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'msg' => $error,
-                        'status' => 'FALSE'
-                    ]);
-                }
-            }
-            DB::beginTransaction();
-
-            if(!empty($request->input('extra_earning_title'))){
-                $i =0;
-                $request_extra_earning_title = array_map('strtolower', $request->input('extra_earning_title'));
-                foreach($request_extra_earning_title as $extra_earning_title ){
-                    if(in_array($extra_earning_title,$this->not_editable_title)){
-                        $earning_record = PayrollEarning::where('pc_earning_pc_id',$request->input('pc_id'))->where('pc_earning_type',1)->where('pc_earning_title',$extra_earning_title)->get(['pc_earning_title','pc_earning_amount'])->toArray();
-                        if(count($earning_record) != array_count_values($request_extra_earning_title)[$extra_earning_title] ){
-                            return response()->json([
-                                'status' => 'FALSE',
-                                'msg' =>  "Can't use ".$extra_earning_title." as title",
-                            ]);
-                        }
-                    }
-                }
-            }
-            if(!empty($request->input('extra_deduction_title'))){
-                $i =0;
-                $request_extra_deduction_title = array_map('strtolower', $request->input('extra_deduction_title'));
-                foreach($request_extra_deduction_title as $extra_deduction_title ){
-                    if(in_array($extra_deduction_title,$this->not_editable_title)){
-                        $deduction_record = PayrollDeduction::where('pc_deduction_pc_id',$request->input('pc_id'))->where('pc_deduction_type',1)->where('pc_deduction_title',$extra_deduction_title)->get(['pc_deduction_title','pc_deduction_amount'])->toArray();
-                        if(count($deduction_record) != array_count_values($request_extra_deduction_title)[$extra_deduction_title] ){
-                            return response()->json([
-                                'status' => 'FALSE',
-                                'msg' =>  "Can't use ".$extra_deduction_title." as title",
-                            ]);
-                        }
-                    }
-                }
-            }
-            $delete_old_earning_record = PayrollEarning::where('pc_earning_pc_id',$request->input('dw_id'))->where('pc_earning_type',2)->delete();
-
-            if(!empty($request->input('extra_earning_title'))){
-
-                $i=0;
-                foreach($request->input('extra_earning_title') as $extra_earning_title ){
-                    if(!in_array(strtolower($extra_earning_title),$this->not_editable_title)){
-                        if($request->input('extra_earning_amount')[$i] != '' && is_numeric($request->input('extra_earning_amount')[$i])){
-                            $add_payroll_earning = new PayrollEarning();
-                            $add_payroll_earning->pc_earning_pc_id = $request->input('dw_id');
-                            $add_payroll_earning->pc_earning_title = $extra_earning_title;
-                            $add_payroll_earning->pc_earning_amount = $request->input('extra_earning_amount')[$i];
-                            $add_payroll_earning->pc_earning_type = 2;
-                            $add_payroll_earning->save();
-                        }
-                    }
-                    $i++;
-                }
-
-            }
-
-        $delete_old_deduction_record = PayrollDeduction::where('pc_deduction_pc_id',$request->input('dw_id'))->where('pc_deduction_type',2)->delete();
-
-        if(!empty($request->input('extra_deduction_title'))){
-            $i=0;
-            foreach($request->input('extra_deduction_title') as $extra_deduction_title ){
-                if(!in_array(strtolower($extra_deduction_title),$this->not_editable_title)){
-                    if($request->input('extra_deduction_amount')[$i] != '' && is_numeric($request->input('extra_deduction_amount')[$i])){
-                        $add_payroll_deduction = new PayrollDeduction();
-                        $add_payroll_deduction->pc_deduction_pc_id = $request->input('dw_id');
-                        $add_payroll_deduction->pc_deduction_title = $extra_deduction_title;
-                        $add_payroll_deduction->pc_deduction_amount = $request->input('extra_deduction_amount')[$i];
-                        $add_payroll_deduction->pc_deduction_type = 2;
-                        $add_payroll_deduction->save();
-                    }
-                }
-                $i++;
-            }
-        }
-        DB::commit();
-        return response()->json([
-            'status' => 'TRUE', 
-            'msg' => 'Daily wage updated successfully'
-        ]);
-        }catch(\Exception $e){
-
-            DB::rollback();
-
-            $this->create_error_log('Update daily wage', $e);
-
-            if(!config('app.debug')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-            }
-        }finally{
-
-            ActivityTracker::track_activity('Update daily wage');
-        
-        }
-
-    }
-
-    protected function wages_disbursement(Request $request){
-
-        try{
-
-            $validator = Validator::make($request->all(), [
-                'employee_ids' => ['required'],
-                'confirmation_code' => ['required']
-            ]);
-            if($validator->fails() ) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => $error,
-                    ]);
-                }
-            }
-
-            $login_user = $this->get_login_user_detail();
-            $confirmation_code = 'TODP-'.$login_user[0]['employee_code'];
-        
-            if($confirmation_code === $request->input('confirmation_code')){
-                if(!empty($request->input('employee_ids'))){
-                    $result = 0;
-                    if(!empty($request->input('included'))){
-                        $get_month_year = DailyWages::where('dw_id',$request->input('employee_ids')[0])->get(['dw_of_date'])->toArray();
-                        $get_employee_pc_id  = DailyWages::whereRaw("date_format(dw_of_date,'%m') = ".date('m',strtotime($get_month_year[0]['dw_of_date'])))
-                        ->whereRaw("date_format(dw_of_date,'%Y') = ".date('Y',strtotime($get_month_year[0]['dw_of_date'])))
-                        ->whereNotIn('dw_id',$request->input('employee_ids'))->pluck('dw_id')->toArray();
-                        
-                    }else{
-                        $get_employee_pc_id = $request->input('employee_ids');
-                    }
-                    if(empty($request->input('included'))){
-                        foreach($get_employee_pc_id as $pc_id ){
-                            $payroll_exist = DailyWages::where('dw_id',$pc_id)->join('tbl_employees','tbl_employees.employee_id','tbl_daily_wages.dw_employee_id')->get(['dw_disburse','employee_code','employee_name'])->toArray();
-                            if(!empty($payroll_exist)){
-                                if($payroll_exist[0]['dw_disburse'] == 2){
-                                    return response()->json([
-                                        'status' => 'FALSE', 
-                                        'msg' => 'Payroll of '.$payroll_exist[0]['employee_name'].'-'.$payroll_exist[0]['employee_code'].' has been already disbursed'
-                                    ]);
-                                }
-                            }else{
-                                return response()->json([
-                                    'status' => 'FALSE', 
-                                    'msg' => 'Payslip no.'.$pc_id.' has been deleted'
-                                ]);
-                            }
-
-                        }
-                    }
-                    foreach($get_employee_pc_id as $pc_id ){
-
-                        $disbursPayroll = DailyWages::find($pc_id);
-
-                        $notifiction_employee_id = $disbursPayroll->dw_employee_id;
-                        $date = $disbursPayroll->dw_of_date;
-                        $disbursPayroll->dw_disburse = 2; 
-                        $disbursPayroll->dw_disburse_date = date('Y-m-d H:i:s');
-                        $disbursPayroll->dw_disburse_by = session('user_session');
-                        $result = $disbursPayroll->save();
-
-                        $notification_message = 'Dear employee, your wage of ('.date("d-M-Y", strtotime($date)).') has been disbursed. Click here to view payslip';
-
-                        $this->send_notification('Wage Disbursement', $notification_message ,'my-payroll?slip-id='.$pc_id,$notifiction_employee_id,NULL,NULL,'no');
-                    }
-
-                    if($result == 1){
-                        return response()->json([
-                            'status' => 'TRUE', 
-                            'msg' => 'Wage(s) disbursement successfully'
-                        ]);
-                    }else{
-                        return response()->json([
-                            'status' => 'FALSE', 
-                            'msg' => 'Wage(s) disbursement failed'
-                        ]);
-                    }
-                }else{
-                    return response()->json([
-                        'status' => 'FALSE', 
-                        'msg' => 'Payroll disbursement failed'
-                    ]);
-                }
-            }else{
-                return response()->json([
-                    'status' => 'FALSE', 
-                    'msg' => 'Confirmation is invalid'
-                ]);
-            }
-        }catch(\Exception $e){
-            $this->create_error_log("Wage Disbursement", $e);
-
-            if(!config('app.debug')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-            }
-        }finally{
-            ActivityTracker::track_activity('Wage Disbursement');
-        }
-        
-    }
-
-    protected function wages_delete_by_department(Request $request){
-
-        try{
-
-            $validator = Validator::make($request->all(), [
-                'department' => 'required',
-                'month' => 'required',
-                'year' => 'required',
-            ]);
-
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => $error,
-                    ]);
-                }
-            }
-
-            $delete_payroll = 0;
-            $delete_department = $request->input('department');
-
-            $all_employees = Employees::whereIn('employee_department',$delete_department)->pluck('employee_id')->toArray();
-
-            $get_delete_payroll_ids = DailyWages::whereIn('dw_employee_id',$all_employees)
-            ->whereRaw("date_format(dw_of_date,'%m') = ".$request->input('month'))
-            ->whereRaw("date_format(dw_of_date,'%Y') = ".$request->input('year'))
-            ->pluck('dw_id')->toArray();
-
-            foreach($get_delete_payroll_ids as $dw_id){
-                $delete_payroll = $this->delete_daily_wages_main($dw_id);
-            }   
-
-            if($delete_payroll == 1){
-                return response()->json([
-                    'status' => 'TRUE',
-                    'msg' => "Department wage(s) delete successfully",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "No undisburse wage found of this department(s)",
-                ]);
-            }
-        }catch(\Exception $e){
-            $this->create_error_log("Delete Department Wages", $e);
-
-            if(!config('app.debug')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-            }
-        }finally{
-            ActivityTracker::track_activity('Delete Department Wages');
-        }
-    }
-
-    protected function delete_selected_daily_wages(Request $request){
-
-        try{
-            $validator = Validator::make($request->all(), [
-                'payroll_id' => 'required',
-            ]);
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => $error,
-                    ]);
-                }
-            }
-
-            $delete_payroll = 0;
-            $delete_payroll_ids = explode(",",$request->input('payroll_id'));
-
-            foreach($delete_payroll_ids as $payroll_id){
-                $check_payroll_exist = DailyWages::where('dw_id',$payroll_id)->get()->toArray();
-                if(empty($check_payroll_exist)){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'msg' => "Payslip already deleted. Kindly generate again. Slip No. ".$payroll_id,
-                    ]);
-                }else{
-
-                    if($check_payroll_exist[0]['dw_disburse'] == 2){
-                        return response()->json([
-                            'status' => 'FALSE',
-                            'msg' => "Wage can't be delete after disbursement. Slip No. ".$payroll_id,
-                        ]);
-                    }
-                }
-            }
-
-            foreach($delete_payroll_ids as $dw_id){
-                $delete_payroll = $this->delete_daily_wages_main($dw_id);
-            }   
-              
-            if($delete_payroll == 1){
-                return response()->json([
-                    'status' => 'TRUE',
-                    'msg' => "Wage(s) delete successfully",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Wage can't be delete after disbursement.",
-                ]);
-            }
-        }catch(\Exception $e){
-            $this->create_error_log("Delete Selected Wage", $e);
-
-            if(!config('app.debug')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'msg' => "Something went wrong. Please try again.",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-            }
-        }finally{
-            ActivityTracker::track_activity('Delete Selected Wage');
-        }
-    }
-    protected function delete_daily_wages_main($daily_wage_id){
-
-        $delete_wage =  DailyWages::where('dw_id',$daily_wage_id)->where('dw_disburse',1)->delete();
-
-        if($delete_wage == 1){
-            $delete_deduction = PayrollDeduction::where('pc_deduction_pc_id',$daily_wage_id)->where('pc_deduction_type',2)->delete();
-            $delete_earning = PayrollEarning::where('pc_earning_pc_id',$daily_wage_id)->where('pc_earning_type',2)->delete();
-        }
-        return $delete_wage;
-    }
-
-    protected function download_daily_wages_pdf(Request $request){
-
-        try{
-
-            $login_user = $this->get_login_user_detail();
-
-            $month = $request->input('month');
-            $year = $request->input('year');
-            
-            if(!empty($request->input('download_file')) && $request->input('download_file') == 'excel'){
-                $fetch_employee_payroll = DB::select("SELECT dw_id as 'Slip No.', employee_name as 'Employee Name', employee_code as 'Employee Code', dw_of_date  as 'Pay Period', dw_employee_gross_daily_wages as 'Gross Salary' , ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as 'Extra Earning' , ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as 'Total Deduction' , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as 'Net Salary', DATE_FORMAT(dw_created_at,'%d-%M-%Y') as 'Generation Date' , dw_employee_department as 'Department', dw_employee_designation as 'Designation' , dw_employee_bank_name as 'Bank Name' ,dw_employee_bank_account as 'Account No.',dw_employee_bank_iban as 'IBAN',`dw_present` as 'Total Presents', `dw_late_early` as 'Total Late/Early Out', `dw_half_day` as 'Total Half Days', `dw_absent` as 'Total Absents', `dw_off_day` as 'Total Off Days', `dw_leave` as 'Total Leaves', `dw_holiday` as 'Total Holidays', date_format(dw_of_date,'%d-%M-%Y') as 'Wage Date' FROM `tbl_daily_wages` 
-                left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-                left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-                join tbl_employees on tbl_employees.employee_id = tbl_daily_wages.dw_employee_id
-                where date_format(dw_of_date,'%m')  = '".$month."'
-                and date_format(dw_of_date,'%Y') = '".$year."'
-                group by dw_id ,pc_deduction_pc_id,pc_earning_pc_id ");
-            }else{
-                $fetch_employee_payroll = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as pc_employee_extra_salary  ,dw_employee_gross_daily_wages, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as pc_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as pc_employee_net_salary,`dw_id`, `dw_employee_id`, `dw_of_date`, `dw_employee_designation`, `dw_employee_department`, `dw_employee_job_title`, `dw_employee_bank_name`, `dw_employee_bank_account`, `dw_employee_bank_iban`, `dw_present`, `dw_absent`, `dw_off_day`, `dw_leave`, `dw_holiday`, `dw_late_early`, `dw_half_day`, `dw_absent_deduction`, `dw_late_early_deduction`, `dw_half_day_deduction`, `dw_batch`, `dw_created_at`, `dw_updated_at` , dw_disburse, employee_name, employee_code FROM `tbl_daily_wages` 
-                left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-                left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-                join tbl_employees on tbl_employees.employee_id = tbl_daily_wages.dw_employee_id
-                where date_format(dw_of_date,'%m') = '".$month."'
-                and date_format(dw_of_date,'%Y') = '".$year."'
-                group by dw_id ,pc_deduction_pc_id,pc_earning_pc_id ");
-            }
-
-            $fetch_employee_payroll = json_decode(json_encode($fetch_employee_payroll), true);
-
-            $download_button_show = true;
-
-            if($request->input('download')=="TRUE"){
-                $download_button_show = false;
-            }
-
-            $send_data = compact('fetch_employee_payroll','month','year','download_button_show');
-
-            
-            if( CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) ){
-
-                if($request->input('download')=="TRUE"){
-                    
-                    if(!empty($request->input('download_file')) && $request->input('download_file') == 'excel'){
-                        return (new FastExcel($fetch_employee_payroll))->download('Wages-'.date("F", mktime(0, 0, 0, $month, 10)).'-'.$year.'.xlsx');
-                    }else{
-                        $pdf = Pdf::loadView('payroll.all-daily-wages-pdf', $send_data);
-                        return $pdf->setPaper('a3')->download('Wages-'.date("F", mktime(0, 0, 0, $month, 10)).'-'.$year.'.pdf');
-                    }
-
-                }
-                return view('payroll.all-daily-wages-pdf',$send_data);
-                
-            }else{
-
-                return abort(404);
-
-            }
-            
-        }catch(\Exception $e){
-
-            $this->create_error_log('Complete Wages PDF', $e);
-            $send_data = compact('title');
-            return view('errors.500');
-
-        }finally{
-
-
-            ActivityTracker::track_activity('Complete Wages PDF');
-
-        }
-    }
-
-    protected function daily_wages_employee(Request $request){
-
-        try{
-
-            $title = Self::MAIN_TITLE_DAILY;
-
-            $login_user = $this->get_login_user_detail();
-
-            $dynamic_years = $this->dynamic_year_drop_down();
-
-            if(!empty($request->input('m')) && !empty($request->input('y'))){
-                $month = $request->input('m');
-                $year = $request->input('y');
-            }else{
-                $month = date('m');
-                $year = date('Y');
-            }
-
-            $all_department = Department::get(['department_id','department_name'])->toArray();
-
-            $daily_wages = DB::select("SELECT ( IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 )) as dw_employee_extra_daily_wages  ,dw_employee_gross_daily_wages, ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction)) as dw_employee_deduction , ((IF(payroll_earning.sum_pc_earning_amount > 0 ,payroll_earning.sum_pc_earning_amount,0 ) + dw_employee_gross_daily_wages)  - ( IF(payroll_deduction.sum_pc_deduction_amount >0 ,payroll_deduction.sum_pc_deduction_amount,0  ) + (dw_absent_deduction + dw_late_early_deduction + dw_half_day_deduction))) as dw_employee_net_daily_wages,`dw_id`, `dw_employee_id`,`dw_disburse`,dw_of_date,dw_created_at FROM `tbl_daily_wages` 
-            left join (SELECT pc_earning_pc_id, sum(pc_earning_amount) as sum_pc_earning_amount from tbl_payroll_calculation_earning where pc_earning_type = 2 GROUP by pc_earning_pc_id ) as payroll_earning on payroll_earning.pc_earning_pc_id = tbl_daily_wages.dw_id 
-            left join (SELECT pc_deduction_pc_id, sum(pc_deduction_amount) as sum_pc_deduction_amount from tbl_payroll_calculation_deduction where pc_deduction_type = 2 GROUP by pc_deduction_pc_id ) as payroll_deduction on payroll_deduction.pc_deduction_pc_id = tbl_daily_wages.dw_id 
-            where date_format(dw_of_date,'%m') = ".$month."
-            and date_format(dw_of_date,'%Y') = ".$year."
-            and dw_employee_id = ".(!empty($request->input('employee')) ? $request->input('employee') : $login_user[0]['employee_id'] )."
-            group by dw_id ,pc_deduction_pc_id,pc_earning_pc_id");
-            
-            $daily_wages = json_decode(json_encode($daily_wages), true);
-            
-            $daily_wages_employee = Employees::
-            where('employee_earning_type',2) //daily earning type
-            ->where('employee_isactive',1) //active employee
-            ->get(['employee_id','employee_code','employee_name'])->toArray();
-
-            $fetch_employee_disburse = DailyWages::join('tbl_employees','tbl_employees.employee_id','=','tbl_daily_wages.dw_employee_id')
-            ->whereRaw("date_format(dw_of_date,'%m') = ".$month)
-            ->whereRaw("date_format(dw_of_date,'%Y') = ".$year)
-            ->where('dw_disburse', 1)
-            ->get(['dw_id','employee_name','employee_code','dw_of_date'])->toArray();
-
-            $send_data = compact('title','login_user','daily_wages_employee','daily_wages','month','year','fetch_employee_disburse','all_department','dynamic_years');
-
-            return view('payroll.daily-wages-employee', $send_data);
-
-           
-        }catch(\Exception $e){
-
-            $this->create_error_log('Daily wages of employee', $e);
-            $send_data = compact('title','login_user');
-            return view('errors.500');
-
-        }finally{
-
-            ActivityTracker::track_activity('Daily wages of employee');
-         
-        }
-    } 
-
-    protected function calculate_my_wages(Request $request){
-        try{
-            $currency = CustomHelper::hcm_system_currency();
-
-            $validator = Validator::make($request->all(), [
-                'days_assign' => 'required|in:multiple,single,till',
-                'wage_date' => ($request->input('days_assign') == 'single' ) ? 'required|date_format:Y-m-d|before_or_equal:'.date('Y-m-d',strtotime('-2 days')) : '',
-                'from_date' => ($request->input('days_assign') == 'multiple' ) ? 'required|date_format:Y-m-d|before:to_date' : '',
-                'to_date' => ($request->input('days_assign') == 'multiple' ) ? 'required|date_format:Y-m-d|before_or_equal:'.date('Y-m-d',strtotime('-2 days')) : '',
-
-            ]);
-    
-            if($validator->fails()) {
-                foreach($validator->errors()->all() as $error){
-                    return response()->json([
-                        'status' => 'FALSE',
-                        'title' => $error,
-                        'text' => "",
-                        'icon' => "warning"
-                    ]);
-                }
-            }
-
-            $setting = HrmSetting::orderBy('setting_id','DESC')->get(['daily_wages_late_deduction','daily_wages_half_deduction'])->toArray();
-            $login_user = $this->get_login_user_detail();
-    
-            if($request->input('days_assign') == 'multiple'){
-                $to_date = new DateTime($request->input('to_date'));
-                $to_date->modify('+1 day');
-                $period = new DatePeriod(
-                    new DateTime($request->input('from_date')),
-                    new DateInterval('P1D'),
-                    $to_date
-                );
-                $dates_array = [];
-                foreach ($period as $date) {
-                    array_push($dates_array,$date->format('Y-m-d'));
-                }
-            }elseif($request->input('days_assign') == 'till'){
-    
-                $employee_doj = Employees::where('employee_id',$login_user[0]['employee_id'])->get(['employee_doj'])->toArray();
-
-                $to_date = new DateTime(date('Y-m-d',strtotime('-2 days')));
-                $to_date->modify('+1 day');
-                $period = new DatePeriod(
-                    new DateTime($employee_doj[0]['employee_doj']),
-                    new DateInterval('P1D'),
-                    $to_date
-                );
-                $dates_array = [];
-                foreach ($period as $date) {
-                    array_push($dates_array,$date->format('Y-m-d'));
-                }
-    
-            }else{
-                $dates_array = [$request->input('wage_date')];
-            }   
-
-            $employee_array = [$login_user[0]['employee_id']];
-
-            $get_employees = Employees::
-            join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')
-            ->join('tbl_personal_informations','tbl_personal_informations.employeeid','tbl_employees.employee_id')
-            ->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
-            ->where('employee_earning_type',2) //monthly earning time
-            ->whereIn('employee_id',$employee_array) 
-            ->get(['employee_id','employee_code','employee_name','designation_name','department_name','employee_jobtitle','employee_offdays','bankname','ibannumber','accountno','employee_doj','employee_deactivate_date'])->toArray();
-    
-            if(!empty($get_employees)){
-    
-                foreach($get_employees as $employee){
-        
-                    $off_days_array = [];
-                    
-                    if(!empty($employee) && !empty($employee['employee_offdays'])){
-                        $off_days_array = explode(",",$employee['employee_offdays']);
-                    }
-                    $total_wages = 0 ;
-                    foreach($dates_array as $date){
-                
-                        $att_of_employee = $this->employee_attendance_by_date($employee['employee_id'],$date,$off_days_array);
-    
-                        if($att_of_employee != "Absent"){
-    
-                            $wage_of_date = $this->wage_of_date($employee['employee_id'],$date);
-                        
-                            if(!empty($wage_of_date)){
-    
-                                if( strtotime($employee['employee_doj']) <=  strtotime($date) ){
-    
-                                    $employee_net_daily_wages = $wage_of_date[0]['salary_amount']  - $wage_of_date[0]['salary_amount'] * $this->rate_by_attendance($att_of_employee,$setting);
-                                    $total_wages += $employee_net_daily_wages;
-                                }
-                            }
-                        }
-                    }
-                }
-        
-                return response()->json([
-                    'status' => 'TRUE',
-                    'title' => "Daily wages estimate amount <br> Total Wages = ".number_format($total_wages).' '.$currency[0]['system_currency'],
-                    'text' => "",
-                    'icon' => "success"
-                ]);
-                
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'title' => "You have not calculate your's daily wage, because your earning type is monthly.",
-                    'icon' => "warning",
-                    'reload' => "TRUE",
-                ]);
-            }
-            
-        }catch(\Exception $e){
-            $this->create_error_log('Calculate My Daily Wages', $e);
-
-            if(!config('app.debug')){
-                return response()->json([
-                    'status' => 'FALSE',
-                    'title' => "Something went wrong. Please try again.",
-                    'icon' => "warning",
-                ]);
-            }else{
-                return response()->json([
-                    'status' => 'FALSE',
-                    'title' => "Something went wrong. Please try again.",
-                    'icon' => "warning",
-                    'error' =>'Error on line '.$e->getLine().' '.$e->getMessage(),
-                ]);
-            }
-
-        }finally{
-            ActivityTracker::track_activity('Calculate My Daily Wages');
-        }
-        
     }
 
     protected function deduction_policy(){

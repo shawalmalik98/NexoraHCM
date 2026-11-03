@@ -1,0 +1,255 @@
+/* Employee information form (/personal-information) in the Nexora theme. Loaded after bootstrap; markup unchanged. */
+@import url('https://fonts.googleapis.com/css?family=Inter:400,500,600,700');
+
+:root {
+    --pi-primary: #0d9488;
+    --pi-primary-active: #0f766e;
+    --pi-primary-light: #e6f7f4;
+    --pi-navy: #0b1533;
+    --pi-text: #181c32;
+    --pi-muted: #7e8299;
+    --pi-border: #e4e6ef;
+    --pi-bg: #f5f8fa;
+}
+
+body.pi-page {
+    background: var(--pi-bg);
+    font-family: Inter, Helvetica, sans-serif;
+    color: var(--pi-text);
+    font-size: 14px;
+    padding-bottom: 40px;
+}
+
+/* top bar: go back / download */
+body.pi-page .btn-primary {
+    background: var(--pi-primary);
+    border-color: var(--pi-primary);
+    border-radius: 8px;
+    padding: 7px 14px;
+}
+body.pi-page .btn-primary:hover,
+body.pi-page .btn-primary:focus {
+    background: var(--pi-primary-active);
+    border-color: var(--pi-primary-active);
+}
+
+/* header: logo, date, company */
+body.pi-page .logo {
+    display: block;
+    margin: 0 auto;
+    max-height: 70px;
+    width: auto;
+    max-width: 260px;
+}
+body.pi-page .sec1 {
+    align-items: flex-end;
+    margin-top: 10px;
+}
+body.pi-page .sec1 label {
+    font-weight: 600;
+    color: var(--pi-text);
+    margin-right: 8px;
+}
+body.pi-page .sec1 small {
+    color: var(--pi-muted);
+}
+body.pi-page #date {
+    border: 1px solid var(--pi-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    background: #fff;
+    color: var(--pi-text);
+}
+body.pi-page .sec1 p {
+    margin: 0;
+    text-align: right;
+    color: var(--pi-muted);
+    font-size: 13px;
+}
+body.pi-page .sec1 p:last-child {
+    color: var(--pi-navy);
+    font-weight: 700;
+}
+
+/* the form sits on one white card */
+body.pi-page #personal_information_form > .container {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(11, 21, 51, 0.06);
+    padding: 28px 32px 32px;
+    margin-top: 18px !important;
+}
+
+/* title */
+body.pi-page .sec2 h1 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--pi-navy);
+    margin: 0 0 6px;
+    padding-bottom: 12px;
+    position: relative;
+}
+body.pi-page .sec2 h1::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 70px;
+    height: 4px;
+    margin-left: -35px;
+    border-radius: 4px;
+    background: var(--pi-primary);
+}
+
+/* office use block */
+body.pi-page .sec3 .col-form-label {
+    font-weight: 600;
+    color: var(--pi-text);
+}
+body.pi-page .sec3 .col-form-label small,
+body.pi-page small i {
+    color: var(--pi-muted);
+    font-weight: 400;
+}
+body.pi-page .sec3 .form-control[readonly] {
+    background: var(--pi-bg);
+    border: 1px solid var(--pi-border);
+    border-radius: 8px;
+    color: var(--pi-text);
+    font-weight: 600;
+}
+
+/* picture */
+body.pi-page .profile-images-card {
+    border: 2px dashed #b9e4dd !important;
+    border-radius: 14px;
+    background: var(--pi-primary-light);
+    padding: 14px;
+}
+body.pi-page .profile-images img {
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.2);
+}
+body.pi-page .custom-file label {
+    color: var(--pi-primary);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* sections */
+body.pi-page .table.table-bordered {
+    border: 1px solid var(--pi-border) !important;
+    border-radius: 12px;
+    overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 18px;
+    background: #fff;
+}
+body.pi-page .table.table-bordered > :not(caption) > * > * {
+    border-color: var(--pi-border);
+    padding: 10px 12px;
+    vertical-align: middle;
+}
+body.pi-page .table th {
+    font-weight: 600;
+    color: var(--pi-text);
+    font-size: 13px;
+}
+body.pi-page .table thead th.pi {
+    background: var(--pi-primary-light);
+    color: var(--pi-primary-active);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    border-left: 4px solid var(--pi-primary) !important;
+    padding: 12px 14px;
+}
+body.pi-page .table thead th.pi small,
+body.pi-page .table thead th.pi span:not(.text-danger) {
+    color: var(--pi-muted);
+    font-weight: 500;
+}
+body.pi-page .table thead th.text-center {
+    background: #fafbfc;
+    color: var(--pi-navy);
+}
+
+/* inputs */
+body.pi-page .form-control,
+body.pi-page .form-select {
+    border: 1px solid var(--pi-border);
+    border-radius: 8px;
+    min-height: 40px;
+    font-size: 14px;
+    color: var(--pi-text);
+    background-color: #fff;
+}
+body.pi-page .form-control:focus,
+body.pi-page .form-select:focus {
+    border-color: var(--pi-primary);
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+body.pi-page .form-control::placeholder {
+    color: #a1a5b7;
+}
+body.pi-page .form-control[readonly] {
+    background-color: var(--pi-bg);
+}
+body.pi-page .text-danger {
+    color: #f1416c !important;
+}
+body.pi-page label.error,
+body.pi-page .error:not(.form-control) {
+    color: #f1416c;
+    font-size: 12px;
+}
+
+/* add / remove rows */
+body.pi-page .btn-group .btn {
+    border-radius: 8px !important;
+    padding: 7px 18px;
+    font-weight: 600;
+    font-size: 13px;
+}
+body.pi-page .btn-group .btn-primary {
+    background: var(--pi-primary);
+    border-color: var(--pi-primary);
+}
+body.pi-page .btn-group .btn-dark {
+    background: #fff;
+    color: var(--pi-navy);
+    border: 1px solid var(--pi-navy);
+}
+body.pi-page .btn-group .btn-dark:hover {
+    background: var(--pi-navy);
+    color: #fff;
+}
+
+/* save */
+body.pi-page .submit-btn-form {
+    background: linear-gradient(90deg, #14b8a6, var(--pi-primary)) !important;
+    color: #fff !important;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 34px !important;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 20px rgba(13, 148, 136, 0.25);
+}
+body.pi-page .submit-btn-form:hover {
+    background: var(--pi-primary-active) !important;
+}
+
+@media (max-width: 767.98px) {
+    body.pi-page #personal_information_form > .container {
+        padding: 18px 14px;
+        border-radius: 12px;
+    }
+    body.pi-page .sec1 p {
+        text-align: left;
+    }
+}

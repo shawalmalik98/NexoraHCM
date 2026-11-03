@@ -117,7 +117,7 @@
                                                             data-total_notifications="{{ $notifications['notification_count'] }}">
                                                             @if (!empty($notification['viewer_history']))
                                                                 <a href="{{ url($notification['notification_url']) }}"
-                                                                    class="text-gray-400  fw-bold text-hover-primary">
+                                                                    class="text-gray-600 fw-bold text-hover-primary notification-read">
                                                                     <p class="fs-4 mb-1">
                                                                         {{ $notification['notification_title'] }}</p>
                                                                     <p class="fs-7 mb-1">
@@ -128,7 +128,7 @@
                                                                 </a>
                                                             @else
                                                                 <a href="{{ url($notification['notification_url']) }}"
-                                                                    class="text-dark fw-bold notification-open text-hover-primary"
+                                                                    class="text-dark fw-bold notification-open notification-unread text-hover-primary"
                                                                     data-notificationid="{{ $notification['notification_id'] }}">
                                                                     <p class="fs-4 mb-1">
                                                                         {{ $notification['notification_title'] }}</p>
@@ -450,11 +450,11 @@
                                     </div>
                                 @endif
 
+                                {{-- Sign Out removed from the profile menu (user request); the /sign-out route still works
                                 <div class="menu-item px-5">
-                                
                                     <a href="{{ url('/sign-out') }}" onclick="localStorage.clear();" class="menu-link px-5">Sign Out</a>
-                                    
                                 </div>
+                                --}}
                                 
                         </div>
                         {{-- end::User account menu --}}
