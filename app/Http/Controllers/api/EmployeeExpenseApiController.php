@@ -98,7 +98,7 @@ class EmployeeExpenseApiController extends Controller
 
             $this->create_error_log_from_api('Access Request My Expense Module API', $e, $request->header('Bearer-Token'));
 
-            return $this->api_response_json(FALSE,"Something went wrong. Please try again.",$e->getMessage(),500);
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
 
         }finally{
 
@@ -150,12 +150,12 @@ class EmployeeExpenseApiController extends Controller
 
             if($request->hasFile('expense_attachment')){
 
-                $fileNameToStore = $request->file('expense_attachment')->getClientOriginalName();
-                
+                $fileNameToStore = $this->expense_file_name($request->file('expense_attachment'));
+
                 $request->file('expense_attachment')->storeAs('portal_documents/employee_expenses/',$fileNameToStore);
-    
+
                 $new_expense->emp_expense_attachment = $fileNameToStore;
-    
+
             }
             $new_expense->save();
 
@@ -253,10 +253,10 @@ class EmployeeExpenseApiController extends Controller
 
                     if($request->hasFile('expense_attachment')){
 
-                        $fileNameToStore = $request->file('expense_attachment')->getClientOriginalName();
-                        
+                        $fileNameToStore = $this->expense_file_name($request->file('expense_attachment'));
+
                         $request->file('expense_attachment')->storeAs('portal_documents/employee_expenses/',$fileNameToStore);
-            
+
                         $update_expense->emp_expense_attachment = $fileNameToStore;
 
                         if(!empty($fetch_update_expense[0]['emp_expense_attachment'])){
@@ -415,25 +415,36 @@ class EmployeeExpenseApiController extends Controller
 
     }
 
+    // stored name: time + random part + the original name, so two employees' "bill.pdf" never overwrite each other
+    protected function expense_file_name($file){
+
+        return date('YmdHis').'_'.\Illuminate\Support\Str::random(6).'_'.preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
+    }
+
     protected function download_employee_expense_file(Request $request){
         try{
 
-            if(!empty($request->get('path'))){
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
-                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->get('path')));
-                
-                if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->get('path')));
-                }else{
-                    return $this->api_response_json(FALSE,"File Not Found.","",200);
-                }
-
-                return response()->download(\App\Helpers\CustomHelper::portal_document($request->get('path')));
-
+            // only the attachment of one of the employee's own claims: by expense_id, or (older app) by its path
+            $own_expense = EmployeeExpense::where('emp_expense_employee', $login_user[0]['employee_id'])->whereNotNull('emp_expense_attachment')->where('emp_expense_attachment', '!=', '');
+            if(!empty($request->get('expense_id'))){
+                $attachment = $own_expense->where('emp_expense_id', $request->get('expense_id'))->value('emp_expense_attachment');
+            }elseif(!empty($request->get('path'))){
+                $path = trim(str_replace('\\', '/', (string) $request->get('path')), '/');
+                $attachment = $own_expense->get(['emp_expense_attachment'])->pluck('emp_expense_attachment')->first(fn($name) => in_array($path, [$name, 'employee_expenses/'.$name]));
             }else{
-
                 return $this->api_response_json(FALSE,"Path Not Found.","",200);
             }
+
+            $file = !empty($attachment) ? \App\Helpers\CustomHelper::portal_document('employee_expenses/'.$attachment) : null;
+
+            if(empty($file)){
+                return $this->api_response_json(FALSE,"File Not Found.","",200);
+            }
+
+            return response()->download($file, $attachment);
+
         }catch(\Exception $e){
 
             $this->create_error_log_from_api('download-expense-file Api', $e, $request->header('Bearer-Token'));

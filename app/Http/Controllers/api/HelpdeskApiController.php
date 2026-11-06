@@ -26,28 +26,17 @@ class HelpdeskApiController extends Controller
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
             $departments = Department::get(['department_id','department_name'])->toArray();
 
-            $get_my_help_desks = HelpDesk::join('tbl_help_desk_ticket_status', 'tbl_help_desk.help_desk_id', '=', 'tbl_help_desk_ticket_status.help_desk_id')->
-            where(function ($query) use ($login_user){
-                $query->whereIn('tbl_help_desk.help_desk_id',function ($query) use($login_user){
-                    $query->select('hd_id')
-                    ->from('tbl_help_desk_for_departments')
-                    ->join('tbl_employees','tbl_employees.employee_department','=','tbl_help_desk_for_departments.hdf_department_id')
-                    ->where('hdf_department_id','=',$login_user[0]['employee_department'])
-                    ->where('employee_is_manager',1)
-                    ->where('employee_id',$login_user[0]['employee_id']);
-
-                })->orWhereIN('tbl_help_desk.help_desk_id',function ($query) use($login_user){
-                    $query->select('hd_id')
-                    ->from('tbl_help_desk_for_employees')
-                    ->where('hdf_employee_id',$login_user[0]['employee_id']);
-                })->orWhere('help_desk_loged_by',$login_user[0]['employee_id']);
-            })->whereIn('ticket_status_id',function ($query) {
+            // mobile is self service: only the tickets the employee raised, each with its latest status
+            $get_my_help_desks = HelpDesk::join('tbl_help_desk_ticket_status', 'tbl_help_desk.help_desk_id', '=', 'tbl_help_desk_ticket_status.help_desk_id')
+            ->where('help_desk_loged_by',$login_user[0]['employee_id'])
+            ->whereIn('ticket_status_id',function ($query) {
                     $query->selectRaw('max(ticket_status_id)')
                     ->from('tbl_help_desk_ticket_status')
                     ->groupBy('help_desk_id');
-                })->get()->toArray();
-         
-         
+                })->orderBy('tbl_help_desk.help_desk_id','DESC')
+                ->get(['tbl_help_desk.help_desk_id','help_message','help_attachment','created_time','ticket_status','ticket_status_created_time'])->toArray();
+
+
             $data = compact('title','get_my_help_desks','departments');
 
             return $this->api_response_json(TRUE,"View My Help Desk",$data,200);
@@ -55,7 +44,7 @@ class HelpdeskApiController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log_from_api('View My Help Desk API', $e, $request->header('Bearer-Token'));
-            return $this->api_response_json(FALSE,"Something went wrong. Please try again.",$e->getMessage(),500);
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
 
         }finally{
 
@@ -243,7 +232,7 @@ class HelpdeskApiController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log_from_api('Add HelpDesk API', $e, $request->header('Bearer-Token'));
-            return $this->api_response_json(FALSE,"Something went wrong. Please try again.",$e->getMessage(),500);
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
 
         }finally{
 
@@ -251,6 +240,157 @@ class HelpdeskApiController extends Controller
             
         }
 
+    }
+
+    protected function update_help_desk(Request $request){
+
+        try{
+
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
+
+            $help_desk = HelpDesk::where('help_desk_id', $request->post('hd_id'))->where('help_desk_loged_by', $login_user[0]['employee_id'])->first();
+
+            if(empty($help_desk)){
+
+                return $this->api_response_json(FALSE,"Help desk ticket id is invalid.","",200);
+            }
+
+            // only a ticket that is still pending (latest status 1) can be edited
+            $last_status = HelpDeskStatus::where('help_desk_id', $help_desk->help_desk_id)->orderBy('ticket_status_id','DESC')->value('ticket_status');
+
+            if($last_status != 1){
+
+                return $this->api_response_json(FALSE,"You can not edit this ticket because it is no longer pending.","",200);
+            }
+
+            $filename = '';
+
+            if($request->hasFile('attachment')){
+                $filename = $request->file('attachment')->getClientOriginalExtension();
+            }
+
+            $validator = Validator::make($request->all(), [
+                'message' => 'required',
+                'department_id' => 'required|array',
+                'department_id.*' => 'required|integer',
+                'employee_id' => 'array|nullable',
+                'employee_id.*' => 'required|integer',
+                'attachment' => [ 'max:10000', ($filename == 'txt' ) ? File::types(['jpg','png','docx','pdf','txt']) : File::types(['jpg','png','docx','pdf'])],
+            ]);
+
+            if($validator->fails()) {
+                foreach($validator->errors()->all() as $error){
+                    return $this->api_response_json(FALSE,$error,"",200);
+                }
+            }
+
+            $department_id = $request->post('department_id');
+            $employee_ids = $request->post('employee_id');
+
+            if(empty($employee_ids)){
+
+                $employees_to_notify = Employees::where('employee_isactive',1)->where('employee_is_manager',1)->whereIn('employee_department',$department_id)->where('employee_id','!=',$login_user[0]['employee_id'])->pluck('employee_id')->toArray();
+
+                if(empty($employees_to_notify)){
+
+                    return $this->api_response_json(FALSE,"There are no employees at manager level in this department","",200);
+                }
+
+            }else{
+
+                $employees_to_notify = Employees::where('employee_isactive',1)->whereIn('employee_id',$employee_ids)->whereIn('employee_department',$department_id)->pluck('employee_id')->toArray();
+            }
+
+            if($request->hasFile('attachment')){
+
+                $fileNameToStore = $request->file('attachment')->getClientOriginalName();
+
+                $request->file('attachment')->storeAs('portal_documents/helpDesk',$fileNameToStore);
+
+                $help_desk->help_attachment = $fileNameToStore;
+            }
+
+            $help_desk->help_message = $request->post('message');
+
+            $process = $help_desk->save();
+
+            if($process == 1){
+
+                // same shape as add_help_desk: departments only, or the chosen employees
+                HelpDeskForDepartment::where('hd_id', $help_desk->help_desk_id)->delete();
+                HelpDeskForEmployee::where('hd_id', $help_desk->help_desk_id)->delete();
+
+                if(empty($employee_ids)){
+
+                    foreach($department_id as $deprt_id){
+                        $help_desk_for_deprt = new HelpDeskForDepartment();
+                        $help_desk_for_deprt->hdf_department_id = $deprt_id;
+                        $help_desk_for_deprt->hd_id  = $help_desk->help_desk_id;
+                        $help_desk_for_deprt->created_time = date('Y-m-d H:i:s');
+                        $help_desk_for_deprt->save();
+                    }
+
+                }else{
+
+                    foreach($employee_ids as $employee_id){
+                        $help_desk_for_employee = new HelpDeskForEmployee();
+                        $help_desk_for_employee->hdf_employee_id = $employee_id;
+                        $help_desk_for_employee->hd_id = $help_desk->help_desk_id;
+                        $help_desk_for_employee->created_time = date('Y-m-d H:i:s');
+                        $help_desk_for_employee->save();
+                    }
+                }
+
+                foreach($employees_to_notify as $employee_id){
+
+                    $this->send_notification_api('Complaint Updated', ''.$login_user[0]['employee_name'].' updated a complaint. Please click here to view.','my-tickets?help-desk-id='.$help_desk->help_desk_id .'',$employee_id,NULL,NULL,'no',$login_user[0]['employee_id']);
+                }
+
+                return $this->api_response_json(TRUE,"Ticket Updated Successfully.","",200);
+
+            }else{
+
+                return $this->api_response_json(FALSE,"Ticket Not Updated. Try Again!","",200);
+            }
+
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('Update HelpDesk API', $e, $request->header('Bearer-Token'));
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+
+        }finally{
+
+            ActivityTracker::track_activity_from_api('Update HelpDesk API',  $request->header('Bearer-Token'));
+        }
+    }
+
+    protected function download_help_desk_attachment(Request $request, $help_desk_id){
+
+        try{
+
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
+
+            // only the employee's own ticket
+            $attachment = HelpDesk::where('help_desk_id', $help_desk_id)->where('help_desk_loged_by', $login_user[0]['employee_id'])->value('help_attachment');
+
+            $file = !empty($attachment) ? \App\Helpers\CustomHelper::portal_document('helpDesk/'.$attachment) : null;
+
+            if(empty($file)){
+
+                return $this->api_response_json(FALSE,"Attachment not found.","",200);
+            }
+
+            return response()->download($file, $attachment);
+
+        }catch(\Exception $e){
+
+            $this->create_error_log_from_api('Download HelpDesk Attachment API', $e, $request->header('Bearer-Token'));
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
+
+        }finally{
+
+            ActivityTracker::track_activity_from_api('Download HelpDesk Attachment API',  $request->header('Bearer-Token'));
+        }
     }
 
     protected function my_help_desk_detail(Request $request, $help_desk_id){
@@ -264,13 +404,21 @@ class HelpdeskApiController extends Controller
 
             $departments = Department::get(['department_id','department_name'])->toArray();
 
+            // only the employee's own ticket
             $help_desk = HelpDesk::where('tbl_help_desk.help_desk_id', $help_desk_id)
+            ->where('help_desk_loged_by', $login_user[0]['employee_id'])
             ->join('tbl_employees','tbl_employees.employee_id','=','help_desk_loged_by')
             ->get(['employee_name','created_time','help_desk_loged_by','help_message','help_attachment'])->toArray();
+
+            if(empty($help_desk)){
+
+                return $this->api_response_json(FALSE,"Help desk ticket id is invalid.","",200);
+            }
 
 
             $help_desk_status = HelpDeskStatus::where('tbl_help_desk_ticket_status.help_desk_id', $help_desk_id)
             ->join('tbl_employees','tbl_employees.employee_id','=','ticket_status_changed_by')
+            ->orderBy('ticket_status_id')
             ->get(['employee_name','ticket_status_created_time','ticket_status'])->toArray();
             
             $help_desk_departments = HelpDeskForDepartment::where('tbl_help_desk_for_departments.hd_id', $help_desk_id)->pluck('hdf_department_id')->toArray();
@@ -307,7 +455,7 @@ class HelpdeskApiController extends Controller
         }catch(\Exception $e){
 
             $this->create_error_log_from_api('My HelpDesk Detail API', $e, $request->header('Bearer-Token'));
-            return $this->api_response_json(FALSE,"Something went wrong. Please try again.",$e->getMessage(),500);
+            return $this->api_response_json(FALSE,"Something went wrong. Please try again.","",500);
 
         }finally{
 

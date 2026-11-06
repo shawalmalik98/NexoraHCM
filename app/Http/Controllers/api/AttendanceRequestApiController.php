@@ -520,7 +520,7 @@ class AttendanceRequestApiController extends Controller
 
                 if(!empty($request->post('edit_attendance_type')) && $request->post('edit_attendance_type') == 'On Time Check Out'){
                   
-                    $get_attendances = Attendance::where('att_employee_id',$login_user[0]['employee_id'])->where(function($query){
+                    $get_attendances = Attendance::where('att_employee_id',$login_user[0]['employee_id'])->where(function($query) use($manage_leaves){
                         $query->where('att_check_overall_status','LIKE', '%Holiday%')
                         ->orwhereIn('att_check_overall_status', $manage_leaves);
                         
@@ -530,7 +530,7 @@ class AttendanceRequestApiController extends Controller
 
                     if(!empty($get_attendances)){
 
-                        return $this->api_response_json(FALSE,"You can't update request on this date ". $request->post('attendance_date')." beacuse your attendanced already marked as " .$get_attendances[0]['att_check_overall_status'],"",200);
+                        return $this->api_response_json(FALSE,"You can't update request on this date ". $request->post('edit_attendance_date')." beacuse your attendanced already marked as " .$get_attendances[0]['att_check_overall_status'],"",200);
 
                     }   
                 }

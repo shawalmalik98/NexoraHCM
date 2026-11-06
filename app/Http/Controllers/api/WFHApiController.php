@@ -580,29 +580,21 @@ class WFHApiController extends Controller
 
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
            
-            $get_wfh_request_today = WFH::select('*')
-                ->where('wfh_employee_id','=',(string) $login_user[0]['employee_id'])
-                ->where('wfh_request_date','=',date('Y-m-d'))
-                ->get()->toArray();
-            
-            if(!empty($get_wfh_request_today) && $get_wfh_request_today[0]['wfh_request_approved_by_hr'] != 2){
+            // approved remote work days from today on: HR approved, or a manager approved while HR has not responded yet.
+            // On these days attendance can be marked from any location (the app needs the dates for offline attendance)
+            $approved_dates = WFH::where('wfh_employee_id', (string) $login_user[0]['employee_id'])
+                ->whereBetween('wfh_request_date', [date('Y-m-d'), date('Y-m-d', strtotime('+2 month'))])
+                ->where(function($query){
+                    $query->where('wfh_request_approved_by_hr', 2)
+                        ->orWhere(function($pending){
+                            $pending->where('wfh_request_approved_by_hr', 1)
+                                ->whereIn('wfh_request_id', RequestApproval::where('request_module_id', 3)->where('request_approver_status', 2)->select('request_id'));
+                        });
+                })
+                ->orderBy('wfh_request_date')
+                ->pluck('wfh_request_date')->unique()->values()->toArray();
 
-                $get_wfh_request_today = RequestApproval::where('request_module_id',3)
-                ->where('request_id',$get_wfh_request_today[0]['wfh_request_id'])
-                ->where('request_approver_status',2)
-                ->get()->toArray();
-
-            }
-           
-            if(!empty($get_wfh_request_today)){
-
-                return $this->api_response_json(TRUE,"","",200);
-
-            }else{
-
-                return $this->api_response_json(FALSE,"","",200);
-
-            }
+            return $this->api_response_json(in_array(date('Y-m-d'), $approved_dates), "", ['approved_dates' => $approved_dates], 200);
         }catch(\Exception $e){
 
             $this->create_error_log_from_api('Today WFH API', $e, $request->header('Bearer-Token'));

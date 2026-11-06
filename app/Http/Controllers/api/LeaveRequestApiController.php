@@ -347,7 +347,7 @@ class LeaveRequestApiController extends Controller
 
                                         if($request->hasFile('leave_applied_attachment')){
                         
-                                            $fileNameToStore = $request->file('leave_applied_attachment')->getClientOriginalName();
+                                            $fileNameToStore = $this->leave_file_name($request->file('leave_applied_attachment'));
                                             
                                             $request->file('leave_applied_attachment')->storeAs('portal_documents/leave_attachment/',$fileNameToStore);
                                 
@@ -373,7 +373,7 @@ class LeaveRequestApiController extends Controller
 
                                 if($request->hasFile('leave_applied_attachment')){
                 
-                                    $fileNameToStore = $request->file('leave_applied_attachment')->getClientOriginalName();
+                                    $fileNameToStore = $this->leave_file_name($request->file('leave_applied_attachment'));
                                     
                                     $request->file('leave_applied_attachment')->storeAs('portal_documents/leave_attachment/',$fileNameToStore);
                         
@@ -456,8 +456,8 @@ class LeaveRequestApiController extends Controller
 
             $filename = '';
 
-            if($request->hasFile('leave_attachment')){
-                $filename = $request->file('leave_attachment')->getClientOriginalExtension();
+            if($request->hasFile('leave_applied_attachment')){
+                $filename = $request->file('leave_applied_attachment')->getClientOriginalExtension();
             }
 
             $validator = Validator::make($request->post(), [
@@ -571,7 +571,7 @@ class LeaveRequestApiController extends Controller
                                             }
                                         }   
                     
-                                        $fileNameToStore = $request->file('leave_applied_attachment')->getClientOriginalName();
+                                        $fileNameToStore = $this->leave_file_name($request->file('leave_applied_attachment'));
                                         
                                         $request->file('leave_applied_attachment')->storeAs('portal_documents/leave_attachment/',$fileNameToStore);
                             
@@ -712,24 +712,37 @@ class LeaveRequestApiController extends Controller
         }
     }
 
+    // stored name: time + random part + the original name, so same-named files never overwrite each other
+    // (a range of days gets one copy per day, so deleting one day keeps the others' file)
+    protected function leave_file_name($file){
+
+        return date('YmdHis').'_'.\Illuminate\Support\Str::random(6).'_'.preg_replace('/[^A-Za-z0-9._-]/', '_', $file->getClientOriginalName());
+    }
+
     protected function download_leave_file(Request $request){
-       
+
         try{
-            if(!empty($request->get('path'))){
-                
-                $check_if_file_exists = !empty(\App\Helpers\CustomHelper::portal_document($request->get('path')));
-               
-                if($check_if_file_exists == TRUE || $check_if_file_exists == 1){
-                    return response()->download(\App\Helpers\CustomHelper::portal_document($request->get('path')));
-                }else{
-                    return $this->api_response_json(FALSE,"File Not Found.","",200);
-                }
-                return response()->download(\App\Helpers\CustomHelper::portal_document($request->get('path')));
+            $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
+            // only the attachment of one of the employee's own leaves: by leave_id, or (older app) by its path
+            $own_leave = LeaveRequest::where('leave_applied_by', (string) $login_user[0]['employee_id'])->whereNotNull('leave_applied_attachment')->where('leave_applied_attachment', '!=', '');
+            if(!empty($request->get('leave_id'))){
+                $attachment = $own_leave->where('leave_applied_id', $request->get('leave_id'))->value('leave_applied_attachment');
+            }elseif(!empty($request->get('path'))){
+                $path = trim(str_replace('\\', '/', (string) $request->get('path')), '/');
+                $attachment = $own_leave->get(['leave_applied_attachment'])->pluck('leave_applied_attachment')->first(fn($name) => in_array($path, [$name, 'leave_attachment/'.$name]));
             }else{
-
                 return $this->api_response_json(FALSE,"Path Not Found.","",200);
             }
+
+            $file = !empty($attachment) ? \App\Helpers\CustomHelper::portal_document('leave_attachment/'.$attachment) : null;
+
+            if(empty($file)){
+                return $this->api_response_json(FALSE,"File Not Found.","",200);
+            }
+
+            return response()->download($file, $attachment);
+
         }catch(\Exception $e){
 
             $this->create_error_log_from_api('download-leave-file Api', $e, $request->header('Bearer-Token'));

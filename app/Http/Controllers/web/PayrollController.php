@@ -417,149 +417,15 @@ class PayrollController extends Controller
             $title = Self::INDIVIDUAL_PDF_TITLE;
             $login_user = $this->get_login_user_detail();
 
-            $payroll = Payroll::join('tbl_employees','tbl_employees.employee_id','=','tbl_payroll_calculation.pc_employee_id')
-            ->join('tbl_employement_status', 'tbl_employees.employee_status', '=', 'tbl_employement_status.employement_status_id')
-            ->leftjoin('tbl_personal_informations','tbl_personal_informations.employeeid','=','tbl_employees.employee_id')
-            ->leftjoin('tbl_office_locations','tbl_office_locations.location_id','=','tbl_employees.employee_location')
-            ->where('pc_id','=',$payroll_id)->get()->toArray();
+            $send_data = $this->payslip_view_data($payroll_id, $login_user);
 
             // deleted / unknown payslip (old link)
-            if(empty($payroll)){
+            if(empty($send_data)){
                 return response()->view('errors.404', ['title' => $title], 404);
             }
 
-            $extra_earning = PayrollEarning::where('pc_earning_pc_id','=',$payroll_id)->
-            where('pc_earning_type',1)->get()->toArray();
-
-            $extra_deduction = PayrollDeduction::where('pc_deduction_pc_id','=',$payroll_id)->where('pc_deduction_type',1)->get()->toArray();
-
-            $extra_earning = $this->merge_payslip_lines($extra_earning, 'pc_earning_title', 'pc_earning_amount');
-            $extra_deduction = $this->merge_payslip_lines($extra_deduction, 'pc_deduction_title', 'pc_deduction_amount');
-
-            $max_loop = max([count($extra_earning),count($extra_deduction)]);
-
-            $extra_earning_amount = array_sum(array_column($extra_earning, 'pc_earning_amount'));
-
-            $extra_deduction_amount = array_sum(array_column($extra_deduction, 'pc_deduction_amount'));
-
-            $total_earning = $extra_earning_amount + $payroll[0]['pc_employee_gross_salary'];
-            $total_deduction = $extra_deduction_amount + $payroll[0]['pc_late_early_deduction'] + $payroll[0]['pc_absent_deduction'] + $payroll[0]['pc_half_day_deduction'];
-
-            // net never goes below zero (deductions more than the earnings: nothing is paid)
-            $payroll[0]['pc_employee_net_salary'] = max(0, $payroll[0]['pc_employee_net_salary'] + $extra_earning_amount - $extra_deduction_amount);
-
-            $payroll_create_by = Employees::where('employee_id',$payroll[0]['pc_created_by'])->get(['employee_name','employee_code'])->toArray();
-            
-            $payroll_disburse_by = Employees::where('employee_id',$payroll[0]['disburse_by'])->get(['employee_name','employee_code'])->toArray();
-            
-            $download_button_show = true;
-
-            $setting = HrmSetting::orderBy('setting_id','DESC')->get(['name_on_payslip','signature_on_payslip'])->toArray();
-
-            $finance_name = '';
-            if(!empty($setting) && !empty($setting[0]['name_on_payslip'])){
-                $finance_name = Employees::join('tbl_departments','tbl_departments.department_id','=','employee_department')->join('tbl_designations','tbl_designations.designation_id','=','employee_designation')->where('employee_id',$setting[0]['name_on_payslip'])->get(['employee_name','designation_name','department_name'])->toArray(); 
-            }
-            
-            $salary_division = SalaryDivision::SelectRaw('(salary_division_percentage/100) as salary_division_percentage,salary_division_title')->get()->toArray();
-
-            $sum_of_all_allowance = array_sum(array_column($salary_division,'salary_division_percentage'));
-            if((1 -  $sum_of_all_allowance )> 0){
-                array_push($salary_division,['salary_division_title' => 'Other' , 'salary_division_percentage' => 1 - $sum_of_all_allowance]);
-            }
-          
-            if($request->input('download')=="TRUE"){
-                $download_button_show = false;
-            }
-
-            // leaves taken by this payroll for absent days / extra late comings / half days (leave_name null = deducted from salary):
-            // total = number of days, leave_days = leave taken (1 per absent day, 0.5 per late / half day)
-            $leave_deductions = LeaveDeduction::leftJoin('tbl_leave_management','tbl_leave_management.leave_manage_id','=','tbl_leave_deductions.ld_leave_type_id')
-            ->where('ld_payroll_id',$payroll_id)
-            ->selectRaw('leave_name, ld_reason, COUNT(*) as total, SUM(ld_days) as leave_days')
-            ->groupBy('leave_name','ld_reason')
-            ->get()->toArray();
-
-            // loan installment the salary could not cover this month (taken in the next payroll)
-            $loan_carried = (float) LoanInstallment::where('loan_installment_payroll_id', $payroll_id)->sum('loan_installment_carried');
-
-            $slip = $payroll[0];
-
-            // earnings: gross split into the salary divisions (Basic / House Rent / Utilities ...) + overtime, expense claims ...
-            $earning_lines = [];
-            foreach($salary_division as $division){
-                $earning_lines[] = ['title' => $division['salary_division_title'], 'amount' => round($slip['pc_employee_gross_salary'] * $division['salary_division_percentage'], 2)];
-            }
-            foreach($extra_earning as $earning){
-                $earning_lines[] = ['title' => CustomHelper::payroll_line_label($earning['pc_earning_title']), 'amount' => (float) $earning['pc_earning_amount']];
-            }
-
-            // deductions: income tax, EOBI, provident fund first, then loan / advance ..., then absent / late / half days
-            $first_deductions = ['income tax deduction' => 1, 'eobi contribution' => 2, 'provident fund' => 3];
-            usort($extra_deduction, function($a, $b) use($first_deductions){
-                return ($first_deductions[strtolower(trim($a['pc_deduction_title']))] ?? 9) <=> ($first_deductions[strtolower(trim($b['pc_deduction_title']))] ?? 9);
-            });
-            $deduction_lines = [];
-            foreach($extra_deduction as $deduction){
-                $deduction_lines[] = ['title' => CustomHelper::payroll_line_label($deduction['pc_deduction_title']), 'amount' => (float) $deduction['pc_deduction_amount']];
-            }
-            foreach(['pc_absent_deduction' => 'Absent Days', 'pc_late_early_deduction' => 'Late Coming', 'pc_half_day_deduction' => 'Half Days'] as $column => $label){
-                if((float) $slip[$column] > 0){
-                    $deduction_lines[] = ['title' => $label, 'amount' => (float) $slip[$column]];
-                }
-            }
-
-            // income tax details: yearly taxable income, slab, yearly tax, tax deducted earlier in this fiscal year, this month
-            $tax_details = null;
-            if($slip['pc_tax_taxable_income'] !== null){
-                $fiscal_date = HrmSetting::value('fiscal_date');
-                $fiscal_month_day = !empty($fiscal_date) ? date('m-d', strtotime($fiscal_date)) : '07-01';
-                $fiscal_start = date('Y', strtotime($slip['pc_date_to'])).'-'.$fiscal_month_day;
-                if($fiscal_start > $slip['pc_date_to']){
-                    $fiscal_start = date('Y-m-d', strtotime($fiscal_start.' -1 year'));
-                }
-                $tax_this_month = (float) PayrollDeduction::where('pc_deduction_pc_id', $payroll_id)->where('pc_deduction_title', 'Income Tax Deduction')->sum('pc_deduction_amount');
-                $tax_deducted_before = (float) PayrollDeduction::join('tbl_payroll_calculation', 'tbl_payroll_calculation.pc_id', '=', 'tbl_payroll_calculation_deduction.pc_deduction_pc_id')
-                    ->where('pc_employee_id', $slip['pc_employee_id'])->where('pc_deduction_title', 'Income Tax Deduction')
-                    ->where('pc_date_to', '>=', $fiscal_start)->where('pc_date_to', '<', $slip['pc_date_to'])
-                    ->sum('pc_deduction_amount');
-                $tax_details = [
-                    'taxable_income' => (float) $slip['pc_tax_taxable_income'],
-                    'slab_percentage' => (float) $slip['pc_tax_slab_percentage'],
-                    'tax_credit' => 0,
-                    'tax_chargeable' => (float) $slip['pc_tax_yearly'],
-                    'tax_deducted' => $tax_deducted_before,
-                    'tax_payable' => $tax_this_month,
-                ];
-            }
-
-            // provident fund up to this payslip (contributions, profit, withdrawals)
-            $pf_rows = ProvidentFund::where('pf_employee_id', $slip['pc_employee_id'])->where('pf_date', '<=', $slip['pc_date_to'])
-                ->selectRaw('pf_type, SUM(pf_member_amount) as member, SUM(pf_company_amount) as company')->groupBy('pf_type')->get()->keyBy('pf_type');
-            $pf_summary = null;
-            if($pf_rows->isNotEmpty()){
-                $pf_sum = fn($type, $column) => (float) ($pf_rows[$type]->$column ?? 0);
-                $pf_summary = [
-                    'member_contribution' => $pf_sum('contribution', 'member'),
-                    'company_contribution' => $pf_sum('contribution', 'company'),
-                    'member_profit' => $pf_sum('profit', 'member'),
-                    'company_profit' => $pf_sum('profit', 'company'),
-                    'permanent_withdrawals' => $pf_sum('permanent_withdrawal', 'member') + $pf_sum('permanent_withdrawal', 'company'),
-                    'temporary_withdrawals' => $pf_sum('temporary_withdrawal', 'member') + $pf_sum('temporary_withdrawal', 'company'),
-                    'withdrawal_recovery' => $pf_sum('withdrawal_recovery', 'member') + $pf_sum('withdrawal_recovery', 'company'),
-                ];
-                $pf_summary['available'] = $pf_summary['member_contribution'] + $pf_summary['company_contribution'] + $pf_summary['member_profit'] + $pf_summary['company_profit']
-                    - $pf_summary['permanent_withdrawals'] - $pf_summary['temporary_withdrawals'] + $pf_summary['withdrawal_recovery'];
-            }
-
-            // service period: joining date to the end of this pay period
-            $service_period = '-';
-            if(!empty($slip['employee_doj'])){
-                $service = date_diff(date_create($slip['employee_doj']), date_create($slip['pc_date_to']));
-                $service_period = $service->y.' Year(s), '.$service->m.' Month(s), '.$service->d.' Day(s)';
-            }
-
-            $send_data = compact('login_user','payroll','extra_earning','extra_deduction','max_loop','download_button_show','payroll_create_by','payroll_disburse_by','setting','total_deduction','total_earning','salary_division','finance_name','leave_deductions','loan_carried','earning_lines','deduction_lines','tax_details','pf_summary','service_period');
+            $payroll = $send_data['payroll'];
+            $send_data['download_button_show'] = $request->input('download') != "TRUE";
 
             if(!empty($payroll) && ( ($payroll[0]['pc_employee_id'] == session('user_session') && $payroll[0]['disburse'] == 2) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'finance', $login_user[0]['employee_id'] ?? null) )){
 
@@ -592,6 +458,151 @@ class PayrollController extends Controller
            
         }
     }
+
+    // everything the payslip view (payroll.individual-payroll-pdf) needs for one payroll, the same for web and mobile; null when the payroll does not exist
+    protected function payslip_view_data($payroll_id, $login_user){
+
+        $payroll = Payroll::join('tbl_employees','tbl_employees.employee_id','=','tbl_payroll_calculation.pc_employee_id')
+        ->join('tbl_employement_status', 'tbl_employees.employee_status', '=', 'tbl_employement_status.employement_status_id')
+        ->leftjoin('tbl_personal_informations','tbl_personal_informations.employeeid','=','tbl_employees.employee_id')
+        ->leftjoin('tbl_office_locations','tbl_office_locations.location_id','=','tbl_employees.employee_location')
+        ->where('pc_id','=',$payroll_id)->get()->toArray();
+
+        if(empty($payroll)){
+            return null;
+        }
+
+        $extra_earning = PayrollEarning::where('pc_earning_pc_id','=',$payroll_id)->
+        where('pc_earning_type',1)->get()->toArray();
+
+        $extra_deduction = PayrollDeduction::where('pc_deduction_pc_id','=',$payroll_id)->where('pc_deduction_type',1)->get()->toArray();
+
+        $extra_earning = $this->merge_payslip_lines($extra_earning, 'pc_earning_title', 'pc_earning_amount');
+        $extra_deduction = $this->merge_payslip_lines($extra_deduction, 'pc_deduction_title', 'pc_deduction_amount');
+
+        $max_loop = max([count($extra_earning),count($extra_deduction)]);
+
+        $extra_earning_amount = array_sum(array_column($extra_earning, 'pc_earning_amount'));
+
+        $extra_deduction_amount = array_sum(array_column($extra_deduction, 'pc_deduction_amount'));
+
+        $total_earning = $extra_earning_amount + $payroll[0]['pc_employee_gross_salary'];
+        $total_deduction = $extra_deduction_amount + $payroll[0]['pc_late_early_deduction'] + $payroll[0]['pc_absent_deduction'] + $payroll[0]['pc_half_day_deduction'];
+
+        // net never goes below zero (deductions more than the earnings: nothing is paid)
+        $payroll[0]['pc_employee_net_salary'] = max(0, $payroll[0]['pc_employee_net_salary'] + $extra_earning_amount - $extra_deduction_amount);
+
+        $payroll_create_by = Employees::where('employee_id',$payroll[0]['pc_created_by'])->get(['employee_name','employee_code'])->toArray();
+        
+        $payroll_disburse_by = Employees::where('employee_id',$payroll[0]['disburse_by'])->get(['employee_name','employee_code'])->toArray();
+        
+        $download_button_show = true;
+
+        $setting = HrmSetting::orderBy('setting_id','DESC')->get(['name_on_payslip','signature_on_payslip'])->toArray();
+
+        $finance_name = '';
+        if(!empty($setting) && !empty($setting[0]['name_on_payslip'])){
+            $finance_name = Employees::join('tbl_departments','tbl_departments.department_id','=','employee_department')->join('tbl_designations','tbl_designations.designation_id','=','employee_designation')->where('employee_id',$setting[0]['name_on_payslip'])->get(['employee_name','designation_name','department_name'])->toArray(); 
+        }
+        
+        $salary_division = SalaryDivision::SelectRaw('(salary_division_percentage/100) as salary_division_percentage,salary_division_title')->get()->toArray();
+
+        $sum_of_all_allowance = array_sum(array_column($salary_division,'salary_division_percentage'));
+        if((1 -  $sum_of_all_allowance )> 0){
+            array_push($salary_division,['salary_division_title' => 'Other' , 'salary_division_percentage' => 1 - $sum_of_all_allowance]);
+        }
+      
+
+        // leaves taken by this payroll for absent days / extra late comings / half days (leave_name null = deducted from salary):
+        // total = number of days, leave_days = leave taken (1 per absent day, 0.5 per late / half day)
+        $leave_deductions = LeaveDeduction::leftJoin('tbl_leave_management','tbl_leave_management.leave_manage_id','=','tbl_leave_deductions.ld_leave_type_id')
+        ->where('ld_payroll_id',$payroll_id)
+        ->selectRaw('leave_name, ld_reason, COUNT(*) as total, SUM(ld_days) as leave_days')
+        ->groupBy('leave_name','ld_reason')
+        ->get()->toArray();
+
+        // loan installment the salary could not cover this month (taken in the next payroll)
+        $loan_carried = (float) LoanInstallment::where('loan_installment_payroll_id', $payroll_id)->sum('loan_installment_carried');
+
+        $slip = $payroll[0];
+
+        // earnings: gross split into the salary divisions (Basic / House Rent / Utilities ...) + overtime, expense claims ...
+        $earning_lines = [];
+        foreach($salary_division as $division){
+            $earning_lines[] = ['title' => $division['salary_division_title'], 'amount' => round($slip['pc_employee_gross_salary'] * $division['salary_division_percentage'], 2)];
+        }
+        foreach($extra_earning as $earning){
+            $earning_lines[] = ['title' => CustomHelper::payroll_line_label($earning['pc_earning_title']), 'amount' => (float) $earning['pc_earning_amount']];
+        }
+
+        // deductions: income tax, EOBI, provident fund first, then loan / advance ..., then absent / late / half days
+        $first_deductions = ['income tax deduction' => 1, 'eobi contribution' => 2, 'provident fund' => 3];
+        usort($extra_deduction, function($a, $b) use($first_deductions){
+            return ($first_deductions[strtolower(trim($a['pc_deduction_title']))] ?? 9) <=> ($first_deductions[strtolower(trim($b['pc_deduction_title']))] ?? 9);
+        });
+        $deduction_lines = [];
+        foreach($extra_deduction as $deduction){
+            $deduction_lines[] = ['title' => CustomHelper::payroll_line_label($deduction['pc_deduction_title']), 'amount' => (float) $deduction['pc_deduction_amount']];
+        }
+        foreach(['pc_absent_deduction' => 'Absent Days', 'pc_late_early_deduction' => 'Late Coming', 'pc_half_day_deduction' => 'Half Days'] as $column => $label){
+            if((float) $slip[$column] > 0){
+                $deduction_lines[] = ['title' => $label, 'amount' => (float) $slip[$column]];
+            }
+        }
+
+        // income tax details: yearly taxable income, slab, yearly tax, tax deducted earlier in this fiscal year, this month
+        $tax_details = null;
+        if($slip['pc_tax_taxable_income'] !== null){
+            $fiscal_date = HrmSetting::value('fiscal_date');
+            $fiscal_month_day = !empty($fiscal_date) ? date('m-d', strtotime($fiscal_date)) : '07-01';
+            $fiscal_start = date('Y', strtotime($slip['pc_date_to'])).'-'.$fiscal_month_day;
+            if($fiscal_start > $slip['pc_date_to']){
+                $fiscal_start = date('Y-m-d', strtotime($fiscal_start.' -1 year'));
+            }
+            $tax_this_month = (float) PayrollDeduction::where('pc_deduction_pc_id', $payroll_id)->where('pc_deduction_title', 'Income Tax Deduction')->sum('pc_deduction_amount');
+            $tax_deducted_before = (float) PayrollDeduction::join('tbl_payroll_calculation', 'tbl_payroll_calculation.pc_id', '=', 'tbl_payroll_calculation_deduction.pc_deduction_pc_id')
+                ->where('pc_employee_id', $slip['pc_employee_id'])->where('pc_deduction_title', 'Income Tax Deduction')
+                ->where('pc_date_to', '>=', $fiscal_start)->where('pc_date_to', '<', $slip['pc_date_to'])
+                ->sum('pc_deduction_amount');
+            $tax_details = [
+                'taxable_income' => (float) $slip['pc_tax_taxable_income'],
+                'slab_percentage' => (float) $slip['pc_tax_slab_percentage'],
+                'tax_credit' => 0,
+                'tax_chargeable' => (float) $slip['pc_tax_yearly'],
+                'tax_deducted' => $tax_deducted_before,
+                'tax_payable' => $tax_this_month,
+            ];
+        }
+
+        // provident fund up to this payslip (contributions, profit, withdrawals)
+        $pf_rows = ProvidentFund::where('pf_employee_id', $slip['pc_employee_id'])->where('pf_date', '<=', $slip['pc_date_to'])
+            ->selectRaw('pf_type, SUM(pf_member_amount) as member, SUM(pf_company_amount) as company')->groupBy('pf_type')->get()->keyBy('pf_type');
+        $pf_summary = null;
+        if($pf_rows->isNotEmpty()){
+            $pf_sum = fn($type, $column) => (float) ($pf_rows[$type]->$column ?? 0);
+            $pf_summary = [
+                'member_contribution' => $pf_sum('contribution', 'member'),
+                'company_contribution' => $pf_sum('contribution', 'company'),
+                'member_profit' => $pf_sum('profit', 'member'),
+                'company_profit' => $pf_sum('profit', 'company'),
+                'permanent_withdrawals' => $pf_sum('permanent_withdrawal', 'member') + $pf_sum('permanent_withdrawal', 'company'),
+                'temporary_withdrawals' => $pf_sum('temporary_withdrawal', 'member') + $pf_sum('temporary_withdrawal', 'company'),
+                'withdrawal_recovery' => $pf_sum('withdrawal_recovery', 'member') + $pf_sum('withdrawal_recovery', 'company'),
+            ];
+            $pf_summary['available'] = $pf_summary['member_contribution'] + $pf_summary['company_contribution'] + $pf_summary['member_profit'] + $pf_summary['company_profit']
+                - $pf_summary['permanent_withdrawals'] - $pf_summary['temporary_withdrawals'] + $pf_summary['withdrawal_recovery'];
+        }
+
+        // service period: joining date to the end of this pay period
+        $service_period = '-';
+        if(!empty($slip['employee_doj'])){
+            $service = date_diff(date_create($slip['employee_doj']), date_create($slip['pc_date_to']));
+            $service_period = $service->y.' Year(s), '.$service->m.' Month(s), '.$service->d.' Day(s)';
+        }
+
+        return compact('login_user','payroll','extra_earning','extra_deduction','max_loop','download_button_show','payroll_create_by','payroll_disburse_by','setting','total_deduction','total_earning','salary_division','finance_name','leave_deductions','loan_carried','earning_lines','deduction_lines','tax_details','pf_summary','service_period');
+    }
+
     // one payslip line per name: rows shown under the same name (e.g. installments of two loans) are added together
     protected function merge_payslip_lines(array $rows, $title_key, $amount_key){
         $merged = [];
@@ -632,56 +643,13 @@ class PayrollController extends Controller
 
                 if(!empty($active_device)){
 
-                    $title = Self::INDIVIDUAL_PDF_TITLE;
-
-                    $payroll_id = $request->input('pc_id');
-                    $payroll = Payroll::join('tbl_employees','tbl_employees.employee_id','=','tbl_payroll_calculation.pc_employee_id')
-                    ->leftjoin('tbl_personal_informations','tbl_personal_informations.employeeid','=','tbl_employees.employee_id')
-                    ->leftjoin('tbl_office_locations','tbl_office_locations.location_id','=','tbl_employees.employee_location')
-                    ->where('pc_id','=',$payroll_id)->get()->toArray();
-
-                    $extra_earning = PayrollEarning::where('pc_earning_pc_id','=',$payroll_id)->where('pc_earning_type',1)->get()->toArray();
-
-                    $extra_deduction = PayrollDeduction::where('pc_deduction_pc_id','=',$payroll_id)->where('pc_deduction_type',1)->get()->toArray();
-
-                    $extra_earning = $this->merge_payslip_lines($extra_earning, 'pc_earning_title', 'pc_earning_amount');
-                    $extra_deduction = $this->merge_payslip_lines($extra_deduction, 'pc_deduction_title', 'pc_deduction_amount');
-
-                    $max_loop = max([count($extra_earning),count($extra_deduction)]);
-
-                    $extra_earning_amount = array_sum(array_column($extra_earning, 'pc_earning_amount'));
-
-                    $extra_deduction_amount = array_sum(array_column($extra_deduction, 'pc_deduction_amount'));
-
-                    $total_earning = $extra_earning_amount + $payroll[0]['pc_employee_gross_salary'];
-                    $total_deduction = $extra_deduction_amount + $payroll[0]['pc_late_early_deduction'] + $payroll[0]['pc_absent_deduction'] + $payroll[0]['pc_half_day_deduction'];
-
-                    // net never goes below zero (deductions more than the earnings: nothing is paid)
-                    $payroll[0]['pc_employee_net_salary'] = max(0, $payroll[0]['pc_employee_net_salary'] + $extra_earning_amount - $extra_deduction_amount);
-
-                    $payroll_create_by = Employees::where('employee_id',$payroll[0]['pc_created_by'])->get(['employee_name','employee_code'])->toArray();
-                    
-                    $payroll_disburse_by = Employees::where('employee_id',$payroll[0]['disburse_by'])->get(['employee_name','employee_code'])->toArray();
-
-                    $setting = HrmSetting::orderBy('setting_id','DESC')->get(['name_on_payslip','signature_on_payslip'])->toArray();
-
-                    $download_button_show = false;
-                    
-                    $finance_name = '';
-                    if(!empty($setting) && !empty($setting[0]['name_on_payslip'])){
-                        $finance_name = Employees::join('tbl_departments','tbl_departments.department_id','=','employee_department')->join('tbl_designations','tbl_designations.designation_id','=','employee_designation')->where('employee_id',$setting[0]['name_on_payslip'])->get(['employee_name','designation_name','department_name'])->toArray(); 
-                    }
-                    
-                    $salary_division = SalaryDivision::SelectRaw('(salary_division_percentage/100) as salary_division_percentage,salary_division_title')->get()->toArray();
-
-                    $sum_of_all_allowance = array_sum(array_column($salary_division,'salary_division_percentage'));
-                    if((1 -  $sum_of_all_allowance )> 0){
-                        array_push($salary_division,['salary_division_title' => 'Other' , 'salary_division_percentage' => 1 - $sum_of_all_allowance]);
-                    }
+                    // same payslip as the web; only the employee's own disbursed payroll
+                    $send_data = $this->payslip_view_data($request->input('pc_id'), $login_user);
+                    $payroll = $send_data['payroll'] ?? [];
 
                     if(!empty($payroll) && $payroll[0]['pc_employee_id'] == $login_user[0]['employee_id'] && $payroll[0]['disburse'] == 2){
 
-                        $send_data = compact('login_user','payroll','extra_earning','extra_deduction','max_loop','download_button_show','payroll_create_by','payroll_disburse_by','setting','total_deduction','total_earning','salary_division','finance_name');
+                        $send_data['download_button_show'] = false;
                         $pdf = Pdf::loadView('payroll.individual-payroll-pdf', $send_data);
                         return $pdf->setPaper('a3', 'potrait')->download('Payslip-'.$payroll[0]['employee_code'].'-'.$payroll[0]['employee_name'].'-'.date("F", mktime(0, 0, 0, $payroll[0]['pc_month'], 10)).'-'.$payroll[0]['pc_year'].'.pdf');
                     }else{

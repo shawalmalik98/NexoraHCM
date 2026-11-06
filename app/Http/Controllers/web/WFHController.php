@@ -36,6 +36,7 @@ class WFHController extends Controller
             
             $all_requests = array();
             $responsed_request = array();
+            $employees_data = array();
             // $dates = array();
 
             if(CustomHelper::dept_has_role($login_user[0]['employee_department'], 'hr', $login_user[0]['employee_id'] ?? null) || CustomHelper::dept_has_role($login_user[0]['employee_department'], 'admin', $login_user[0]['employee_id'] ?? null)){

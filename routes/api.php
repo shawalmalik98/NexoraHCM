@@ -101,6 +101,7 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         // resignation start
         Route::get('employee-resignation', [ResignationController::class , 'employee_resignation']);
         Route::post('add-employee-resignation', [ResignationController::class, 'add_employee_resignation']);
+        Route::post('update-employee-resignation', [ResignationController::class, 'update_employee_resignation']);
         // Route::get('resignations', [ResignationController::class , 'all_employee_resignation']);
         
         // resignation end
@@ -197,8 +198,11 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         Route::post('get-employee-department-hd', [HelpdeskController::class, 'get_employee_department']);
         Route::post('add-help-desk', [HelpdeskController::class, 'add_help_desk']);
         Route::get('my-help-desk-detail/{id}', [HelpdeskController::class, 'my_help_desk_detail']);
-        Route::post('update-help-desk-employee', [HelpdeskController::class, 'update_help_desk_employees']);
-        Route::post('update-help-desk-department', [HelpdeskController::class, 'update_help_desk_departments']);
+        // mobile edits its own pending ticket through update-help-desk; the old re-assign routes stay web only
+        Route::post('update-help-desk', [HelpdeskController::class, 'update_help_desk']);
+        Route::get('my-help-desk-attachment/{id}', [HelpdeskController::class, 'download_help_desk_attachment']);
+        // Route::post('update-help-desk-employee', [HelpdeskController::class, 'update_help_desk_employees']);
+        // Route::post('update-help-desk-department', [HelpdeskController::class, 'update_help_desk_departments']);
         Route::post('ticket-status', [HelpdeskController::class, 'ticket_status']);
 
 
@@ -207,7 +211,8 @@ Route::middleware(['BearerTokenChecker','BearerTokenVerifier','DeviceVerificatio
         // employee expense start
         Route::get('my-expense',[EmployeeExpenseController::class,'my_expense']);
         Route::post('add-my-expense',[EmployeeExpenseController::class,'add_my_expense']);
-        Route::post('delete-my-expense',[EmployeeExpenseController::class,'delete_my_expense']);
+        // mobile: add, view, edit while pending, attachment upload / download only; no delete for now (web only)
+        // Route::post('delete-my-expense',[EmployeeExpenseController::class,'delete_my_expense']);
         Route::post('update-my-expense',[EmployeeExpenseController::class,'update_my_expense']);
         Route::post('expense-amount-log',[EmployeeExpenseController::class,'expense_amount_log']);
         Route::get('download-employee-expense-file',[EmployeeExpenseController::class,'download_employee_expense_file']);

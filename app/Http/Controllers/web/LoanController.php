@@ -800,7 +800,7 @@ class LoanController extends Controller
                 }
         
                 $login_user = $this->get_login_user_detail();
-                $checking_request = LoanRequest::where('request_employee_id', (string) session('user_session'))->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->get()->toArray();
+                $checking_request = LoanRequest::where('request_employee_id', (string) session('user_session'))->where('loan_applied_date', 'like', date('Y-m-d').'%')->get()->toArray();
                 if(empty($checking_request)){
                     $new_loan = new LoanRequest();
                     $new_loan->request_employee_id = $request_data->session()->get('user_session');
@@ -1262,7 +1262,7 @@ class LoanController extends Controller
                 
                     if(empty($checking_request_responsed) && $loan_update_request->request_approved_by_finance == 1){   
 
-                        $checking_request = LoanRequest::where('request_employee_id', (string) session('user_session'))->where('loan_applied_date', 'like', '%'.date('d-m-Y').'%')->where('loan_request_id','!=',$request_data->request_id)->get()->toArray();
+                        $checking_request = LoanRequest::where('request_employee_id', (string) session('user_session'))->where('loan_applied_date', 'like', date('Y-m-d').'%')->where('loan_request_id','!=',$request_data->request_id)->get()->toArray();
 
                         if(empty($checking_request)){
 

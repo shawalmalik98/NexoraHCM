@@ -69,6 +69,11 @@ class AdvanceSalaryApiController extends Controller
 
             $employee_salary = EmployeeSalary::where('salary_employee_id' , $login_user[0]['employee_id'])->where('salary_effected_date', '<=' , date('Y-m-d'))->orderBy('salary_id','DESC')->limit(1)->get('salary_amount')->toArray();
 
+            // no salary set yet: the amount limit can not be checked
+            if(empty($employee_salary)){
+                return $this->api_response_json(FALSE,"Your salary is not set yet. Please contact HR.","",200);
+            }
+
             $message = ['before'=>'The payback date must be a date before ' .date( 'F-Y',strtotime('+2 month')),'after'=>'The payback date must be a date after '.date( 'F-Y',strtotime(date('Y-'.$deduction_month.'')))];
 
             $validator = Validator::make($request->post(), [
@@ -171,6 +176,11 @@ class AdvanceSalaryApiController extends Controller
             }
 
             $employee_salary = EmployeeSalary::where('salary_employee_id' , $login_user[0]['employee_id'])->where('salary_effected_date', '<=' , date('Y-m-d'))->orderBy('salary_id','DESC')->limit(1)->get('salary_amount')->toArray();
+
+            // no salary set yet: the amount limit can not be checked
+            if(empty($employee_salary)){
+                return $this->api_response_json(FALSE,"Your salary is not set yet. Please contact HR.","",200);
+            }
 
             $message = ['before'=>'The payback date must be a date before ' .date( 'F-Y',strtotime('+2 month')),'after'=>'The payback date must be a date after '.date( 'F-Y',strtotime(date('Y-'.$deduction_month.'')))];
             

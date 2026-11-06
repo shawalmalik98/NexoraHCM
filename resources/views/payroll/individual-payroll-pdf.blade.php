@@ -213,7 +213,7 @@
     <div class="container">
     @endif
         @if ($download_button_show == false)
-            <img src="{{ public_path('portal_assets/images/header-bg.png') }}" draggable="false" class="img-fluid w-100 padding-img" style="height:150px"
+            <img src="{{ CustomHelper::pdf_image(public_path('portal_assets/images/header-bg.png')) }}" draggable="false" class="img-fluid w-100 padding-img" style="height:150px"
                 alt="header" width="1200" height="277">
         @else
             <img src="{{ url('/portal_assets/images/header-bg.png') }}" draggable="false" class="img-fluid w-100 padding-img"
@@ -395,7 +395,7 @@
         </div>
 
         @if ($download_button_show == false)
-            <img src="{{ public_path('portal_assets/images/footer-bg.png') }}" draggable="false" style="height:60px"
+            <img src="{{ CustomHelper::pdf_image(public_path('portal_assets/images/footer-bg.png')) }}" draggable="false" style="height:60px"
                 class="img-fluid  w-100" alt="header" width="1200" height="100">
         @else
             <img src="{{ url('/portal_assets/images/footer-bg.png') }}" draggable="false" class="img-fluid  w-100"

@@ -984,6 +984,11 @@ trait AttendanceEmployee {
 		
 		$get_wfh_request = WFH::where('wfh_employee_id','=',(string) $employee_id)->where('wfh_request_date','=',$date)->get(['wfh_request_id','wfh_request_approved_by_hr'])->toArray();
 	
+		// HR disapproved: no remote work, even if a manager approved it before
+		if(!empty($get_wfh_request) && $get_wfh_request[0]['wfh_request_approved_by_hr'] == 3){
+			return 0;
+		}
+
 		if(!empty($get_wfh_request) && $get_wfh_request[0]['wfh_request_approved_by_hr'] != 2){
 			$get_wfh_request = RequestApproval::where('request_module_id',3)
 			->where('request_id',$get_wfh_request[0]['wfh_request_id'])

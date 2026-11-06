@@ -1,7 +1,7 @@
 {
-  "version_code": 29895092,
+  "version_code": 29898001,
   "version_name": "1.0.0",
   "apk_url": "http://192.168.88.71:8001/app/hrms.apk",
-  "notes": "Offline location fix, simple messages, Present count on dashboard",
-  "force": false
+  "notes": "Attachment uploads fixed (long upload time, smaller photos), in-app viewer, Reimbursement",
+  "force": true
 }

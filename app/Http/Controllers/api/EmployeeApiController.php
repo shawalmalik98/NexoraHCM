@@ -27,10 +27,32 @@ class EmployeeApiController extends Controller
             $login_user = $this->get_token_user_detail($request->header('Bearer-Token'));
 
             $employees = Employees::join('tbl_departments','tbl_departments.department_id','=','tbl_employees.employee_department')->join('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->leftJoin('tbl_personal_informations','tbl_personal_informations.employeeid','=','tbl_employees.employee_id')
             ->where('employee_id' , $login_user[0]['employee_id'])
-            ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','employee_geofencing_enability','employee_offdays','employee_password'])->toArray();
+            ->get(['employee_id','employee_code','employee_name','employee_personal_email','employee_department','department_name','designation_name','employee_is_manager','employee_geofencing_enability','employee_offdays','employee_password','employee_senior_manager','employee_junior_manager',
+                // the employee's own profile details for the app's profile screen
+                'employee_jobtitle','employee_jobtype','employee_cnic','employee_contactno','employee_doj','employee_work_email as employee_official_email','tbl_personal_informations.dob as employee_dob','tbl_personal_informations.currentaddress as employee_address'])->toArray();
             $employees[0]['password'] = Crypt::decryptString($employees[0]['employee_password']);
             unset($employees[0]['employee_password']);
+
+            // same as the web dashboard: "HOD" card = senior manager, "Line Manager" card = junior manager (null when not set)
+            $people = [
+                'senior_manager' => $employees[0]['employee_senior_manager'],
+                'junior_manager' => $employees[0]['employee_junior_manager'],
+            ];
+            $people_detail = Employees::leftJoin('tbl_designations','tbl_designations.designation_id','=','tbl_employees.employee_designation')
+            ->leftJoin('tbl_personal_informations','tbl_personal_informations.employeeid','=','tbl_employees.employee_id')
+            ->whereIn('employee_id', array_filter($people))
+            ->get(['employee_id','employee_code','employee_name','designation_name','profile_avatar'])->keyBy('employee_id')->toArray();
+            foreach($people as $key => $person_id){
+                $person = !empty($person_id) && isset($people_detail[$person_id]) ? $people_detail[$person_id] : null;
+                if(!empty($person)){
+                    $person['profile_picture'] = !empty($person['profile_avatar']) && file_exists(public_path('portal_assets/profile_pictures/'.$person['profile_avatar'])) ? asset('portal_assets/profile_pictures/'.$person['profile_avatar']) : null;
+                    unset($person['profile_avatar']);
+                }
+                $employees[0][$key] = $person;
+            }
+            unset($employees[0]['employee_senior_manager'], $employees[0]['employee_junior_manager']);
 
             return $this->api_response_json(TRUE,"Employee Detail",$employees,200); 
         

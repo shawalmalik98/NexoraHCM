@@ -128,6 +128,35 @@ class CustomHelper
     // A file under storage/app/portal_documents named by a request (?path=letter/x.pdf), or null.
     // Only files inside that folder: "..", absolute paths and anything resolving outside it are refused
     // (a path like ../../../.env used to download the app's .env).
+    // dompdf reads transparent PNGs pixel by pixel (seconds per image): give it a copy flattened on white, made once and
+    // kept until the image changes. Anything else (or no GD) is returned as it is.
+    public static function pdf_image($path){
+        try{
+            if(empty($path) || !is_file($path) || !function_exists('imagecreatefrompng') || strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'png'){
+                return $path;
+            }
+            $dir = storage_path('app/pdf_images');
+            $copy = $dir.DIRECTORY_SEPARATOR.md5($path.'|'.filemtime($path).'|'.filesize($path)).'.png';
+            if(!is_file($copy)){
+                if(!is_dir($dir)){
+                    mkdir($dir, 0775, true);
+                }
+                $source = @imagecreatefrompng($path);
+                if($source === false){
+                    return $path;
+                }
+                $flat = imagecreatetruecolor(imagesx($source), imagesy($source));
+                imagefill($flat, 0, 0, imagecolorallocate($flat, 255, 255, 255));
+                imagecopy($flat, $source, 0, 0, 0, 0, imagesx($source), imagesy($source));
+                imagepng($flat, $copy.'.tmp', 6);
+                rename($copy.'.tmp', $copy);
+            }
+            return $copy;
+        }catch(\Throwable $e){
+            return $path;
+        }
+    }
+
     public static function portal_document($path){
         $path = str_replace('\\', '/', (string) $path);
         if($path === '' || str_contains($path, "\0") || str_contains($path, '..') || str_starts_with($path, '/') || preg_match('#^[a-zA-Z]:#', $path)){
@@ -871,10 +900,10 @@ class CustomHelper
                     if(!empty($company_logo)){
     
                         if(file_exists('portal_assets/setting/images/'.$company_logo)){
-                            $company_logo =  public_path('portal_assets/setting/images/'.$company_logo);
+                            $company_logo =  self::pdf_image(public_path('portal_assets/setting/images/'.$company_logo));
                         }
                         else{
-                            $company_logo = public_path('portal_assets/setting/images/hcm-logo.png');
+                            $company_logo = self::pdf_image(public_path('portal_assets/setting/images/hcm-logo.png'));
                         }
                     }
                 }
